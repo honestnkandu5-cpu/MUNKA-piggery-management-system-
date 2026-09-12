@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>MUNKA PIGGERY - Gestation Records</title>
+
+<link rel="stylesheet" href="gestation.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🐷 MUNKA PIGGERY FARM</h1>
+
+<h2>Gestation Records</h2>
+
+
+<!-- ==================================================
+     GESTATION FORM
+================================================== -->
+
+<form id="gestationForm">
+
+
+<label for="sowID">
+Sow ID
+</label>
+
+<input
+    type="text"
+    id="sowID"
+    required>
+
+
+<label for="registrationDate">
+Registration Date
+</label>
+
+<input
+    type="date"
+    id="registrationDate"
+    required>
+
+
+<label for="breed">
+Breed
+</label>
+
+<select
+    id="breed"
+    required>
+
+    <option value="">
+        Select Breed
+    </option>
+
+    <option>Large White</option>
+    <option>Landrace</option>
+    <option>Large White × Landrace Cross</option>
+    <option>Duroc</option>
+    <option>Pietrain</option>
+    <option>Hampshire</option>
+    <option>Other</option>
+
+</select>
+
+
+<label for="teats">
+Number of Teats
+</label>
+
+<input
+    type="number"
+    id="teats"
+    min="1">
+
+
+<label for="parity">
+Parity
+</label>
+
+<select id="parity">
+
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5</option>
+    <option>6+</option>
+
+</select>
+
+
+<label for="serviceDate">
+Service Date
+</label>
+
+<input
+    type="date"
+    id="serviceDate"
+    required>
+
+
+<label for="boar">
+Boar / Semen Used
+</label>
+
+<input
+    type="text"
+    id="boar">
+
+
+<h3>
+Automatic Gestation Dates
+</h3>
+
+
+<label>
+21 Days Check
+</label>
+
+<input
+    type="date"
+    id="check21"
+    readonly>
+
+
+<label>
+90 Day Feed Up
+</label>
+
+<input
+    type="date"
+    id="feed90"
+    readonly>
+
+
+<label>
+101 Day Dewormer
+</label>
+
+<input
+    type="date"
+    id="deworm101"
+    readonly>
+
+
+<label>
+101 Day Litter Guard
+</label>
+
+<input
+    type="date"
+    id="litter101"
+    readonly>
+
+
+<label>
+Action Day
+</label>
+
+<input
+    type="date"
+    id="actionDay"
+    readonly>
+
+
+<label>
+Expected Delivery
+</label>
+
+<input
+    type="date"
+    id="deliveryDate"
+    readonly>
+
+
+<label>
+FarrowSure Date
+</label>
+
+<input
+    type="date"
+    id="farrowsure"
+    readonly>
+
+
+<label for="status">
+Status
+</label>
+
+<select id="status">
+
+    <option>Pregnant</option>
+    <option>Farrowed</option>
+    <option>Empty</option>
+    <option>Aborted</option>
+
+</select>
+
+
+<label for="notes">
+Notes
+</label>
+
+<textarea
+    id="notes"
+    rows="4">
+</textarea>
+
+
+<!-- ==================================================
+     ACTION BUTTONS
+================================================== -->
+
+<div class="buttons">
+
+
+    <!-- ADD -->
+
+    <button
+        type="submit"
+        data-permission="add"
+        data-module="Gestation">
+
+        💾 Save Record
+
+    </button>
+
+
+    <!-- REPORT -->
+
+    <button
+        type="button"
+        onclick="generateReport()"
+        data-permission="report"
+        data-module="Gestation">
+
+        📊 Generate Report
+
+    </button>
+
+
+    <!-- PRINT -->
+
+    <button
+        type="button"
+        onclick="printReport()">
+
+        🖨️ Print
+
+    </button>
+
+
+    <!-- CLEAR -->
+
+    <button
+        type="button"
+        onclick="clearForm()">
+
+        🧹 Clear
+
+    </button>
+
+
+    <!-- BACK -->
+
+    <button
+        type="button"
+        onclick="window.location.href='dashboard.html'">
+
+        ↩️ Back
+
+    </button>
+
+
+</div>
+
+
+</form>
+
+
+<hr>
+
+
+<!-- ==================================================
+     SEARCH
+================================================== -->
+
+<h2>
+Search Gestation Records
+</h2>
+
+
+<input
+    type="text"
+    id="searchGestation"
+    placeholder="Search Sow ID, Breed or Status">
+
+
+<button
+    type="button"
+    onclick="searchRecord()"
+    data-permission="view"
+    data-module="Gestation">
+
+    🔍 Search
+
+</button>
+
+
+<hr>
+
+
+<!-- ==================================================
+     RECORD HISTORY
+================================================== -->
+
+<h2>
+Registered Gestation Records
+</h2>
+
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Sow ID</th>
+
+<th>Breed</th>
+
+<th>Service Date</th>
+
+<th>Expected Delivery</th>
+
+<th>Status</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="gestationTable">
+
+</tbody>
+
+</table>
+
+
+</div>
+
+
+<!-- ==================================================
+     SUPABASE
+================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+
+<script src="supabase.js"></script>
+
+
+<!-- ==================================================
+     ACTIVITY
+================================================== -->
+
+<script src="activity.js"></script>
+
+
+<!-- ==================================================
+     SECURITY
+================================================== -->
+
+<script src="security.js"></script>
+
+
+<!-- ==================================================
+     GESTATION
+================================================== -->
+
+<script src="gestation.js"></script>
+
+
+</body>
+
+</html>

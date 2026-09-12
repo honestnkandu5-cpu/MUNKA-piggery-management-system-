@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>MUNKA PIGGERY - Sales Records</title>
+
+<link rel="stylesheet" href="sales.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+    <h1>MUNKA PIGGERY FARM</h1>
+
+    <h2>Sales Records</h2>
+
+
+    <!-- ==================================================
+         SALES FORM
+    ================================================== -->
+
+    <form id="salesForm">
+
+
+        <div class="form-group">
+
+            <label>Record ID</label>
+
+            <input
+                type="text"
+                id="recordID"
+                readonly>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Date of Sale</label>
+
+            <input
+                type="date"
+                id="saleDate"
+                required>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Pig ID</label>
+
+            <input
+                type="text"
+                id="pigID"
+                required>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Breed</label>
+
+            <select id="breed" required>
+
+                <option value="">
+                    Select Breed
+                </option>
+
+                <option>Large White</option>
+                <option>Landrace</option>
+                <option>Large White × Landrace Cross</option>
+                <option>Duroc</option>
+                <option>Pietrain</option>
+                <option>Hampshire</option>
+                <option>Other</option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Category</label>
+
+            <select id="category" required>
+
+                <option value="">
+                    Select Category
+                </option>
+
+                <option>Piglet</option>
+                <option>Weaner</option>
+                <option>Grower</option>
+                <option>Finisher</option>
+                <option>Sow</option>
+                <option>Boar</option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Quantity</label>
+
+            <input
+                type="number"
+                id="quantity"
+                min="1"
+                required>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Weight (kg)</label>
+
+            <input
+                type="number"
+                id="weight"
+                step="0.01"
+                required>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Price Per Kg</label>
+
+            <input
+                type="number"
+                id="pricePerKg"
+                step="0.01"
+                required>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Total Amount</label>
+
+            <input
+                type="number"
+                id="totalAmount"
+                readonly>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Buyer Name</label>
+
+            <input
+                type="text"
+                id="buyerName">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Buyer Contact</label>
+
+            <input
+                type="text"
+                id="buyerContact">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Payment Method</label>
+
+            <select id="paymentMethod">
+
+                <option value="">
+                    Select
+                </option>
+
+                <option>Cash</option>
+                <option>Mobile Money</option>
+                <option>Bank Transfer</option>
+                <option>Other</option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Payment Status</label>
+
+            <select id="paymentStatus">
+
+                <option>Paid</option>
+                <option>Pending</option>
+                <option>Partial</option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Person Responsible</label>
+
+            <select id="responsiblePerson">
+
+                <option value="">
+                    Select Person
+                </option>
+
+                <option>Farm Manager</option>
+                <option>Owner</option>
+                <option>Sales Officer</option>
+                <option>Farm Worker</option>
+                <option>Other</option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Remarks</label>
+
+            <textarea id="remarks"></textarea>
+
+        </div>
+
+
+
+        <!-- ==================================================
+             ACTION BUTTONS
+        ================================================== -->
+
+        <div class="buttons">
+
+
+            <!-- ADD -->
+
+            <button
+                type="submit"
+                data-permission="add"
+                data-module="Sales">
+
+                💾 Save Record
+
+            </button>
+
+
+            <!-- EDIT -->
+
+            <button
+                type="button"
+                onclick="updateSaleRecord()"
+                data-permission="edit"
+                data-module="Sales">
+
+                ✏️ Update Record
+
+            </button>
+
+
+            <!-- VIEW / SEARCH -->
+
+            <button
+                type="button"
+                onclick="searchSaleRecord()"
+                data-permission="view"
+                data-module="Sales">
+
+                🔍 Search
+
+            </button>
+
+
+            <!-- REPORT -->
+
+            <button
+                type="button"
+                onclick="generateSalesReport()"
+                data-permission="report"
+                data-module="Sales">
+
+                📊 Report
+
+            </button>
+
+
+            <!-- CLEAR -->
+
+            <button
+                type="button"
+                onclick="clearSaleForm()">
+
+                🧹 Clear
+
+            </button>
+
+
+            <!-- BACK -->
+
+            <button
+                type="button"
+                onclick="window.location.href='dashboard.html'">
+
+                ↩️ Back
+
+            </button>
+
+
+        </div>
+
+    </form>
+
+
+
+    <!-- ==================================================
+         SALES HISTORY
+    ================================================== -->
+
+    <h2>
+        Sales Records History
+    </h2>
+
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Date</th>
+                <th>Pig ID</th>
+                <th>Breed</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Weight</th>
+                <th>Total</th>
+                <th>Buyer</th>
+                <th>Status</th>
+                <th>Action</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody id="salesTable">
+
+        </tbody>
+
+    </table>
+
+
+</div>
+
+
+
+<!-- ======================================================
+     ACTIVITY
+====================================================== -->
+
+<script src="activity.js"></script>
+
+
+<!-- ======================================================
+     SUPABASE
+====================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<script src="supabase.js"></script>
+
+
+<!-- ======================================================
+     SECURITY
+====================================================== -->
+
+<script src="security.js"></script>
+
+
+<!-- ======================================================
+     SALES
+====================================================== -->
+
+<script src="sales.js"></script>
+
+
+</body>
+
+</html>

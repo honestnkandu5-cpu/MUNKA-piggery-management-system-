@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        MUNKA PIGGERY Dashboard
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="dashboard.css">
+
+</head>
+
+
+<body>
+
+
+<!-- ======================================================
+     USER PANEL
+====================================================== -->
+
+<div class="user-panel">
+
+    <h3 id="welcomeUser"></h3>
+
+    <p id="userDetails"></p>
+
+    <p id="lastLogin"></p>
+
+
+    <button
+        type="button"
+        onclick="window.location.href='change_password.html'">
+
+        🔐 Change Password
+
+    </button>
+
+
+    <button
+        type="button"
+        onclick="logout()">
+
+        Logout
+
+    </button>
+
+</div>
+
+
+
+<!-- ======================================================
+     HEADER
+====================================================== -->
+
+<div class="header">
+
+    <h1>
+        MUNKA PIGGERY
+    </h1>
+
+    <p>
+        Management System Dashboard
+    </p>
+
+</div>
+
+
+
+<!-- ======================================================
+     MAIN CONTAINER
+====================================================== -->
+
+<div class="container">
+
+    <h2>
+        Welcome to MUNKA PIGGERY Management System Dashboard
+    </h2>
+
+
+    <!-- ==================================================
+         DASHBOARD BUTTONS
+    ================================================== -->
+
+    <div
+        class="buttons"
+        id="dashboardButtons">
+
+
+        <!-- PIG REGISTRATION -->
+
+        <button
+            type="button"
+            data-permission-module="Pig Registration"
+            data-permission-type="can_view"
+            onclick="openPigRegistration()">
+
+            🐖 Pig Registration
+
+        </button>
+
+
+
+        <!-- GESTATION -->
+
+        <button
+            type="button"
+            data-permission-module="Gestation"
+            data-permission-type="can_view"
+            onclick="openGestation()">
+
+            🤰 Gestation Records
+
+        </button>
+
+
+
+        <!-- FARROWING -->
+
+        <button
+            type="button"
+            data-permission-module="Farrowing"
+            data-permission-type="can_view"
+            onclick="openFarrowing()">
+
+            🐷 Farrowing Records
+
+        </button>
+
+
+
+        <!-- WEANING -->
+
+        <button
+            type="button"
+            data-permission-module="Weaning"
+            data-permission-type="can_view"
+            onclick="window.location.href='weaning.html'">
+
+            🐷 Weaning Records
+
+        </button>
+
+
+
+        <!-- VACCINATION & TREATMENT -->
+
+        <button
+            type="button"
+            data-permission-module="Vaccination & Treatment"
+            data-permission-type="can_view"
+            onclick="window.location.href='vaccination.html'">
+
+            💉 Vaccination & Treatment
+
+        </button>
+
+
+
+        <!-- FEEDING -->
+
+        <button
+            type="button"
+            data-permission-module="Feeding"
+            data-permission-type="can_view"
+            onclick="window.location.href='feeding.html'">
+
+            🌾 Feeding Records
+
+        </button>
+
+
+
+        <!-- SALES -->
+
+        <button
+            type="button"
+            data-permission-module="Sales"
+            data-permission-type="can_view"
+            onclick="window.location.href='sales.html'">
+
+            💰 Sales Records
+
+        </button>
+
+
+
+        <!-- EXPENSES -->
+
+        <button
+            type="button"
+            data-permission-module="Expenses"
+            data-permission-type="can_view"
+            onclick="window.location.href='expenses.html'">
+
+            📊 Expenses Records
+
+        </button>
+
+
+
+        <!-- REPORTS & ANALYTICS -->
+
+        <button
+            type="button"
+            data-permission-module="Reports & Analytics"
+            data-permission-type="can_view"
+            onclick="window.location.href='reports.html'">
+
+            📈 Reports & Analytics
+
+        </button>
+
+
+
+        <!-- USER MANAGEMENT -->
+
+        <button
+            type="button"
+            data-permission-module="Users"
+            data-permission-type="can_view"
+            onclick="window.location.href='users.html'">
+
+            👥 User Management
+
+        </button>
+
+
+
+        <!-- ACTIVITY LOGS -->
+
+        <button
+            type="button"
+            data-permission-module="Activity Logs"
+            data-permission-type="can_view"
+            onclick="window.location.href='activity.html'">
+
+            📋 Activity Logs
+
+        </button>
+
+
+    </div>
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="security.js"></script>
+
+<script src="dashboard.js"></script>
+
+
+</body>
+
+</html>

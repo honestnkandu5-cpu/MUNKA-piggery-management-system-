@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MUNKA PIGGERY - Login</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="login-container">
+
+
+<h1>MUNKA PIGGERY</h1>
+
+<h3>Management System</h3>
+
+
+
+<form id="loginForm">
+
+
+<input 
+type="email" 
+id="email" 
+placeholder="Email Address"
+required>
+
+
+
+<input 
+type="password" 
+id="password" 
+placeholder="Password"
+required>
+
+
+
+
+<select id="role" required>
+
+<option value="">
+Select User Role
+</option>
+
+<option value="Owner/Admin">
+Owner / Admin
+</option>
+
+<option value="Farm Manager">
+Farm Manager
+</option>
+
+<option value="Serviceman">
+Serviceman (Gestation Pen)
+</option>
+
+<option value="Farrowman">
+Farrowman (Farrowing Pen)
+</option>
+
+<option value="Sales Officer">
+Sales Officer
+</option>
+
+<option value="Veterinary Officer">
+Veterinary Officer
+</option>
+
+<option value="Farm Worker">
+Farm Worker
+</option>
+
+</select>
+
+
+
+
+<button type="submit">
+
+Login
+
+</button>
+
+
+
+<p id="message"></p>
+
+
+
+</form>
+
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="activity.js"></script>
+
+<script src="login.js"></script>
+
+
+</body>
+
+</html>

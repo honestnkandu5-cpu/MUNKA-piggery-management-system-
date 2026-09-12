@@ -1,0 +1,350 @@
+/* =====================================
+   MUNKA PIGGERY FARM LIMITED
+   VACCINATION & TREATMENT MODULE
+   CSS
+===================================== */
+
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial, sans-serif;
+}
+
+
+
+body{
+
+    background:#f2f2f2;
+    padding:20px;
+
+}
+
+
+
+
+.container{
+
+    max-width:1200px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.15);
+
+}
+
+
+
+
+h1{
+
+    text-align:center;
+    color:green;
+    margin-bottom:10px;
+
+}
+
+
+
+h2{
+
+    text-align:center;
+    margin-bottom:25px;
+    color:#333;
+
+}
+
+
+
+h3{
+
+    margin-top:25px;
+    color:green;
+
+}
+
+
+
+
+
+form{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:20px;
+
+}
+
+
+
+
+.form-group{
+
+    display:flex;
+    flex-direction:column;
+
+}
+
+
+
+
+label{
+
+    font-weight:bold;
+    margin-bottom:6px;
+
+}
+
+
+
+
+
+input,
+select,
+textarea{
+
+
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+
+
+}
+
+
+
+
+
+textarea{
+
+    min-height:90px;
+    resize:none;
+
+}
+
+
+
+
+input:focus,
+select:focus,
+textarea:focus{
+
+    outline:none;
+    border:2px solid green;
+
+}
+
+
+
+
+
+.buttons{
+
+    grid-column:1/-1;
+    display:flex;
+    gap:15px;
+    margin-top:10px;
+
+}
+
+
+
+
+button{
+
+    padding:12px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+
+}
+
+
+
+
+#saveBtn{
+
+    background:green;
+    color:white;
+
+}
+
+
+
+#updateBtn{
+
+    background:#0066cc;
+    color:white;
+
+}
+
+
+
+
+button[type="reset"]{
+
+    background:#cc0000;
+    color:white;
+
+}
+
+
+
+
+button:hover{
+
+    opacity:0.85;
+
+}
+
+
+
+
+hr{
+
+    margin:30px 0;
+
+}
+
+
+
+
+
+#searchPig{
+
+    padding:12px;
+    width:300px;
+    max-width:100%;
+    border-radius:8px;
+    border:1px solid #aaa;
+
+}
+
+
+
+
+
+table{
+
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+
+}
+
+
+
+
+
+th{
+
+    background:green;
+    color:white;
+    padding:12px;
+
+}
+
+
+
+
+td{
+
+    padding:10px;
+    border:1px solid #ddd;
+    text-align:center;
+
+}
+
+
+
+
+tr:nth-child(even){
+
+    background:#f8f8f8;
+
+}
+
+
+
+
+
+.action-btn{
+
+    padding:7px 12px;
+    color:white;
+    border-radius:5px;
+
+}
+
+
+
+
+
+.edit-btn{
+
+    background:#0066cc;
+
+}
+
+
+
+
+.delete-btn{
+
+    background:red;
+
+}
+
+
+
+
+
+@media(max-width:700px){
+
+
+.container{
+
+    padding:15px;
+
+}
+
+
+
+form{
+
+    grid-template-columns:1fr;
+
+}
+
+
+
+.buttons{
+
+    flex-direction:column;
+
+}
+
+
+
+button{
+
+    width:100%;
+
+}
+
+
+
+table{
+
+    display:block;
+    overflow-x:auto;
+
+}
+
+
+
+}

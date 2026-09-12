@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MUNKA PIGGERY - Feeding Records</title>
+
+<link rel="stylesheet" href="feeding.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>MUNKA PIGGERY FARM LIMITED</h1>
+
+<h2>Feeding Records</h2>
+
+
+
+<form id="feedingForm">
+
+
+<div class="form-group">
+
+<label>Record ID</label>
+
+<input type="text" id="recordID" readonly>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Feeding Date</label>
+
+<input type="date" id="feedingDate" required>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Pen Number</label>
+
+<input type="text" id="penNumber" placeholder="Enter Pen Number" required>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Pig Category</label>
+
+<select id="pigCategory">
+
+<option value="">Select Category</option>
+
+<option>Boar</option>
+
+<option>Dry Sow</option>
+
+<option>Pregnant Sow</option>
+
+<option>Lactating Sow</option>
+
+<option>Weaner</option>
+
+<option>Grower</option>
+
+<option>Finisher</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Breed</label>
+
+<select id="breed">
+
+<option value="">Select Breed</option>
+
+<option>Large White</option>
+
+<option>Landrace</option>
+
+<option>Large White × Landrace Cross</option>
+
+<option>Duroc</option>
+
+<option>Pietrain</option>
+
+<option>Hampshire</option>
+
+<option>Other</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Feed Type</label>
+
+<select id="feedType">
+
+<option value="">Select Feed</option>
+
+<option>Creep Feed</option>
+
+<option>Weaner Feed</option>
+
+<option>Grower Feed</option>
+
+<option>Finisher Feed</option>
+
+<option>Sow Meal</option>
+
+<option>Lactating Sow Feed</option>
+
+<option>Boar Meal</option>
+
+<option>Other</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Feed Brand</label>
+
+<input type="text" id="feedBrand">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Quantity (Kg)</label>
+
+<input type="number" id="quantity" step="0.01">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Feed Price per Kg (ZMW)</label>
+
+<input type="number" id="feedPrice" step="0.01">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Total Feed Cost (ZMW)</label>
+
+<input type="number" id="feedCost" readonly>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Morning Feeding Time</label>
+
+<input type="time" id="morningFeeding" value="08:00">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Evening Feeding Time</label>
+
+<input type="time" id="eveningFeeding" value="16:00">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Water Available</label>
+
+<select id="waterAvailable">
+
+<option value="">Select</option>
+
+<option>Yes</option>
+
+<option>No</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Feed Supplier</label>
+
+<input type="text" id="feedSupplier">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Person Responsible</label>
+
+<select id="responsiblePerson">
+
+<option value="">Select Person</option>
+
+<option>Farm Manager</option>
+
+<option>Veterinary Officer</option>
+
+<option>Farm Worker</option>
+
+<option>Owner</option>
+
+<option>Other</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Remarks</label>
+
+<textarea id="remarks"></textarea>
+
+</div>
+
+
+
+
+<div class="buttons">
+
+<button type="button" onclick="saveFeedingRecord()">
+Save Record
+</button>
+
+
+<button type="button" onclick="updateFeedingRecord()">
+Update Record
+</button>
+
+
+<button type="button" onclick="searchFeedingRecord()">
+Search
+</button>
+
+
+<button type="button" onclick="generateReport()">
+Report
+</button>
+
+
+<button type="reset">
+Clear
+</button>
+
+
+<button type="button" onclick="window.location.href='dashboard.html'">
+Back
+</button>
+
+
+</div>
+
+
+</form>
+
+
+
+
+
+<h2>Feeding History</h2>
+
+
+<table>
+
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+
+<th>Pen</th>
+
+<th>Category</th>
+
+<th>Breed</th>
+
+<th>Feed</th>
+
+<th>Quantity</th>
+
+<th>Cost</th>
+
+<th>Responsible</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="feedingTable">
+
+</tbody>
+
+
+</table>
+
+
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="activity.js"></script>
+
+<script src="security.js"></script>
+
+<script src="feeding.js"></script>
+
+
+</body>
+
+</html>

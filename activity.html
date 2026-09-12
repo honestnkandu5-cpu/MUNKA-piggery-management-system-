@@ -1,0 +1,194 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>
+    MUNKA PIGGERY FARM - Activity Logs
+</title>
+
+<link rel="stylesheet" href="activity.css">
+
+</head><body><!-- ==========================================
+     MAIN CONTAINER
+========================================== --><div class="activity-container"><!-- ======================================
+     HEADER
+====================================== -->
+
+<header class="activity-header">
+
+    <div>
+
+        <h1>
+            🐷 MUNKA PIGGERY FARM
+        </h1>
+
+        <h2>
+            Activity Logs
+        </h2>
+
+        <p>
+            System User Activity & Audit Trail
+        </p>
+
+    </div>
+
+
+    <div class="header-actions">
+
+        <button
+            type="button"
+            onclick="window.location.href='dashboard.html'">
+
+            🏠 Dashboard
+
+        </button>
+
+
+        <button
+            type="button"
+            onclick="loadActivityLogs()">
+
+            🔄 Refresh
+
+        </button>
+
+
+        <button
+            type="button"
+            onclick="window.print()">
+
+            🖨 Print
+
+        </button>
+
+    </div>
+
+</header>
+
+
+
+<!-- ======================================
+     ACTIVITY INFORMATION
+====================================== -->
+
+<section class="activity-summary">
+
+    <div class="summary-box">
+
+        <h3>
+            📋 Activity Log
+        </h3>
+
+        <p>
+            This page records important activities
+            performed by users in the MUNKA PIGGERY
+            FARM management system.
+        </p>
+
+    </div>
+
+</section>
+
+
+
+<!-- ======================================
+     ACTIVITY TABLE
+====================================== -->
+
+<section class="activity-section">
+
+    <h2>
+        📜 System Activity History
+    </h2>
+
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Date & Time
+                    </th>
+
+                    <th>
+                        Username
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                    <th>
+                        Module
+                    </th>
+
+                    <th>
+                        Description
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="activityTable">
+
+                <tr>
+
+                    <td colspan="5">
+                        Loading activity logs...
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+
+
+<!-- ======================================
+     FOOTER ACTIONS
+====================================== -->
+
+<section class="activity-actions">
+
+    <button
+        type="button"
+        onclick="loadActivityLogs()">
+
+        🔄 Refresh Activity Logs
+
+    </button>
+
+
+    <button
+        type="button"
+        onclick="window.location.href='dashboard.html'">
+
+        ← Back to Dashboard
+
+    </button>
+
+</section>
+
+</div><!-- ==========================================
+     SUPABASE
+========================================== --><script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script><!-- ==========================================
+     SUPABASE CONNECTION
+========================================== --><script src="supabase.js"></script><!-- ==========================================
+     PAGE SECURITY
+========================================== --><script src="security.js"></script><!-- ==========================================
+     ACTIVITY LOG JAVASCRIPT
+========================================== --><script src="activity.js"></script></body></html>

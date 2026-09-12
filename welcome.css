@@ -1,0 +1,100 @@
+body{
+
+    margin:0;
+    padding:0;
+
+    font-family:Arial, sans-serif;
+
+    background:#f2f2f2;
+
+    height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+}
+
+
+.welcome-box{
+
+    background:white;
+
+    width:400px;
+
+    padding:40px;
+
+    text-align:center;
+
+    border-radius:15px;
+
+    box-shadow:0 0 15px rgba(0,0,0,0.3);
+
+}
+
+
+h1{
+
+    color:#555;
+
+    font-size:30px;
+
+}
+
+
+h2{
+
+    color:green;
+
+    font-size:40px;
+
+    margin:10px 0;
+
+}
+
+
+h3{
+
+    color:#333;
+
+    font-size:25px;
+
+}
+
+
+p{
+
+    color:#666;
+
+    font-size:18px;
+
+    margin:25px 0;
+
+}
+
+
+button{
+
+    background:green;
+
+    color:white;
+
+    border:none;
+
+    padding:15px 40px;
+
+    font-size:18px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+}
+
+
+button:hover{
+
+    background:darkgreen;
+
+}
+

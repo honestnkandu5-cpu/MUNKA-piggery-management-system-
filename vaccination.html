@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MUNKA PIGGERY - Vaccination & Treatment</title>
+
+<link rel="stylesheet" href="vaccination.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>MUNKA PIGGERY FARM LIMITED</h1>
+
+<h2>Vaccination & Treatment Records</h2>
+
+
+
+<form id="treatmentForm">
+
+
+
+<div class="form-group">
+
+<label>Pig ID</label>
+
+<input type="text" id="pigID" required>
+
+</div>
+
+
+
+<div class="form-group">
+
+<label>Breed</label>
+
+<select id="breed">
+
+<option value="">
+Select Breed
+</option>
+
+<option>
+Large White
+</option>
+
+<option>
+Landrace
+</option>
+
+<option>
+Duroc
+</option>
+
+<option>
+Hampshire
+</option>
+
+<option>
+Pietrain
+</option>
+
+<option>
+Yorkshire
+</option>
+
+<option>
+Camborough
+</option>
+
+<option>
+Crossbreed
+</option>
+
+<option>
+Local Breed
+</option>
+
+<option>
+Other
+</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Sex</label>
+
+<select id="sex">
+
+<option value="">Select</option>
+
+<option>Male</option>
+
+<option>Female</option>
+
+</select>
+
+</div>
+
+
+
+
+
+<div class="form-group">
+
+<label>Age</label>
+
+<input type="number" id="age">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Age Unit</label>
+
+<select id="ageUnit">
+
+<option>Days</option>
+
+<option>Weeks</option>
+
+<option>Months</option>
+
+<option>Years</option>
+
+</select>
+
+</div>
+
+
+
+
+
+<div class="form-group">
+
+<label>Treatment Date</label>
+
+<input type="date" id="treatmentDate" required>
+
+</div>
+
+
+
+
+
+<div class="form-group">
+
+<label>Symptom / Disease</label>
+
+
+<select id="symptom">
+
+
+<option value="">
+Select Condition
+</option>
+
+
+<option value="diarrhoea">
+Diarrhoea
+</option>
+
+
+<option value="coughing">
+Coughing / Breathing Problem
+</option>
+
+
+<option value="fever">
+Fever
+</option>
+
+
+<option value="mange">
+Mange / Skin Problem
+</option>
+
+
+<option value="worms">
+Worm Infestation
+</option>
+
+
+<option value="lameness">
+Lameness
+</option>
+
+
+<option value="loss_appetite">
+Loss of Appetite
+</option>
+
+
+<option value="african_swine_fever">
+African Swine Fever
+</option>
+
+
+<option value="foot_mouth">
+Foot and Mouth Disease
+</option>
+
+
+<option value="other">
+Other
+</option>
+
+
+</select>
+
+
+</div>
+
+
+
+
+
+<div class="form-group" id="otherDiseaseGroup" style="display:none;">
+
+
+<label>Specify Disease</label>
+
+
+<input type="text" id="otherDisease">
+
+
+</div>
+
+
+
+
+
+
+
+<div class="form-group">
+
+<label>Possible Cause</label>
+
+<textarea id="possibleCause" readonly></textarea>
+
+</div>
+
+
+
+
+
+<div class="form-group">
+
+<label>Prevention</label>
+
+<textarea id="prevention" readonly></textarea>
+
+</div>
+
+
+
+
+
+<div class="form-group">
+
+<label>Recommended Medicine</label>
+
+<textarea id="medicine"></textarea>
+
+</div>
+
+
+
+
+
+<div class="form-group">
+
+<label>Administration Type</label>
+
+
+<select id="route">
+
+<option value="">
+Select Route
+</option>
+
+
+<option>Injection</option>
+
+<option>Oral</option>
+
+<option>Topical</option>
+
+<option>Spray</option>
+
+<option>Other</option>
+
+
+</select>
+
+</div>
+
+
+
+
+
+
+
+<div class="form-group">
+
+<label>Dosage</label>
+
+<input type="text" id="dosage">
+
+</div>
+
+
+
+
+
+
+
+<div class="form-group">
+
+<label>Treatment Interval</label>
+
+
+<select id="interval">
+
+
+<option value="1">
+1 Day
+</option>
+
+
+<option value="3">
+3 Days
+</option>
+
+
+<option value="5">
+5 Days
+</option>
+
+
+<option value="7">
+7 Days
+</option>
+
+
+<option value="14">
+14 Days
+</option>
+
+
+<option value="30">
+30 Days
+</option>
+
+
+</select>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="form-group">
+
+
+<label>Next Administration Date</label>
+
+
+<input type="date" id="nextDate" readonly>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="form-group">
+
+<label>Administered By</label>
+
+<select id="administeredBy">
+
+<option value="">
+Select Person
+</option>
+
+<option>
+Farm Manager
+</option>
+
+<option>
+Veterinary Officer
+</option>
+
+<option>
+Farm Worker
+</option>
+
+<option>
+Animal Health Technician
+</option>
+
+<option>
+Owner
+</option>
+
+<option>
+Other
+</option>
+
+</select>
+
+</div>
+
+
+
+
+
+
+
+
+<div class="form-group">
+
+
+<label>Remarks</label>
+
+
+<textarea id="remarks"></textarea>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="buttons">
+
+
+<button type="button" id="saveBtn">
+
+Save Record
+
+</button>
+
+
+
+<button type="button" id="updateBtn">
+
+Update Record
+
+</button>
+
+
+
+<button type="reset">
+
+Clear
+
+</button>
+
+
+</div>
+
+
+
+</form>
+
+
+
+
+
+
+<hr>
+
+
+
+
+
+<h3>Search Treatment History</h3>
+
+
+
+<input type="text" id="searchPig" placeholder="Enter Pig ID">
+
+
+<button onclick="searchPig()">
+
+Search
+
+</button>
+
+
+
+<button onclick="loadRecords()">
+
+Refresh
+
+</button>
+
+
+
+
+
+ <table>
+<thead>
+
+<tr>
+
+<th>Pig ID</th>
+
+<th>Breed</th>
+
+<th>Symptom</th>
+
+<th>Medicine</th>
+
+<th>Route</th>
+
+<th>Dosage</th>
+
+<th>Treated Date</th>
+
+<th>Next Date</th>
+
+<th>Administered By</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody id="treatmentTable">
+
+
+</tbody>
+
+
+</table>
+
+
+
+
+
+</div>
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="activity.js"></script>
+<script src="security.js"></script>
+<script src="vaccination.js"></script>
+
+</body>
+</html>

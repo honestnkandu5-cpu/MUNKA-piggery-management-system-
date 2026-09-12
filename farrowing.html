@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>MUNKA PIGGERY - Farrowing Records</title>
+
+<link rel="stylesheet" href="farrowing.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>MUNKA PIGGERY</h1>
+
+<h2>Farrowing Records</h2>
+
+
+
+<form id="farrowingForm">
+
+
+<label>Sow ID</label>
+
+<input type="text" id="sowID" required>
+
+
+
+<label>Breed</label>
+
+<select id="breed" required>
+
+<option value="">Select Breed</option>
+
+<option>Large White</option>
+
+<option>Landrace</option>
+
+<option>Large White × Landrace Cross</option>
+
+<option>Duroc</option>
+
+<option>Pietrain</option>
+
+<option>Hampshire</option>
+
+<option>Other</option>
+
+</select>
+
+
+
+<label>Farrow Date</label>
+
+<input type="date" id="farrowDate" required>
+
+
+
+
+<h3>Automatic Dates</h3>
+
+
+<label>Teeth Clipping Date</label>
+
+<input type="date" id="teethDate" readonly>
+
+
+
+<label>Tail Docking Date</label>
+
+<input type="date" id="tailDate" readonly>
+
+
+
+<label>Iron Injection Date</label>
+
+<input type="date" id="ironDate" readonly>
+
+
+
+<label>Weaning Date</label>
+
+<input type="date" id="weaningDate" readonly>
+
+
+
+
+<h3>Birth Records</h3>
+
+
+
+<label>Born Alive</label>
+
+<input type="number" id="bornAlive" min="0">
+
+
+
+<label>Stillborn</label>
+
+<input type="number" id="stillborn" min="0">
+
+
+
+<label>Mummified Piglets</label>
+
+<input type="number" id="mummified" min="0">
+
+
+
+<label>Total Born</label>
+
+<input type="number" id="totalBorn" readonly>
+
+
+
+
+<label>Male Piglets</label>
+
+<input type="number" id="malePiglets" min="0">
+
+
+
+<label>Female Piglets</label>
+
+<input type="number" id="femalePiglets" min="0">
+<label>Total Weaned</label>
+
+<input type="number" id="totalWeaned" min="0">
+
+
+<label>Average Birth Weight (Kg)</label>
+
+<input type="number" id="birthWeight" min="0">
+
+
+
+
+
+<h3>Mortality Records</h3>
+
+
+<label>Number of Piglets Lost</label>
+
+<input type="number" id="mortality" min="0">
+
+
+
+<label>Reason for Mortality</label>
+
+<textarea id="mortalityReason"></textarea>
+
+
+
+
+
+<label>Sow Condition After Farrowing</label>
+
+
+<select id="sowCondition">
+
+<option>Good</option>
+
+<option>Weak</option>
+
+<option>Under Treatment</option>
+
+</select>
+
+
+
+
+
+<label>Notes</label>
+
+<textarea id="notes"></textarea>
+
+
+
+
+<br><br>
+
+
+<button type="submit">
+
+Save Record
+
+</button>
+
+
+
+<button type="button" onclick="generateReport()">
+
+Generate Report
+
+</button>
+
+
+
+<button type="button" onclick="printReport()">
+
+Print
+
+</button>
+
+
+
+</form>
+
+
+
+
+<hr>
+
+
+
+<h2>Search Farrowing Records</h2>
+
+
+<input type="text" id="searchFarrowing" placeholder="Search Sow ID">
+
+
+<button onclick="searchRecord()">
+
+Search
+
+</button>
+
+
+
+
+<h2>Registered Farrowing Records</h2>
+
+
+
+<table border="1">
+
+
+<thead>
+
+<tr>
+
+<th>Sow ID</th>
+
+<th>Breed</th>
+
+<th>Farrow Date</th>
+
+<th>Total Born</th>
+
+<th>Weaning Date</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody id="farrowingTable">
+
+
+</tbody>
+
+
+
+</table>
+
+
+
+</div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="activity.js"></script>
+
+<script src="security.js"></script>
+
+<script src="farrowing.js"></script>
+
+
+</body>
+
+</html>

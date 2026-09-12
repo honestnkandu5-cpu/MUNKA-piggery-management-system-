@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MUNKA PIGGERY - User Management</title>
+
+<link rel="stylesheet" href="users.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>MUNKA PIGGERY</h1>
+
+<h2>User Management</h2>
+
+
+
+<form id="userForm">
+
+
+<div class="form-group">
+
+<label>User ID</label>
+
+<input type="text" id="userID" readonly>
+
+</div>
+
+
+
+<div class="form-group">
+
+<label>Full Name</label>
+
+<input type="text" id="fullName" placeholder="Enter Full Name" required>
+
+</div>
+
+
+
+<div class="form-group">
+
+<label>Username</label>
+
+<input type="text" id="username" placeholder="Create Username" required>
+
+</div>
+
+
+
+<div class="form-group">
+
+<label>Password</label>
+
+<input type="password" id="password" placeholder="Create Password" required>
+
+</div>
+
+
+
+<div class="form-group">
+
+<label>Role</label>
+
+<select id="role" required>
+
+<option value="">Select Role</option>
+
+<option>Admin</option>
+
+<option>Manager</option>
+
+<option>Vet</option>
+
+<option>Worker</option>
+
+</select>
+
+</div>
+
+
+
+<div class="form-group">
+
+<label>Status</label>
+
+<select id="status">
+
+<option>Active</option>
+
+<option>Inactive</option>
+
+</select>
+
+</div>
+
+
+
+<div class="buttons">
+
+
+<button type="button" onclick="saveUser()">
+Save User
+</button>
+
+
+<button type="button" onclick="updateUser()">
+Update User
+</button>
+
+
+<button type="button" onclick="clearForm()">
+Clear
+</button>
+
+
+<button type="button" onclick="window.location.href='dashboard.html'">
+Back to Dashboard
+</button>
+
+
+</div>
+
+
+</form>
+
+
+
+<h2>Registered Users</h2>
+
+
+<table border="1">
+
+
+<thead>
+
+<tr>
+
+<th>User ID</th>
+
+<th>Full Name</th>
+
+<th>Username</th>
+
+<th>Role</th>
+
+<th>Status</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="userTable">
+
+
+</tbody>
+
+
+</table>
+
+
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script src="supabase.js"></script>
+
+<script src="activity.js"></script>
+
+<script src="security.js"></script>
+
+<script src="users.js"></script>
+
+</body>
+</html>
+

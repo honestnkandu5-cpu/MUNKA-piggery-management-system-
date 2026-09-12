@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MUNKA PIGGERY - Expenses Records</title>
+
+<link rel="stylesheet" href="expenses.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>MUNKA PIGGERY FARM</h1>
+
+<h2>Expenses Records</h2>
+
+
+
+<form id="expensesForm">
+
+
+<div class="form-group">
+
+<label>Expense ID</label>
+
+<input type="text" id="expenseID" readonly>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Expense Date</label>
+
+<input type="date" id="expenseDate" required>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Expense Category</label>
+
+<select id="category" required>
+
+<option value="">Select Category</option>
+
+<option>Feed</option>
+
+<option>Medicine</option>
+
+<option>Vaccination</option>
+
+<option>Labour</option>
+
+<option>Transport</option>
+
+<option>Repairs & Maintenance</option>
+
+<option>Utilities</option>
+
+<option>Equipment</option>
+
+<option>Other</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Description</label>
+
+<textarea id="description"
+placeholder="Enter description"></textarea>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Quantity</label>
+
+<input type="number" id="quantity" min="0" step="0.01">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Unit</label>
+
+<select id="unit">
+
+<option value="">Select Unit</option>
+
+<option>kg</option>
+
+<option>bags</option>
+
+<option>litres</option>
+
+<option>bottles</option>
+
+<option>pieces</option>
+
+<option>hours</option>
+
+<option>service</option>
+
+<option>Other</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Unit Cost (ZMW)</label>
+
+<input type="number"
+id="unitCost"
+step="0.01"
+oninput="calculateExpenseTotal()">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Total Amount (ZMW)</label>
+
+<input type="number"
+id="totalAmount"
+readonly>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Payment Method</label>
+
+<select id="paymentMethod">
+
+<option value="">Select Payment Method</option>
+
+<option>Cash</option>
+
+<option>Mobile Money</option>
+
+<option>Bank Transfer</option>
+
+<option>Other</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Supplier / Payee Name</label>
+
+<input type="text" id="supplierName">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Supplier / Payee Contact</label>
+
+<input type="text" id="supplierContact">
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Responsible Person</label>
+
+<select id="responsiblePerson">
+
+<option value="">Select Person</option>
+
+<option>Farm Manager</option>
+
+<option>Owner</option>
+
+<option>Accountant</option>
+
+<option>Farm Worker</option>
+
+<option>Other</option>
+
+</select>
+
+</div>
+
+
+
+
+<div class="form-group">
+
+<label>Remarks</label>
+
+<textarea id="remarks"></textarea>
+
+</div>
+
+
+
+
+<div class="buttons">
+
+
+<button type="submit">
+
+Save Expense
+
+</button>
+
+<button type="button" onclick="updateExpenseRecord()">Update Expense</button>
+
+<button type="button"
+onclick="searchExpenseRecord()">
+
+Search
+
+</button>
+
+
+
+<button type="button"
+onclick="generateExpenseReport()">
+
+Generate Report
+
+</button>
+
+
+
+<button type="reset">
+
+Clear
+
+</button>
+
+
+
+<button type="button"
+onclick="window.location.href='dashboard.html'">
+
+Back
+
+</button>
+
+
+</div>
+
+
+</form>
+
+
+
+
+<h2>Expenses History</h2>
+
+
+<table>
+
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+
+<th>Category</th>
+
+<th>Description</th>
+
+<th>Quantity</th>
+
+<th>Total Amount</th>
+
+<th>Supplier</th>
+
+<th>Payment</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody id="expensesTable">
+
+</tbody>
+
+
+
+</table>
+
+
+
+
+</div>
+
+
+
+
+<script src="activity.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="security.js"></script>
+
+<script src="expenses.js"></script>
+
+
+
+</body>
+
+</html>

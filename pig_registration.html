@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>MUNKA PIGGERY - Pig Registration</title>
+
+<link rel="stylesheet" href="pig.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>MUNKA PIGGERY</h1>
+
+<h2>Pig Registration</h2>
+
+
+
+<!-- =====================================================
+     PIG REGISTRATION FORM
+===================================================== -->
+
+<form id="pigForm">
+
+
+<label>Pig ID</label>
+
+<input
+    type="text"
+    id="pigID"
+    placeholder="Enter Pig ID"
+    required>
+
+
+
+<label>Breed</label>
+
+<select id="breed" required>
+
+<option value="">Select Breed</option>
+
+<option>Large White</option>
+<option>Landrace</option>
+<option>Duroc</option>
+<option>Pietrain</option>
+<option>Hampshire</option>
+<option>Berkshire</option>
+<option>Yorkshire</option>
+<option>Tamworth</option>
+<option>Chester White</option>
+<option>Poland China</option>
+<option>Meishan</option>
+<option>Cross Breed</option>
+<option>Other</option>
+
+</select>
+
+
+
+<label>Sex</label>
+
+<select id="sex" required>
+
+<option value="">Select Sex</option>
+
+<option>Male</option>
+<option>Female</option>
+
+</select>
+
+
+
+<label>Farrow Date</label>
+
+<input
+    type="date"
+    id="farrowDate"
+    required>
+
+
+
+<label>
+Source (Farm name/Seller name)
+</label>
+
+<input
+    type="text"
+    id="source"
+    placeholder="Enter Farm name or Seller name"
+    required>
+
+
+
+<label>Weight (Kg)</label>
+
+<input
+    type="number"
+    id="weight"
+    placeholder="Enter Weight"
+    min="1"
+    required>
+
+
+
+<label>Health Status</label>
+
+<select id="healthStatus" required>
+
+<option value="">
+    Select Health Status
+</option>
+
+<option>Healthy</option>
+<option>Sick</option>
+<option>Under Treatment</option>
+<option>Recovered</option>
+<option>Dead</option>
+
+</select>
+
+
+
+<!-- =====================================================
+     FORM ACTION BUTTONS
+===================================================== -->
+
+<div class="buttons">
+
+
+<button
+    type="submit"
+    data-permission="add"
+    data-module="Pig Registration">
+
+    💾 Save Pig Record
+
+</button>
+
+
+<button
+    type="button"
+    onclick="clearForm()">
+
+    🧹 Clear
+
+</button>
+
+
+<button
+    type="button"
+    onclick="window.location.href='dashboard.html'">
+
+    ↩️ Back
+
+</button>
+
+
+</div>
+
+
+</form>
+
+
+
+<hr>
+
+
+
+<!-- =====================================================
+     SEARCH
+===================================================== -->
+
+<h2>Search Pig Records</h2>
+
+
+<input
+    type="text"
+    id="searchPig"
+    placeholder="Search Pig ID or Breed">
+
+
+<button
+    type="button"
+    onclick="searchPig()"
+    data-permission="view"
+    data-module="Pig Registration">
+
+    🔍 Search
+
+</button>
+
+
+
+<!-- =====================================================
+     REGISTERED PIGS
+===================================================== -->
+
+<h2>Registered Pigs</h2>
+
+
+
+<table border="1">
+
+
+<thead>
+
+<tr>
+
+<th>Pig ID</th>
+
+<th>Breed</th>
+
+<th>Sex</th>
+
+<th>Farrow Date</th>
+
+<th>Source</th>
+
+<th>Weight</th>
+
+<th>Health Status</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody id="pigTable">
+
+</tbody>
+
+
+</table>
+
+
+
+<br>
+
+
+
+<!-- =====================================================
+     REPORT BUTTONS
+===================================================== -->
+
+<button
+    type="button"
+    onclick="generateReport()"
+    data-permission="report"
+    data-module="Pig Registration">
+
+    📊 Generate Report
+
+</button>
+
+
+<button
+    type="button"
+    onclick="printReport()"
+    data-permission="report"
+    data-module="Pig Registration">
+
+    🖨️ Print
+
+</button>
+
+
+
+</div>
+
+
+
+<!-- =====================================================
+     SUPABASE
+===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+
+<!-- =====================================================
+     ACTIVITY LOG
+===================================================== -->
+
+<script src="activity.js"></script>
+
+
+<!-- =====================================================
+     SECURITY
+===================================================== -->
+
+<script src="security.js"></script>
+
+
+<!-- =====================================================
+     PIG JAVASCRIPT
+===================================================== -->
+
+<script src="pig.js"></script>
+
+
+</body>
+
+</html>
