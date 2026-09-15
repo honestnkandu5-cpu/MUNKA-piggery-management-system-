@@ -1,8 +1,11 @@
 // ==========================================================
 // MUNKA PIGGERY FARM
 // SALES RECORDS MODULE
-// PERMISSION-CONTROLLED VERSION
+// FARM-SECURED + PERMISSION-CONTROLLED VERSION
 // ==========================================================
+//
+// FARM SECURITY:
+// Uses loggedInUser.farm_id
 //
 // PERMISSIONS COME FROM:
 // security.js
@@ -17,6 +20,41 @@
 
 
 let editID = null;
+
+
+// ==========================================================
+// GET LOGGED-IN USER
+// ==========================================================
+
+function getLoggedUser(){
+
+    return JSON.parse(
+        localStorage.getItem("loggedInUser")
+    );
+
+}
+
+
+// ==========================================================
+// GET CURRENT FARM ID
+// ==========================================================
+
+function getFarmID(){
+
+    const loggedUser = getLoggedUser();
+
+    if(!loggedUser){
+
+        console.error(
+            "No logged-in user found."
+        );
+
+        return null;
+    }
+
+    return loggedUser.farm_id;
+
+}
 
 
 // ==========================================================
@@ -45,7 +83,6 @@ function calculateTotalAmount(){
         total.toFixed(2);
 
 }
-
 
 
 // ==========================================================
@@ -87,7 +124,6 @@ document.addEventListener(
 );
 
 
-
 // ==========================================================
 // SAVE SALES RECORD
 // ==========================================================
@@ -121,9 +157,11 @@ document
 
 
         const loggedUser =
-            JSON.parse(
-                localStorage.getItem("loggedInUser")
-            );
+            getLoggedUser();
+
+
+        const farmID =
+            getFarmID();
 
 
         if(!loggedUser){
@@ -137,69 +175,106 @@ document
         }
 
 
+        if(!farmID){
+
+            alert(
+                "Farm information not found. Please login again."
+            );
+
+            return;
+
+        }
+
+
         const sale = {
+
+            // --------------------------------------
+            // FARM SECURITY
+            // --------------------------------------
+
+            farm_id:
+                farmID,
+
 
             record_id:
                 "SALE-" + Date.now(),
 
+
             sale_date:
                 document.getElementById("saleDate").value,
+
 
             pig_id:
                 document.getElementById("pigID").value.trim(),
 
+
             breed:
                 document.getElementById("breed").value,
 
+
             category:
                 document.getElementById("category").value,
+
 
             quantity:
                 Number(
                     document.getElementById("quantity").value
                 ) || 0,
 
+
             weight:
                 Number(
                     document.getElementById("weight").value
                 ) || 0,
+
 
             price_per_kg:
                 Number(
                     document.getElementById("pricePerKg").value
                 ) || 0,
 
+
             total_amount:
                 Number(
                     document.getElementById("totalAmount").value
                 ) || 0,
 
+
             buyer_name:
                 document.getElementById("buyerName").value,
+
 
             buyer_contact:
                 document.getElementById("buyerContact").value,
 
+
             payment_method:
                 document.getElementById("paymentMethod").value,
+
 
             payment_status:
                 document.getElementById("paymentStatus").value,
 
+
             responsible_person:
                 document.getElementById("responsiblePerson").value,
+
 
             remarks:
                 document.getElementById("remarks").value,
 
+
             created_by:
                 loggedUser.full_name,
+
 
             created_at:
                 new Date().toISOString(),
 
+
             updated_by:
                 null,
+
 
             updated_at:
                 null
@@ -283,12 +358,26 @@ document
 );
 
 
-
 // ==========================================================
 // LOAD SALES RECORDS
 // ==========================================================
 
 async function loadSalesRecords(){
+
+    const farmID =
+        getFarmID();
+
+
+    if(!farmID){
+
+        console.error(
+            "Farm ID not found."
+        );
+
+        return;
+
+    }
+
 
     try{
 
@@ -301,6 +390,15 @@ async function loadSalesRecords(){
                 .from("sales_records")
 
                 .select("*")
+
+                // ----------------------------------
+                // FARM SECURITY
+                // ----------------------------------
+
+                .eq(
+                    "farm_id",
+                    farmID
+                )
 
                 .order(
                     "id",
@@ -338,7 +436,6 @@ async function loadSalesRecords(){
     }
 
 }
-
 
 
 // ==========================================================
@@ -483,7 +580,6 @@ function displaySalesRecords(records){
 }
 
 
-
 // ==========================================================
 // EDIT SALES RECORD
 // ==========================================================
@@ -505,6 +601,21 @@ async function editSale(id){
     }
 
 
+    const farmID =
+        getFarmID();
+
+
+    if(!farmID){
+
+        alert(
+            "Farm information not found. Please login again."
+        );
+
+        return;
+
+    }
+
+
     try{
 
         const {
@@ -517,9 +628,18 @@ async function editSale(id){
 
                 .select("*")
 
+                // ----------------------------------
+                // FARM SECURITY
+                // ----------------------------------
+
                 .eq(
                     "id",
                     id
+                )
+
+                .eq(
+                    "farm_id",
+                    farmID
                 )
 
                 .single();
@@ -613,7 +733,6 @@ async function editSale(id){
 }
 
 
-
 // ==========================================================
 // UPDATE SALES RECORD
 // ==========================================================
@@ -647,9 +766,11 @@ async function updateSaleRecord(){
 
 
     const loggedUser =
-        JSON.parse(
-            localStorage.getItem("loggedInUser")
-        );
+        getLoggedUser();
+
+
+    const farmID =
+        getFarmID();
 
 
     if(!loggedUser){
@@ -663,60 +784,86 @@ async function updateSaleRecord(){
     }
 
 
+    if(!farmID){
+
+        alert(
+            "Farm information not found. Please login again."
+        );
+
+        return;
+
+    }
+
+
     const updatedSale = {
 
         sale_date:
             document.getElementById("saleDate").value,
 
+
         pig_id:
             document.getElementById("pigID").value,
+
 
         breed:
             document.getElementById("breed").value,
 
+
         category:
             document.getElementById("category").value,
+
 
         quantity:
             Number(
                 document.getElementById("quantity").value
             ) || 0,
 
+
         weight:
             Number(
                 document.getElementById("weight").value
             ) || 0,
+
 
         price_per_kg:
             Number(
                 document.getElementById("pricePerKg").value
             ) || 0,
 
+
         total_amount:
             Number(
                 document.getElementById("totalAmount").value
             ) || 0,
 
+
         buyer_name:
             document.getElementById("buyerName").value,
+
 
         buyer_contact:
             document.getElementById("buyerContact").value,
 
+
         payment_method:
             document.getElementById("paymentMethod").value,
+
 
         payment_status:
             document.getElementById("paymentStatus").value,
 
+
         responsible_person:
             document.getElementById("responsiblePerson").value,
+
 
         remarks:
             document.getElementById("remarks").value,
 
+
         updated_by:
             loggedUser.full_name,
+
 
         updated_at:
             new Date().toISOString()
@@ -735,9 +882,18 @@ async function updateSaleRecord(){
 
                 .update(updatedSale)
 
+                // ----------------------------------
+                // FARM SECURITY
+                // ----------------------------------
+
                 .eq(
                     "id",
                     editID
+                )
+
+                .eq(
+                    "farm_id",
+                    farmID
                 );
 
 
@@ -804,7 +960,6 @@ async function updateSaleRecord(){
 }
 
 
-
 // ==========================================================
 // DELETE SALES RECORD
 // ==========================================================
@@ -839,6 +994,21 @@ async function deleteSale(id){
     }
 
 
+    const farmID =
+        getFarmID();
+
+
+    if(!farmID){
+
+        alert(
+            "Farm information not found. Please login again."
+        );
+
+        return;
+
+    }
+
+
     try{
 
         const {
@@ -850,9 +1020,18 @@ async function deleteSale(id){
 
                 .delete()
 
+                // ----------------------------------
+                // FARM SECURITY
+                // ----------------------------------
+
                 .eq(
                     "id",
                     id
+                )
+
+                .eq(
+                    "farm_id",
+                    farmID
                 );
 
 
@@ -864,9 +1043,7 @@ async function deleteSale(id){
 
 
         const loggedUser =
-            JSON.parse(
-                localStorage.getItem("loggedInUser")
-            );
+            getLoggedUser();
 
 
         if(loggedUser){
@@ -916,7 +1093,6 @@ async function deleteSale(id){
 }
 
 
-
 // ==========================================================
 // SEARCH SALES RECORD
 // ==========================================================
@@ -931,6 +1107,21 @@ async function searchSaleRecord(){
         alert(
             "Access Denied.\n\n" +
             "You do not have permission to view sales records."
+        );
+
+        return;
+
+    }
+
+
+    const farmID =
+        getFarmID();
+
+
+    if(!farmID){
+
+        alert(
+            "Farm information not found. Please login again."
         );
 
         return;
@@ -963,6 +1154,15 @@ async function searchSaleRecord(){
 
                 .select("*")
 
+                // ----------------------------------
+                // FARM SECURITY
+                // ----------------------------------
+
+                .eq(
+                    "farm_id",
+                    farmID
+                )
+
                 .eq(
                     "pig_id",
                     pigID
@@ -987,7 +1187,9 @@ async function searchSaleRecord(){
         }
 
 
-        displaySalesRecords(data);
+        displaySalesRecords(
+            data
+        );
 
 
         // ------------------------------------------
@@ -1025,7 +1227,6 @@ async function searchSaleRecord(){
 }
 
 
-
 // ==========================================================
 // GENERATE SALES REPORT
 // ==========================================================
@@ -1047,6 +1248,21 @@ async function generateSalesReport(){
     }
 
 
+    const farmID =
+        getFarmID();
+
+
+    if(!farmID){
+
+        alert(
+            "Farm information not found. Please login again."
+        );
+
+        return;
+
+    }
+
+
     try{
 
         const {
@@ -1057,7 +1273,16 @@ async function generateSalesReport(){
 
                 .from("sales_records")
 
-                .select("*");
+                .select("*")
+
+                // ----------------------------------
+                // FARM SECURITY
+                // ----------------------------------
+
+                .eq(
+                    "farm_id",
+                    farmID
+                );
 
 
         if(error){
@@ -1189,7 +1414,6 @@ ${report}
 }
 
 
-
 // ==========================================================
 // CLEAR FORM
 // ==========================================================
@@ -1238,7 +1462,6 @@ function clearSaleForm(){
     editID = null;
 
 }
-
 
 
 // ==========================================================
