@@ -1,27 +1,59 @@
 // ==========================================
 // MUNKA PIGGERY FARM LIMITED
 // VACCINATION & TREATMENT MODULE
-// FRESH VERSION
-// PART 1
+// FARM-SECURED VERSION
 // ==========================================
 
 let editID = null;
+
+
 // ==========================================
 // GET LOGGED-IN USER
 // ==========================================
 
 function getLoggedUser(){
 
-    let user = JSON.parse(localStorage.getItem("loggedInUser"));
+    let user = JSON.parse(
+        localStorage.getItem("loggedInUser")
+    );
 
     if(!user){
-        alert("No logged-in user found. Please login again.");
+
+        alert(
+            "No logged-in user found. Please login again."
+        );
+
         return null;
     }
 
     return user;
-
 }
+
+
+// ==========================================
+// GET FARM ID
+// ==========================================
+
+function getFarmID(){
+
+    const loggedUser = getLoggedUser();
+
+    if(!loggedUser){
+        return null;
+    }
+
+    if(!loggedUser.farm_id){
+
+        alert(
+            "Your account is not linked to a farm. Please contact the administrator."
+        );
+
+        return null;
+    }
+
+    return loggedUser.farm_id;
+}
+
 
 // ==========================================
 // DISEASE INFORMATION DATABASE
@@ -102,41 +134,58 @@ const healthDatabase = {
 };
 
 
-
 // ==========================================
 // AUTOMATIC DISEASE INFORMATION
 // ==========================================
 
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
 
-    const symptom = document.getElementById("symptom");
-
-
-    if(symptom){
-
-        symptom.addEventListener("change", function(){
-
-            const info = healthDatabase[this.value];
+        const symptom =
+            document.getElementById("symptom");
 
 
-            if(info){
+        if(symptom){
 
-                document.getElementById("possibleCause").value = info.cause;
+            symptom.addEventListener(
+                "change",
+                function(){
 
-                document.getElementById("prevention").value = info.prevention;
+                    const info =
+                        healthDatabase[this.value];
 
-                document.getElementById("medicine").value = info.medicine;
 
-                document.getElementById("route").value = info.route;
+                    if(info){
 
-            }
+                        document.getElementById(
+                            "possibleCause"
+                        ).value = info.cause;
 
-        });
+
+                        document.getElementById(
+                            "prevention"
+                        ).value = info.prevention;
+
+
+                        document.getElementById(
+                            "medicine"
+                        ).value = info.medicine;
+
+
+                        document.getElementById(
+                            "route"
+                        ).value = info.route;
+
+                    }
+
+                }
+            );
+
+        }
 
     }
-
-});
-
+);
 
 
 // ==========================================
@@ -145,20 +194,24 @@ document.addEventListener("DOMContentLoaded", function(){
 
 function calculateNextDate(){
 
-
     let treatmentDate =
-    document.getElementById("treatmentDate").value;
+        document.getElementById(
+            "treatmentDate"
+        ).value;
 
 
     let interval =
-    Number(document.getElementById("interval").value);
-
+        Number(
+            document.getElementById(
+                "interval"
+            ).value
+        );
 
 
     if(treatmentDate && interval){
 
-
-        let date = new Date(treatmentDate);
+        let date =
+            new Date(treatmentDate);
 
 
         date.setDate(
@@ -166,139 +219,214 @@ function calculateNextDate(){
         );
 
 
-        document.getElementById("nextDate").value =
-        date.toISOString().split("T")[0];
+        document.getElementById(
+            "nextDate"
+        ).value =
+            date.toISOString()
+            .split("T")[0];
 
     }
 
 }
 
 
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
 
-document.addEventListener("DOMContentLoaded",function(){
+        const treatmentDate =
+            document.getElementById(
+                "treatmentDate"
+            );
 
-
-    document
-    .getElementById("treatmentDate")
-    .addEventListener(
-        "change",
-        calculateNextDate
-    );
-
-
-    document
-    .getElementById("interval")
-    .addEventListener(
-        "change",
-        calculateNextDate
-    );
+        const interval =
+            document.getElementById(
+                "interval"
+            );
 
 
-});
-// ==========================================
-// SAVE TREATMENT RECORD
-// PART 2
-// ==========================================
+        if(treatmentDate){
+
+            treatmentDate.addEventListener(
+                "change",
+                calculateNextDate
+            );
+
+        }
 
 
-document.addEventListener("DOMContentLoaded", function(){
+        if(interval){
 
+            interval.addEventListener(
+                "change",
+                calculateNextDate
+            );
 
-    const saveButton = document.getElementById("saveBtn");
-
-
-    if(saveButton){
-
-        saveButton.addEventListener("click", saveRecord);
+        }
 
     }
+);
 
 
-});
+// ==========================================
+// SAVE TREATMENT RECORD
+// ==========================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        const saveButton =
+            document.getElementById(
+                "saveBtn"
+            );
 
 
+        if(saveButton){
+
+            saveButton.addEventListener(
+                "click",
+                saveRecord
+            );
+
+        }
+
+    }
+);
 
 
+// ==========================================
+// SAVE RECORD
+// ==========================================
 
 async function saveRecord(){
 
-let loggedUser = getLoggedUser();
+    let loggedUser =
+        getLoggedUser();
 
-if(!loggedUser) return;
+
+    if(!loggedUser) return;
+
+
+    const farmID =
+        getFarmID();
+
+
+    if(!farmID) return;
+
+
     let data = {
 
+        farm_id: farmID,
 
-        pig_id: document.getElementById("pigID").value.trim(),
+        pig_id:
+            document.getElementById(
+                "pigID"
+            ).value.trim(),
 
-        breed: document.getElementById("breed").value,
+        breed:
+            document.getElementById(
+                "breed"
+            ).value,
 
-        sex: document.getElementById("sex").value,
+        sex:
+            document.getElementById(
+                "sex"
+            ).value,
 
-        age: Number(document.getElementById("age").value) || 0,
+        age:
+            Number(
+                document.getElementById(
+                    "age"
+                ).value
+            ) || 0,
 
-        age_unit: document.getElementById("ageUnit").value,
-
+        age_unit:
+            document.getElementById(
+                "ageUnit"
+            ).value,
 
         treatment_date:
-        document.getElementById("treatmentDate").value,
-
+            document.getElementById(
+                "treatmentDate"
+            ).value,
 
         symptom:
-        document.getElementById("symptom").value,
-
+            document.getElementById(
+                "symptom"
+            ).value,
 
         possible_cause:
-        document.getElementById("possibleCause").value,
-
+            document.getElementById(
+                "possibleCause"
+            ).value,
 
         prevention:
-        document.getElementById("prevention").value,
-
+            document.getElementById(
+                "prevention"
+            ).value,
 
         medicine:
-        document.getElementById("medicine").value,
-
+            document.getElementById(
+                "medicine"
+            ).value,
 
         route:
-        document.getElementById("route").value,
-
+            document.getElementById(
+                "route"
+            ).value,
 
         dosage:
-        document.getElementById("dosage").value,
-
+            document.getElementById(
+                "dosage"
+            ).value,
 
         interval_days:
-        Number(document.getElementById("interval").value) || 0,
-
+            Number(
+                document.getElementById(
+                    "interval"
+                ).value
+            ) || 0,
 
         next_administration_date:
-        document.getElementById("nextDate").value,
-
+            document.getElementById(
+                "nextDate"
+            ).value,
 
         administered_by:
-        document.getElementById("administeredBy").value,
-
+            document.getElementById(
+                "administeredBy"
+            ).value,
 
         remarks:
-        document.getElementById("remarks").value
-,
+            document.getElementById(
+                "remarks"
+            ).value,
 
-created_by: loggedUser.full_name,
+        created_by:
+            loggedUser.full_name,
 
-created_at: new Date().toISOString(),
+        created_at:
+            new Date().toISOString(),
 
-updated_by: null,
+        updated_by:
+            null,
 
-updated_at: null
+        updated_at:
+            null
+
     };
 
 
-
+    // =====================================
     // CHECK REQUIRED DATES
+    // =====================================
 
     if(!data.treatment_date){
 
-        alert("Please select treatment date");
+        alert(
+            "Please select treatment date"
+        );
 
         return;
 
@@ -307,598 +435,748 @@ updated_at: null
 
     if(!data.next_administration_date){
 
-        alert("Next administration date not calculated");
+        alert(
+            "Next administration date not calculated"
+        );
 
         return;
 
     }
 
 
-
-    console.log("DATA TO SAVE:", data);
-
-
-
-    const {error} = await supabaseClient
-
-    .from("treatment_records")
-
-    .insert([data]);
+    console.log(
+        "DATA TO SAVE:",
+        data
+    );
 
 
+    try{
 
-    if(error){
+        const { error } =
+            await supabaseClient
 
+            .from("treatment_records")
 
-        console.log(error);
-
-        alert(error.message);
-
-        return;
-
-
-    }
+            .insert([data]);
 
 
+        if(error) throw error;
 
 
-
-    // ===============================
-    // ACTIVITY LOG
-    // ===============================
-
-
-     loggedUser = getLoggedUser();
-
-
-
-    if(loggedUser){
-
+        // =====================================
+        // ACTIVITY LOG - ADD
+        // =====================================
 
         await saveActivity(
 
-            loggedUser.full_name + " (" + loggedUser.role + ")",
+            loggedUser.full_name +
+            " (" +
+            loggedUser.role +
+            ")",
 
             "Added",
 
             "Vaccination & Treatment",
 
-            "Saved treatment record for Pig ID: " + data.pig_id
+            "Saved treatment record for Pig ID: " +
+            data.pig_id
 
         );
 
 
-    }
+        alert(
+            "Treatment record saved successfully"
+        );
 
 
+        document
+            .getElementById("treatmentForm")
+            .reset();
 
 
-
-    alert("Treatment record saved successfully");
-
+        loadRecords();
 
 
-    document
-    .getElementById("treatmentForm")
-    .reset();
+    }catch(error){
 
-
-
-    loadRecords();
-
-
-}
-// ==========================================
-// LOAD TREATMENT RECORDS
-// PART 3
-// ==========================================
-
-
-async function loadRecords(){
-
-
-    const {data,error} = await supabaseClient
-
-    .from("treatment_records")
-
-    .select("*")
-
-    .order("id",{ascending:false});
-
-
-
-    if(error){
-
-        console.log(error);
+        console.error(error);
 
         alert(error.message);
 
-        return;
-
     }
-
-
-
-    let table = document.getElementById("treatmentTable");
-
-
-    if(!table) return;
-
-
-
-    table.innerHTML = "";
-
-
-
-    data.forEach(function(row){
-
-
-
-        table.innerHTML += `
-
-        <tr>
-
-            <td>${row.pig_id || ""}</td>
-
-            <td>${row.breed || ""}</td>
-
-            <td>${row.symptom || ""}</td>
-
-            <td>${row.medicine || ""}</td>
-
-            <td>${row.route || ""}</td>
-
-            <td>${row.dosage || ""}</td>
-
-            <td>${row.treatment_date || ""}</td>
-
-            <td>${row.next_administration_date || ""}</td>
-
-            <td>${row.administered_by || ""}</td>
-
-
-            <td>
-
-                <button onclick="editTreatment(${row.id})">
-                    Edit
-                </button>
-
-
-                <button onclick="deleteTreatment(${row.id})">
-                    Delete
-                </button>
-
-
-            </td>
-
-        </tr>
-
-        `;
-
-
-    });
-
 
 }
 
 
+// ==========================================
+// LOAD TREATMENT RECORDS
+// ==========================================
+
+async function loadRecords(){
+
+    const farmID =
+        getFarmID();
+
+
+    if(!farmID) return;
+
+
+    try{
+
+        const {data,error} =
+            await supabaseClient
+
+            .from("treatment_records")
+
+            .select("*")
+
+            .eq("farm_id", farmID)
+
+            .order(
+                "id",
+                {ascending:false}
+            );
+
+
+        if(error) throw error;
+
+
+        let table =
+            document.getElementById(
+                "treatmentTable"
+            );
+
+
+        if(!table) return;
+
+
+        table.innerHTML = "";
+
+
+        data.forEach(function(row){
+
+            table.innerHTML += `
+
+            <tr>
+
+                <td>${row.pig_id || ""}</td>
+
+                <td>${row.breed || ""}</td>
+
+                <td>${row.symptom || ""}</td>
+
+                <td>${row.medicine || ""}</td>
+
+                <td>${row.route || ""}</td>
+
+                <td>${row.dosage || ""}</td>
+
+                <td>${row.treatment_date || ""}</td>
+
+                <td>${row.next_administration_date || ""}</td>
+
+                <td>${row.administered_by || ""}</td>
+
+                <td>
+
+                    <button onclick="editTreatment(${row.id})">
+                        Edit
+                    </button>
+
+                    <button onclick="deleteTreatment(${row.id})">
+                        Delete
+                    </button>
+
+                </td>
+
+            </tr>
+
+            `;
+
+        });
+
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(error.message);
+
+    }
+
+}
 
 
 // ==========================================
 // SEARCH TREATMENT RECORDS
 // ==========================================
 
-
 async function searchPig(){
 
-
-    let pigID = 
-    document.getElementById("searchPig").value.trim();
-
+    let pigID =
+        document.getElementById(
+            "searchPig"
+        ).value.trim();
 
 
     if(!pigID){
-
 
         alert("Enter Pig ID");
 
         return;
 
-
     }
 
 
+    const farmID =
+        getFarmID();
 
 
-    const {data,error} = await supabaseClient
-
-    .from("treatment_records")
-
-    .select("*")
-
-    .eq("pig_id", pigID);
+    if(!farmID) return;
 
 
+    try{
 
-    if(error){
+        const {data,error} =
+            await supabaseClient
 
-        console.log(error);
+            .from("treatment_records")
+
+            .select("*")
+
+            .eq("farm_id", farmID)
+
+            .eq("pig_id", pigID);
+
+
+        if(error) throw error;
+
+
+        let table =
+            document.getElementById(
+                "treatmentTable"
+            );
+
+
+        table.innerHTML = "";
+
+
+        data.forEach(function(row){
+
+            table.innerHTML += `
+
+            <tr>
+
+                <td>${row.pig_id || ""}</td>
+
+                <td>${row.breed || ""}</td>
+
+                <td>${row.symptom || ""}</td>
+
+                <td>${row.medicine || ""}</td>
+
+                <td>${row.route || ""}</td>
+
+                <td>${row.dosage || ""}</td>
+
+                <td>${row.treatment_date || ""}</td>
+
+                <td>${row.next_administration_date || ""}</td>
+
+                <td>${row.administered_by || ""}</td>
+
+                <td>
+
+                    <button onclick="editTreatment(${row.id})">
+                        Edit
+                    </button>
+
+                    <button onclick="deleteTreatment(${row.id})">
+                        Delete
+                    </button>
+
+                </td>
+
+            </tr>
+
+            `;
+
+        });
+
+
+    }catch(error){
+
+        console.error(error);
 
         alert(error.message);
 
-        return;
-
     }
 
-
-
-    let table =
-    document.getElementById("treatmentTable");
-
-
-
-    table.innerHTML = "";
-
-
-
-    data.forEach(function(row){
-
-
-
-        table.innerHTML += `
-
-        <tr>
-
-            <td>${row.pig_id}</td>
-
-            <td>${row.breed}</td>
-
-            <td>${row.symptom}</td>
-
-            <td>${row.medicine}</td>
-
-            <td>${row.route}</td>
-
-            <td>${row.dosage}</td>
-
-            <td>${row.treatment_date}</td>
-
-            <td>${row.next_administration_date}</td>
-
-            <td>${row.administered_by}</td>
-
-
-            <td>
-
-                <button onclick="editTreatment(${row.id})">
-                Edit
-                </button>
-
-
-                <button onclick="deleteTreatment(${row.id})">
-                Delete
-                </button>
-
-            </td>
-
-
-        </tr>
-
-        `;
-
-
-    });
-
-
 }
-
-
-
 
 
 // ==========================================
 // LOAD RECORDS WHEN PAGE OPENS
 // ==========================================
 
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
 
-document.addEventListener("DOMContentLoaded",function(){
+        loadRecords();
 
-    loadRecords();
+    }
+);
 
-});
+
 // ==========================================
 // EDIT TREATMENT RECORD
-// PART 4
 // ==========================================
-
 
 async function editTreatment(id){
 
-
-    const {data,error} = await supabaseClient
-
-    .from("treatment_records")
-
-    .select("*")
-
-    .eq("id", id)
-
-    .single();
+    const farmID =
+        getFarmID();
 
 
+    if(!farmID) return;
 
-    if(error){
 
-        console.log(error);
+    try{
+
+        const {data,error} =
+            await supabaseClient
+
+            .from("treatment_records")
+
+            .select("*")
+
+            .eq("id", id)
+
+            .eq("farm_id", farmID)
+
+            .single();
+
+
+        if(error) throw error;
+
+
+        editID = id;
+
+
+        document.getElementById(
+            "pigID"
+        ).value =
+            data.pig_id || "";
+
+
+        document.getElementById(
+            "breed"
+        ).value =
+            data.breed || "";
+
+
+        document.getElementById(
+            "sex"
+        ).value =
+            data.sex || "";
+
+
+        document.getElementById(
+            "age"
+        ).value =
+            data.age || 0;
+
+
+        document.getElementById(
+            "ageUnit"
+        ).value =
+            data.age_unit || "";
+
+
+        document.getElementById(
+            "treatmentDate"
+        ).value =
+            data.treatment_date || "";
+
+
+        document.getElementById(
+            "symptom"
+        ).value =
+            data.symptom || "";
+
+
+        document.getElementById(
+            "possibleCause"
+        ).value =
+            data.possible_cause || "";
+
+
+        document.getElementById(
+            "prevention"
+        ).value =
+            data.prevention || "";
+
+
+        document.getElementById(
+            "medicine"
+        ).value =
+            data.medicine || "";
+
+
+        document.getElementById(
+            "route"
+        ).value =
+            data.route || "";
+
+
+        document.getElementById(
+            "dosage"
+        ).value =
+            data.dosage || "";
+
+
+        document.getElementById(
+            "interval"
+        ).value =
+            data.interval_days || 0;
+
+
+        document.getElementById(
+            "nextDate"
+        ).value =
+            data.next_administration_date || "";
+
+
+        document.getElementById(
+            "administeredBy"
+        ).value =
+            data.administered_by || "";
+
+
+        document.getElementById(
+            "remarks"
+        ).value =
+            data.remarks || "";
+
+
+    }catch(error){
+
+        console.error(error);
 
         alert(error.message);
 
-        return;
-
     }
 
-
-
-    editID = id;
-
-
-
-    document.getElementById("pigID").value = data.pig_id;
-
-    document.getElementById("breed").value = data.breed;
-
-    document.getElementById("sex").value = data.sex;
-
-    document.getElementById("age").value = data.age;
-
-    document.getElementById("ageUnit").value = data.age_unit;
-
-    document.getElementById("treatmentDate").value = data.treatment_date;
-
-    document.getElementById("symptom").value = data.symptom;
-
-    document.getElementById("possibleCause").value = data.possible_cause;
-
-    document.getElementById("prevention").value = data.prevention;
-
-    document.getElementById("medicine").value = data.medicine;
-
-    document.getElementById("route").value = data.route;
-
-    document.getElementById("dosage").value = data.dosage;
-
-    document.getElementById("interval").value = data.interval_days;
-
-    document.getElementById("nextDate").value = data.next_administration_date;
-
-    document.getElementById("administeredBy").value = data.administered_by;
-
-    document.getElementById("remarks").value = data.remarks;
-
-
 }
-
-
-
 
 
 // ==========================================
 // UPDATE TREATMENT RECORD
 // ==========================================
 
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
 
-document.addEventListener("DOMContentLoaded",function(){
+        const updateBtn =
+            document.getElementById(
+                "updateBtn"
+            );
 
 
-    const updateBtn =
-    document.getElementById("updateBtn");
+        if(updateBtn){
 
+            updateBtn.addEventListener(
+                "click",
+                updateRecord
+            );
 
-    if(updateBtn){
-
-
-        updateBtn.addEventListener("click", updateRecord);
-
+        }
 
     }
+);
 
 
-});
+// ==========================================
+// UPDATE RECORD
+// ==========================================
+
 async function updateRecord(){
 
     if(editID === null){
 
-        alert("Select a record to update first");
+        alert(
+            "Select a record to update first"
+        );
+
         return;
 
     }
 
 
-    let loggedUser = getLoggedUser();
+    let loggedUser =
+        getLoggedUser();
+
 
     if(!loggedUser) return;
 
 
+    const farmID =
+        getFarmID();
+
+
+    if(!farmID) return;
+
+
     let updatedData = {
 
-        pig_id: document.getElementById("pigID").value,
+        pig_id:
+            document.getElementById(
+                "pigID"
+            ).value,
 
-        breed: document.getElementById("breed").value,
+        breed:
+            document.getElementById(
+                "breed"
+            ).value,
 
-        sex: document.getElementById("sex").value,
+        sex:
+            document.getElementById(
+                "sex"
+            ).value,
 
-        age: Number(document.getElementById("age").value) || 0,
+        age:
+            Number(
+                document.getElementById(
+                    "age"
+                ).value
+            ) || 0,
 
-        age_unit: document.getElementById("ageUnit").value,
+        age_unit:
+            document.getElementById(
+                "ageUnit"
+            ).value,
 
-        treatment_date: document.getElementById("treatmentDate").value,
+        treatment_date:
+            document.getElementById(
+                "treatmentDate"
+            ).value,
 
-        symptom: document.getElementById("symptom").value,
+        symptom:
+            document.getElementById(
+                "symptom"
+            ).value,
 
-        possible_cause: document.getElementById("possibleCause").value,
+        possible_cause:
+            document.getElementById(
+                "possibleCause"
+            ).value,
 
-        prevention: document.getElementById("prevention").value,
+        prevention:
+            document.getElementById(
+                "prevention"
+            ).value,
 
-        medicine: document.getElementById("medicine").value,
+        medicine:
+            document.getElementById(
+                "medicine"
+            ).value,
 
-        route: document.getElementById("route").value,
+        route:
+            document.getElementById(
+                "route"
+            ).value,
 
-        dosage: document.getElementById("dosage").value,
+        dosage:
+            document.getElementById(
+                "dosage"
+            ).value,
 
         interval_days:
-        Number(document.getElementById("interval").value) || 0,
+            Number(
+                document.getElementById(
+                    "interval"
+                ).value
+            ) || 0,
 
         next_administration_date:
-        document.getElementById("nextDate").value,
+            document.getElementById(
+                "nextDate"
+            ).value,
 
         administered_by:
-        document.getElementById("administeredBy").value,
+            document.getElementById(
+                "administeredBy"
+            ).value,
 
         remarks:
-        document.getElementById("remarks").value,
+            document.getElementById(
+                "remarks"
+            ).value,
 
+        updated_by:
+            loggedUser.full_name,
 
-        // THESE TWO ARE THE IMPORTANT ONES
-        updated_by: loggedUser.full_name,
-
-        updated_at: new Date().toISOString()
+        updated_at:
+            new Date().toISOString()
 
     };
 
 
+    try{
 
-    const {data, error} = await supabaseClient
+        const {data,error} =
+            await supabaseClient
 
-    .from("treatment_records")
+            .from("treatment_records")
 
-    .update(updatedData)
+            .update(updatedData)
 
-    .eq("id", editID)
+            .eq("id", editID)
 
-    .select();
+            .eq("farm_id", farmID)
+
+            .select();
 
 
+        if(error) throw error;
 
-    if(error){
 
-        console.log(error);
+        console.log(
+            "UPDATED RESULT:",
+            data
+        );
+
+
+        await saveActivity(
+
+            loggedUser.full_name +
+            " (" +
+            loggedUser.role +
+            ")",
+
+            "Updated",
+
+            "Vaccination & Treatment",
+
+            "Updated treatment record for Pig ID: " +
+            updatedData.pig_id
+
+        );
+
+
+        alert(
+            "Treatment record updated successfully"
+        );
+
+
+        editID = null;
+
+
+        document
+            .getElementById("treatmentForm")
+            .reset();
+
+
+        loadRecords();
+
+
+    }catch(error){
+
+        console.error(error);
 
         alert(error.message);
 
-        return;
-
     }
 
-
-
-    console.log("UPDATED RESULT:", data);
-
-
-
-    await saveActivity(
-
-        loggedUser.full_name + " (" + loggedUser.role + ")",
-
-        "Updated",
-
-        "Vaccination & Treatment",
-
-        "Updated treatment record for Pig ID: " + updatedData.pig_id
-
-    );
-
-
-
-    alert("Treatment record updated successfully");
-
-
-    editID = null;
-
-
-    document
-    .getElementById("treatmentForm")
-    .reset();
-
-
-    loadRecords();
-
 }
-
-
 
 
 // ==========================================
 // DELETE TREATMENT RECORD
 // ==========================================
 
-
 async function deleteTreatment(id){
 
-
-    if(!confirm("Delete this treatment record?")){
+    if(!confirm(
+        "Delete this treatment record?"
+    )){
 
         return;
 
     }
 
 
-
-    const {error} = await supabaseClient
-
-    .from("treatment_records")
-
-    .delete()
-
-    .eq("id", id);
+    let loggedUser =
+        getLoggedUser();
 
 
+    if(!loggedUser) return;
 
-    if(error){
+
+    const farmID =
+        getFarmID();
 
 
-        console.log(error);
+    if(!farmID) return;
+
+
+    try{
+
+        const {error} =
+            await supabaseClient
+
+            .from("treatment_records")
+
+            .delete()
+
+            .eq("id", id)
+
+            .eq("farm_id", farmID);
+
+
+        if(error) throw error;
+
+
+        // =====================================
+        // ACTIVITY LOG - DELETE
+        // =====================================
+
+        await saveActivity(
+
+            loggedUser.full_name +
+            " (" +
+            loggedUser.role +
+            ")",
+
+            "Deleted",
+
+            "Vaccination & Treatment",
+
+            "Deleted treatment record ID: " +
+            id
+
+        );
+
+
+        alert(
+            "Treatment record deleted successfully"
+        );
+
+
+        loadRecords();
+
+
+    }catch(error){
+
+        console.error(error);
 
         alert(error.message);
 
-        return;
-
-
     }
 
-
-// ===============================
-// ACTIVITY LOG - DELETE
-// ===============================
-
-let loggedUser = getLoggedUser();
-
-if(loggedUser){
-
-    await saveActivity(
-
-        loggedUser.full_name + " (" + loggedUser.role + ")",
-
-        "Deleted",
-
-        "Vaccination & Treatment",
-
-        "Deleted treatment record ID: " + id
-
-    );
-
 }
-    alert("Treatment record deleted successfully");
-
-
-    loadRecords();
-
-
-}
-// ==========================================
-// PART 5
-// REPORTS AND PRINTING
-// ==========================================
-
 
 
 // ==========================================
@@ -907,37 +1185,56 @@ if(loggedUser){
 
 async function generateTreatmentReport(){
 
-
-    const {count,error} = await supabaseClient
-
-    .from("treatment_records")
-
-    .select("*",{count:"exact",head:true});
+    const farmID =
+        getFarmID();
 
 
+    if(!farmID) return;
 
-    if(error){
 
-        console.log(error);
+    try{
+
+        const {count,error} =
+            await supabaseClient
+
+            .from("treatment_records")
+
+            .select(
+                "*",
+                {
+                    count:"exact",
+                    head:true
+                }
+            )
+
+            .eq(
+                "farm_id",
+                farmID
+            );
+
+
+        if(error) throw error;
+
+
+        alert(
+
+            "Vaccination & Treatment Report\n\n" +
+
+            "Total Treatment Records: " +
+            count
+
+        );
+
+
+    }catch(error){
+
+        console.error(error);
 
         alert(error.message);
 
-        return;
-
     }
 
-
-
-    alert(
-        "Vaccination & Treatment Report\n\n" +
-        "Total Treatment Records: " + count
-    );
-
-
 }
-
-
-
 
 
 // ==========================================
@@ -946,14 +1243,9 @@ async function generateTreatmentReport(){
 
 function printTreatmentReport(){
 
-
     window.print();
 
-
 }
-
-
-
 
 
 // ==========================================
@@ -962,29 +1254,32 @@ function printTreatmentReport(){
 
 function clearTreatmentForm(){
 
-
     document
-    .getElementById("treatmentForm")
-    .reset();
+        .getElementById(
+            "treatmentForm"
+        )
+        .reset();
 
 
     editID = null;
 
-
 }
-
-
-
 
 
 // ==========================================
 // AUTO REFRESH TABLE
 // ==========================================
 
-document.addEventListener("DOMContentLoaded",function(){
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        loadRecords();
+
+    }
+);
 
 
-    loadRecords();
-
-
-});
+// ==========================================
+// END OF VACCINATION & TREATMENT MODULE
+// ==========================================
