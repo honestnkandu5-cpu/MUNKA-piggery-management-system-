@@ -1,203 +1,184 @@
 // =====================================
 // MUNKA PIGGERY
 // SUPABASE AUTH LOGIN SYSTEM
+// AUTOMATIC ROLE IDENTIFICATION
 // =====================================
-
 
 document
 .getElementById("loginForm")
-.addEventListener("submit", async function(e){
+.addEventListener("submit", async function(e) {
 
-e.preventDefault();
+    e.preventDefault();
 
+    const email =
+        document.getElementById("email").value.trim();
 
-const email =
-document.getElementById("email").value.trim();
+    const password =
+        document.getElementById("password").value.trim();
 
+    const message =
+        document.getElementById("message");
 
-const password =
-document.getElementById("password").value.trim();
+    message.innerHTML = "Checking login...";
 
+    try {
 
-const role =
-document.getElementById("role").value;
+        // =====================================
+        // LOGIN USING SUPABASE AUTH
+        // =====================================
 
+        const { data: authData, error: authError } =
+            await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-const message =
-document.getElementById("message");
 
+        if (authError) {
 
-message.innerHTML = "Checking login...";
+            message.innerHTML =
+                "Invalid email or password";
 
+            return;
+        }
 
 
-try{
+        // =====================================
+        // GET AUTHENTICATED USER ID
+        // =====================================
 
+        const uid =
+            authData.user.id;
 
-// ================================
-// LOGIN USING SUPABASE AUTH
-// ================================
 
+        // =====================================
+        // GET USER PROFILE FROM DATABASE
+        // =====================================
 
-const {data: authData, error: authError} =
-await supabaseClient.auth.signInWithPassword({
+        const {
+            data: userData,
+            error: userError
+        } = await supabaseClient
 
-email: email,
+            .from("users")
 
-password: password
+            .select("*")
 
-});
+            .eq("auth_user_id", uid)
 
+            .single();
 
 
-if(authError){
+        if (userError || !userData) {
 
-message.innerHTML =
-"Invalid email or password";
+            // Sign out if profile does not exist
+            await supabaseClient.auth.signOut();
 
-return;
+            message.innerHTML =
+                "User profile not found";
 
-}
+            return;
+        }
 
 
+        // =====================================
+        // CHECK ACCOUNT STATUS
+        // =====================================
 
-const uid =
-authData.user.id;
+        if (userData.status !== "Active") {
 
+            // Sign out inactive users
+            await supabaseClient.auth.signOut();
 
+            message.innerHTML =
+                "Your account is not active. Please contact the administrator.";
 
-// ================================
-// GET USER PROFILE
-// ================================
+            return;
+        }
 
 
-const {data:userData,error:userError}=
+        // =====================================
+        // AUTOMATIC ROLE IDENTIFICATION
+        // =====================================
 
-await supabaseClient
+        const userRole =
+            userData.role;
 
-.from("users")
 
-.select("*")
+        // =====================================
+        // CHECK THAT A ROLE EXISTS
+        // =====================================
 
-.eq("auth_user_id",uid)
+        if (!userRole) {
 
-.single();
+            await supabaseClient.auth.signOut();
 
+            message.innerHTML =
+                "User role is not assigned. Please contact the administrator.";
 
+            return;
+        }
 
-if(userError || !userData){
 
-message.innerHTML =
-"User profile not found";
+        // =====================================
+        // SAVE LOGIN SESSION
+        // =====================================
 
-return;
+        localStorage.setItem(
+            "loggedInUser",
+            JSON.stringify(userData)
+        );
 
-}
 
+        // =====================================
+        // ACTIVITY LOG
+        // =====================================
 
+        await saveActivity(
 
-// ================================
-// CHECK STATUS
-// ================================
+            userData.full_name +
+            " (" +
+            userRole +
+            ")",
 
+            "Login",
 
-if(userData.status !== "Active"){
+            "Authentication",
 
+            "User logged into the system"
 
-message.innerHTML =
-"Account is not active";
+        );
 
 
-return;
+        // =====================================
+        // WELCOME MESSAGE
+        // =====================================
 
-}
+        alert(
+            "Welcome " +
+            userData.full_name +
+            "\nRole: " +
+            userRole
+        );
 
 
+        // =====================================
+        // GO TO DASHBOARD
+        // =====================================
 
+        window.location.href =
+            "dashboard.html";
 
-// ================================
-// CHECK ROLE
-// ================================
 
+    }
 
-if(userData.role !== role){
+    catch(error) {
 
+        console.log(error);
 
-message.innerHTML =
-"Incorrect role selected";
+        message.innerHTML =
+            "System error. Please try again.";
 
-
-return;
-
-}
-
-
-
-
-// ================================
-// SAVE LOGIN SESSION
-// ================================
-
-
-localStorage.setItem(
-
-"loggedInUser",
-
-JSON.stringify(userData)
-
-);
-
-
-
-
-// ================================
-// ACTIVITY LOG
-// ================================
-
-
-await saveActivity(
-
-userData.full_name +
-" (" +
-userData.role +
-")",
-
-"Login",
-
-"Authentication",
-
-"User logged into the system"
-
-);
-
-
-
-
-
-alert(
-"Welcome " + userData.full_name
-);
-
-
-
-window.location.href =
-"dashboard.html";
-
-
-
-}
-
-catch(error){
-
-console.log(error);
-
-
-message.innerHTML =
-"System error. Try again";
-
-
-}
-
-
+    }
 
 });
