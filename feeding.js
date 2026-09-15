@@ -1,108 +1,104 @@
 // ==========================================
 // MUNKA PIGGERY FARM LIMITED
 // FINAL FEEDING RECORDS MODULE
-// PART 3 - JAVASCRIPT PART 1
+// FARM-SECURED VERSION
 // ==========================================
-
 
 let editID = null;
 
+
+// ==========================================
+// GET LOGGED-IN USER
+// ==========================================
+
+function getLoggedUser(){
+
+    const loggedUser =
+        JSON.parse(localStorage.getItem("loggedInUser"));
+
+    return loggedUser;
+}
+
+
+// ==========================================
+// GET CURRENT FARM ID
+// ==========================================
+
+function getFarmID(){
+
+    const loggedUser = getLoggedUser();
+
+    if(!loggedUser){
+
+        console.error("No logged-in user found.");
+
+        return null;
+    }
+
+    return loggedUser.farm_id;
+}
 
 
 // ==========================================
 // INITIAL LOAD
 // ==========================================
 
-
 window.addEventListener("DOMContentLoaded",()=>{
 
+    generateRecordID();
 
-generateRecordID();
+    let today = new Date()
+        .toISOString()
+        .split("T")[0];
 
+    document.getElementById("feedingDate").value = today;
 
-let today = new Date()
-.toISOString()
-.split("T")[0];
-
-
-document.getElementById("feedingDate").value = today;
-
-
-
-loadFeedingRecords();
-
+    loadFeedingRecords();
 
 });
-
-
 
 
 // ==========================================
 // GENERATE RECORD ID
 // ==========================================
 
-
 function generateRecordID(){
 
+    let id = "FEED-" + Date.now();
 
-let id = "FEED-" + Date.now();
-
-
-document.getElementById("recordID").value = id;
-
+    document.getElementById("recordID").value = id;
 
 }
-
-
-
 
 
 // ==========================================
 // AUTOMATIC FEED COST
 // ==========================================
 
-
 function calculateFeedCost(){
 
+    let quantity =
+        Number(document.getElementById("quantity").value);
 
-let quantity =
-Number(document.getElementById("quantity").value);
+    let price =
+        Number(document.getElementById("feedPrice").value);
 
+    let total = quantity * price;
 
-
-let price =
-Number(document.getElementById("feedPrice").value);
-
-
-
-let total = quantity * price;
-
-
-
-document.getElementById("feedCost").value =
-total.toFixed(2);
-
-
+    document.getElementById("feedCost").value =
+        total.toFixed(2);
 
 }
 
 
+document
+    .getElementById("quantity")
+    .addEventListener("input",calculateFeedCost);
 
 
 document
-.getElementById("quantity")
-.addEventListener("input",calculateFeedCost);
-
-
-
-document
-.getElementById("feedPrice")
-.addEventListener("input",calculateFeedCost);
-
-
-
-
-
+    .getElementById("feedPrice")
+    .addEventListener("input",calculateFeedCost);
 
 
 // ==========================================
@@ -111,8 +107,10 @@ document
 
 async function saveFeedingRecord(){
 
-    const loggedUser =
-        JSON.parse(localStorage.getItem("loggedInUser"));
+    const loggedUser = getLoggedUser();
+
+    const farmID = getFarmID();
+
 
     if(!loggedUser){
 
@@ -122,7 +120,18 @@ async function saveFeedingRecord(){
     }
 
 
+    if(!farmID){
+
+        alert("Farm information not found. Please login again.");
+
+        return;
+    }
+
+
     let data = {
+
+        // FARM SECURITY
+        farm_id: farmID,
 
         record_id:
         document.getElementById("recordID").value,
@@ -239,288 +248,276 @@ async function saveFeedingRecord(){
 
 }
 
+
 // ==========================================
 // PART 4 - LOAD, SEARCH, EDIT, UPDATE, DELETE
 // ==========================================
-
 
 
 // ==========================================
 // LOAD ALL FEEDING RECORDS
 // ==========================================
 
-
 async function loadFeedingRecords(){
 
-
-const {data,error}=await supabaseClient
-
-.from("feeding_records")
-
-.select("*")
-
-.order("id",{ascending:false});
+    const farmID = getFarmID();
 
 
+    if(!farmID){
 
-if(error){
+        console.error("Farm ID not found.");
 
-console.log(error);
+        return;
+    }
 
-return;
+
+    const {data,error}=await supabaseClient
+
+        .from("feeding_records")
+
+        .select("*")
+
+        // FARM SECURITY
+        .eq("farm_id", farmID)
+
+        .order("id",{ascending:false});
+
+
+    if(error){
+
+        console.log(error);
+
+        return;
+    }
+
+
+    displayFeedingRecords(data);
 
 }
-
-
-
-displayFeedingRecords(data);
-
-
-
-}
-
-
-
 
 
 // ==========================================
 // DISPLAY RECORDS
 // ==========================================
 
-
 function displayFeedingRecords(data){
 
+    let table =
+        document.getElementById("feedingTable");
 
 
-let table =
-document.getElementById("feedingTable");
+    table.innerHTML="";
 
 
+    data.forEach(row=>{
 
-table.innerHTML="";
+        table.innerHTML += `
 
+        <tr>
 
+        <td>${row.feeding_date || ""}</td>
 
-data.forEach(row=>{
+        <td>${row.pen_number || ""}</td>
 
+        <td>${row.pig_category || ""}</td>
 
-table.innerHTML += `
+        <td>${row.breed || ""}</td>
 
-<tr>
+        <td>${row.feed_type || ""}</td>
 
-<td>${row.feeding_date || ""}</td>
+        <td>${row.quantity || ""}</td>
 
-<td>${row.pen_number || ""}</td>
+        <td>${row.feed_cost || ""}</td>
 
-<td>${row.pig_category || ""}</td>
-
-<td>${row.breed || ""}</td>
-
-<td>${row.feed_type || ""}</td>
-
-<td>${row.quantity || ""}</td>
-
-<td>${row.feed_cost || ""}</td>
-
-<td>${row.responsible_person || ""}</td>
+        <td>${row.responsible_person || ""}</td>
 
 
-<td>
+        <td>
+
+        <button onclick="editFeedingRecord(${row.id})">
+        Edit
+        </button>
 
 
-<button onclick="editFeedingRecord(${row.id})">
-Edit
-</button>
+        <button onclick="deleteFeedingRecord(${row.id})">
+        Delete
+        </button>
+
+        </td>
 
 
-<button onclick="deleteFeedingRecord(${row.id})">
-Delete
-</button>
+        </tr>
 
+        `;
 
-</td>
-
-
-</tr>
-
-`;
-
-
-});
-
+    });
 
 }
-
-
-
 
 
 // ==========================================
 // SEARCH RECORD
 // ==========================================
 
-
 async function searchFeedingRecord(){
 
+    const farmID = getFarmID();
 
 
-let pen =
-document.getElementById("penNumber").value;
+    if(!farmID){
+
+        alert("Farm information not found. Please login again.");
+
+        return;
+    }
 
 
+    let pen =
+        document.getElementById("penNumber").value;
 
-if(pen===""){
 
-alert("Enter Pen Number");
+    if(pen===""){
 
-return;
+        alert("Enter Pen Number");
+
+        return;
+    }
+
+
+    const {data,error}=await supabaseClient
+
+        .from("feeding_records")
+
+        .select("*")
+
+        // FARM SECURITY
+        .eq("farm_id", farmID)
+
+        .eq("pen_number",pen);
+
+
+    if(error){
+
+        alert(error.message);
+
+        return;
+    }
+
+
+    displayFeedingRecords(data);
 
 }
-
-
-
-
-const {data,error}=await supabaseClient
-
-.from("feeding_records")
-
-.select("*")
-
-.eq("pen_number",pen);
-
-
-
-
-
-if(error){
-
-alert(error.message);
-
-return;
-
-}
-
-
-
-displayFeedingRecords(data);
-
-
-
-}
-
-
-
 
 
 // ==========================================
 // EDIT RECORD
 // ==========================================
 
-
 async function editFeedingRecord(id){
 
+    const farmID = getFarmID();
 
 
-const {data,error}=await supabaseClient
+    if(!farmID){
 
-.from("feeding_records")
+        alert("Farm information not found. Please login again.");
 
-.select("*")
-
-.eq("id",id)
-
-.single();
+        return;
+    }
 
 
+    const {data,error}=await supabaseClient
+
+        .from("feeding_records")
+
+        .select("*")
+
+        // FARM SECURITY
+        .eq("id",id)
+
+        .eq("farm_id",farmID)
+
+        .single();
 
 
-if(error){
+    if(error){
 
-alert(error.message);
+        alert(error.message);
 
-return;
+        return;
+    }
+
+
+    editID=id;
+
+
+    document.getElementById("recordID").value =
+        data.record_id || "";
+
+
+    document.getElementById("feedingDate").value =
+        data.feeding_date || "";
+
+
+    document.getElementById("penNumber").value =
+        data.pen_number || "";
+
+
+    document.getElementById("pigCategory").value =
+        data.pig_category || "";
+
+
+    document.getElementById("breed").value =
+        data.breed || "";
+
+
+    document.getElementById("feedType").value =
+        data.feed_type || "";
+
+
+    document.getElementById("feedBrand").value =
+        data.feed_brand || "";
+
+
+    document.getElementById("quantity").value =
+        data.quantity || "";
+
+
+    document.getElementById("feedPrice").value =
+        data.feed_price || "";
+
+
+    document.getElementById("feedCost").value =
+        data.feed_cost || "";
+
+
+    document.getElementById("morningFeeding").value =
+        data.morning_feeding || "";
+
+
+    document.getElementById("eveningFeeding").value =
+        data.evening_feeding || "";
+
+
+    document.getElementById("waterAvailable").value =
+        data.water_available || "";
+
+
+    document.getElementById("feedSupplier").value =
+        data.feed_supplier || "";
+
+
+    document.getElementById("responsiblePerson").value =
+        data.responsible_person || "";
+
+
+    document.getElementById("remarks").value =
+        data.remarks || "";
+
+
+    window.scrollTo(0,0);
 
 }
-
-
-
-editID=id;
-
-
-
-document.getElementById("recordID").value =
-data.record_id || "";
-
-
-document.getElementById("feedingDate").value =
-data.feeding_date || "";
-
-
-document.getElementById("penNumber").value =
-data.pen_number || "";
-
-
-document.getElementById("pigCategory").value =
-data.pig_category || "";
-
-
-document.getElementById("breed").value =
-data.breed || "";
-
-
-document.getElementById("feedType").value =
-data.feed_type || "";
-
-
-document.getElementById("feedBrand").value =
-data.feed_brand || "";
-
-
-document.getElementById("quantity").value =
-data.quantity || "";
-
-
-document.getElementById("feedPrice").value =
-data.feed_price || "";
-
-
-document.getElementById("feedCost").value =
-data.feed_cost || "";
-
-
-document.getElementById("morningFeeding").value =
-data.morning_feeding || "";
-
-
-document.getElementById("eveningFeeding").value =
-data.evening_feeding || "";
-
-
-document.getElementById("waterAvailable").value =
-data.water_available || "";
-
-
-document.getElementById("feedSupplier").value =
-data.feed_supplier || "";
-
-
-document.getElementById("responsiblePerson").value =
-data.responsible_person || "";
-
-
-document.getElementById("remarks").value =
-data.remarks || "";
-
-
-
-window.scrollTo(0,0);
-
-
-
-}
-
-
-
 
 
 // ==========================================
@@ -537,13 +534,22 @@ async function updateFeedingRecord(){
     }
 
 
-    const loggedUser =
-        JSON.parse(localStorage.getItem("loggedInUser"));
+    const loggedUser = getLoggedUser();
+
+    const farmID = getFarmID();
 
 
     if(!loggedUser){
 
         alert("No logged-in user found. Please login again.");
+
+        return;
+    }
+
+
+    if(!farmID){
+
+        alert("Farm information not found. Please login again.");
 
         return;
     }
@@ -614,7 +620,10 @@ async function updateFeedingRecord(){
 
         .update(updated)
 
-        .eq("id", editID);
+        // FARM SECURITY
+        .eq("id", editID)
+
+        .eq("farm_id", farmID);
 
 
     if(error){
@@ -667,69 +676,76 @@ async function updateFeedingRecord(){
 }
 
 
-
-
-
 // ==========================================
 // DELETE RECORD
 // ==========================================
 
-
 async function deleteFeedingRecord(id){
 
+    if(!confirm("Delete this feeding record?"))
+
+        return;
 
 
-if(!confirm("Delete this feeding record?"))
-
-return;
+    const farmID = getFarmID();
 
 
-
-const {error}=await supabaseClient
-
-.from("feeding_records")
-
-.delete()
-
-.eq("id",id);
+    const loggedUser = getLoggedUser();
 
 
+    if(!farmID){
+
+        alert("Farm information not found. Please login again.");
+
+        return;
+    }
 
 
-if(error){
+    const {error}=await supabaseClient
 
-alert(error.message);
+        .from("feeding_records")
 
-return;
+        .delete()
+
+        // FARM SECURITY
+        .eq("id",id)
+
+        .eq("farm_id",farmID);
+
+
+    if(error){
+
+        alert(error.message);
+
+        return;
+    }
+
+
+    if(loggedUser){
+
+        await saveActivity(
+
+            loggedUser.full_name +
+            " (" +
+            loggedUser.role +
+            ")",
+
+            "Deleted",
+
+            "Feeding Records",
+
+            "Deleted feeding record ID: " + id
+
+        );
+
+    }
+
+
+    loadFeedingRecords();
 
 }
 
 
-
-let loggedUser = JSON.parse(localStorage.getItem("loggedInUser"));
-
-if(loggedUser){
-
-    await saveActivity(
-
-        loggedUser.full_name + " (" + loggedUser.role + ")",
-
-        "Deleted",
-
-        "Feeding Records",
-
-        "Deleted feeding record ID: " + id
-
-    );
-
-}
-
-
-loadFeedingRecords();
-
-
-
-}
 // ==========================================
 // PART 5 - REPORT & STATISTICS
 // ==========================================
@@ -739,125 +755,115 @@ loadFeedingRecords();
 // GENERATE FEEDING REPORT
 // ==========================================
 
-
 async function generateReport(){
 
+    const farmID = getFarmID();
 
 
-const {data,error}=await supabaseClient
+    if(!farmID){
 
-.from("feeding_records")
+        alert("Farm information not found. Please login again.");
 
-.select("*");
+        return;
+    }
 
 
+    const {data,error}=await supabaseClient
 
-if(error){
+        .from("feeding_records")
 
-alert(error.message);
+        .select("*")
 
-return;
+        // FARM SECURITY
+        .eq("farm_id",farmID);
 
-}
 
+    if(error){
 
+        alert(error.message);
 
+        return;
+    }
 
-let totalQuantity = 0;
 
-let totalCost = 0;
+    let totalQuantity = 0;
 
-let feedCount = data.length;
+    let totalCost = 0;
 
+    let feedCount = data.length;
 
-let feedTypes = {};
 
+    let feedTypes = {};
 
 
+    data.forEach(record=>{
 
+        totalQuantity +=
+            Number(record.quantity || 0);
 
-data.forEach(record=>{
 
+        totalCost +=
+            Number(record.feed_cost || 0);
 
-totalQuantity += Number(record.quantity || 0);
 
+        let type = record.feed_type;
 
-totalCost += Number(record.feed_cost || 0);
 
+        if(type){
 
+            if(feedTypes[type]){
 
-let type = record.feed_type;
+                feedTypes[type]++;
 
+            }
+            else{
 
+                feedTypes[type]=1;
 
-if(type){
+            }
 
-if(feedTypes[type]){
+        }
 
-feedTypes[type]++;
+    });
 
-}
 
-else{
+    let mostUsedFeed = "None";
 
-feedTypes[type]=1;
+    let highest = 0;
 
-}
 
-}
+    for(let feed in feedTypes){
 
+        if(feedTypes[feed] > highest){
 
-});
+            highest =
+                feedTypes[feed];
 
+            mostUsedFeed =
+                feed;
 
+        }
 
+    }
 
 
+    alert(
 
-let mostUsedFeed = "None";
+        "MUNKA PIGGERY FEEDING REPORT\n\n"+
 
+        "Total Records: "+
+        feedCount+"\n\n"+
 
-let highest = 0;
+        "Total Feed Used: "+
+        totalQuantity.toFixed(2)+
+        " Kg\n\n"+
 
+        "Total Feed Cost: ZMW "+
+        totalCost.toFixed(2)+"\n\n"+
 
+        "Most Used Feed: "+
+        mostUsedFeed
 
-for(let feed in feedTypes){
-
-
-if(feedTypes[feed] > highest){
-
-
-highest = feedTypes[feed];
-
-
-mostUsedFeed = feed;
-
-
-}
-
-
-}
-
-
-
-
-
-
-alert(
-
-"MUNKA PIGGERY FEEDING REPORT\n\n"+
-
-"Total Records: "+feedCount+"\n\n"+
-
-"Total Feed Used: "+totalQuantity.toFixed(2)+" Kg\n\n"+
-
-"Total Feed Cost: ZMW "+totalCost.toFixed(2)+"\n\n"+
-
-"Most Used Feed: "+mostUsedFeed
-
-
-);
-
-
+    );
 
 }
