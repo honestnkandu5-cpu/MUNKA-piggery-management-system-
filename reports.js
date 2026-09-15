@@ -1,15 +1,11 @@
-// ==========================================================
-// MUNKA PIGGERY FARM LIMITED
-// REPORTS & ANALYTICS MODULE
-// reports.js
-// MATCHED TO CURRENT reports.html
-// ==========================================================
+// ============================================================
+// MUNKA PIGGERY MANAGEMENT SYSTEM
+// REPORTS & ANALYTICS - FARM SECURED VERSION
+// ============================================================
 
-
-// ==========================================================
-// GLOBAL CHART VARIABLES
-// ==========================================================
-
+// ------------------------------------------------------------
+// CHART VARIABLES
+// ------------------------------------------------------------
 let financialChart = null;
 let pigChart = null;
 let gestationChart = null;
@@ -17,2266 +13,1468 @@ let productionChart = null;
 let healthChart = null;
 let feedingChart = null;
 
-
-// ==========================================================
-// GLOBAL REPORT DATA
-// ==========================================================
-
+// ------------------------------------------------------------
+// REPORT DATA
+// ------------------------------------------------------------
 let reportData = {
-
     pigs: [],
     gestation: [],
     farrowing: [],
     weaning: [],
-    treatments: [],
+    treatment: [],
     feeding: [],
     sales: [],
     expenses: []
-
 };
 
-
-// ==========================================================
-// FORMAT MONEY
-// ==========================================================
-
-function formatMoney(amount) {
-
-    return "ZMW " +
-        Number(amount || 0).toLocaleString(
-            "en-ZM",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }
-        );
-
-}
-
-
-// ==========================================================
-// FORMAT NUMBER
-// ==========================================================
-
-function formatNumber(number) {
-
-    return Number(number || 0).toLocaleString("en-ZM");
-
-}
-
-
-// ==========================================================
-// GET SELECTED MONTH
-// ==========================================================
-
-function getSelectedMonth() {
-
-    const input =
-        document.getElementById("reportMonth");
-
-    if (!input || !input.value) {
-
+// ------------------------------------------------------------
+// GET LOGGED-IN USER
+// ------------------------------------------------------------
+function getLoggedUser() {
+    try {
+        return JSON.parse(localStorage.getItem("loggedInUser")) || null;
+    } catch (error) {
+        console.error("Unable to read logged-in user:", error);
         return null;
+    }
+}
 
+// ------------------------------------------------------------
+// GET CURRENT FARM ID
+// ------------------------------------------------------------
+function getFarmID() {
+    const user = getLoggedUser();
+
+    if (!user || !user.farm_id) {
+        console.error("No farm ID found for logged-in user.");
+        return null;
     }
 
-    return input.value;
-
+    return user.farm_id;
 }
 
+// ------------------------------------------------------------
+// CHECK USER
+// ------------------------------------------------------------
+function checkUserAccess() {
+    const user = getLoggedUser();
 
-// ==========================================================
-// CHECK DATE AGAINST SELECTED MONTH
-// ==========================================================
+    if (!user) {
+        alert("Your session has expired. Please login again.");
+        window.location.href = "login.html";
+        return false;
+    }
 
+    if (!user.farm_id) {
+        alert("Your account is not linked to a farm.");
+        return false;
+    }
+
+    return true;
+}
+
+// ------------------------------------------------------------
+// FORMAT MONEY
+// ------------------------------------------------------------
+function formatMoney(value) {
+    return Number(value || 0).toLocaleString("en-ZM", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+// ------------------------------------------------------------
+// FORMAT NUMBER
+// ------------------------------------------------------------
+function formatNumber(value) {
+    return Number(value || 0).toLocaleString("en-ZM");
+}
+
+// ------------------------------------------------------------
+// SELECTED MONTH
+// ------------------------------------------------------------
+function getSelectedMonth() {
+    const monthInput = document.getElementById("reportMonth");
+
+    if (!monthInput || !monthInput.value) {
+        return "";
+    }
+
+    return monthInput.value;
+}
+
+// ------------------------------------------------------------
+// CHECK WHETHER DATE BELONGS TO SELECTED MONTH
+// ------------------------------------------------------------
 function belongsToMonth(dateValue, selectedMonth) {
-
     if (!selectedMonth) {
-
         return true;
-
     }
 
     if (!dateValue) {
-
         return false;
-
     }
 
-    return String(dateValue).substring(0, 7)
-        === selectedMonth;
+    const dateString = String(dateValue).substring(0, 7);
 
+    return dateString === selectedMonth;
 }
 
-
-// ==========================================================
-// FILTER RECORDS BY MONTH
-// ==========================================================
-
-function filterByMonth(records, dateField) {
-
-    const selectedMonth =
-        getSelectedMonth();
-
-    if (!selectedMonth) {
-
-        return records || [];
-
-    }
-
-    return (records || []).filter(function(record) {
-
-        return belongsToMonth(
-            record[dateField],
-            selectedMonth
-        );
-
-    });
-
-}
-
-
-// ==========================================================
+// ------------------------------------------------------------
 // LOAD ALL REPORT DATA
-// ==========================================================
-
+// ------------------------------------------------------------
 async function loadReportData() {
+
+    if (!checkUserAccess()) {
+        return;
+    }
+
+    const farmID = getFarmID();
+
+    if (!farmID) {
+        return;
+    }
 
     try {
 
-        const results = await Promise.all([
+        const [
+            pigsResult,
+            gestationResult,
+            farrowingResult,
+            weaningResult,
+            treatmentResult,
+            feedingResult,
+            salesResult,
+            expensesResult
+        ] = await Promise.all([
 
-            // 0
             supabaseClient
                 .from("pigs")
-                .select("*"),
+                .select("*")
+                .eq("farm_id", farmID),
 
-            // 1
             supabaseClient
                 .from("gestation_records")
-                .select("*"),
+                .select("*")
+                .eq("farm_id", farmID),
 
-            // 2
             supabaseClient
                 .from("farrowing_records")
-                .select("*"),
+                .select("*")
+                .eq("farm_id", farmID),
 
-            // 3
             supabaseClient
                 .from("weaning_records")
-                .select("*"),
+                .select("*")
+                .eq("farm_id", farmID),
 
-            // 4
             supabaseClient
                 .from("treatment_records")
-                .select("*"),
+                .select("*")
+                .eq("farm_id", farmID),
 
-            // 5
             supabaseClient
                 .from("feeding_records")
-                .select("*"),
+                .select("*")
+                .eq("farm_id", farmID),
 
-            // 6
             supabaseClient
                 .from("sales_records")
-                .select("*"),
+                .select("*")
+                .eq("farm_id", farmID),
 
-            // 7
             supabaseClient
                 .from("expenses_records")
                 .select("*")
-
+                .eq("farm_id", farmID)
         ]);
 
+        if (pigsResult.error) throw pigsResult.error;
+        if (gestationResult.error) throw gestationResult.error;
+        if (farrowingResult.error) throw farrowingResult.error;
+        if (weaningResult.error) throw weaningResult.error;
+        if (treatmentResult.error) throw treatmentResult.error;
+        if (feedingResult.error) throw feedingResult.error;
+        if (salesResult.error) throw salesResult.error;
+        if (expensesResult.error) throw expensesResult.error;
 
-        const tableNames = [
+        reportData.pigs = pigsResult.data || [];
+        reportData.gestation = gestationResult.data || [];
+        reportData.farrowing = farrowingResult.data || [];
+        reportData.weaning = weaningResult.data || [];
+        reportData.treatment = treatmentResult.data || [];
+        reportData.feeding = feedingResult.data || [];
+        reportData.sales = salesResult.data || [];
+        reportData.expenses = expensesResult.data || [];
 
-            "pigs",
-            "gestation_records",
-            "farrowing_records",
-            "weaning_records",
-            "treatment_records",
-            "feeding_records",
-            "sales_records",
-            "expenses_records"
+        console.log("Farm-secured report data loaded:", {
+            farmID: farmID,
+            pigs: reportData.pigs.length,
+            gestation: reportData.gestation.length,
+            farrowing: reportData.farrowing.length,
+            weaning: reportData.weaning.length,
+            treatment: reportData.treatment.length,
+            feeding: reportData.feeding.length,
+            sales: reportData.sales.length,
+            expenses: reportData.expenses.length
+        });
 
-        ];
-
-
-        // --------------------------------------------------
-        // CHECK DATABASE ERRORS
-        // --------------------------------------------------
-
-        for (let i = 0; i < results.length; i++) {
-
-            if (results[i].error) {
-
-                console.error(
-                    "Error loading " +
-                    tableNames[i] +
-                    ":",
-                    results[i].error
-                );
-
-                throw results[i].error;
-
-            }
-
-        }
-
-
-        // --------------------------------------------------
-        // IMPORTANT:
-        // CORRECT RESULT INDEXES
-        // --------------------------------------------------
-
-        reportData.pigs =
-            results[0].data || [];
-
-        reportData.gestation =
-            results[1].data || [];
-
-        reportData.farrowing =
-            results[2].data || [];
-
-        reportData.weaning =
-            results[3].data || [];
-
-        reportData.treatments =
-            results[4].data || [];
-
-        reportData.feeding =
-            results[5].data || [];
-
-        reportData.sales =
-            results[6].data || [];
-
-        reportData.expenses =
-            results[7].data || [];
-
-
-        console.log(
-            "REPORT DATA LOADED:",
-            reportData
-        );
-
-
-        return true;
-
+        generateReports();
 
     } catch (error) {
 
-        console.error(
-            "REPORT DATA ERROR:",
-            error
-        );
+        console.error("Error loading report data:", error);
 
         alert(
-            "Unable to load Reports & Analytics data.\n\n" +
-            (error.message || error)
+            "Unable to load reports.\n\n" +
+            (error.message || "Unknown error")
         );
-
-        return false;
-
     }
-
 }
 
+// ------------------------------------------------------------
+// GENERATE ALL REPORTS
+// ------------------------------------------------------------
+function generateReports() {
 
-// ==========================================================
-// LOAD REPORTS
-// ==========================================================
-
-async function loadReports() {
-
-    const success =
-        await loadReportData();
-
-
-    if (!success) {
-
-        return;
-
-    }
-
-
-    calculateDashboardSummary();
-
-    calculateFinancialReport();
-
-    calculatePigReport();
-
-    calculateGestationReport();
-
-    calculateProductionReport();
-
-    calculateHealthReport();
-
-    calculateFeedingReport();
-
+    generateDashboardSummary();
+    generateFinancialReport();
+    generatePigReport();
+    generateGestationReport();
+    generateProductionReport();
+    generateHealthReport();
+    generateFeedingReport();
     generateMonthlyFinancialTable();
 
     createFinancialChart();
-
     createPigChart();
-
     createGestationChart();
-
     createProductionChart();
-
     createHealthChart();
-
     createFeedingChart();
-
 }
 
-
-// ==========================================================
+// ------------------------------------------------------------
 // DASHBOARD SUMMARY
-// ==========================================================
+// ------------------------------------------------------------
+function generateDashboardSummary() {
 
-function calculateDashboardSummary() {
+    const selectedMonth = getSelectedMonth();
 
-    // ------------------------------------------------------
-    // PIGS
-    // ------------------------------------------------------
+    const pigs = reportData.pigs;
 
-    const pigs =
-        filterByMonth(
-            reportData.pigs,
-            "created_at"
+    const sales = reportData.sales.filter(record => {
+        return belongsToMonth(
+            record.sale_date || record.sales_date || record.date || record.created_at,
+            selectedMonth
         );
-
-
-    // ------------------------------------------------------
-    // SALES
-    // ------------------------------------------------------
-
-    const sales =
-        filterByMonth(
-            reportData.sales,
-            "sale_date"
-        );
-
-
-    let totalSales = 0;
-
-
-    sales.forEach(function(record) {
-
-        totalSales +=
-            Number(
-                record.total_amount || 0
-            );
-
     });
 
-
-    // ------------------------------------------------------
-    // EXPENSES
-    // ------------------------------------------------------
-
-    const expenses =
-        filterByMonth(
-            reportData.expenses,
-            "expense_date"
+    const expenses = reportData.expenses.filter(record => {
+        return belongsToMonth(
+            record.expense_date || record.date || record.created_at,
+            selectedMonth
         );
-
-
-    let totalExpenses = 0;
-
-
-    expenses.forEach(function(record) {
-
-        totalExpenses +=
-            Number(
-                record.total_amount || 0
-            );
-
     });
 
-
-    // ------------------------------------------------------
-    // PROFIT
-    // ------------------------------------------------------
-
-    const profit =
-        totalSales - totalExpenses;
-
-
-    // ------------------------------------------------------
-    // WEANING
-    // ------------------------------------------------------
-
-    const weaning =
-        filterByMonth(
-            reportData.weaning,
-            "weaning_date"
+    const weaning = reportData.weaning.filter(record => {
+        return belongsToMonth(
+            record.weaning_date || record.date || record.created_at,
+            selectedMonth
         );
-
-
-    let totalWeaned = 0;
-
-
-    weaning.forEach(function(record) {
-
-        totalWeaned +=
-            Number(
-                record.total_weaned || 0
-            );
-
     });
 
-
-    // ------------------------------------------------------
-    // TREATMENTS
-    // ------------------------------------------------------
-
-    const treatments =
-        filterByMonth(
-            reportData.treatments,
-            "treatment_date"
+    const treatment = reportData.treatment.filter(record => {
+        return belongsToMonth(
+            record.treatment_date || record.date || record.created_at,
+            selectedMonth
         );
+    });
 
-
-    // ------------------------------------------------------
-    // FEEDING
-    // ------------------------------------------------------
-
-    const feeding =
-        filterByMonth(
-            reportData.feeding,
-            "feeding_date"
+    const feeding = reportData.feeding.filter(record => {
+        return belongsToMonth(
+            record.feeding_date || record.date || record.created_at,
+            selectedMonth
         );
+    });
 
-
-    // ------------------------------------------------------
-    // FARROWING
-    // ------------------------------------------------------
-
-    const farrowing =
-        filterByMonth(
-            reportData.farrowing,
-            "farrow_date"
-        );
-
-
-    // ------------------------------------------------------
-    // DISPLAY
-    // ------------------------------------------------------
-
-    setText(
-        "totalPigs",
-        formatNumber(pigs.length)
+    const totalSales = sales.reduce(
+        (sum, record) => sum + Number(record.total_amount || 0),
+        0
     );
 
-
-    setText(
-        "totalSales",
-        formatMoney(totalSales)
+    const totalExpenses = expenses.reduce(
+        (sum, record) => sum + Number(record.total_amount || 0),
+        0
     );
 
-
-    setText(
-        "totalExpenses",
-        formatMoney(totalExpenses)
+    const totalWeaned = weaning.reduce(
+        (sum, record) => sum + Number(record.total_weaned || 0),
+        0
     );
 
-
-    setText(
-        "profitLoss",
-        formatMoney(profit)
+    const totalFeed = feeding.reduce(
+        (sum, record) =>
+            sum + Number(
+                record.quantity ||
+                record.feed_quantity ||
+                0
+            ),
+        0
     );
 
+    const mortality = reportData.farrowing.reduce(
+        (sum, record) => {
+            if (
+                belongsToMonth(
+                    record.farrow_date || record.date || record.created_at,
+                    selectedMonth
+                )
+            ) {
+                return sum + Number(record.mortality || 0);
+            }
 
-    setText(
-        "totalWeaned",
-        formatNumber(totalWeaned)
+            return sum;
+        },
+        0
     );
 
-
-    setText(
-        "totalTreatments",
-        formatNumber(treatments.length)
+    setElementText("totalPigs", pigs.length);
+    setElementText("totalSales", formatMoney(totalSales));
+    setElementText("totalExpenses", formatMoney(totalExpenses));
+    setElementText(
+        "totalProfit",
+        formatMoney(totalSales - totalExpenses)
     );
-
-
-    setText(
-        "totalFeeding",
-        formatNumber(feeding.length)
-    );
-
-
-    setText(
-        "totalFarrowing",
-        formatNumber(farrowing.length)
-    );
-
+    setElementText("totalWeaned", totalWeaned);
+    setElementText("totalTreatments", treatment.length);
+    setElementText("totalFeed", formatNumber(totalFeed));
+    setElementText("totalMortality", mortality);
 }
 
+// ------------------------------------------------------------
+// SET ELEMENT TEXT SAFELY
+// ------------------------------------------------------------
+function setElementText(id, value) {
 
-// ==========================================================
-// SAFE TEXT DISPLAY
-// ==========================================================
-
-function setText(id, value) {
-
-    const element =
-        document.getElementById(id);
+    const element = document.getElementById(id);
 
     if (element) {
-
         element.textContent = value;
-
     }
-
 }
 
-
-// ==========================================================
+// ------------------------------------------------------------
 // FINANCIAL REPORT
-// ==========================================================
+// ------------------------------------------------------------
+function generateFinancialReport() {
 
-function calculateFinancialReport() {
+    const selectedMonth = getSelectedMonth();
 
-    const sales =
-        filterByMonth(
-            reportData.sales,
-            "sale_date"
+    const sales = reportData.sales.filter(record => {
+        return belongsToMonth(
+            record.sale_date ||
+            record.sales_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
         );
-
-
-    const expenses =
-        filterByMonth(
-            reportData.expenses,
-            "expense_date"
-        );
-
-
-    let totalSales = 0;
-
-    let totalExpenses = 0;
-
-
-    sales.forEach(function(record) {
-
-        totalSales +=
-            Number(
-                record.total_amount || 0
-            );
-
     });
 
-
-    expenses.forEach(function(record) {
-
-        totalExpenses +=
-            Number(
-                record.total_amount || 0
-            );
-
+    const expenses = reportData.expenses.filter(record => {
+        return belongsToMonth(
+            record.expense_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
+        );
     });
 
+    const totalSales = sales.reduce(
+        (sum, record) =>
+            sum + Number(record.total_amount || 0),
+        0
+    );
 
-    const profit =
-        totalSales - totalExpenses;
+    const totalExpenses = expenses.reduce(
+        (sum, record) =>
+            sum + Number(record.total_amount || 0),
+        0
+    );
 
+    const profit = totalSales - totalExpenses;
 
-    setText(
+    setElementText(
         "financialSales",
         formatMoney(totalSales)
     );
 
-
-    setText(
+    setElementText(
         "financialExpenses",
         formatMoney(totalExpenses)
     );
 
-
-    setText(
+    setElementText(
         "financialProfit",
         formatMoney(profit)
     );
 
+    const salesElement =
+        document.getElementById("totalSalesAmount");
+
+    const expensesElement =
+        document.getElementById("totalExpenseAmount");
+
+    const profitElement =
+        document.getElementById("netProfit");
+
+    if (salesElement) {
+        salesElement.textContent = formatMoney(totalSales);
+    }
+
+    if (expensesElement) {
+        expensesElement.textContent = formatMoney(totalExpenses);
+    }
+
+    if (profitElement) {
+        profitElement.textContent = formatMoney(profit);
+    }
 }
 
-
-// ==========================================================
+// ------------------------------------------------------------
 // PIG REPORT
-// ==========================================================
+// ------------------------------------------------------------
+function generatePigReport() {
 
-function calculatePigReport() {
+    const selectedMonth = getSelectedMonth();
 
-    const pigs =
-        filterByMonth(
-            reportData.pigs,
-            "created_at"
-        );
+    let pigs = reportData.pigs;
 
+    if (selectedMonth) {
 
-    let male = 0;
+        pigs = pigs.filter(pig => {
 
-    let female = 0;
+            return belongsToMonth(
+                pig.farrowDate ||
+                pig.farrow_date ||
+                pig.registration_date ||
+                pig.created_at,
+                selectedMonth
+            );
 
+        });
+    }
 
-    pigs.forEach(function(pig) {
+    const totalPigs = pigs.length;
 
-        const sex =
-            String(
-                pig.sex || ""
-            ).trim().toLowerCase();
+    const male = pigs.filter(
+        pig => String(pig.sex || "").toLowerCase() === "male"
+    ).length;
 
+    const female = pigs.filter(
+        pig => String(pig.sex || "").toLowerCase() === "female"
+    ).length;
 
-        if (
-            sex === "male" ||
-            sex === "m"
-        ) {
+    const healthy = pigs.filter(
+        pig =>
+            String(pig.health_status || pig.healthStatus || "")
+                .toLowerCase() === "healthy"
+    ).length;
 
-            male++;
+    setElementText("pigTotal", totalPigs);
+    setElementText("pigMale", male);
+    setElementText("pigFemale", female);
+    setElementText("pigHealthy", healthy);
+}
 
-        }
+// ------------------------------------------------------------
+// GESTATION REPORT
+// ------------------------------------------------------------
+function generateGestationReport() {
 
+    const selectedMonth = getSelectedMonth();
 
-        if (
-            sex === "female" ||
-            sex === "f"
-        ) {
+    const records = reportData.gestation.filter(record => {
 
-            female++;
+        const date =
+            record.service_date ||
+            record.mating_date ||
+            record.breeding_date ||
+            record.gestation_date ||
+            record.date ||
+            record.created_at;
 
-        }
-
+        return belongsToMonth(date, selectedMonth);
     });
 
-
-    setText(
-        "pigReportTotal",
-        formatNumber(pigs.length)
+    setElementText(
+        "gestationTotal",
+        records.length
     );
 
-
-    setText(
-        "malePigs",
-        formatNumber(male)
-    );
-
-
-    setText(
-        "femalePigs",
-        formatNumber(female)
-    );
-
-}
-
-
-// ==========================================================
-// GESTATION REPORT
-// ==========================================================
-
-function calculateGestationReport() {
-
-    const allGestation =
-        reportData.gestation || [];
-
-
-    const monthlyGestation =
-        filterByMonth(
-            allGestation,
-            getGestationDateField()
-        );
-
-
-    let active = 0;
-
-    let completed = 0;
-
-
-    allGestation.forEach(function(record) {
+    const completed = records.filter(record => {
 
         const status =
-            String(
-                record.status ||
-                record.gestation_status ||
-                ""
-            ).trim().toLowerCase();
+            String(record.status || "").toLowerCase();
 
+        return (
+            status.includes("complete") ||
+            status.includes("farrow") ||
+            status.includes("delivered")
+        );
+    }).length;
 
-        if (
-            status === "active" ||
-            status === "ongoing" ||
-            status === "in progress" ||
-            status === "pending"
-        ) {
+    const pending = records.length - completed;
 
-            active++;
-
-        }
-        else if (
-            status === "completed" ||
-            status === "complete" ||
-            status === "finished"
-        ) {
-
-            completed++;
-
-        }
-
-    });
-
-
-    setText(
-        "gestationCount",
-        formatNumber(allGestation.length)
+    setElementText(
+        "gestationCompleted",
+        completed
     );
 
-
-    setText(
-        "gestationMonthCount",
-        formatNumber(monthlyGestation.length)
+    setElementText(
+        "gestationPending",
+        pending
     );
-
-
-    setText(
-        "activeGestations",
-        formatNumber(active)
-    );
-
-
-    setText(
-        "completedGestations",
-        formatNumber(completed)
-    );
-
 }
 
-
-// ==========================================================
-// FIND GESTATION DATE FIELD
-// ==========================================================
-
-function getGestationDateField() {
-
-    const records =
-        reportData.gestation || [];
-
-
-    if (!records.length) {
-
-        return "created_at";
-
-    }
-
-
-    const first =
-        records[0];
-
-
-    const possibleFields = [
-
-        "service_date",
-        "mating_date",
-        "breeding_date",
-        "gestation_date",
-        "date",
-        "created_at"
-
-    ];
-
-
-    for (let i = 0; i < possibleFields.length; i++) {
-
-        if (
-            Object.prototype.hasOwnProperty.call(
-                first,
-                possibleFields[i]
-            )
-        ) {
-
-            return possibleFields[i];
-
-        }
-
-    }
-
-
-    return "created_at";
-
-}
-
-
-// ==========================================================
+// ------------------------------------------------------------
 // PRODUCTION REPORT
-// ==========================================================
+// ------------------------------------------------------------
+function generateProductionReport() {
 
-function calculateProductionReport() {
+    const selectedMonth = getSelectedMonth();
 
-    const farrowing =
-        filterByMonth(
-            reportData.farrowing,
-            "farrow_date"
+    const farrowing = reportData.farrowing.filter(record => {
+
+        return belongsToMonth(
+            record.farrow_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
         );
-
-
-    const weaning =
-        filterByMonth(
-            reportData.weaning,
-            "weaning_date"
-        );
-
-
-    let totalBorn = 0;
-
-    let totalWeaned = 0;
-
-    let totalMortality = 0;
-
-
-    // ------------------------------------------------------
-    // FARROWING = BORN
-    // ------------------------------------------------------
-
-    farrowing.forEach(function(record) {
-
-        totalBorn +=
-            Number(
-                record.total_born || 0
-            );
-
     });
 
+    const weaning = reportData.weaning.filter(record => {
 
-    // ------------------------------------------------------
-    // WEANING = WEANED + MORTALITY
-    // ------------------------------------------------------
-
-    weaning.forEach(function(record) {
-
-        totalWeaned +=
-            Number(
-                record.total_weaned || 0
-            );
-
-
-        totalMortality +=
-            Number(
-                record.mortality || 0
-            );
-
+        return belongsToMonth(
+            record.weaning_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
+        );
     });
 
-
-    setText(
-        "productionFarrowing",
-        formatNumber(farrowing.length)
+    const totalBorn = farrowing.reduce(
+        (sum, record) =>
+            sum + Number(record.total_born || 0),
+        0
     );
 
-
-    setText(
-        "totalBorn",
-        formatNumber(totalBorn)
+    const totalWeaned = weaning.reduce(
+        (sum, record) =>
+            sum + Number(record.total_weaned || 0),
+        0
     );
 
+    const totalMortality = farrowing.reduce(
+        (sum, record) =>
+            sum + Number(record.mortality || 0),
+        0
+    );
 
-    setText(
+    setElementText(
+        "productionFarrowings",
+        farrowing.length
+    );
+
+    setElementText(
+        "productionBorn",
+        totalBorn
+    );
+
+    setElementText(
         "productionWeaned",
-        formatNumber(totalWeaned)
+        totalWeaned
     );
 
-
-    setText(
+    setElementText(
         "productionMortality",
-        formatNumber(totalMortality)
+        totalMortality
     );
-
 }
 
-
-// ==========================================================
+// ------------------------------------------------------------
 // HEALTH REPORT
-// ==========================================================
+// ------------------------------------------------------------
+function generateHealthReport() {
 
-function calculateHealthReport() {
+    const selectedMonth = getSelectedMonth();
 
-    const treatments =
-        filterByMonth(
-            reportData.treatments,
-            "treatment_date"
+    const records = reportData.treatment.filter(record => {
+
+        return belongsToMonth(
+            record.treatment_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
         );
-
-
-    const weaning =
-        filterByMonth(
-            reportData.weaning,
-            "weaning_date"
-        );
-
-
-    let mortality = 0;
-
-
-    weaning.forEach(function(record) {
-
-        mortality +=
-            Number(
-                record.mortality || 0
-            );
-
     });
 
+    const diseaseCounts = {};
 
-    setText(
-        "healthTreatments",
-        formatNumber(treatments.length)
+    records.forEach(record => {
+
+        const disease =
+            record.symptom ||
+            record.possible_cause ||
+            "Unknown";
+
+        diseaseCounts[disease] =
+            (diseaseCounts[disease] || 0) + 1;
+    });
+
+    const totalTreatments = records.length;
+
+    setElementText(
+        "healthTotal",
+        totalTreatments
     );
 
-
-    setText(
-        "healthEvents",
-        formatNumber(treatments.length)
+    setElementText(
+        "healthDiseases",
+        Object.keys(diseaseCounts).length
     );
-
-
-    setText(
-        "healthMortality",
-        formatNumber(mortality)
-    );
-
 }
 
-
-// ==========================================================
+// ------------------------------------------------------------
 // FEEDING REPORT
-// ==========================================================
+// ------------------------------------------------------------
+function generateFeedingReport() {
 
-function calculateFeedingReport() {
+    const selectedMonth = getSelectedMonth();
 
-    const feeding =
-        filterByMonth(
-            reportData.feeding,
-            "feeding_date"
+    const records = reportData.feeding.filter(record => {
+
+        return belongsToMonth(
+            record.feeding_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
         );
+    });
 
-
-    let totalQuantity = 0;
-
-    let totalCost = 0;
-
-
-    feeding.forEach(function(record) {
-
-        totalQuantity +=
+    const totalQuantity = records.reduce(
+        (sum, record) =>
+            sum +
             Number(
                 record.quantity ||
                 record.feed_quantity ||
                 0
-            );
-
-
-        totalCost +=
-            Number(
-                record.feed_cost || 0
-            );
-
-    });
-
-
-    setText(
-        "feedingReportRecords",
-        formatNumber(feeding.length)
+            ),
+        0
     );
 
-
-    setText(
-        "feedingReportQuantity",
-        totalQuantity.toFixed(2) + " Kg"
+    const totalCost = records.reduce(
+        (sum, record) =>
+            sum + Number(record.feed_cost || 0),
+        0
     );
 
+    setElementText(
+        "feedingTotal",
+        records.length
+    );
 
-    setText(
-        "feedingReportCost",
+    setElementText(
+        "feedingQuantity",
+        formatNumber(totalQuantity)
+    );
+
+    setElementText(
+        "feedingCost",
         formatMoney(totalCost)
     );
-
 }
 
-
-// ==========================================================
+// ------------------------------------------------------------
 // MONTHLY FINANCIAL TABLE
-// ==========================================================
-
+// ------------------------------------------------------------
 function generateMonthlyFinancialTable() {
 
-    const table =
-        document.getElementById(
-            "monthlyFinancialTable"
-        );
+    const tableBody =
+        document.getElementById("monthlyFinancialTableBody");
 
-
-    if (!table) {
-
+    if (!tableBody) {
         return;
-
     }
 
-
-    table.innerHTML = "";
-
+    tableBody.innerHTML = "";
 
     const monthlyData = {};
 
+    reportData.sales.forEach(record => {
 
-    // ------------------------------------------------------
-    // SALES
-    // ------------------------------------------------------
+        const date =
+            record.sale_date ||
+            record.sales_date ||
+            record.date ||
+            record.created_at;
 
-    reportData.sales.forEach(function(sale) {
-
-        if (!sale.sale_date) {
-
+        if (!date) {
             return;
-
         }
 
-
-        const month =
-            String(
-                sale.sale_date
-            ).substring(0, 7);
-
+        const month = String(date).substring(0, 7);
 
         if (!monthlyData[month]) {
-
             monthlyData[month] = {
-
                 sales: 0,
                 expenses: 0
-
             };
-
         }
-
 
         monthlyData[month].sales +=
-            Number(
-                sale.total_amount || 0
-            );
-
+            Number(record.total_amount || 0);
     });
 
+    reportData.expenses.forEach(record => {
 
-    // ------------------------------------------------------
-    // EXPENSES
-    // ------------------------------------------------------
+        const date =
+            record.expense_date ||
+            record.date ||
+            record.created_at;
 
-    reportData.expenses.forEach(function(expense) {
-
-        if (!expense.expense_date) {
-
+        if (!date) {
             return;
-
         }
 
-
-        const month =
-            String(
-                expense.expense_date
-            ).substring(0, 7);
-
+        const month = String(date).substring(0, 7);
 
         if (!monthlyData[month]) {
-
             monthlyData[month] = {
-
                 sales: 0,
                 expenses: 0
-
             };
-
         }
-
 
         monthlyData[month].expenses +=
-            Number(
-                expense.total_amount || 0
-            );
-
+            Number(record.total_amount || 0);
     });
 
+    const months = Object.keys(monthlyData).sort();
 
-    const months =
-        Object.keys(monthlyData)
-            .sort()
-            .reverse();
+    months.forEach(month => {
 
-
-    if (!months.length) {
-
-        table.innerHTML = `
-
-            <tr>
-
-                <td colspan="4">
-                    No financial records available.
-                </td>
-
-            </tr>
-
-        `;
-
-        return;
-
-    }
-
-
-    months.forEach(function(month) {
-
-        const sales =
-            monthlyData[month].sales;
-
-
-        const expenses =
-            monthlyData[month].expenses;
-
+        const data = monthlyData[month];
 
         const profit =
-            sales - expenses;
+            data.sales - data.expenses;
 
+        const row = document.createElement("tr");
 
-        table.innerHTML += `
-
-            <tr>
-
-                <td>
-                    ${formatMonth(month)}
-                </td>
-
-                <td>
-                    ${formatMoney(sales)}
-                </td>
-
-                <td>
-                    ${formatMoney(expenses)}
-                </td>
-
-                <td>
-                    ${formatMoney(profit)}
-                </td>
-
-            </tr>
-
+        row.innerHTML = `
+            <td>${month}</td>
+            <td>${formatMoney(data.sales)}</td>
+            <td>${formatMoney(data.expenses)}</td>
+            <td>${formatMoney(profit)}</td>
         `;
 
+        tableBody.appendChild(row);
     });
-
 }
 
-
-// ==========================================================
-// FORMAT MONTH
-// ==========================================================
-
-function formatMonth(month) {
-
-    if (!month) {
-
-        return "";
-
-    }
-
-
-    const date =
-        new Date(
-            month + "-01T00:00:00"
-        );
-
-
-    return date.toLocaleDateString(
-        "en-US",
-        {
-            month: "long",
-            year: "numeric"
-        }
-    );
-
-}
-
-
-// ==========================================================
-// FINANCIAL CHART
-// ==========================================================
-
+// ------------------------------------------------------------
+// CREATE FINANCIAL CHART
+// ------------------------------------------------------------
 function createFinancialChart() {
 
     const canvas =
-        document.getElementById(
-            "financialChart"
-        );
+        document.getElementById("financialChart");
 
-
-    if (!canvas) {
-
+    if (!canvas || typeof Chart === "undefined") {
         return;
-
     }
-
 
     if (financialChart) {
-
         financialChart.destroy();
-
-        financialChart = null;
-
     }
 
-
-    const ctx =
-        canvas.getContext("2d");
-
-
-    const monthlyData = {};
-
-
-    reportData.sales.forEach(function(sale) {
-
-        if (!sale.sale_date) {
-
-            return;
-
-        }
-
-
-        const month =
-            String(
-                sale.sale_date
-            ).substring(0, 7);
-
-
-        if (!monthlyData[month]) {
-
-            monthlyData[month] = {
-
-                sales: 0,
-                expenses: 0
-
-            };
-
-        }
-
-
-        monthlyData[month].sales +=
-            Number(
-                sale.total_amount || 0
-            );
-
-    });
-
-
-    reportData.expenses.forEach(function(expense) {
-
-        if (!expense.expense_date) {
-
-            return;
-
-        }
-
-
-        const month =
-            String(
-                expense.expense_date
-            ).substring(0, 7);
-
-
-        if (!monthlyData[month]) {
-
-            monthlyData[month] = {
-
-                sales: 0,
-                expenses: 0
-
-            };
-
-        }
-
-
-        monthlyData[month].expenses +=
-            Number(
-                expense.total_amount || 0
-            );
-
-    });
-
-
-    const months =
-        Object.keys(monthlyData).sort();
-
-
-    financialChart =
-        new Chart(
-            ctx,
-            {
-
-                type: "bar",
-
-                data: {
-
-                    labels:
-                        months.map(formatMonth),
-
-                    datasets: [
-
-                        {
-
-                            label: "Sales",
-
-                            data:
-                                months.map(
-                                    function(month) {
-
-                                        return monthlyData[
-                                            month
-                                        ].sales;
-
-                                    }
-                                )
-
-                        },
-
-                        {
-
-                            label: "Expenses",
-
-                            data:
-                                months.map(
-                                    function(month) {
-
-                                        return monthlyData[
-                                            month
-                                        ].expenses;
-
-                                    }
-                                )
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true
-
-                        }
-
-                    }
-
-                }
-
-            }
-
+    const selectedMonth = getSelectedMonth();
+
+    const sales = reportData.sales
+        .filter(record =>
+            belongsToMonth(
+                record.sale_date ||
+                record.sales_date ||
+                record.date ||
+                record.created_at,
+                selectedMonth
+            )
+        )
+        .reduce(
+            (sum, record) =>
+                sum + Number(record.total_amount || 0),
+            0
         );
 
+    const expenses = reportData.expenses
+        .filter(record =>
+            belongsToMonth(
+                record.expense_date ||
+                record.date ||
+                record.created_at,
+                selectedMonth
+            )
+        )
+        .reduce(
+            (sum, record) =>
+                sum + Number(record.total_amount || 0),
+            0
+        );
+
+    financialChart = new Chart(
+        canvas.getContext("2d"),
+        {
+            type: "bar",
+
+            data: {
+                labels: [
+                    "Sales",
+                    "Expenses",
+                    "Profit"
+                ],
+
+                datasets: [
+                    {
+                        label: "Financial Performance",
+
+                        data: [
+                            sales,
+                            expenses,
+                            sales - expenses
+                        ]
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        }
+    );
 }
 
-
-// ==========================================================
-// PIG CHART
-// ==========================================================
-
+// ------------------------------------------------------------
+// CREATE PIG CHART
+// ------------------------------------------------------------
 function createPigChart() {
 
     const canvas =
-        document.getElementById(
-            "pigChart"
-        );
+        document.getElementById("pigChart");
 
-
-    if (!canvas) {
-
+    if (!canvas || typeof Chart === "undefined") {
         return;
-
     }
-
 
     if (pigChart) {
-
         pigChart.destroy();
-
-        pigChart = null;
-
     }
 
+    const selectedMonth = getSelectedMonth();
 
-    const pigs =
-        filterByMonth(
-            reportData.pigs,
-            "created_at"
+    const pigs = reportData.pigs.filter(pig => {
+
+        return belongsToMonth(
+            pig.farrowDate ||
+            pig.farrow_date ||
+            pig.registration_date ||
+            pig.created_at,
+            selectedMonth
         );
-
-
-    let male = 0;
-
-    let female = 0;
-
-    let other = 0;
-
-
-    pigs.forEach(function(pig) {
-
-        const sex =
-            String(
-                pig.sex || ""
-            ).trim().toLowerCase();
-
-
-        if (
-            sex === "male" ||
-            sex === "m"
-        ) {
-
-            male++;
-
-        }
-        else if (
-            sex === "female" ||
-            sex === "f"
-        ) {
-
-            female++;
-
-        }
-        else {
-
-            other++;
-
-        }
-
     });
 
+    const male = pigs.filter(
+        pig =>
+            String(pig.sex || "").toLowerCase() === "male"
+    ).length;
 
-    const labels = [
-        "Male",
-        "Female"
-    ];
+    const female = pigs.filter(
+        pig =>
+            String(pig.sex || "").toLowerCase() === "female"
+    ).length;
 
+    pigChart = new Chart(
+        canvas.getContext("2d"),
+        {
+            type: "pie",
 
-    const values = [
-        male,
-        female
-    ];
+            data: {
+                labels: [
+                    "Male",
+                    "Female"
+                ],
 
+                datasets: [
+                    {
+                        data: [
+                            male,
+                            female
+                        ]
+                    }
+                ]
+            },
 
-    if (other > 0) {
-
-        labels.push("Other");
-
-        values.push(other);
-
-    }
-
-
-    pigChart =
-        new Chart(
-            canvas.getContext("2d"),
-            {
-
-                type: "doughnut",
-
-                data: {
-
-                    labels: labels,
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "Pig Population",
-
-                            data: values
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false
-
-                }
-
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
             }
-
-        );
-
+        }
+    );
 }
 
-
-// ==========================================================
-// GESTATION CHART
-// ==========================================================
-
+// ------------------------------------------------------------
+// CREATE GESTATION CHART
+// ------------------------------------------------------------
 function createGestationChart() {
 
     const canvas =
-        document.getElementById(
-            "gestationChart"
-        );
+        document.getElementById("gestationChart");
 
-
-    if (!canvas) {
-
+    if (!canvas || typeof Chart === "undefined") {
         return;
-
     }
-
 
     if (gestationChart) {
-
         gestationChart.destroy();
-
-        gestationChart = null;
-
     }
 
+    const selectedMonth = getSelectedMonth();
 
     const records =
-        filterByMonth(
-            reportData.gestation,
-            getGestationDateField()
-        );
+        reportData.gestation.filter(record => {
 
+            return belongsToMonth(
+                record.service_date ||
+                record.mating_date ||
+                record.breeding_date ||
+                record.gestation_date ||
+                record.date ||
+                record.created_at,
+                selectedMonth
+            );
+        });
 
-    const statusCounts = {
-
-        Active: 0,
-
-        Completed: 0,
-
-        Other: 0
-
-    };
-
-
-    records.forEach(function(record) {
+    const completed = records.filter(record => {
 
         const status =
-            String(
-                record.status ||
-                record.gestation_status ||
-                ""
-            ).trim().toLowerCase();
+            String(record.status || "").toLowerCase();
 
-
-        if (
-            status === "active" ||
-            status === "ongoing" ||
-            status === "in progress" ||
-            status === "pending"
-        ) {
-
-            statusCounts.Active++;
-
-        }
-        else if (
-            status === "completed" ||
-            status === "complete" ||
-            status === "finished"
-        ) {
-
-            statusCounts.Completed++;
-
-        }
-        else {
-
-            statusCounts.Other++;
-
-        }
-
-    });
-
-
-    gestationChart =
-        new Chart(
-            canvas.getContext("2d"),
-            {
-
-                type: "bar",
-
-                data: {
-
-                    labels: [
-
-                        "Active",
-                        "Completed",
-                        "Other"
-
-                    ],
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "Gestation Records",
-
-                            data: [
-
-                                statusCounts.Active,
-                                statusCounts.Completed,
-                                statusCounts.Other
-
-                            ]
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            ticks: {
-
-                                stepSize: 1
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
+        return (
+            status.includes("complete") ||
+            status.includes("farrow") ||
+            status.includes("delivered")
         );
+    }).length;
 
+    const pending =
+        records.length - completed;
+
+    gestationChart = new Chart(
+        canvas.getContext("2d"),
+        {
+            type: "doughnut",
+
+            data: {
+                labels: [
+                    "Completed",
+                    "Pending"
+                ],
+
+                datasets: [
+                    {
+                        data: [
+                            completed,
+                            pending
+                        ]
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        }
+    );
 }
 
-
-// ==========================================================
-// PRODUCTION CHART
-// ==========================================================
-
+// ------------------------------------------------------------
+// CREATE PRODUCTION CHART
+// ------------------------------------------------------------
 function createProductionChart() {
 
     const canvas =
-        document.getElementById(
-            "productionChart"
-        );
+        document.getElementById("productionChart");
 
-
-    if (!canvas) {
-
+    if (!canvas || typeof Chart === "undefined") {
         return;
-
     }
-
 
     if (productionChart) {
-
         productionChart.destroy();
-
-        productionChart = null;
-
     }
 
+    const selectedMonth = getSelectedMonth();
 
     const farrowing =
-        filterByMonth(
-            reportData.farrowing,
-            "farrow_date"
+        reportData.farrowing.filter(record =>
+            belongsToMonth(
+                record.farrow_date ||
+                record.date ||
+                record.created_at,
+                selectedMonth
+            )
         );
-
 
     const weaning =
-        filterByMonth(
-            reportData.weaning,
-            "weaning_date"
+        reportData.weaning.filter(record =>
+            belongsToMonth(
+                record.weaning_date ||
+                record.date ||
+                record.created_at,
+                selectedMonth
+            )
         );
 
+    const born = farrowing.reduce(
+        (sum, record) =>
+            sum + Number(record.total_born || 0),
+        0
+    );
 
-    let born = 0;
+    const weaned = weaning.reduce(
+        (sum, record) =>
+            sum + Number(record.total_weaned || 0),
+        0
+    );
 
-    let weaned = 0;
+    const mortality = farrowing.reduce(
+        (sum, record) =>
+            sum + Number(record.mortality || 0),
+        0
+    );
 
-    let mortality = 0;
+    productionChart = new Chart(
+        canvas.getContext("2d"),
+        {
+            type: "bar",
 
+            data: {
+                labels: [
+                    "Born",
+                    "Weaned",
+                    "Mortality"
+                ],
 
-    farrowing.forEach(function(record) {
+                datasets: [
+                    {
+                        label: "Production",
 
-        born +=
-            Number(
-                record.total_born || 0
-            );
-
-    });
-
-
-    weaning.forEach(function(record) {
-
-        weaned +=
-            Number(
-                record.total_weaned || 0
-            );
-
-
-        mortality +=
-            Number(
-                record.mortality || 0
-            );
-
-    });
-
-
-    productionChart =
-        new Chart(
-            canvas.getContext("2d"),
-            {
-
-                type: "bar",
-
-                data: {
-
-                    labels: [
-
-                        "Born",
-                        "Weaned",
-                        "Mortality"
-
-                    ],
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "Production",
-
-                            data: [
-
-                                born,
-                                weaned,
-                                mortality
-
-                            ]
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true
-
-                        }
-
+                        data: [
+                            born,
+                            weaned,
+                            mortality
+                        ]
                     }
+                ]
+            },
 
-                }
-
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
             }
-
-        );
-
+        }
+    );
 }
 
-
-// ==========================================================
-// HEALTH CHART
-// ==========================================================
-
+// ------------------------------------------------------------
+// CREATE HEALTH CHART
+// ------------------------------------------------------------
 function createHealthChart() {
 
     const canvas =
-        document.getElementById(
-            "healthChart"
-        );
+        document.getElementById("healthChart");
 
-
-    if (!canvas) {
-
+    if (!canvas || typeof Chart === "undefined") {
         return;
-
     }
-
 
     if (healthChart) {
-
         healthChart.destroy();
-
-        healthChart = null;
-
     }
 
+    const selectedMonth = getSelectedMonth();
 
-    const treatments =
-        filterByMonth(
-            reportData.treatments,
-            "treatment_date"
+    const records =
+        reportData.treatment.filter(record =>
+            belongsToMonth(
+                record.treatment_date ||
+                record.date ||
+                record.created_at,
+                selectedMonth
+            )
         );
 
+    const diseaseCounts = {};
 
-    const symptomCounts = {};
+    records.forEach(record => {
 
+        const disease =
+            record.symptom ||
+            record.possible_cause ||
+            "Unknown";
 
-    treatments.forEach(function(record) {
-
-        const symptom =
-            String(
-                record.symptom ||
-                record.possible_cause ||
-                "Unknown"
-            );
-
-
-        if (!symptomCounts[symptom]) {
-
-            symptomCounts[symptom] = 0;
-
-        }
-
-
-        symptomCounts[symptom]++;
-
+        diseaseCounts[disease] =
+            (diseaseCounts[disease] || 0) + 1;
     });
 
+    healthChart = new Chart(
+        canvas.getContext("2d"),
+        {
+            type: "bar",
 
-    const labels =
-        Object.keys(symptomCounts);
+            data: {
+                labels:
+                    Object.keys(diseaseCounts),
 
+                datasets: [
+                    {
+                        label: "Treatment Records",
 
-    const values =
-        labels.map(function(symptom) {
-
-            return symptomCounts[symptom];
-
-        });
-
-
-    healthChart =
-        new Chart(
-            canvas.getContext("2d"),
-            {
-
-                type: "bar",
-
-                data: {
-
-                    labels: labels,
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "Treatment Records",
-
-                            data: values
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            ticks: {
-
-                                stepSize: 1
-
-                            }
-
-                        }
-
+                        data:
+                            Object.values(diseaseCounts)
                     }
+                ]
+            },
 
-                }
-
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
             }
-
-        );
-
+        }
+    );
 }
 
-
-// ==========================================================
-// FEEDING CHART
-// ==========================================================
-
+// ------------------------------------------------------------
+// CREATE FEEDING CHART
+// ------------------------------------------------------------
 function createFeedingChart() {
 
     const canvas =
-        document.getElementById(
-            "feedingChart"
-        );
+        document.getElementById("feedingChart");
 
-
-    if (!canvas) {
-
+    if (!canvas || typeof Chart === "undefined") {
         return;
-
     }
-
 
     if (feedingChart) {
-
         feedingChart.destroy();
-
-        feedingChart = null;
-
     }
 
+    const selectedMonth = getSelectedMonth();
 
-    const feeding =
-        filterByMonth(
-            reportData.feeding,
-            "feeding_date"
+    const records =
+        reportData.feeding.filter(record =>
+            belongsToMonth(
+                record.feeding_date ||
+                record.date ||
+                record.created_at,
+                selectedMonth
+            )
         );
-
 
     const feedTypes = {};
+    const feedQuantities = {};
 
-
-    feeding.forEach(function(record) {
+    records.forEach(record => {
 
         const type =
-            String(
-                record.feed_type ||
-                "Unknown"
-            );
+            record.feed_type ||
+            "Unknown";
 
-
-        if (!feedTypes[type]) {
-
-            feedTypes[type] = 0;
-
-        }
-
-
-        feedTypes[type] +=
+        const quantity =
             Number(
                 record.quantity ||
                 record.feed_quantity ||
                 0
             );
 
+        feedTypes[type] =
+            (feedTypes[type] || 0) + quantity;
+
+        feedQuantities[type] =
+            (feedQuantities[type] || 0) + quantity;
     });
 
+    feedingChart = new Chart(
+        canvas.getContext("2d"),
+        {
+            type: "bar",
 
-    const labels =
-        Object.keys(feedTypes);
+            data: {
+                labels:
+                    Object.keys(feedQuantities),
 
+                datasets: [
+                    {
+                        label: "Feed Used",
 
-    const values =
-        labels.map(function(type) {
-
-            return feedTypes[type];
-
-        });
-
-
-    feedingChart =
-        new Chart(
-            canvas.getContext("2d"),
-            {
-
-                type: "bar",
-
-                data: {
-
-                    labels: labels,
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "Feed Used (Kg)",
-
-                            data: values
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true
-
-                        }
-
+                        data:
+                            Object.values(feedQuantities)
                     }
+                ]
+            },
 
-                }
-
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
             }
-
-        );
-
+        }
+    );
 }
 
-
-// ==========================================================
-// CLEAR REPORT FILTER
-// ==========================================================
-
+// ------------------------------------------------------------
+// CLEAR MONTH FILTER
+// ------------------------------------------------------------
 function clearReportFilter() {
 
-    const input =
-        document.getElementById(
-            "reportMonth"
-        );
+    const monthInput =
+        document.getElementById("reportMonth");
 
-
-    if (input) {
-
-        input.value = "";
-
+    if (monthInput) {
+        monthInput.value = "";
     }
 
-
-    loadReports();
-
+    generateReports();
 }
 
+// ------------------------------------------------------------
+// FULL REPORT
+// ------------------------------------------------------------
+function generateFullReport() {
 
-// ==========================================================
-// GENERATE FULL REPORT
-// ==========================================================
-
-async function generateFullReport() {
-
-    const success =
-        await loadReportData();
-
-
-    if (!success) {
-
+    if (!checkUserAccess()) {
         return;
-
     }
 
+    const farmID = getFarmID();
 
-    const sales =
-        reportData.sales;
+    if (!farmID) {
+        return;
+    }
 
+    const selectedMonth = getSelectedMonth();
 
-    const expenses =
-        reportData.expenses;
+    const pigs = reportData.pigs.filter(pig => {
 
-
-    const weaning =
-        reportData.weaning;
-
-
-    const treatments =
-        reportData.treatments;
-
-
-    const feeding =
-        reportData.feeding;
-
-
-    let totalSales = 0;
-
-    let totalExpenses = 0;
-
-    let totalWeaned = 0;
-
-    let totalFeed = 0;
-
-    let mortality = 0;
-
-
-    sales.forEach(function(record) {
-
-        totalSales +=
-            Number(
-                record.total_amount || 0
-            );
-
+        return belongsToMonth(
+            pig.farrowDate ||
+            pig.farrow_date ||
+            pig.registration_date ||
+            pig.created_at,
+            selectedMonth
+        );
     });
 
+    const sales = reportData.sales.filter(record => {
 
-    expenses.forEach(function(record) {
-
-        totalExpenses +=
-            Number(
-                record.total_amount || 0
-            );
-
+        return belongsToMonth(
+            record.sale_date ||
+            record.sales_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
+        );
     });
 
+    const expenses = reportData.expenses.filter(record => {
 
-    weaning.forEach(function(record) {
-
-        totalWeaned +=
-            Number(
-                record.total_weaned || 0
-            );
-
-
-        mortality +=
-            Number(
-                record.mortality || 0
-            );
-
+        return belongsToMonth(
+            record.expense_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
+        );
     });
 
+    const weaning = reportData.weaning.filter(record => {
 
-    feeding.forEach(function(record) {
+        return belongsToMonth(
+            record.weaning_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
+        );
+    });
 
-        totalFeed +=
+    const treatment = reportData.treatment.filter(record => {
+
+        return belongsToMonth(
+            record.treatment_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
+        );
+    });
+
+    const feeding = reportData.feeding.filter(record => {
+
+        return belongsToMonth(
+            record.feeding_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
+        );
+    });
+
+    const farrowing = reportData.farrowing.filter(record => {
+
+        return belongsToMonth(
+            record.farrow_date ||
+            record.date ||
+            record.created_at,
+            selectedMonth
+        );
+    });
+
+    const totalSales = sales.reduce(
+        (sum, record) =>
+            sum + Number(record.total_amount || 0),
+        0
+    );
+
+    const totalExpenses = expenses.reduce(
+        (sum, record) =>
+            sum + Number(record.total_amount || 0),
+        0
+    );
+
+    const totalWeaned = weaning.reduce(
+        (sum, record) =>
+            sum + Number(record.total_weaned || 0),
+        0
+    );
+
+    const totalFeed = feeding.reduce(
+        (sum, record) =>
+            sum +
             Number(
                 record.quantity ||
                 record.feed_quantity ||
                 0
-            );
+            ),
+        0
+    );
 
-    });
-
-
-    const profit =
-        totalSales - totalExpenses;
-
+    const totalMortality = farrowing.reduce(
+        (sum, record) =>
+            sum + Number(record.mortality || 0),
+        0
+    );
 
     const reportWindow =
-        window.open(
-            "",
-            "_blank"
-        );
-
+        window.open("", "_blank");
 
     if (!reportWindow) {
-
         alert(
-            "Please allow pop-ups to generate the full report."
+            "Please allow pop-ups in your browser to generate the full report."
         );
-
         return;
-
     }
 
-
     reportWindow.document.write(`
-
         <!DOCTYPE html>
 
         <html>
 
         <head>
 
-            <title>
-                MUNKA PIGGERY FARM - Full Report
-            </title>
+            <title>MUNKA PIGGERY - Full Report</title>
 
             <style>
 
-                body{
-
-                    font-family:Arial,sans-serif;
-
-                    padding:40px;
-
-                    line-height:1.6;
-
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 30px;
+                    color: #222;
                 }
 
-                h1{
-
-                    text-align:center;
-
+                h1 {
+                    text-align: center;
+                    margin-bottom: 5px;
                 }
 
-                h2{
-
-                    border-bottom:1px solid #333;
-
-                    padding-bottom:5px;
-
+                h2 {
+                    margin-top: 30px;
+                    border-bottom: 1px solid #ccc;
+                    padding-bottom: 8px;
                 }
 
-                .summary{
+                .subtitle {
+                    text-align: center;
+                    color: #666;
+                    margin-bottom: 25px;
+                }
 
-                    display:grid;
-
+                .summary {
+                    display: grid;
                     grid-template-columns:
-                    repeat(2,1fr);
-
-                    gap:15px;
-
+                        repeat(4, 1fr);
+                    gap: 15px;
                 }
 
-                .box{
-
-                    border:1px solid #ccc;
-
-                    padding:15px;
-
+                .card {
+                    border: 1px solid #ddd;
+                    padding: 15px;
+                    text-align: center;
+                    border-radius: 8px;
                 }
 
-                @media print{
+                .card strong {
+                    display: block;
+                    font-size: 20px;
+                    margin-top: 8px;
+                }
 
-                    button{
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 15px;
+                }
 
-                        display:none;
+                th,
+                td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }
 
+                th {
+                    background: #f2f2f2;
+                }
+
+                .footer {
+                    margin-top: 40px;
+                    text-align: center;
+                    color: #777;
+                    font-size: 12px;
+                }
+
+                @media print {
+
+                    button {
+                        display: none;
                     }
 
                 }
@@ -2285,203 +1483,218 @@ async function generateFullReport() {
 
         </head>
 
-
         <body>
 
+            <h1>MUNKA PIGGERY</h1>
 
-            <h1>
-                MUNKA PIGGERY FARM
-            </h1>
-
-
-            <h2>
-                FULL FARM REPORT
-            </h2>
-
+            <div class="subtitle">
+                Piggery Management System - Full Report
+            </div>
 
             <p>
-                Generated:
-                ${new Date().toLocaleString()}
+                <strong>Farm ID:</strong> ${farmID}
             </p>
 
+            <p>
+                <strong>Report Period:</strong>
+                ${selectedMonth || "All Records"}
+            </p>
+
+            <h2>Summary</h2>
 
             <div class="summary">
 
-
-                <div class="box">
-
-                    <strong>
-                        Total Pigs
-                    </strong>
-
-                    <br>
-
-                    ${reportData.pigs.length}
-
+                <div class="card">
+                    Total Pigs
+                    <strong>${pigs.length}</strong>
                 </div>
 
-
-                <div class="box">
-
-                    <strong>
-                        Total Sales
-                    </strong>
-
-                    <br>
-
-                    ${formatMoney(totalSales)}
-
+                <div class="card">
+                    Total Sales
+                    <strong>${formatMoney(totalSales)}</strong>
                 </div>
 
-
-                <div class="box">
-
-                    <strong>
-                        Total Expenses
-                    </strong>
-
-                    <br>
-
-                    ${formatMoney(totalExpenses)}
-
+                <div class="card">
+                    Total Expenses
+                    <strong>${formatMoney(totalExpenses)}</strong>
                 </div>
 
-
-                <div class="box">
-
-                    <strong>
-                        Profit / Loss
-                    </strong>
-
-                    <br>
-
-                    ${formatMoney(profit)}
-
+                <div class="card">
+                    Net Profit
+                    <strong>${formatMoney(
+                        totalSales - totalExpenses
+                    )}</strong>
                 </div>
 
-
-                <div class="box">
-
-                    <strong>
-                        Piglets Weaned
-                    </strong>
-
-                    <br>
-
-                    ${formatNumber(totalWeaned)}
-
+                <div class="card">
+                    Total Weaned
+                    <strong>${totalWeaned}</strong>
                 </div>
 
-
-                <div class="box">
-
-                    <strong>
-                        Treatment Records
-                    </strong>
-
-                    <br>
-
-                    ${treatments.length}
-
+                <div class="card">
+                    Treatments
+                    <strong>${treatment.length}</strong>
                 </div>
 
-
-                <div class="box">
-
-                    <strong>
-                        Feed Used
-                    </strong>
-
-                    <br>
-
-                    ${totalFeed.toFixed(2)} Kg
-
+                <div class="card">
+                    Feed Used
+                    <strong>${formatNumber(totalFeed)}</strong>
                 </div>
 
-
-                <div class="box">
-
-                    <strong>
-                        Mortality
-                    </strong>
-
-                    <br>
-
-                    ${formatNumber(mortality)}
-
+                <div class="card">
+                    Mortality
+                    <strong>${totalMortality}</strong>
                 </div>
-
 
             </div>
 
+            <h2>Production</h2>
 
-            <br>
+            <table>
 
+                <tr>
+                    <th>Item</th>
+                    <th>Total</th>
+                </tr>
 
-            <button onclick="window.print()">
-                Print Report
-            </button>
+                <tr>
+                    <td>Farrowing Records</td>
+                    <td>${farrowing.length}</td>
+                </tr>
 
+                <tr>
+                    <td>Weaning Records</td>
+                    <td>${weaning.length}</td>
+                </tr>
+
+                <tr>
+                    <td>Total Weaned</td>
+                    <td>${totalWeaned}</td>
+                </tr>
+
+                <tr>
+                    <td>Total Mortality</td>
+                    <td>${totalMortality}</td>
+                </tr>
+
+            </table>
+
+            <h2>Financial Performance</h2>
+
+            <table>
+
+                <tr>
+                    <th>Item</th>
+                    <th>Amount</th>
+                </tr>
+
+                <tr>
+                    <td>Total Sales</td>
+                    <td>${formatMoney(totalSales)}</td>
+                </tr>
+
+                <tr>
+                    <td>Total Expenses</td>
+                    <td>${formatMoney(totalExpenses)}</td>
+                </tr>
+
+                <tr>
+                    <td>Net Profit</td>
+                    <td>${formatMoney(
+                        totalSales - totalExpenses
+                    )}</td>
+                </tr>
+
+            </table>
+
+            <h2>Health</h2>
+
+            <table>
+
+                <tr>
+                    <th>Item</th>
+                    <th>Total</th>
+                </tr>
+
+                <tr>
+                    <td>Treatment Records</td>
+                    <td>${treatment.length}</td>
+                </tr>
+
+            </table>
+
+            <h2>Feeding</h2>
+
+            <table>
+
+                <tr>
+                    <th>Item</th>
+                    <th>Total</th>
+                </tr>
+
+                <tr>
+                    <td>Feed Records</td>
+                    <td>${feeding.length}</td>
+                </tr>
+
+                <tr>
+                    <td>Total Feed Used</td>
+                    <td>${formatNumber(totalFeed)}</td>
+                </tr>
+
+            </table>
+
+            <div class="footer">
+                MUNKA PIGGERY Management System
+                <br>
+                Generated automatically from the current farm records.
+            </div>
+
+            <script>
+
+                window.onload = function () {
+                    window.print();
+                };
+
+            <\/script>
 
         </body>
 
         </html>
-
     `);
 
-
     reportWindow.document.close();
-
 }
 
-
-// ==========================================================
-// PRINT REPORTS
-// ==========================================================
-
-function printReports() {
-
+// ------------------------------------------------------------
+// PRINT CURRENT REPORT PAGE
+// ------------------------------------------------------------
+function printReport() {
     window.print();
-
 }
 
-
-// ==========================================================
+// ------------------------------------------------------------
 // PAGE INITIALIZATION
-// ==========================================================
-
+// ------------------------------------------------------------
 document.addEventListener(
     "DOMContentLoaded",
-    function() {
+    function () {
 
-        loadReports();
+        if (!checkUserAccess()) {
+            return;
+        }
 
-    }
-);
+        loadReportData();
 
+        const monthInput =
+            document.getElementById("reportMonth");
 
-// ==========================================================
-// MONTH CHANGE
-// ==========================================================
+        if (monthInput) {
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        const month =
-            document.getElementById(
-                "reportMonth"
-            );
-
-
-        if (month) {
-
-            month.addEventListener(
+            monthInput.addEventListener(
                 "change",
-                function() {
-
-                    loadReports();
-
+                function () {
+                    generateReports();
                 }
             );
 
