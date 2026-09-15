@@ -1,90 +1,184 @@
 // ==========================================
 // MUNKA PIGGERY MANAGEMENT SYSTEM
 // ACTIVITY LOGS MODULE
-// PART 3 - activity.js
+// FARM-SECURED VERSION
 // ==========================================
 
 
+// ==========================================
+// GET LOGGED-IN USER
+// ==========================================
 
+function getLoggedUser(){
+
+    return JSON.parse(
+        localStorage.getItem("loggedInUser")
+    );
+
+}
+
+
+// ==========================================
+// GET CURRENT FARM ID
+// ==========================================
+
+function getFarmID(){
+
+    const loggedUser = getLoggedUser();
+
+    if(!loggedUser || !loggedUser.farm_id){
+
+        console.error(
+            "No farm_id found for logged-in user."
+        );
+
+        return null;
+    }
+
+    return loggedUser.farm_id;
+
+}
+
+
+// ==========================================
 // LOAD ACTIVITY LOGS
+// ==========================================
 
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
 
-    loadActivityLogs();
+        loadActivityLogs();
 
-});
+    }
+);
 
 
 
-
+// ==========================================
+// LOAD ACTIVITY LOGS
+// ONLY CURRENT FARM
+// ==========================================
 
 async function loadActivityLogs(){
 
-
-const {data,error} = await supabaseClient
-
-.from("activity_logs")
-
-.select("*")
-
-.order("created_at",{ascending:false});
+    const farmID = getFarmID();
 
 
+    if(!farmID){
 
-if(error){
+        console.error(
+            "Cannot load activity logs: farm_id missing."
+        );
 
-console.log(error);
+        return;
+    }
 
-return;
+
+    try{
+
+        const {data,error} = await supabaseClient
+
+            .from("activity_logs")
+
+            .select("*")
+
+            // ==========================================
+            // FARM SECURITY
+            // ==========================================
+
+            .eq("farm_id", farmID)
+
+            .order(
+                "created_at",
+                {ascending:false}
+            );
+
+
+        if(error){
+
+            console.log(error);
+
+            return;
+
+        }
+
+
+        let rows = "";
+
+
+        data.forEach(log=>{
+
+            rows += `
+
+            <tr>
+
+            <td>
+                ${new Date(
+                    new Date(log.created_at).toISOString()
+                ).toLocaleString("en-GB", {
+
+                    timeZone: "Africa/Lusaka",
+
+                    year: "numeric",
+
+                    month: "2-digit",
+
+                    day: "2-digit",
+
+                    hour: "2-digit",
+
+                    minute: "2-digit",
+
+                    second: "2-digit",
+
+                    hour12: false
+
+                })}
+            </td>
+
+
+            <td>
+                ${log.username || "System"}
+            </td>
+
+
+            <td>
+                ${log.action || ""}
+            </td>
+
+
+            <td>
+                ${log.module || ""}
+            </td>
+
+
+            <td>
+                ${log.description || ""}
+            </td>
+
+            </tr>
+
+            `;
+
+        });
+
+
+        document.getElementById(
+            "activityTable"
+        ).innerHTML = rows;
+
+
+    }catch(error){
+
+        console.error(
+            "Activity Log Load Error:",
+            error
+        );
+
+    }
 
 }
-
-
-
-let rows = "";
-
-
-
-data.forEach(log=>{
-
-
-rows += `
-
-<tr>
-
-<td>${new Date(new Date(log.created_at).toISOString()).toLocaleString("en-GB", {
-    timeZone: "Africa/Lusaka",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false
-})}</td>
-<td>${log.username || "System"}</td>
-
-<td>${log.action}</td>
-
-<td>${log.module}</td>
-
-<td>${log.description || ""}</td>
-
-</tr>
-
-`;
-
-
-});
-
-
-
-document.getElementById("activityTable").innerHTML = rows;
-
-
-}
-
-
 
 
 
@@ -93,44 +187,70 @@ document.getElementById("activityTable").innerHTML = rows;
 // TO SAVE ACTIVITIES
 // ==========================================
 
-
 async function saveActivity(
 
-username,
+    username,
 
-action,
+    action,
 
-module,
+    module,
 
-description
+    description
 
 ){
 
+    // ==========================================
+    // GET FARM ID
+    // ==========================================
+
+    const farmID = getFarmID();
 
 
-const {error}=await supabaseClient
+    if(!farmID){
 
-.from("activity_logs")
+        console.error(
+            "Activity Error: farm_id is missing."
+        );
 
-.insert([{
+        return;
 
-username: username,
-
-action: action,
-
-module: module,
-
-description: description
-
-}]);
+    }
 
 
+    // ==========================================
+    // SAVE ACTIVITY
+    // ==========================================
 
-if(error){
+    const {error}=await supabaseClient
 
-console.log("Activity Error:",error);
+        .from("activity_logs")
 
-}
+        .insert([{
 
+            // ==========================================
+            // FARM ISOLATION
+            // ==========================================
+
+            farm_id: farmID,
+
+            username: username,
+
+            action: action,
+
+            module: module,
+
+            description: description
+
+        }]);
+
+
+    if(error){
+
+        console.log(
+            "Activity Error:",
+            error
+        );
+
+    }
 
 }
