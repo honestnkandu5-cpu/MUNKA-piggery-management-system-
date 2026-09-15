@@ -1,21 +1,10 @@
 // ==========================================================
 // MUNKA PIGGERY FARM
 // PIG REGISTRATION MODULE
-// PERMISSION-CONTROLLED VERSION
+// MULTI-FARM + PERMISSION-CONTROLLED VERSION
 // ==========================================================
-//
-// Permissions come from security.js:
-//
-// canView("Pig Registration")
-// canAdd("Pig Registration")
-// canEdit("Pig Registration")
-// canDelete("Pig Registration")
-// canReport("Pig Registration")
-// ==========================================================
-
 
 let editID = null;
-
 
 
 // ==========================================================
@@ -29,7 +18,6 @@ function getLoggedUser(){
             localStorage.getItem("loggedInUser")
         );
 
-
     if(!user){
 
         alert(
@@ -37,14 +25,36 @@ function getLoggedUser(){
         );
 
         return null;
-
     }
 
-
     return user;
-
 }
 
+
+// ==========================================================
+// GET FARM ID
+// ==========================================================
+
+function getFarmID(){
+
+    const user = getLoggedUser();
+
+    if(!user){
+        return null;
+    }
+
+    if(!user.farm_id){
+
+        alert(
+            "Your account is not connected to a farm. " +
+            "Please contact the administrator."
+        );
+
+        return null;
+    }
+
+    return user.farm_id;
+}
 
 
 // ==========================================================
@@ -61,14 +71,10 @@ document
 
 
         // ==================================================
-        // DETERMINE WHETHER THIS IS ADD OR UPDATE
+        // PERMISSIONS
         // ==================================================
 
         if(editID === null){
-
-            // ==============================================
-            // ADD PERMISSION
-            // ==============================================
 
             if(
                 typeof canAdd !== "function" ||
@@ -81,16 +87,11 @@ document
                 );
 
                 return;
-
             }
 
         }
 
         else{
-
-            // ==============================================
-            // EDIT PERMISSION
-            // ==============================================
 
             if(
                 typeof canEdit !== "function" ||
@@ -103,23 +104,32 @@ document
                 );
 
                 return;
-
             }
-
         }
 
 
+        // ==================================================
+        // LOGGED-IN USER
+        // ==================================================
 
         const loggedUser =
             getLoggedUser();
 
-
         if(!loggedUser){
-
             return;
-
         }
 
+
+        // ==================================================
+        // FARM ID
+        // ==================================================
+
+        const farmID =
+            getFarmID();
+
+        if(!farmID){
+            return;
+        }
 
 
         // ==================================================
@@ -174,14 +184,14 @@ document
                 null,
 
             updated_at:
-                null
+                null,
 
+            farm_id:
+                farmID
         };
 
 
-
         try{
-
 
             // ==================================================
             // ADD NEW RECORD
@@ -200,11 +210,8 @@ document
 
 
                 if(error){
-
                     throw error;
-
                 }
-
 
 
                 // ==========================================
@@ -235,21 +242,21 @@ document
             }
 
 
-
             // ==================================================
             // UPDATE EXISTING RECORD
             // ==================================================
 
             else{
 
-
                 pig.updated_by =
                     loggedUser.full_name;
-
 
                 pig.updated_at =
                     new Date().toISOString();
 
+
+                // Do not allow farm_id to be changed
+                delete pig.farm_id;
 
 
                 const {
@@ -264,15 +271,17 @@ document
                         .eq(
                             "id",
                             editID
+                        )
+
+                        .eq(
+                            "farm_id",
+                            farmID
                         );
 
 
                 if(error){
-
                     throw error;
-
                 }
-
 
 
                 // ==========================================
@@ -302,13 +311,10 @@ document
 
 
                 editID = null;
-
             }
 
 
-
             clearForm();
-
 
             loadPigs();
 
@@ -322,16 +328,13 @@ document
                 error
             );
 
-
             alert(
                 error.message
             );
-
         }
 
     }
 );
-
 
 
 // ==========================================================
@@ -340,8 +343,15 @@ document
 
 async function loadPigs(){
 
-    try{
+    const farmID =
+        getFarmID();
 
+    if(!farmID){
+        return;
+    }
+
+
+    try{
 
         const {
             data,
@@ -353,6 +363,11 @@ async function loadPigs(){
 
                 .select("*")
 
+                .eq(
+                    "farm_id",
+                    farmID
+                )
+
                 .order(
                     "id",
                     {
@@ -362,9 +377,7 @@ async function loadPigs(){
 
 
         if(error){
-
             throw error;
-
         }
 
 
@@ -382,15 +395,12 @@ async function loadPigs(){
             error
         );
 
-
         alert(
             error.message
         );
-
     }
 
 }
-
 
 
 // ==========================================================
@@ -406,22 +416,17 @@ function displayPigs(records){
 
 
     if(!table){
-
         return;
-
     }
 
 
     table.innerHTML = "";
 
 
-
     records.forEach(
         function(pig){
 
-
             let actionButtons = "";
-
 
 
             // ==================================================
@@ -444,9 +449,7 @@ function displayPigs(records){
                     </button>
 
                 `;
-
             }
-
 
 
             // ==================================================
@@ -469,14 +472,8 @@ function displayPigs(records){
                     </button>
 
                 `;
-
             }
 
-
-
-            // ==================================================
-            // NO ACTIONS
-            // ==================================================
 
             if(!actionButtons){
 
@@ -484,7 +481,6 @@ function displayPigs(records){
                     "<span>No actions</span>";
 
             }
-
 
 
             // ==================================================
@@ -537,13 +533,11 @@ function displayPigs(records){
 }
 
 
-
 // ==========================================================
 // EDIT PIG RECORD
 // ==========================================================
 
 async function editPig(id){
-
 
     if(
         typeof canEdit !== "function" ||
@@ -556,13 +550,18 @@ async function editPig(id){
         );
 
         return;
-
     }
 
 
+    const farmID =
+        getFarmID();
+
+    if(!farmID){
+        return;
+    }
+
 
     try{
-
 
         const {
             data,
@@ -579,15 +578,17 @@ async function editPig(id){
                     id
                 )
 
+                .eq(
+                    "farm_id",
+                    farmID
+                )
+
                 .single();
 
 
         if(error){
-
             throw error;
-
         }
-
 
 
         document
@@ -632,9 +633,7 @@ async function editPig(id){
             data.health_status || "";
 
 
-
         editID = id;
-
 
 
         window.scrollTo({
@@ -652,15 +651,12 @@ async function editPig(id){
             error
         );
 
-
         alert(
             error.message
         );
-
     }
 
 }
-
 
 
 // ==========================================================
@@ -671,11 +667,6 @@ async function deletePig(
     id,
     pigID
 ){
-
-
-    // ==================================================
-    // DELETE PERMISSION
-    // ==================================================
 
     if(
         typeof canDelete !== "function" ||
@@ -688,9 +679,7 @@ async function deletePig(
         );
 
         return;
-
     }
-
 
 
     const confirmDelete =
@@ -702,27 +691,27 @@ async function deletePig(
 
 
     if(!confirmDelete){
-
         return;
-
     }
-
 
 
     const loggedUser =
         getLoggedUser();
 
-
     if(!loggedUser){
-
         return;
-
     }
 
 
+    const farmID =
+        getFarmID();
+
+    if(!farmID){
+        return;
+    }
+
 
     try{
-
 
         const {
             error
@@ -736,15 +725,17 @@ async function deletePig(
                 .eq(
                     "id",
                     id
+                )
+
+                .eq(
+                    "farm_id",
+                    farmID
                 );
 
 
         if(error){
-
             throw error;
-
         }
-
 
 
         // ==================================================
@@ -768,11 +759,9 @@ async function deletePig(
         );
 
 
-
         alert(
             "Pig record deleted successfully."
         );
-
 
 
         loadPigs();
@@ -787,15 +776,12 @@ async function deletePig(
             error
         );
 
-
         alert(
             error.message
         );
-
     }
 
 }
-
 
 
 // ==========================================================
@@ -803,7 +789,6 @@ async function deletePig(
 // ==========================================================
 
 async function searchPig(){
-
 
     if(
         typeof canView !== "function" ||
@@ -816,9 +801,15 @@ async function searchPig(){
         );
 
         return;
-
     }
 
+
+    const farmID =
+        getFarmID();
+
+    if(!farmID){
+        return;
+    }
 
 
     const keyword =
@@ -828,17 +819,19 @@ async function searchPig(){
             .trim();
 
 
-
     try{
-
 
         let query =
             supabaseClient
 
                 .from("pigs")
 
-                .select("*");
+                .select("*")
 
+                .eq(
+                    "farm_id",
+                    farmID
+                );
 
 
         if(keyword){
@@ -849,7 +842,6 @@ async function searchPig(){
                 );
 
         }
-
 
 
         const {
@@ -865,11 +857,8 @@ async function searchPig(){
 
 
         if(error){
-
             throw error;
-
         }
-
 
 
         displayPigs(
@@ -886,15 +875,12 @@ async function searchPig(){
             error
         );
 
-
         alert(
             error.message
         );
-
     }
 
 }
-
 
 
 // ==========================================================
@@ -910,9 +896,7 @@ function clearForm(){
 
 
     if(form){
-
         form.reset();
-
     }
 
 
@@ -921,13 +905,11 @@ function clearForm(){
 }
 
 
-
 // ==========================================================
 // GENERATE REPORT
 // ==========================================================
 
 async function generateReport(){
-
 
     if(
         typeof canReport !== "function" ||
@@ -940,13 +922,18 @@ async function generateReport(){
         );
 
         return;
-
     }
 
 
+    const farmID =
+        getFarmID();
+
+    if(!farmID){
+        return;
+    }
+
 
     try{
-
 
         const {
             count,
@@ -962,15 +949,17 @@ async function generateReport(){
                         count:"exact",
                         head:true
                     }
+                )
+
+                .eq(
+                    "farm_id",
+                    farmID
                 );
 
 
         if(error){
-
             throw error;
-
         }
-
 
 
         alert(
@@ -989,15 +978,12 @@ async function generateReport(){
             error
         );
 
-
         alert(
             error.message
         );
-
     }
 
 }
-
 
 
 // ==========================================================
@@ -1005,7 +991,6 @@ async function generateReport(){
 // ==========================================================
 
 function printReport(){
-
 
     if(
         typeof canReport !== "function" ||
@@ -1018,15 +1003,12 @@ function printReport(){
         );
 
         return;
-
     }
-
 
 
     window.print();
 
 }
-
 
 
 // ==========================================================
@@ -1041,7 +1023,6 @@ window.addEventListener(
 
     }
 );
-
 
 
 // ==========================================================
