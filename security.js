@@ -1,7 +1,22 @@
 // ==========================================================
 // MUNKA PIGGERY FARM
-// SECURITY.JS - DIAGNOSTIC VERSION
+// SECURITY.JS
 // ==========================================================
+//
+// SECURITY ARCHITECTURE
+//
+// SUPER ADMIN
+// → platform_permissions
+// → platform-level access
+// → farm_id NOT required
+//
+// FARM USERS
+// → role_permissions
+// → farm-level access
+// → farm_id required
+//
+// ==========================================================
+
 
 let currentUser = null;
 let currentRole = null;
@@ -46,11 +61,13 @@ function getCurrentPage(){
         .split("/")
         .pop();
 
+
     if(!page){
 
         page = "dashboard.html";
 
     }
+
 
     return page;
 
@@ -63,12 +80,18 @@ function getCurrentPage(){
 
 async function getAuthenticatedUser(){
 
-    console.log("Checking Supabase session...");
+    console.log(
+        "Checking Supabase session..."
+    );
+
 
     const {
         data,
         error
-    } = await supabaseClient.auth.getSession();
+    } =
+        await supabaseClient
+            .auth
+            .getSession();
 
 
     if(error){
@@ -108,7 +131,9 @@ async function getAuthenticatedUser(){
 // GET USER PROFILE
 // ==========================================================
 
-async function getUserProfile(authUserId){
+async function getUserProfile(
+    authUserId
+){
 
     console.log(
         "Searching users table for auth_user_id:",
@@ -158,13 +183,15 @@ async function getUserProfile(authUserId){
 
 
 // ==========================================================
-// GET ROLE PERMISSIONS
+// GET FARM ROLE PERMISSIONS
 // ==========================================================
 
-async function getRolePermissions(role){
+async function getRolePermissions(
+    role
+){
 
     console.log(
-        "Loading permissions for role:",
+        "Loading FARM permissions for role:",
         role
     );
 
@@ -187,12 +214,6 @@ async function getRolePermissions(role){
             );
 
 
-    console.log(
-        "ROLE PERMISSIONS RESULT:",
-        data
-    );
-
-
     if(error){
 
         console.error(
@@ -205,6 +226,67 @@ async function getRolePermissions(role){
     }
 
 
+    console.log(
+        "FARM ROLE PERMISSIONS RESULT:",
+        data
+    );
+
+
+    return data || [];
+
+}
+
+
+// ==========================================================
+// GET SUPER ADMIN PLATFORM PERMISSIONS
+// ==========================================================
+
+async function getPlatformPermissions(
+    role
+){
+
+    console.log(
+        "Loading PLATFORM permissions for role:",
+        role
+    );
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+
+            .from("platform_permissions")
+
+            .select(
+                "id,role,module,can_view,can_add,can_edit,can_delete,can_report"
+            )
+
+            .eq(
+                "role",
+                role
+            );
+
+
+    if(error){
+
+        console.error(
+            "PLATFORM PERMISSIONS DATABASE ERROR:",
+            error
+        );
+
+        throw error;
+
+    }
+
+
+    console.log(
+        "PLATFORM PERMISSIONS RESULT:",
+        data
+    );
+
+
     return data || [];
 
 }
@@ -214,18 +296,26 @@ async function getRolePermissions(role){
 // FIND PERMISSION
 // ==========================================================
 
-function getPermission(moduleName){
+function getPermission(
+    moduleName
+){
 
     return currentPermissions.find(
         permission =>
 
-            String(permission.module)
-                .trim()
-                .toLowerCase()
+            String(
+                permission.module
+            )
+            .trim()
+            .toLowerCase()
+
             ===
-            String(moduleName)
-                .trim()
-                .toLowerCase()
+
+            String(
+                moduleName
+            )
+            .trim()
+            .toLowerCase()
 
     ) || null;
 
@@ -236,10 +326,15 @@ function getPermission(moduleName){
 // PERMISSION FUNCTIONS
 // ==========================================================
 
-function canView(moduleName){
+function canView(
+    moduleName
+){
 
     const permission =
-        getPermission(moduleName);
+        getPermission(
+            moduleName
+        );
+
 
     return !!(
         permission &&
@@ -249,10 +344,15 @@ function canView(moduleName){
 }
 
 
-function canAdd(moduleName){
+function canAdd(
+    moduleName
+){
 
     const permission =
-        getPermission(moduleName);
+        getPermission(
+            moduleName
+        );
+
 
     return !!(
         permission &&
@@ -262,10 +362,15 @@ function canAdd(moduleName){
 }
 
 
-function canEdit(moduleName){
+function canEdit(
+    moduleName
+){
 
     const permission =
-        getPermission(moduleName);
+        getPermission(
+            moduleName
+        );
+
 
     return !!(
         permission &&
@@ -275,10 +380,15 @@ function canEdit(moduleName){
 }
 
 
-function canDelete(moduleName){
+function canDelete(
+    moduleName
+){
 
     const permission =
-        getPermission(moduleName);
+        getPermission(
+            moduleName
+        );
+
 
     return !!(
         permission &&
@@ -288,10 +398,15 @@ function canDelete(moduleName){
 }
 
 
-function canReport(moduleName){
+function canReport(
+    moduleName
+){
 
     const permission =
-        getPermission(moduleName);
+        getPermission(
+            moduleName
+        );
+
 
     return !!(
         permission &&
@@ -313,48 +428,53 @@ function applyDashboardPermissions(){
         );
 
 
-    buttons.forEach(button => {
+    buttons.forEach(
+        button => {
 
-        const module =
-            button.getAttribute(
-                "data-permission-module"
-            );
-
-
-        const permissionType =
-            button.getAttribute(
-                "data-permission-type"
-            );
+            const module =
+                button.getAttribute(
+                    "data-permission-module"
+                );
 
 
-        let allowed = false;
+            const permissionType =
+                button.getAttribute(
+                    "data-permission-type"
+                );
 
 
-        if(
-            permissionType === "can_view"
-        ){
+            let allowed = false;
 
-            allowed =
-                canView(module);
+
+            if(
+                permissionType ===
+                "can_view"
+            ){
+
+                allowed =
+                    canView(
+                        module
+                    );
+
+            }
+
+
+            if(allowed){
+
+                button.style.display =
+                    "block";
+
+            }
+
+            else{
+
+                button.style.display =
+                    "none";
+
+            }
 
         }
-
-
-        if(allowed){
-
-            button.style.display =
-                "block";
-
-        }
-
-        else{
-
-            button.style.display =
-                "none";
-
-        }
-
-    });
+    );
 
 }
 
@@ -370,7 +490,9 @@ function protectCurrentPage(){
 
 
     const module =
-        pageModules[page];
+        pageModules[
+            page
+        ];
 
 
     if(!module){
@@ -380,7 +502,11 @@ function protectCurrentPage(){
     }
 
 
-    if(!canView(module)){
+    if(
+        !canView(
+            module
+        )
+    ){
 
         alert(
             "Access Denied.\n\n" +
@@ -505,10 +631,14 @@ async function checkPageSecurity(){
 
 
         if(
-            String(userData.status)
-                .trim()
-                .toLowerCase()
+            String(
+                userData.status
+            )
+            .trim()
+            .toLowerCase()
+
             !==
+
             "active"
         ){
 
@@ -569,18 +699,61 @@ async function checkPageSecurity(){
 
         localStorage.setItem(
             "loggedInUser",
-            JSON.stringify(userData)
+            JSON.stringify(
+                userData
+            )
         );
 
 
         // ==================================================
-        // 6. LOAD ROLE PERMISSIONS
+        // 6. LOAD CORRECT PERMISSIONS
         // ==================================================
 
-        currentPermissions =
-            await getRolePermissions(
+        if(
+            String(
                 currentRole
+            )
+            .trim()
+            .toLowerCase()
+
+            ===
+
+            "super admin"
+        ){
+
+            console.log(
+                "SUPER ADMIN DETECTED."
             );
+
+
+            // ----------------------------------------------
+            // SUPER ADMIN
+            // ----------------------------------------------
+
+            currentPermissions =
+                await getPlatformPermissions(
+                    currentRole
+                );
+
+        }
+
+        else{
+
+            console.log(
+                "FARM USER DETECTED."
+            );
+
+
+            // ----------------------------------------------
+            // NORMAL FARM ROLE
+            // ----------------------------------------------
+
+            currentPermissions =
+                await getRolePermissions(
+                    currentRole
+                );
+
+        }
 
 
         console.log(
@@ -588,6 +761,10 @@ async function checkPageSecurity(){
             currentPermissions.length
         );
 
+
+        // ==================================================
+        // 7. CHECK PERMISSIONS
+        // ==================================================
 
         if(
             currentPermissions.length === 0
@@ -604,7 +781,7 @@ async function checkPageSecurity(){
 
 
         // ==================================================
-        // 7. PROTECT PAGE
+        // 8. PROTECT CURRENT PAGE
         // ==================================================
 
         const allowed =
@@ -619,7 +796,7 @@ async function checkPageSecurity(){
 
 
         // ==================================================
-        // 8. DASHBOARD BUTTONS
+        // 9. DASHBOARD BUTTONS
         // ==================================================
 
         if(
