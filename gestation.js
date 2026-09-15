@@ -1,8 +1,11 @@
 // ==========================================================
 // MUNKA PIGGERY FARM
 // GESTATION RECORDS MODULE
-// PERMISSION-CONTROLLED VERSION
+// FARM-SECURED + PERMISSION-CONTROLLED VERSION
 // ==========================================================
+//
+// FARM SECURITY:
+// Every record belongs to the logged-in user's farm_id.
 //
 // PERMISSIONS:
 // canView("Gestation")
@@ -32,7 +35,6 @@ function getLoggedUser(){
             localStorage.getItem("loggedInUser")
         );
 
-
     if(!user){
 
         alert(
@@ -43,8 +45,44 @@ function getLoggedUser(){
 
     }
 
-
     return user;
+
+}
+
+
+// ==========================================================
+// GET FARM ID
+// ==========================================================
+
+function getFarmID(){
+
+    const loggedUser =
+        getLoggedUser();
+
+    if(!loggedUser){
+
+        return null;
+
+    }
+
+    const farmID =
+        loggedUser.farm_id;
+
+    if(
+        farmID === null ||
+        farmID === undefined ||
+        farmID === ""
+    ){
+
+        alert(
+            "Your account is not assigned to a farm. Please contact the administrator."
+        );
+
+        return null;
+
+    }
+
+    return farmID;
 
 }
 
@@ -59,13 +97,11 @@ function canDeleteGestation(){
     const loggedUser =
         getLoggedUser();
 
-
     if(!loggedUser){
 
         return false;
 
     }
-
 
     const role =
         String(
@@ -73,7 +109,6 @@ function canDeleteGestation(){
         )
         .trim()
         .toLowerCase();
-
 
     return (
 
@@ -91,12 +126,22 @@ function canDeleteGestation(){
 
 
 // ==========================================================
-// LOAD ALL RECORDS
+// LOAD FARM RECORDS ONLY
 // ==========================================================
 
 async function loadGestationRecords(){
 
     try{
+
+        const farmID =
+            getFarmID();
+
+        if(!farmID){
+
+            return;
+
+        }
+
 
         const {
             data,
@@ -107,6 +152,11 @@ async function loadGestationRecords(){
                 .from("gestation_records")
 
                 .select("*")
+
+                .eq(
+                    "farm_id",
+                    farmID
+                )
 
                 .order(
                     "id",
@@ -137,7 +187,6 @@ async function loadGestationRecords(){
             "LOAD GESTATION ERROR:",
             error
         );
-
 
         alert(
             error.message
@@ -326,7 +375,21 @@ document
             }
 
 
+            const farmID =
+                getFarmID();
+
+
+            if(!farmID){
+
+                return;
+
+            }
+
+
             const record = {
+
+                farm_id:
+                    farmID,
 
                 sow_id:
                     document
@@ -460,6 +523,14 @@ document
                 actionType = "Updated";
 
 
+                // ------------------------------------------------
+                // SECURITY:
+                // Do not allow farm_id to be changed.
+                // ------------------------------------------------
+
+                delete record.farm_id;
+
+
                 record.updated_by =
                     loggedUser.full_name;
 
@@ -478,6 +549,11 @@ document
                         .eq(
                             "id",
                             editId
+                        )
+
+                        .eq(
+                            "farm_id",
+                            farmID
                         );
 
             }
@@ -605,9 +681,6 @@ function displayRecords(
 
             // =================================================
             // DELETE BUTTON
-            // =================================================
-            //
-            // ONLY OWNER/ADMIN AND FARM MANAGER
             // =================================================
 
             if(
@@ -872,6 +945,17 @@ async function deleteRecord(id){
     }
 
 
+    const farmID =
+        getFarmID();
+
+
+    if(!farmID){
+
+        return;
+
+    }
+
+
     try{
 
         const deletedRecord =
@@ -896,6 +980,11 @@ async function deleteRecord(id){
                 .eq(
                     "id",
                     id
+                )
+
+                .eq(
+                    "farm_id",
+                    farmID
                 );
 
 
@@ -1058,6 +1147,12 @@ function generateReport(){
 
     }
 
+
+    // =======================================================
+    // IMPORTANT:
+    // gestationRecords already contains ONLY this farm's
+    // records because loadGestationRecords() filters farm_id.
+    // =======================================================
 
     const total =
         gestationRecords.length;
