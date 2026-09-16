@@ -3,6 +3,7 @@
 // SUPABASE AUTH LOGIN SYSTEM
 // AUTOMATIC ROLE IDENTIFICATION
 // SUBSCRIPTION CHECKING
+// LAST LOGIN TRACKING
 // =====================================
 
 document
@@ -256,6 +257,43 @@ document
 
             userData.farm_status =
                 farmData.status;
+
+        }
+
+
+        // =====================================
+        // RECORD LAST LOGIN
+        // =====================================
+        // Uses the secure Supabase function
+        // update_my_last_login().
+        //
+        // The database records the time using
+        // Africa/Lusaka (Zambia time).
+
+        const {
+            data: lastLoginTime,
+            error: lastLoginError
+        } = await supabaseClient
+
+            .rpc(
+                "update_my_last_login"
+            );
+
+
+        if (lastLoginError) {
+
+            console.error(
+                "LAST LOGIN UPDATE ERROR:",
+                lastLoginError
+            );
+
+        } else {
+
+            // Save the recorded login time
+            // into the current login session
+
+            userData.last_login =
+                lastLoginTime;
 
         }
 
