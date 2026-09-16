@@ -1,0 +1,161 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>
+    MUNKA PIGGERY - Super Admin
+</title>
+
+<link
+    rel="stylesheet"
+    href="dashboard.css">
+
+</head><body><!-- ======================================================
+     SUPER ADMIN USER PANEL
+====================================================== --><div class="user-panel"><h3 id="welcomeUser">
+    Welcome Super Admin
+</h3>
+
+<p id="userDetails"></p>
+
+<p id="lastLogin"></p>
+
+
+<button
+    type="button"
+    onclick="window.location.href='change_password.html'">
+
+    🔐 Change Password
+
+</button>
+
+
+<button
+    type="button"
+    onclick="logout()">
+
+    Logout
+
+</button>
+
+</div><!-- ======================================================
+     HEADER
+====================================================== --><div class="header"><h1>
+    MUNKA PIGGERY
+</h1>
+
+<p>
+    Super Admin Control Centre
+</p>
+
+</div><!-- ======================================================
+     MAIN CONTAINER
+====================================================== --><div class="container"><h2>
+    Platform Administration
+</h2>
+
+<p>
+    Manage farms, users, platform activity and
+    system-wide reports from this control centre.
+</p>
+
+
+<!-- ==================================================
+     SUPER ADMIN BUTTONS
+================================================== -->
+
+<div
+    class="buttons"
+    id="superAdminButtons">
+
+
+    <!-- DASHBOARD -->
+
+    <button
+        type="button"
+        data-platform-module="Dashboard"
+        data-platform-permission-type="can_view"
+        onclick="openSuperAdminDashboard()">
+
+        🏠 Platform Dashboard
+
+    </button>
+
+
+
+    <!-- FARM MANAGEMENT -->
+
+    <button
+        type="button"
+        data-platform-module="Farm Management"
+        data-platform-permission-type="can_view"
+        onclick="openFarmManagement()">
+
+        🏢 Farm Management
+
+    </button>
+
+
+
+    <!-- USER MANAGEMENT -->
+
+    <button
+        type="button"
+        data-platform-module="User Management"
+        data-platform-permission-type="can_view"
+        onclick="openPlatformUsers()">
+
+        👥 User Management
+
+    </button>
+
+
+
+    <!-- ACTIVITY LOGS -->
+
+    <button
+        type="button"
+        data-platform-module="Activity Logs"
+        data-platform-permission-type="can_view"
+        onclick="openPlatformActivity()">
+
+        📋 Activity Logs
+
+    </button>
+
+
+
+    <!-- PLATFORM REPORTS -->
+
+    <button
+        type="button"
+        data-platform-module="Platform Reports"
+        data-platform-permission-type="can_view"
+        onclick="openPlatformReports()">
+
+        📊 Platform Reports
+
+    </button>
+
+
+
+    <!-- PLATFORM PERMISSIONS -->
+
+    <button
+        type="button"
+        data-platform-module="Platform Permissions"
+        data-platform-permission-type="can_view"
+        onclick="openPlatformPermissions()">
+
+        🔐 Platform Permissions
+
+    </button>
+
+
+</div>
+
+</div><!-- ======================================================
+     SUPABASE
+====================================================== --><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="security.js"></script><script src="superadmin.js"></script></body></html>

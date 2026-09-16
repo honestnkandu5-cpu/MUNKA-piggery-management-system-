@@ -1,0 +1,679 @@
+/* ==========================================================
+   GLOBAL
+========================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background: #f4f7f5;
+
+    color: #26332a;
+}
+
+
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.platform-header {
+
+    background: #1b5e20;
+
+    color: white;
+
+    padding: 18px 25px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    flex-wrap: wrap;
+}
+
+.header-title h1 {
+
+    margin: 0;
+
+    font-size: 24px;
+}
+
+.header-title p {
+
+    margin: 5px 0 0;
+
+    opacity: 0.9;
+
+    font-size: 14px;
+}
+
+.header-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+}
+
+.header-actions button {
+
+    border: none;
+
+    padding: 10px 15px;
+
+    border-radius: 7px;
+
+    background: white;
+
+    color: #1b5e20;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.header-actions button:hover {
+
+    background: #e8f5e9;
+}
+
+
+
+/* ==========================================================
+   MAIN
+========================================================== */
+
+.user-management-container {
+
+    width: 95%;
+
+    max-width: 1400px;
+
+    margin: 25px auto;
+}
+
+
+
+/* ==========================================================
+   PAGE HEADING
+========================================================== */
+
+.page-heading {
+
+    margin-bottom: 20px;
+}
+
+.page-heading h2 {
+
+    margin-bottom: 5px;
+
+    color: #1b5e20;
+}
+
+.page-heading p {
+
+    margin-top: 0;
+
+    color: #666;
+}
+
+
+
+/* ==========================================================
+   MANAGEMENT CARD
+========================================================== */
+
+.management-card {
+
+    background: white;
+
+    border-radius: 12px;
+
+    padding: 22px;
+
+    margin-bottom: 22px;
+
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.07);
+}
+
+.section-heading {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 18px;
+}
+
+.section-heading h2 {
+
+    margin: 0;
+
+    color: #1b5e20;
+
+    font-size: 20px;
+}
+
+.section-heading p {
+
+    margin: 6px 0 0;
+
+    color: #777;
+
+    font-size: 14px;
+}
+
+
+
+/* ==========================================================
+   FORM
+========================================================== */
+
+.form-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(230px, 1fr)
+        );
+
+    gap: 18px;
+}
+
+.form-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+.form-group label {
+
+    font-weight: bold;
+
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #cfd8d2;
+
+    border-radius: 7px;
+
+    font-size: 14px;
+
+    background: white;
+
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+
+    border-color: #2e7d32;
+
+    box-shadow:
+        0 0 0 2px rgba(
+            46,
+            125,
+            50,
+            0.1
+        );
+}
+
+.form-group small {
+
+    color: #777;
+
+    font-size: 12px;
+}
+
+
+
+/* ==========================================================
+   FORM BUTTONS
+========================================================== */
+
+.form-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 20px;
+
+    flex-wrap: wrap;
+}
+
+.form-actions button {
+
+    border: none;
+
+    padding: 11px 18px;
+
+    border-radius: 7px;
+
+    background: #2e7d32;
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.form-actions button:hover {
+
+    background: #1b5e20;
+}
+
+.form-actions .secondary-button {
+
+    background: #777;
+}
+
+.form-actions .secondary-button:hover {
+
+    background: #555;
+}
+
+
+
+/* ==========================================================
+   USER STATISTICS
+========================================================== */
+
+.user-statistics {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(200px, 1fr)
+        );
+
+    gap: 18px;
+
+    margin-bottom: 22px;
+}
+
+.user-stat-card {
+
+    background: white;
+
+    padding: 18px;
+
+    border-radius: 10px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    box-shadow:
+        0 3px 10px rgba(
+            0,
+            0,
+            0,
+            0.06
+        );
+}
+
+.user-stat-card > span {
+
+    font-size: 30px;
+}
+
+.user-stat-card h3 {
+
+    margin: 0 0 5px;
+
+    font-size: 14px;
+
+    color: #666;
+}
+
+.user-stat-card p {
+
+    margin: 0;
+
+    font-size: 24px;
+
+    font-weight: bold;
+
+    color: #1b5e20;
+}
+
+
+
+/* ==========================================================
+   SEARCH
+========================================================== */
+
+.search-container {
+
+    margin-bottom: 18px;
+}
+
+.search-container input {
+
+    width: 100%;
+
+    padding: 13px;
+
+    border: 1px solid #ccd5ce;
+
+    border-radius: 7px;
+
+    font-size: 14px;
+}
+
+
+
+/* ==========================================================
+   TABLE
+========================================================== */
+
+.table-container {
+
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 850px;
+}
+
+thead {
+
+    background: #1b5e20;
+
+    color: white;
+}
+
+th,
+td {
+
+    padding: 12px;
+
+    border-bottom: 1px solid #e0e0e0;
+
+    text-align: left;
+
+    font-size: 14px;
+}
+
+tbody tr:hover {
+
+    background: #f5f9f6;
+}
+
+
+
+/* ==========================================================
+   STATUS
+========================================================== */
+
+.status-badge {
+
+    display: inline-block;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+.status-active {
+
+    background: #e8f5e9;
+
+    color: #1b5e20;
+}
+
+.status-inactive {
+
+    background: #ffebee;
+
+    color: #c62828;
+}
+
+
+
+/* ==========================================================
+   ACTION BUTTONS
+========================================================== */
+
+.action-buttons {
+
+    display: flex;
+
+    gap: 6px;
+
+    flex-wrap: wrap;
+}
+
+.action-buttons button {
+
+    border: none;
+
+    padding: 7px 9px;
+
+    border-radius: 5px;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-size: 12px;
+}
+
+.edit-button {
+
+    background: #1565c0;
+}
+
+.toggle-button {
+
+    background: #ef6c00;
+}
+
+.delete-button {
+
+    background: #c62828;
+}
+
+
+
+/* ==========================================================
+   MESSAGE
+========================================================== */
+
+.message {
+
+    display: none;
+
+    padding: 12px 15px;
+
+    margin-bottom: 20px;
+
+    border-radius: 7px;
+
+    font-size: 14px;
+}
+
+.message.success {
+
+    display: block;
+
+    background: #e8f5e9;
+
+    color: #1b5e20;
+}
+
+.message.error {
+
+    display: block;
+
+    background: #ffebee;
+
+    color: #b71c1c;
+}
+
+.message.info {
+
+    display: block;
+
+    background: #e3f2fd;
+
+    color: #1565c0;
+}
+
+
+
+/* ==========================================================
+   LOADING
+========================================================== */
+
+.loading {
+
+    text-align: center;
+
+    padding: 30px;
+
+    color: #777;
+}
+
+
+
+/* ==========================================================
+   REFRESH
+========================================================== */
+
+.refresh-button {
+
+    border: none;
+
+    padding: 9px 14px;
+
+    border-radius: 6px;
+
+    background: #2e7d32;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+
+
+/* ==========================================================
+   FOOTER
+========================================================== */
+
+.platform-footer {
+
+    text-align: center;
+
+    padding: 25px;
+
+    margin-top: 30px;
+
+    background: #1b5e20;
+
+    color: white;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width: 600px) {
+
+    .platform-header {
+
+        padding: 15px;
+
+    }
+
+    .header-title h1 {
+
+        font-size: 20px;
+
+    }
+
+    .user-management-container {
+
+        width: 94%;
+
+    }
+
+    .management-card {
+
+        padding: 16px;
+
+    }
+
+    .section-heading {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+    .form-actions button {
+
+        width: 100%;
+
+    }
+
+}
+

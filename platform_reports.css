@@ -465,4 +465,166 @@ tbody tr:last-child td {
         padding: 11px 10px;
     }
 
+}/* ==========================================================
+   QUICK ACTIONS
+========================================================== */
+
+.quick-actions-section {
+    margin-top: 25px;
+}
+
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(250px, 1fr)
+    );
+
+    gap: 20px;
+
+    margin-top: 15px;
+}
+
+
+/* ==========================================================
+   QUICK ACTION CARD
+========================================================== */
+
+.quick-action-card {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 20px;
+
+    border: 1px solid #d9e2dc;
+
+    border-radius: 12px;
+
+    background: #ffffff;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+
+/* ==========================================================
+   HOVER EFFECT
+========================================================== */
+
+.quick-action-card:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.10);
+
+    border-color: #2e7d32;
+}
+
+
+/* ==========================================================
+   QUICK ACTION ICON
+========================================================== */
+
+.quick-action-icon {
+
+    min-width: 55px;
+
+    height: 55px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: #e8f5e9;
+
+    font-size: 28px;
+}
+
+
+/* ==========================================================
+   QUICK ACTION TEXT
+========================================================== */
+
+.quick-action-card h3 {
+
+    margin: 0 0 7px 0;
+
+    font-size: 17px;
+
+    color: #1b5e20;
+}
+
+
+.quick-action-card p {
+
+    margin: 0;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    color: #666666;
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width: 600px) {
+
+    .quick-actions-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .quick-action-card {
+
+        padding: 16px;
+
+    }
+
+
+    .quick-action-icon {
+
+        min-width: 48px;
+
+        height: 48px;
+
+        font-size: 24px;
+
+    }
+
+
+    .quick-action-card h3 {
+
+        font-size: 15px;
+
+    }
+
+
+    .quick-action-card p {
+
+        font-size: 13px;
+
+    }
+
 }

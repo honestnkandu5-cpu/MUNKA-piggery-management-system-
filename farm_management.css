@@ -1,0 +1,365 @@
+/* =====================================================
+   MUNKA PIGGERY MANAGEMENT SYSTEM
+   FARM MANAGEMENT CSS
+   SUPER ADMIN MODULE
+   ===================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7f5;
+    color: #26352c;
+    min-height: 100vh;
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.super-admin-header {
+    background: #123d2a;
+    color: white;
+    padding: 25px 20px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.super-admin-header h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.super-admin-header p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+
+/* =====================================================
+   MAIN CONTAINER
+   ===================================================== */
+
+.super-admin-container {
+    width: 94%;
+    max-width: 1200px;
+    margin: 25px auto;
+}
+
+
+/* =====================================================
+   FARM FORM
+   ===================================================== */
+
+.farm-form {
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.farm-form h2 {
+    color: #123d2a;
+    margin-bottom: 20px;
+    font-size: 21px;
+}
+
+
+/* =====================================================
+   FORM GRID
+   ===================================================== */
+
+.farm-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+
+/* =====================================================
+   FORM GROUP
+   ===================================================== */
+
+.form-group {
+    margin-bottom: 5px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 7px;
+    color: #34423a;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccd5cf;
+    border-radius: 7px;
+    font-size: 15px;
+    background: white;
+    color: #26352c;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #198754;
+    box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.1);
+}
+
+
+/* =====================================================
+   FORM BUTTONS
+   ===================================================== */
+
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+}
+
+.save-farm-btn {
+    background: #198754;
+    color: white;
+    border: none;
+    padding: 12px 26px;
+    border-radius: 7px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.save-farm-btn:hover {
+    background: #146c43;
+}
+
+.clear-farm-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 26px;
+    border-radius: 7px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.clear-farm-btn:hover {
+    background: #565e64;
+}
+
+
+/* =====================================================
+   REGISTERED FARM SECTION
+   ===================================================== */
+
+#farmList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+
+/* =====================================================
+   FARM CARD
+   ===================================================== */
+
+.farm-card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    border-left: 5px solid #198754;
+}
+
+.farm-card h2 {
+    color: #123d2a;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.farm-card p {
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.farm-card strong {
+    color: #34423a;
+}
+
+
+/* =====================================================
+   FARM STATUS
+   ===================================================== */
+
+.farm-status {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.farm-status.active {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.farm-status.inactive {
+    background: #f8d7da;
+    color: #842029;
+}
+
+
+/* =====================================================
+   FARM ACTIONS
+   ===================================================== */
+
+.farm-actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.edit-btn {
+    background: #0d6efd;
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.edit-btn:hover {
+    background: #0b5ed7;
+}
+
+.status-btn {
+    background: #ffc107;
+    color: #212529;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.status-btn:hover {
+    background: #e0a800;
+}
+
+
+/* =====================================================
+   BACK BUTTON
+   ===================================================== */
+
+.logout-section {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.logout-btn {
+    background: #123d2a;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: #0d2f20;
+}
+
+
+/* =====================================================
+   FOOTER
+   ===================================================== */
+
+.super-admin-footer {
+    text-align: center;
+    padding: 20px;
+    color: #68756d;
+    font-size: 13px;
+}
+
+
+/* =====================================================
+   MOBILE RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+    .super-admin-header {
+        padding: 20px 15px;
+    }
+
+    .super-admin-header h1 {
+        font-size: 23px;
+    }
+
+    .super-admin-container {
+        width: 92%;
+        margin-top: 18px;
+    }
+
+    .farm-form {
+        padding: 18px;
+    }
+
+    .farm-form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .form-group.full-width {
+        grid-column: auto;
+    }
+
+    #farmList {
+        grid-template-columns: 1fr;
+    }
+
+    .farm-card {
+        padding: 18px;
+    }
+
+    .form-buttons {
+        flex-direction: column;
+    }
+
+    .save-farm-btn,
+    .clear-farm-btn {
+        width: 100%;
+    }
+
+    .farm-actions {
+        flex-direction: column;
+    }
+
+    .edit-btn,
+    .status-btn {
+        width: 100%;
+    }
+}
+

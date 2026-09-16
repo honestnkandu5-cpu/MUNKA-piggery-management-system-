@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MUNKA PIGGERY - Farm Management</title>
+
+<link rel="stylesheet" href="farm_management.css">
+
+</head>
+
+
+<body>
+
+
+<header class="super-admin-header">
+
+    <h1>Farm Management</h1>
+
+    <p>
+        MUNKA PIGGERY Management System -
+        Super Admin
+    </p>
+
+</header>
+
+
+<main class="super-admin-container">
+
+
+    <!-- =====================================
+         ADD / EDIT FARM FORM
+         ===================================== -->
+
+    <div class="farm-form">
+
+        <h2>Add / Edit Farm</h2>
+
+
+        <div class="form-group">
+
+            <label for="farmName">
+                Farm Name *
+            </label>
+
+            <input
+                type="text"
+                id="farmName"
+                placeholder="Enter farm name"
+                required
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="ownerName">
+                Owner Name
+            </label>
+
+            <input
+                type="text"
+                id="ownerName"
+                placeholder="Enter owner name"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="farmPhone">
+                Phone Number
+            </label>
+
+            <input
+                type="tel"
+                id="farmPhone"
+                placeholder="Enter phone number"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="farmEmail">
+                Email Address
+            </label>
+
+            <input
+                type="email"
+                id="farmEmail"
+                placeholder="Enter farm email"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="farmLocation">
+                Farm Location
+            </label>
+
+            <input
+                type="text"
+                id="farmLocation"
+                placeholder="Enter farm location"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="farmStatus">
+                Status
+            </label>
+
+            <select id="farmStatus">
+
+                <option value="Active">
+                    Active
+                </option>
+
+                <option value="Inactive">
+                    Inactive
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-buttons">
+
+            <button
+                type="button"
+                id="saveFarmButton"
+                class="save-farm-btn"
+                onclick="saveFarm()">
+
+                Add Farm
+
+            </button>
+
+
+            <button
+                type="button"
+                class="clear-farm-btn"
+                onclick="clearFarmForm()">
+
+                Clear
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================
+         REGISTERED FARMS
+         ===================================== -->
+
+    <div class="farm-form">
+
+        <h2>Registered Farms</h2>
+
+        <div id="farmList">
+
+            <p>
+                Loading farms...
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================
+         BACK BUTTON
+         ===================================== -->
+
+    <div class="logout-section">
+
+        <button
+            class="logout-btn"
+            onclick="window.location.href='superadmin.html'">
+
+            Back to Super Admin
+
+        </button>
+
+    </div>
+
+
+</main>
+
+
+<footer class="super-admin-footer">
+
+    MUNKA PIGGERY Management System<br>
+
+    Super Admin Platform
+
+</footer>
+
+
+<!-- =====================================
+     SUPABASE
+     ===================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="farm_management.js"></script>
+
+
+</body>
+
+</html>

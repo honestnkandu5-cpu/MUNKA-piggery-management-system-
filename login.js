@@ -2,6 +2,7 @@
 // MUNKA PIGGERY
 // SUPABASE AUTH LOGIN SYSTEM
 // AUTOMATIC ROLE IDENTIFICATION
+// SUBSCRIPTION CHECKING
 // =====================================
 
 document
@@ -52,7 +53,7 @@ document
 
 
         // =====================================
-        // GET USER PROFILE FROM DATABASE
+        // GET USER PROFILE
         // =====================================
 
         const {
@@ -71,7 +72,6 @@ document
 
         if (userError || !userData) {
 
-            // Sign out if profile does not exist
             await supabaseClient.auth.signOut();
 
             message.innerHTML =
@@ -87,7 +87,6 @@ document
 
         if (userData.status !== "Active") {
 
-            // Sign out inactive users
             await supabaseClient.auth.signOut();
 
             message.innerHTML =
@@ -117,6 +116,147 @@ document
                 "User role is not assigned. Please contact the administrator.";
 
             return;
+        }
+
+
+        // =====================================
+        // SUPER ADMIN CHECK
+        // =====================================
+        // Super Admin is platform-level and does
+        // not belong to a farm.
+        // Therefore subscription checking is
+        // NOT applied to Super Admin.
+
+        const isSuperAdmin =
+            String(userRole)
+                .trim()
+                .toLowerCase() === "super admin";
+
+
+        // =====================================
+        // FARM SUBSCRIPTION CHECK
+        // =====================================
+
+        if (!isSuperAdmin) {
+
+            // -------------------------------------
+            // CHECK FARM ID
+            // -------------------------------------
+
+            if (!userData.farm_id) {
+
+                await supabaseClient.auth.signOut();
+
+                message.innerHTML =
+                    "Your account is not linked to a farm. Please contact the administrator.";
+
+                return;
+            }
+
+
+            // -------------------------------------
+            // GET FARM INFORMATION
+            // -------------------------------------
+
+            const {
+                data: farmData,
+                error: farmError
+            } = await supabaseClient
+
+                .from("farms")
+
+                .select(
+                    "id, farm_name, status, subscription_start, subscription_end"
+                )
+
+                .eq("id", userData.farm_id)
+
+                .single();
+
+
+            if (farmError || !farmData) {
+
+                console.error(
+                    "FARM CHECK ERROR:",
+                    farmError
+                );
+
+                await supabaseClient.auth.signOut();
+
+                message.innerHTML =
+                    "Your farm could not be found. Please contact the administrator.";
+
+                return;
+            }
+
+
+            // -------------------------------------
+            // CHECK FARM STATUS
+            // -------------------------------------
+
+            if (farmData.status !== "Active") {
+
+                await supabaseClient.auth.signOut();
+
+                message.innerHTML =
+                    "Your farm subscription is inactive or expired. Please contact the administrator to renew your subscription.";
+
+                return;
+            }
+
+
+            // -------------------------------------
+            // CHECK SUBSCRIPTION END DATE
+            // -------------------------------------
+
+            if (
+                farmData.subscription_end &&
+                new Date(farmData.subscription_end) <= new Date()
+            ) {
+
+                await supabaseClient.auth.signOut();
+
+                message.innerHTML =
+                    "Your farm subscription has expired. Please contact the administrator to renew your subscription.";
+
+                return;
+            }
+
+
+            // -------------------------------------
+            // CHECK SUBSCRIPTION START DATE
+            // -------------------------------------
+
+            if (
+                farmData.subscription_start &&
+                new Date(farmData.subscription_start) > new Date()
+            ) {
+
+                await supabaseClient.auth.signOut();
+
+                message.innerHTML =
+                    "Your farm subscription has not started yet.";
+
+                return;
+            }
+
+
+            // -------------------------------------
+            // SAVE FARM DETAILS IN LOGIN SESSION
+            // -------------------------------------
+
+            userData.farm_name =
+                farmData.farm_name;
+
+            userData.subscription_start =
+                farmData.subscription_start;
+
+            userData.subscription_end =
+                farmData.subscription_end;
+
+            userData.farm_status =
+                farmData.status;
+
         }
 
 
@@ -163,18 +303,30 @@ document
 
 
         // =====================================
-        // GO TO DASHBOARD
+        // ROLE-BASED REDIRECT
         // =====================================
 
-        window.location.href =
-            "dashboard.html";
+        if (isSuperAdmin) {
 
+            // Super Admin
+            window.location.href =
+                "superadmin.html";
+
+        } else {
+
+            // Normal farm user
+            window.location.href =
+                "dashboard.html";
+        }
 
     }
 
     catch(error) {
 
-        console.log(error);
+        console.error(
+            "LOGIN SYSTEM ERROR:",
+            error
+        );
 
         message.innerHTML =
             "System error. Please try again.";

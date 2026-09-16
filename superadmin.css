@@ -1,0 +1,179 @@
+/* =========================================================
+   MUNKA PIGGERY MANAGEMENT SYSTEM
+   SUPER ADMIN DASHBOARD
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7f5;
+    color: #26352c;
+    min-height: 100vh;
+}
+
+/* =========================
+   HEADER
+   ========================= */
+
+.super-admin-header {
+    background: #123d2a;
+    color: white;
+    padding: 25px 20px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.super-admin-header h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.super-admin-header p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* =========================
+   MAIN CONTAINER
+   ========================= */
+
+.super-admin-container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 25px auto;
+}
+
+/* =========================
+   USER INFORMATION
+   ========================= */
+
+.admin-profile {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    border-left: 5px solid #198754;
+}
+
+.admin-profile h2 {
+    color: #123d2a;
+    margin-bottom: 10px;
+}
+
+.admin-profile p {
+    margin: 6px 0;
+    font-size: 15px;
+}
+
+/* =========================
+   MODULE GRID
+   ========================= */
+
+#superAdminButtons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+/* =========================
+   MODULE BUTTONS
+   ========================= */
+
+#superAdminButtons button {
+    display: block;
+    width: 100%;
+    min-height: 120px;
+    border: none;
+    border-radius: 14px;
+    background: white;
+    color: #123d2a;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    border-top: 4px solid #198754;
+}
+
+#superAdminButtons button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.13);
+    background: #f8fffb;
+}
+
+#superAdminButtons button:active {
+    transform: translateY(-1px);
+}
+
+/* =========================
+   LOGOUT BUTTON
+   ========================= */
+
+.logout-section {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.logout-btn {
+    background: #b02a37;
+    color: white;
+    border: none;
+    padding: 13px 30px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: #8f202b;
+}
+
+/* =========================
+   FOOTER
+   ========================= */
+
+.super-admin-footer {
+    text-align: center;
+    padding: 20px;
+    color: #68756d;
+    font-size: 13px;
+}
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 600px) {
+
+    .super-admin-header h1 {
+        font-size: 22px;
+    }
+
+    .super-admin-container {
+        width: 92%;
+        margin-top: 18px;
+    }
+
+    #superAdminButtons {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    #superAdminButtons button {
+        min-height: 90px;
+        font-size: 16px;
+    }
+
+    .admin-profile {
+        padding: 16px;
+    }
+} 
+

@@ -1,4 +1,9 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
 
 <meta
     name="viewport"
@@ -12,45 +17,61 @@
     rel="stylesheet"
     href="platform_dashboard.css">
 
-</head><body><!-- ======================================================
+</head>
+
+<body>
+
+<!-- ======================================================
      HEADER
-====================================================== --><header class="platform-header"><div>
+====================================================== -->
 
-    <h1>
-        MUNKA PIGGERY
-    </h1>
+<header class="platform-header">
 
-    <p>
-        Super Admin Platform Dashboard
-    </p>
+    <div>
 
-</div>
+        <h1>
+            MUNKA PIGGERY
+        </h1>
 
+        <p>
+            Super Admin Platform Dashboard
+        </p>
 
-<div class="header-actions">
-
-    <button
-        type="button"
-        onclick="window.location.href='superadmin.html'">
-
-        ← Control Centre
-
-    </button>
+    </div>
 
 
-    <button
-        type="button"
-        onclick="logout()">
+    <div class="header-actions">
 
-        Logout
+        <button
+            type="button"
+            onclick="window.location.href='superadmin.html'">
 
-    </button>
+            ← Control Centre
 
-</div>
+        </button>
 
-</header><!-- ======================================================
+
+        <button
+            type="button"
+            onclick="logout()">
+
+            Logout
+
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- ======================================================
      MAIN CONTAINER
-====================================================== --><main class="platform-container"><!-- ==================================================
+====================================================== -->
+
+<main class="platform-container">
+
+
+<!-- ==================================================
      WELCOME
 ================================================== -->
 
@@ -320,6 +341,141 @@
 
 
 <!-- ==================================================
+     QUICK ACTIONS
+================================================== -->
+
+<section class="dashboard-section quick-actions-section">
+
+    <div class="section-heading">
+
+        <h2>
+            Quick Actions
+        </h2>
+
+    </div>
+
+
+    <div class="quick-actions-grid">
+
+
+        <!-- RECORD PAYMENT -->
+
+        <button
+            type="button"
+            class="quick-action-card"
+            onclick="window.location.href='record_payment.html'">
+
+            <div class="quick-action-icon">
+                💳
+            </div>
+
+            <div>
+
+                <h3>
+                    Record Subscription Payment
+                </h3>
+
+                <p>
+                    Record a manual customer payment
+                    and activate or extend the farm subscription.
+                </p>
+
+            </div>
+
+        </button>
+
+
+
+        <!-- SUBSCRIPTION REPORTS -->
+
+        <button
+            type="button"
+            class="quick-action-card"
+            onclick="window.location.href='platform_reports.html'">
+
+            <div class="quick-action-icon">
+                📊
+            </div>
+
+            <div>
+
+                <h3>
+                    Subscription Reports
+                </h3>
+
+                <p>
+                    View subscription payments,
+                    revenue and payment history.
+                </p>
+
+            </div>
+
+        </button>
+
+
+
+        <!-- FARM MANAGEMENT -->
+
+        <button
+            type="button"
+            class="quick-action-card"
+            onclick="window.location.href='farms.html'">
+
+            <div class="quick-action-icon">
+                🏢
+            </div>
+
+            <div>
+
+                <h3>
+                    Manage Farms
+                </h3>
+
+                <p>
+                    View and manage registered farms
+                    on the platform.
+                </p>
+
+            </div>
+
+        </button>
+
+
+
+        <!-- USER MANAGEMENT -->
+
+        <button
+            type="button"
+            class="quick-action-card"
+            onclick="window.location.href='platform_user_management.html'">
+
+            <div class="quick-action-icon">
+                👥
+            </div>
+
+            <div>
+
+                <h3>
+                    User Management
+                </h3>
+
+                <p>
+                    Create, edit, activate, deactivate
+                    and manage platform users.
+                </p>
+
+            </div>
+
+        </button>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- ==================================================
      FARM OVERVIEW
 ================================================== -->
 
@@ -428,12 +584,36 @@
 
 </section>
 
-</main><!-- ======================================================
+
+</main>
+
+
+
+<!-- ======================================================
      FOOTER
-====================================================== --><footer class="platform-footer">MUNKA PIGGERY Management System<br>
+====================================================== -->
 
-Super Admin Platform Dashboard
+<footer class="platform-footer">
 
-</footer><!-- ======================================================
+    MUNKA PIGGERY Management System<br>
+
+    Super Admin Platform Dashboard
+
+</footer>
+
+
+
+<!-- ======================================================
      SUPABASE
-====================================================== --><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="platform_dashboard.js"></script></body></html>
+====================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="platform_dashboard.js"></script>
+
+
+</body>
+
+</html>
