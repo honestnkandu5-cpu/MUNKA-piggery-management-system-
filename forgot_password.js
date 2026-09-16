@@ -1,78 +1,125 @@
 // =====================================
 // MUNKA PIGGERY
-// FORGOT PASSWORD
+// SECURE FORGOT PASSWORD
 // SUPABASE AUTH
 // =====================================
 
+
 document
 .getElementById("forgotPasswordForm")
-.addEventListener("submit", async function(e){
+.addEventListener("submit", async function(e) {
 
     e.preventDefault();
+
 
     const email =
         document
         .getElementById("email")
         .value
-        .trim();
+        .trim()
+        .toLowerCase();
+
 
     const message =
         document
         .getElementById("message");
 
 
+    // =====================================
+    // BASIC EMAIL CHECK
+    // =====================================
+
+    if(!email) {
+
+        message.innerHTML =
+            "Please enter your email address.";
+
+        return;
+    }
+
+
+    const emailPattern =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+    if(!emailPattern.test(email)) {
+
+        message.innerHTML =
+            "Please enter a valid email address.";
+
+        return;
+    }
+
+
     message.innerHTML =
-        "Sending password reset link...";
+        "Processing your request...";
 
 
-    try{
+    try {
+
+
+        // =====================================
+        // PASSWORD RESET REQUEST
+        // =====================================
 
         const resetUrl =
             window.location.origin +
             "/reset_password.html";
 
 
-        const { error } =
-            await supabaseClient
+        const {
+            error
+        } =
+        await supabaseClient
             .auth
             .resetPasswordForEmail(
                 email,
                 {
-                    redirectTo: resetUrl
+                    redirectTo:
+                        resetUrl
                 }
             );
 
 
-        if(error){
+        // =====================================
+        // LOG INTERNAL ERROR
+        // =====================================
+
+        if(error) {
 
             console.error(
-                "PASSWORD RESET ERROR:",
+                "PASSWORD RESET REQUEST ERROR:",
                 error
             );
 
-            message.innerHTML =
-                "Unable to send password reset link. Please try again.";
-
-            return;
         }
 
 
+        // =====================================
+        // GENERIC RESPONSE
+        // =====================================
+        // Do NOT reveal whether the email
+        // exists in the system.
+
         message.innerHTML =
-            "Password reset link has been sent to your email. Please check your inbox.";
+            "If an account exists for this email, a password reset link has been sent. Please check your inbox and spam folder.";
 
 
     }
-    catch(error){
+    catch(error) {
 
         console.error(
             "FORGOT PASSWORD ERROR:",
             error
         );
 
+
+        // Give the same safe response
+        // even if an unexpected error occurs.
+
         message.innerHTML =
-            "System error. Please try again.";
+            "If an account exists for this email, a password reset link has been sent. Please check your inbox and spam folder.";
 
     }
 
 });
-
