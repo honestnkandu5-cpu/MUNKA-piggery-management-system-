@@ -48,8 +48,8 @@ body {
 
 .header-actions button {
     border: none;
-    padding: 10px 16px;
-    border-radius: 6px;
+    padding: 10px 17px;
+    border-radius: 7px;
     cursor: pointer;
     background: white;
     color: #075e2b;
@@ -67,7 +67,7 @@ body {
 
 .platform-container {
     width: 92%;
-    max-width: 1250px;
+    max-width: 1300px;
     margin: 30px auto;
 }
 
@@ -78,20 +78,21 @@ body {
 
 .welcome-section {
     background: white;
-    padding: 25px;
-    border-radius: 10px;
+    padding: 26px;
+    border-radius: 12px;
     margin-bottom: 25px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 9px rgba(0, 0, 0, 0.08);
 }
 
 .welcome-section h2 {
-    margin-top: 0;
+    margin: 0 0 8px;
     color: #075e2b;
 }
 
 .welcome-section p {
-    margin-bottom: 0;
+    margin: 0;
     color: #4b5563;
+    line-height: 1.6;
 }
 
 
@@ -101,23 +102,24 @@ body {
 
 .statistics-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 18px;
     margin-bottom: 25px;
 }
 
 .stat-card {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 22px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 15px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    gap: 16px;
+    box-shadow: 0 2px 9px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid #075e2b;
 }
 
 .stat-icon {
-    font-size: 30px;
+    font-size: 32px;
 }
 
 .stat-card h3 {
@@ -128,7 +130,7 @@ body {
 
 .stat-card p {
     margin: 0;
-    font-size: 22px;
+    font-size: 23px;
     font-weight: bold;
     color: #075e2b;
 }
@@ -140,10 +142,10 @@ body {
 
 .dashboard-section {
     background: white;
-    padding: 25px;
-    border-radius: 10px;
+    padding: 26px;
+    border-radius: 12px;
     margin-bottom: 25px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 9px rgba(0, 0, 0, 0.08);
 }
 
 .section-heading {
@@ -160,12 +162,18 @@ body {
     color: #075e2b;
 }
 
+.section-heading p {
+    margin: 6px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
 .section-heading button {
     border: none;
     background: #075e2b;
     color: white;
-    padding: 10px 16px;
-    border-radius: 6px;
+    padding: 10px 17px;
+    border-radius: 7px;
     cursor: pointer;
     font-weight: bold;
 }
@@ -176,29 +184,117 @@ body {
 
 
 /* ==========================================================
-   SUBSCRIPTION SUMMARY
+   PLAN CARDS
+========================================================== */
+
+.plan-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.plan-card {
+    border: 1px solid #dfe7e2;
+    background: #fafcfb;
+    padding: 22px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.plan-card:hover {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.plan-icon {
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.plan-card h3 {
+    margin: 5px 0;
+    color: #075e2b;
+}
+
+.plan-price {
+    font-size: 21px;
+    font-weight: bold;
+    margin: 10px 0 15px;
+    color: #1f2933;
+}
+
+.plan-card p {
+    margin: 8px 0;
+}
+
+.plan-card strong {
+    color: #075e2b;
+}
+
+
+/* ==========================================================
+   FARM SUMMARY
 ========================================================== */
 
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    gap: 18px;
 }
 
 .summary-card {
-    border: 1px solid #e0e5e2;
+    border: 1px solid #dfe7e2;
     background: #fafcfb;
-    padding: 18px;
-    border-radius: 8px;
+    padding: 20px;
+    border-radius: 10px;
 }
 
 .summary-card h3 {
     margin-top: 0;
+    margin-bottom: 14px;
     color: #075e2b;
+    font-size: 18px;
 }
 
 .summary-card p {
-    margin: 7px 0;
+    margin: 8px 0;
+    color: #374151;
+}
+
+.summary-card strong {
+    color: #111827;
+}
+
+
+/* ==========================================================
+   EXPIRING SUBSCRIPTIONS
+========================================================== */
+
+.expiring-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.expiring-card {
+    border: 1px solid #f1d48a;
+    background: #fffbeb;
+    padding: 18px;
+    border-radius: 9px;
+}
+
+.expiring-card h3 {
+    margin: 0 0 10px;
+    color: #92400e;
+}
+
+.expiring-card p {
+    margin: 6px 0;
+    color: #4b5563;
+}
+
+.expiring-days {
+    font-weight: bold;
+    color: #b45309;
 }
 
 
@@ -209,12 +305,14 @@ body {
 .table-wrapper {
     width: 100%;
     overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 850px;
+    min-width: 1000px;
 }
 
 thead {
@@ -228,21 +326,26 @@ td {
     border-bottom: 1px solid #e5e7eb;
     text-align: left;
     font-size: 14px;
+    white-space: nowrap;
 }
 
 tbody tr:hover {
     background: #f7faf8;
 }
 
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
 
 /* ==========================================================
-   PAYMENT STATUS
+   STATUS BADGES
 ========================================================== */
 
 .status-paid,
 .status-active {
     display: inline-block;
-    padding: 5px 9px;
+    padding: 5px 10px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: bold;
@@ -252,7 +355,7 @@ tbody tr:hover {
 
 .status-pending {
     display: inline-block;
-    padding: 5px 9px;
+    padding: 5px 10px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: bold;
@@ -264,7 +367,7 @@ tbody tr:hover {
 .status-inactive,
 .status-expired {
     display: inline-block;
-    padding: 5px 9px;
+    padding: 5px 10px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: bold;
@@ -279,12 +382,12 @@ tbody tr:hover {
 
 .platform-footer {
     margin-top: 40px;
-    padding: 20px;
+    padding: 22px;
     text-align: center;
     background: #075e2b;
     color: white;
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 
@@ -292,15 +395,20 @@ tbody tr:hover {
    TABLET
 ========================================================== */
 
-@media (max-width: 1000px) {
+@media (max-width: 1050px) {
 
     .statistics-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .plan-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .summary-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
 }
 
 
@@ -328,12 +436,19 @@ tbody tr:hover {
         padding: 18px;
     }
 
-    .statistics-grid {
+    .statistics-grid,
+    .plan-grid,
+    .summary-grid,
+    .expiring-list {
         grid-template-columns: 1fr;
     }
 
-    .summary-grid {
-        grid-template-columns: 1fr;
+    .stat-card {
+        padding: 18px;
+    }
+
+    .stat-card p {
+        font-size: 21px;
     }
 
     .header-actions {
@@ -347,6 +462,7 @@ tbody tr:hover {
     th,
     td {
         font-size: 13px;
+        padding: 11px 10px;
     }
-}
 
+}

@@ -87,46 +87,7 @@ async function loadSubscriptionReports() {
     );
 
 
-    const revenueElement =
-        document.getElementById(
-            "totalRevenue"
-        );
-
-    const totalPaymentsElement =
-        document.getElementById(
-            "totalPayments"
-        );
-
-    const paidPaymentsElement =
-        document.getElementById(
-            "paidPayments"
-        );
-
-    const pendingPaymentsElement =
-        document.getElementById(
-            "pendingPayments"
-        );
-
-    const activeSubscriptionsElement =
-        document.getElementById(
-            "activeSubscriptions"
-        );
-
-
-    if (revenueElement)
-        revenueElement.textContent = "…";
-
-    if (totalPaymentsElement)
-        totalPaymentsElement.textContent = "…";
-
-    if (paidPaymentsElement)
-        paidPaymentsElement.textContent = "…";
-
-    if (pendingPaymentsElement)
-        pendingPaymentsElement.textContent = "…";
-
-    if (activeSubscriptionsElement)
-        activeSubscriptionsElement.textContent = "…";
+    setLoadingState();
 
 
     /* ======================================================
@@ -148,7 +109,7 @@ async function loadSubscriptionReports() {
             farmsResult.error
         );
 
-        alert(
+        showPageError(
             "Unable to load farm subscription information."
         );
 
@@ -185,8 +146,8 @@ async function loadSubscriptionReports() {
             paymentsResult.error
         );
 
-        alert(
-            "Unable to load subscription payments."
+        showPageError(
+            "Unable to load subscription payment information."
         );
 
         return;
@@ -198,24 +159,24 @@ async function loadSubscriptionReports() {
 
 
     /* ======================================================
-       CALCULATE STATISTICS
+       CALCULATE PAYMENT STATISTICS
     ====================================================== */
 
     const paidPayments =
         payments.filter(
             payment =>
-                String(
+                normalize(
                     payment.payment_status
-                ).toLowerCase() === "paid"
+                ) === "paid"
         );
 
 
     const pendingPayments =
         payments.filter(
             payment =>
-                String(
+                normalize(
                     payment.payment_status
-                ).toLowerCase() === "pending"
+                ) === "pending"
         );
 
 
@@ -237,6 +198,10 @@ async function loadSubscriptionReports() {
             0
         );
 
+
+    /* ======================================================
+       ACTIVE SUBSCRIPTIONS
+    ====================================================== */
 
     const now =
         new Date();
@@ -266,53 +231,101 @@ async function loadSubscriptionReports() {
 
 
     /* ======================================================
-       DISPLAY STATISTICS
+       EXPIRING WITHIN 30 DAYS
     ====================================================== */
 
-    if (revenueElement) {
+    const expiringSubscriptions =
+        farms.filter(
+            farm => {
 
-        revenueElement.textContent =
-            formatCurrency(
-                totalRevenue
-            );
-
-    }
-
-
-    if (totalPaymentsElement) {
-
-        totalPaymentsElement.textContent =
-            payments.length;
-
-    }
+                if (
+                    farm.status !== "Active" ||
+                    !farm.subscription_end
+                ) {
+                    return false;
+                }
 
 
-    if (paidPaymentsElement) {
-
-        paidPaymentsElement.textContent =
-            paidPayments.length;
-
-    }
+                const end =
+                    new Date(
+                        farm.subscription_end
+                    );
 
 
-    if (pendingPaymentsElement) {
+                const days =
+                    (
+                        end.getTime() -
+                        now.getTime()
+                    ) /
+                    (
+                        1000 *
+                        60 *
+                        60 *
+                        24
+                    );
 
-        pendingPaymentsElement.textContent =
-            pendingPayments.length;
 
-    }
-
-
-    if (activeSubscriptionsElement) {
-
-        activeSubscriptionsElement.textContent =
-            activeSubscriptions;
-
-    }
+                return (
+                    days > 0 &&
+                    days <= 30
+                );
+            }
+        ).length;
 
 
     /* ======================================================
-       DISPLAY SUMMARY
+       DISPLAY MAIN STATISTICS
+    ====================================================== */
+
+    setText(
+        "totalRevenue",
+        formatCurrency(
+            totalRevenue
+        )
+    );
+
+
+    setText(
+        "totalPayments",
+        payments.length
+    );
+
+
+    setText(
+        "paidPayments",
+        paidPayments.length
+    );
+
+
+    setText(
+        "pendingPayments",
+        pendingPayments.length
+    );
+
+
+    setText(
+        "activeSubscriptions",
+        activeSubscriptions
+    );
+
+
+    setText(
+        "expiringSubscriptions",
+        expiringSubscriptions
+    );
+
+
+    /* ======================================================
+       PLAN REPORTS
+    ====================================================== */
+
+    loadPlanReports(
+        paidPayments
+    );
+
+
+    /* ======================================================
+       FARM SUMMARY
     ====================================================== */
 
     loadSubscriptionSummary(
@@ -322,7 +335,16 @@ async function loadSubscriptionReports() {
 
 
     /* ======================================================
-       DISPLAY PAYMENT TABLE
+       EXPIRING LIST
+    ====================================================== */
+
+    loadExpiringSubscriptions(
+        farms
+    );
+
+
+    /* ======================================================
+       PAYMENT REPORT
     ====================================================== */
 
     loadPaymentReport(
@@ -338,7 +360,172 @@ async function loadSubscriptionReports() {
 
 
 /* ==========================================================
-   SUBSCRIPTION SUMMARY
+   PLAN REPORTS
+========================================================== */
+
+function loadPlanReports(
+    paidPayments
+) {
+
+    const monthly =
+        getPlanPayments(
+            paidPayments,
+            "monthly"
+        );
+
+
+    const sixMonths =
+        getPlanPayments(
+            paidPayments,
+            "6"
+        );
+
+
+    const annual =
+        getPlanPayments(
+            paidPayments,
+            "annual"
+        );
+
+
+    setText(
+        "monthlyCount",
+        monthly.count
+    );
+
+
+    setText(
+        "monthlyRevenue",
+        formatCurrency(
+            monthly.revenue
+        )
+    );
+
+
+    setText(
+        "sixMonthCount",
+        sixMonths.count
+    );
+
+
+    setText(
+        "sixMonthRevenue",
+        formatCurrency(
+            sixMonths.revenue
+        )
+    );
+
+
+    setText(
+        "annualCount",
+        annual.count
+    );
+
+
+    setText(
+        "annualRevenue",
+        formatCurrency(
+            annual.revenue
+        )
+    );
+}
+
+
+/* ==========================================================
+   FIND PLAN PAYMENTS
+========================================================== */
+
+function getPlanPayments(
+    payments,
+    planType
+) {
+
+    const matchingPayments =
+        payments.filter(
+            payment => {
+
+                const name =
+                    normalize(
+                        payment.plan_name
+                    );
+
+
+                const days =
+                    Number(
+                        payment.duration_days ||
+                        0
+                    );
+
+
+                if (
+                    planType === "monthly"
+                ) {
+
+                    return (
+                        name === "monthly" ||
+                        days === 30
+                    );
+                }
+
+
+                if (
+                    planType === "6"
+                ) {
+
+                    return (
+                        name === "6 months" ||
+                        name === "6 month" ||
+                        days === 180
+                    );
+                }
+
+
+                if (
+                    planType === "annual"
+                ) {
+
+                    return (
+                        name === "annual" ||
+                        name === "yearly" ||
+                        days === 365
+                    );
+                }
+
+
+                return false;
+            }
+        );
+
+
+    const revenue =
+        matchingPayments.reduce(
+            (
+                total,
+                payment
+            ) =>
+                total +
+                Number(
+                    payment.amount ||
+                    0
+                ),
+            0
+        );
+
+
+    return {
+
+        count:
+            matchingPayments.length,
+
+        revenue:
+            revenue
+
+    };
+}
+
+
+/* ==========================================================
+   FARM SUBSCRIPTION SUMMARY
 ========================================================== */
 
 function loadSubscriptionSummary(
@@ -380,12 +567,52 @@ function loadSubscriptionSummary(
                 "summary-card";
 
 
+            const farmPayments =
+                payments.filter(
+                    payment =>
+                        Number(
+                            payment.farm_id
+                        ) ===
+                        Number(
+                            farm.id
+                        )
+                );
+
+
+            const paidFarmPayments =
+                farmPayments.filter(
+                    payment =>
+                        normalize(
+                            payment.payment_status
+                        ) === "paid"
+                );
+
+
+            const farmRevenue =
+                paidFarmPayments.reduce(
+                    (
+                        total,
+                        payment
+                    ) =>
+                        total +
+                        Number(
+                            payment.amount ||
+                            0
+                        ),
+                    0
+                );
+
+
             let subscriptionStatus =
                 "No subscription";
 
 
-            let expiry =
+            let expiryText =
                 "N/A";
+
+
+            let daysRemaining =
+                null;
 
 
             if (
@@ -398,6 +625,23 @@ function loadSubscriptionSummary(
                     );
 
 
+                const difference =
+                    end.getTime() -
+                    new Date().getTime();
+
+
+                daysRemaining =
+                    Math.ceil(
+                        difference /
+                        (
+                            1000 *
+                            60 *
+                            60 *
+                            24
+                        )
+                    );
+
+
                 if (
                     farm.status === "Active" &&
                     end > new Date()
@@ -406,7 +650,8 @@ function loadSubscriptionSummary(
                     subscriptionStatus =
                         "Active";
 
-                    expiry =
+
+                    expiryText =
                         end.toLocaleDateString(
                             "en-ZM",
                             {
@@ -423,45 +668,31 @@ function loadSubscriptionSummary(
                     subscriptionStatus =
                         "Expired";
 
-                    expiry =
+
+                    expiryText =
                         "Expired";
                 }
             }
 
 
-            const farmPayments =
-                payments.filter(
-                    payment =>
-                        Number(
-                            payment.farm_id
-                        ) ===
-                        Number(
-                            farm.id
-                        )
-                );
+            let statusClass =
+                "";
 
 
-            const farmRevenue =
-                farmPayments
-                    .filter(
-                        payment =>
-                            String(
-                                payment.payment_status
-                            ).toLowerCase() ===
-                            "paid"
-                    )
-                    .reduce(
-                        (
-                            total,
-                            payment
-                        ) =>
-                            total +
-                            Number(
-                                payment.amount ||
-                                0
-                            ),
-                        0
-                    );
+            if (
+                subscriptionStatus === "Active"
+            ) {
+
+                statusClass =
+                    "status-active";
+
+            }
+
+            else {
+
+                statusClass =
+                    "status-expired";
+            }
 
 
             card.innerHTML = `
@@ -481,7 +712,7 @@ function loadSubscriptionSummary(
 
 
                 <p>
-                    <strong>Status:</strong>
+                    <strong>Farm Status:</strong>
                     ${escapeHTML(
                         farm.status ||
                         "N/A"
@@ -491,22 +722,46 @@ function loadSubscriptionSummary(
 
                 <p>
                     <strong>Subscription:</strong>
-                    ${escapeHTML(
-                        subscriptionStatus
-                    )}
+
+                    <span
+                        class="${statusClass}">
+
+                        ${escapeHTML(
+                            subscriptionStatus
+                        )}
+
+                    </span>
                 </p>
 
 
                 <p>
                     <strong>Expiry:</strong>
                     ${escapeHTML(
-                        expiry
+                        expiryText
                     )}
                 </p>
 
 
+                ${
+                    daysRemaining !== null &&
+                    daysRemaining > 0
+                        ? `
+                            <p>
+                                <strong>
+                                    Days Remaining:
+                                </strong>
+                                ${daysRemaining}
+                            </p>
+                          `
+                        : ""
+                }
+
+
                 <p>
-                    <strong>Paid Revenue:</strong>
+                    <strong>
+                        Paid Revenue:
+                    </strong>
+
                     ${formatCurrency(
                         farmRevenue
                     )}
@@ -514,8 +769,192 @@ function loadSubscriptionSummary(
 
 
                 <p>
-                    <strong>Payments:</strong>
+                    <strong>
+                        Payment Records:
+                    </strong>
+
                     ${farmPayments.length}
+                </p>
+
+            `;
+
+
+            container.appendChild(
+                card
+            );
+
+        }
+    );
+}
+
+
+/* ==========================================================
+   EXPIRING SUBSCRIPTIONS
+========================================================== */
+
+function loadExpiringSubscriptions(
+    farms
+) {
+
+    const container =
+        document.getElementById(
+            "expiringList"
+        );
+
+
+    if (!container) return;
+
+
+    const now =
+        new Date();
+
+
+    const expiring =
+        farms.filter(
+            farm => {
+
+                if (
+                    farm.status !== "Active" ||
+                    !farm.subscription_end
+                ) {
+                    return false;
+                }
+
+
+                const end =
+                    new Date(
+                        farm.subscription_end
+                    );
+
+
+                const days =
+                    (
+                        end.getTime() -
+                        now.getTime()
+                    ) /
+                    (
+                        1000 *
+                        60 *
+                        60 *
+                        24
+                    );
+
+
+                return (
+                    days > 0 &&
+                    days <= 30
+                );
+            }
+        );
+
+
+    if (!expiring.length) {
+
+        container.innerHTML = `
+
+            <p>
+                No active subscriptions are
+                expiring within 30 days.
+            </p>
+
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    expiring.sort(
+        (
+            a,
+            b
+        ) =>
+            new Date(
+                a.subscription_end
+            ) -
+            new Date(
+                b.subscription_end
+            )
+    );
+
+
+    expiring.forEach(
+        farm => {
+
+            const end =
+                new Date(
+                    farm.subscription_end
+                );
+
+
+            const days =
+                Math.ceil(
+                    (
+                        end.getTime() -
+                        now.getTime()
+                    ) /
+                    (
+                        1000 *
+                        60 *
+                        60 *
+                        24
+                    )
+                );
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "expiring-card";
+
+
+            card.innerHTML = `
+
+                <h3>
+                    ${escapeHTML(
+                        farm.farm_name ||
+                        "Unnamed Farm"
+                    )}
+                </h3>
+
+
+                <p>
+                    <strong>
+                        Farm ID:
+                    </strong>
+
+                    ${farm.id}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Expiry Date:
+                    </strong>
+
+                    ${end.toLocaleDateString(
+                        "en-ZM",
+                        {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric"
+                        }
+                    )}
+                </p>
+
+
+                <p class="expiring-days">
+
+                    ${days}
+                    day${days === 1 ? "" : "s"}
+                    remaining
+
                 </p>
 
             `;
@@ -555,7 +994,7 @@ function loadPaymentReport(
             <tr>
 
                 <td
-                    colspan="7">
+                    colspan="8">
 
                     No subscription payments found.
 
@@ -605,10 +1044,9 @@ function loadPaymentReport(
 
 
             const status =
-                String(
-                    payment.payment_status ||
-                    "N/A"
-                ).toLowerCase();
+                normalize(
+                    payment.payment_status
+                );
 
 
             let statusClass =
@@ -639,7 +1077,6 @@ function loadPaymentReport(
 
                 statusClass =
                     "status-failed";
-
             }
 
 
@@ -717,6 +1154,16 @@ function loadPaymentReport(
 
                 <td>
 
+                    ${escapeHTML(
+                        payment.transaction_reference ||
+                        "N/A"
+                    )}
+
+                </td>
+
+
+                <td>
+
                     <span
                         class="${statusClass}">
 
@@ -738,6 +1185,181 @@ function loadPaymentReport(
 
         }
     );
+}
+
+
+/* ==========================================================
+   LOADING STATE
+========================================================== */
+
+function setLoadingState() {
+
+    const ids = [
+
+        "totalRevenue",
+        "totalPayments",
+        "paidPayments",
+        "pendingPayments",
+        "activeSubscriptions",
+        "expiringSubscriptions"
+
+    ];
+
+
+    ids.forEach(
+        id =>
+            setText(
+                id,
+                "…"
+            )
+    );
+
+
+    const summary =
+        document.getElementById(
+            "subscriptionSummary"
+        );
+
+
+    if (summary) {
+
+        summary.innerHTML =
+            "<p>Loading subscription information...</p>";
+    }
+
+
+    const expiring =
+        document.getElementById(
+            "expiringList"
+        );
+
+
+    if (expiring) {
+
+        expiring.innerHTML =
+            "<p>Loading expiry information...</p>";
+    }
+
+
+    const table =
+        document.getElementById(
+            "paymentReport"
+        );
+
+
+    if (table) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="8">
+
+                    Loading payment records...
+
+                </td>
+
+            </tr>
+
+        `;
+    }
+}
+
+
+/* ==========================================================
+   PAGE ERROR
+========================================================== */
+
+function showPageError(
+    message
+) {
+
+    const summary =
+        document.getElementById(
+            "subscriptionSummary"
+        );
+
+
+    if (summary) {
+
+        summary.innerHTML =
+            `<p>${escapeHTML(message)}</p>`;
+    }
+
+
+    const expiring =
+        document.getElementById(
+            "expiringList"
+        );
+
+
+    if (expiring) {
+
+        expiring.innerHTML =
+            `<p>${escapeHTML(message)}</p>`;
+    }
+
+
+    const table =
+        document.getElementById(
+            "paymentReport"
+        );
+
+
+    if (table) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="8">
+
+                    ${escapeHTML(message)}
+
+                </td>
+
+            </tr>
+
+        `;
+    }
+}
+
+
+/* ==========================================================
+   SET TEXT
+========================================================== */
+
+function setText(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(id);
+
+
+    if (element) {
+
+        element.textContent =
+            value;
+
+    }
+}
+
+
+/* ==========================================================
+   NORMALIZE TEXT
+========================================================== */
+
+function normalize(
+    value
+) {
+
+    return String(
+        value || ""
+    )
+        .trim()
+        .toLowerCase();
 }
 
 
@@ -859,4 +1481,3 @@ document.addEventListener(
 
     }
 );
-

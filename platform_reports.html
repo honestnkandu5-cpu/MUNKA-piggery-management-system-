@@ -67,25 +67,25 @@
 
 
 <!-- ======================================================
-     MAIN CONTAINER
+     MAIN
 ====================================================== -->
 
 <main class="platform-container">
 
 
     <!-- ==================================================
-         TITLE
+         PAGE INTRODUCTION
     ================================================== -->
 
     <section class="welcome-section">
 
         <h2>
-            Subscription Reports
+            Subscription & Payment Reports
         </h2>
 
         <p>
-            Monitor subscription payments, revenue,
-            payment status and farm subscriptions.
+            Monitor farm subscriptions, subscription revenue,
+            payment activity and upcoming subscription expiry.
         </p>
 
     </section>
@@ -93,13 +93,11 @@
 
 
     <!-- ==================================================
-         STATISTICS
+         MAIN STATISTICS
     ================================================== -->
 
     <section class="statistics-grid">
 
-
-        <!-- TOTAL REVENUE -->
 
         <div class="stat-card">
 
@@ -122,9 +120,6 @@
         </div>
 
 
-
-        <!-- TOTAL PAYMENTS -->
-
         <div class="stat-card">
 
             <div class="stat-icon">
@@ -145,9 +140,6 @@
 
         </div>
 
-
-
-        <!-- PAID -->
 
         <div class="stat-card">
 
@@ -170,9 +162,6 @@
         </div>
 
 
-
-        <!-- PENDING -->
-
         <div class="stat-card">
 
             <div class="stat-icon">
@@ -193,9 +182,6 @@
 
         </div>
 
-
-
-        <!-- ACTIVE SUBSCRIPTIONS -->
 
         <div class="stat-card">
 
@@ -218,21 +204,176 @@
         </div>
 
 
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                ⚠️
+            </div>
+
+            <div>
+
+                <h3>
+                    Expiring Within 30 Days
+                </h3>
+
+                <p id="expiringSubscriptions">
+                    —
+                </p>
+
+            </div>
+
+        </div>
+
     </section>
 
 
 
     <!-- ==================================================
-         SUBSCRIPTION SUMMARY
+         REVENUE BY PLAN
     ================================================== -->
 
     <section class="dashboard-section">
 
         <div class="section-heading">
 
-            <h2>
-                Subscription Summary
-            </h2>
+            <div>
+
+                <h2>
+                    Revenue by Subscription Plan
+                </h2>
+
+                <p>
+                    Revenue generated from paid subscriptions.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="plan-grid">
+
+
+            <!-- MONTHLY -->
+
+            <div class="plan-card">
+
+                <div class="plan-icon">
+                    📆
+                </div>
+
+                <h3>
+                    Monthly
+                </h3>
+
+                <p class="plan-price">
+                    K250
+                </p>
+
+                <p>
+                    Paid subscriptions:
+                    <strong id="monthlyCount">0</strong>
+                </p>
+
+                <p>
+                    Revenue:
+                    <strong id="monthlyRevenue">
+                        ZMW 0.00
+                    </strong>
+                </p>
+
+            </div>
+
+
+
+            <!-- 6 MONTHS -->
+
+            <div class="plan-card">
+
+                <div class="plan-icon">
+                    📅
+                </div>
+
+                <h3>
+                    6 Months
+                </h3>
+
+                <p class="plan-price">
+                    K1,500
+                </p>
+
+                <p>
+                    Paid subscriptions:
+                    <strong id="sixMonthCount">0</strong>
+                </p>
+
+                <p>
+                    Revenue:
+                    <strong id="sixMonthRevenue">
+                        ZMW 0.00
+                    </strong>
+                </p>
+
+            </div>
+
+
+
+            <!-- ANNUAL -->
+
+            <div class="plan-card">
+
+                <div class="plan-icon">
+                    🗓️
+                </div>
+
+                <h3>
+                    Annual
+                </h3>
+
+                <p class="plan-price">
+                    K2,500
+                </p>
+
+                <p>
+                    Paid subscriptions:
+                    <strong id="annualCount">0</strong>
+                </p>
+
+                <p>
+                    Revenue:
+                    <strong id="annualRevenue">
+                        ZMW 0.00
+                    </strong>
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         FARM SUBSCRIPTION SUMMARY
+    ================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2>
+                    Farm Subscription Summary
+                </h2>
+
+                <p>
+                    Current subscription status and revenue
+                    for each registered farm.
+                </p>
+
+            </div>
 
 
             <button
@@ -261,6 +402,44 @@
 
 
     <!-- ==================================================
+         EXPIRING SUBSCRIPTIONS
+    ================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2>
+                    Subscriptions Expiring Soon
+                </h2>
+
+                <p>
+                    Active subscriptions with 30 days or less
+                    remaining.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="expiringList"
+            class="expiring-list">
+
+            <p>
+                Loading expiry information...
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ==================================================
          PAYMENT REPORT
     ================================================== -->
 
@@ -268,9 +447,17 @@
 
         <div class="section-heading">
 
-            <h2>
-                Subscription Payment Report
-            </h2>
+            <div>
+
+                <h2>
+                    Subscription Payment Report
+                </h2>
+
+                <p>
+                    Complete subscription payment history.
+                </p>
+
+            </div>
 
         </div>
 
@@ -308,6 +495,10 @@
                         </th>
 
                         <th>
+                            Reference
+                        </th>
+
+                        <th>
                             Status
                         </th>
 
@@ -320,8 +511,7 @@
 
                     <tr>
 
-                        <td
-                            colspan="7">
+                        <td colspan="8">
 
                             Loading payment records...
 
@@ -352,7 +542,7 @@
 
     <br>
 
-    Super Admin Subscription Reports
+    Super Admin Subscription & Payment Reports
 
 </footer>
 
