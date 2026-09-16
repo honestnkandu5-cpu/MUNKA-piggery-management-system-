@@ -1,0 +1,352 @@
+/* ==========================================================
+   MUNKA PIGGERY
+   SUPER ADMIN - SUBSCRIPTION REPORTS
+   ========================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7f5;
+    color: #1f2933;
+}
+
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.platform-header {
+    background: #075e2b;
+    color: white;
+    padding: 20px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.platform-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.platform-header p {
+    margin: 5px 0 0;
+    font-size: 15px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.header-actions button {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: white;
+    color: #075e2b;
+    font-weight: bold;
+}
+
+.header-actions button:hover {
+    opacity: 0.9;
+}
+
+
+/* ==========================================================
+   MAIN CONTAINER
+========================================================== */
+
+.platform-container {
+    width: 92%;
+    max-width: 1250px;
+    margin: 30px auto;
+}
+
+
+/* ==========================================================
+   WELCOME
+========================================================== */
+
+.welcome-section {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.welcome-section h2 {
+    margin-top: 0;
+    color: #075e2b;
+}
+
+.welcome-section p {
+    margin-bottom: 0;
+    color: #4b5563;
+}
+
+
+/* ==========================================================
+   STATISTICS
+========================================================== */
+
+.statistics-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+    font-size: 30px;
+}
+
+.stat-card h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: #4b5563;
+}
+
+.stat-card p {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+    color: #075e2b;
+}
+
+
+/* ==========================================================
+   DASHBOARD SECTIONS
+========================================================== */
+
+.dashboard-section {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.section-heading h2 {
+    margin: 0;
+    color: #075e2b;
+}
+
+.section-heading button {
+    border: none;
+    background: #075e2b;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.section-heading button:hover {
+    opacity: 0.9;
+}
+
+
+/* ==========================================================
+   SUBSCRIPTION SUMMARY
+========================================================== */
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.summary-card {
+    border: 1px solid #e0e5e2;
+    background: #fafcfb;
+    padding: 18px;
+    border-radius: 8px;
+}
+
+.summary-card h3 {
+    margin-top: 0;
+    color: #075e2b;
+}
+
+.summary-card p {
+    margin: 7px 0;
+}
+
+
+/* ==========================================================
+   PAYMENT TABLE
+========================================================== */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+thead {
+    background: #075e2b;
+    color: white;
+}
+
+th,
+td {
+    padding: 13px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    font-size: 14px;
+}
+
+tbody tr:hover {
+    background: #f7faf8;
+}
+
+
+/* ==========================================================
+   PAYMENT STATUS
+========================================================== */
+
+.status-paid,
+.status-active {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-pending {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-failed,
+.status-inactive,
+.status-expired {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+
+/* ==========================================================
+   FOOTER
+========================================================== */
+
+.platform-footer {
+    margin-top: 40px;
+    padding: 20px;
+    text-align: center;
+    background: #075e2b;
+    color: white;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================================
+   TABLET
+========================================================== */
+
+@media (max-width: 1000px) {
+
+    .statistics-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width: 650px) {
+
+    .platform-header {
+        padding: 18px 4%;
+    }
+
+    .platform-header h1 {
+        font-size: 23px;
+    }
+
+    .platform-container {
+        width: 94%;
+        margin: 20px auto;
+    }
+
+    .welcome-section,
+    .dashboard-section {
+        padding: 18px;
+    }
+
+    .statistics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-actions button {
+        flex: 1;
+    }
+
+    th,
+    td {
+        font-size: 13px;
+    }
+}
+
