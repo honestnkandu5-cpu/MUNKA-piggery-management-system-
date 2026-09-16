@@ -1,0 +1,246 @@
+/* ==========================================================
+   MUNKA PIGGERY
+   SUPER ADMIN - PLATFORM ACTIVITY
+   ========================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7f5;
+    color: #1f2933;
+}
+
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+.platform-header {
+    background: #075e2b;
+    color: white;
+    padding: 20px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.platform-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.platform-header p {
+    margin: 5px 0 0;
+    font-size: 15px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.header-actions button {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: white;
+    color: #075e2b;
+    font-weight: bold;
+}
+
+.header-actions button:hover {
+    opacity: 0.9;
+}
+
+
+/* ==========================================================
+   MAIN CONTAINER
+   ========================================================== */
+
+.platform-container {
+    width: 92%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+
+/* ==========================================================
+   WELCOME
+   ========================================================== */
+
+.welcome-section {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.welcome-section h2 {
+    margin-top: 0;
+    color: #075e2b;
+}
+
+.welcome-section p {
+    margin-bottom: 0;
+}
+
+
+/* ==========================================================
+   DASHBOARD SECTION
+   ========================================================== */
+
+.dashboard-section {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.section-heading h2 {
+    margin: 0;
+    color: #075e2b;
+}
+
+.section-heading button {
+    border: none;
+    background: #075e2b;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.section-heading button:hover {
+    opacity: 0.9;
+}
+
+
+/* ==========================================================
+   ACTIVITY LIST
+   ========================================================== */
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-item {
+    border: 1px solid #e0e5e2;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    background: #fafcfb;
+}
+
+.activity-item strong {
+    color: #075e2b;
+    font-size: 16px;
+}
+
+.activity-item p {
+    margin: 7px 0 0;
+    color: #4b5563;
+}
+
+.activity-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    text-align: right;
+}
+
+.activity-module {
+    font-weight: bold;
+    color: #075e2b;
+}
+
+.activity-user {
+    color: #374151;
+}
+
+.activity-date {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+
+.platform-footer {
+    margin-top: 40px;
+    padding: 20px;
+    text-align: center;
+    background: #075e2b;
+    color: white;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+    .platform-header {
+        padding: 18px 4%;
+    }
+
+    .platform-header h1 {
+        font-size: 23px;
+    }
+
+    .platform-container {
+        width: 94%;
+        margin: 20px auto;
+    }
+
+    .welcome-section,
+    .dashboard-section {
+        padding: 18px;
+    }
+
+    .activity-item {
+        flex-direction: column;
+    }
+
+    .activity-details {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-actions button {
+        flex: 1;
+    }
+}
+

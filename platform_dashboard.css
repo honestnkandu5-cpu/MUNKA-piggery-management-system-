@@ -1,0 +1,1025 @@
+/* ==========================================================
+MUNKA PIGGERY
+SUPER ADMIN - PLATFORM DASHBOARD
+========================================================== */
+
+/* ==========================================================
+GENERAL
+========================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  }
+
+body {
+
+font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+background:
+    #f4f7f5;
+
+color:
+    #26352c;
+
+min-height:
+    100vh;
+
+}
+
+/* ==========================================================
+HEADER
+========================================================== */
+
+.platform-header {
+
+background:
+    #14532d;
+
+color:
+    white;
+
+padding:
+    20px 30px;
+
+display:
+    flex;
+
+justify-content:
+    space-between;
+
+align-items:
+    center;
+
+gap:
+    20px;
+
+box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.15);
+
+}
+
+.platform-header h1 {
+
+font-size:
+    28px;
+
+margin-bottom:
+    5px;
+
+}
+
+.platform-header p {
+
+font-size:
+    15px;
+
+opacity:
+    0.9;
+
+}
+
+/* ==========================================================
+HEADER BUTTONS
+========================================================== */
+
+.header-actions {
+
+display:
+    flex;
+
+gap:
+    10px;
+
+flex-wrap:
+    wrap;
+
+}
+
+.header-actions button {
+
+border:
+    none;
+
+padding:
+    10px 16px;
+
+border-radius:
+    7px;
+
+cursor:
+    pointer;
+
+font-size:
+    14px;
+
+font-weight:
+    bold;
+
+background:
+    white;
+
+color:
+    #14532d;
+
+transition:
+    0.2s;
+
+}
+
+.header-actions button:hover {
+
+transform:
+    translateY(-1px);
+
+opacity:
+    0.9;
+
+}
+
+/* ==========================================================
+MAIN CONTAINER
+========================================================== */
+
+.platform-container {
+
+width:
+    95%;
+
+max-width:
+    1400px;
+
+margin:
+    25px auto;
+
+}
+
+/* ==========================================================
+WELCOME SECTION
+========================================================== */
+
+.welcome-section {
+
+background:
+    white;
+
+padding:
+    25px;
+
+border-radius:
+    12px;
+
+margin-bottom:
+    25px;
+
+border-left:
+    5px solid #14532d;
+
+box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08);
+
+}
+
+.welcome-section h2 {
+
+color:
+    #14532d;
+
+margin-bottom:
+    8px;
+
+font-size:
+    24px;
+
+}
+
+.welcome-section p {
+
+color:
+    #64748b;
+
+font-size:
+    15px;
+
+}
+
+/* ==========================================================
+STATISTICS GRID
+========================================================== */
+
+.statistics-grid {
+
+display:
+    grid;
+
+grid-template-columns:
+    repeat(5, 1fr);
+
+gap:
+    18px;
+
+margin-bottom:
+    30px;
+
+}
+
+/* ==========================================================
+STAT CARD
+========================================================== */
+
+.stat-card {
+
+background:
+    white;
+
+border-radius:
+    12px;
+
+padding:
+    20px;
+
+display:
+    flex;
+
+align-items:
+    center;
+
+gap:
+    15px;
+
+min-height:
+    115px;
+
+box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08);
+
+border:
+    1px solid #e5e7eb;
+
+transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+
+}
+
+.stat-card:hover {
+
+transform:
+    translateY(-3px);
+
+box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.12);
+
+}
+
+/* ==========================================================
+STAT ICON
+========================================================== */
+
+.stat-icon {
+
+width:
+    48px;
+
+height:
+    48px;
+
+min-width:
+    48px;
+
+border-radius:
+    50%;
+
+background:
+    #e8f5ec;
+
+display:
+    flex;
+
+justify-content:
+    center;
+
+align-items:
+    center;
+
+font-size:
+    23px;
+
+}
+
+/* ==========================================================
+STAT TEXT
+========================================================== */
+
+.stat-card h3 {
+
+font-size:
+    14px;
+
+color:
+    #64748b;
+
+margin-bottom:
+    7px;
+
+font-weight:
+    600;
+
+}
+
+.stat-card p {
+
+font-size:
+    25px;
+
+font-weight:
+    bold;
+
+color:
+    #14532d;
+
+}
+
+/* ==========================================================
+DASHBOARD SECTIONS
+========================================================== */
+
+.dashboard-section {
+
+background:
+    white;
+
+border-radius:
+    12px;
+
+padding:
+    22px;
+
+margin-bottom:
+    25px;
+
+box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08);
+
+border:
+    1px solid #e5e7eb;
+
+}
+
+/* ==========================================================
+SECTION HEADING
+========================================================== */
+
+.section-heading {
+
+display:
+    flex;
+
+justify-content:
+    space-between;
+
+align-items:
+    center;
+
+gap:
+    15px;
+
+margin-bottom:
+    18px;
+
+padding-bottom:
+    12px;
+
+border-bottom:
+    1px solid #e5e7eb;
+
+}
+
+.section-heading h2 {
+
+color:
+    #14532d;
+
+font-size:
+    20px;
+
+}
+
+.section-heading button {
+
+border:
+    none;
+
+background:
+    #14532d;
+
+color:
+    white;
+
+padding:
+    9px 15px;
+
+border-radius:
+    6px;
+
+cursor:
+    pointer;
+
+font-weight:
+    bold;
+
+}
+
+.section-heading button:hover {
+
+opacity:
+    0.9;
+
+}
+
+/* ==========================================================
+FARM OVERVIEW
+========================================================== */
+
+.farm-overview {
+
+display:
+    grid;
+
+grid-template-columns:
+    repeat(3, 1fr);
+
+gap:
+    16px;
+
+}
+
+.farm-overview-card {
+
+border:
+    1px solid #e5e7eb;
+
+border-radius:
+    10px;
+
+padding:
+    18px;
+
+background:
+    #fafcfb;
+
+}
+
+.farm-overview-card h3 {
+
+color:
+    #14532d;
+
+font-size:
+    18px;
+
+margin-bottom:
+    12px;
+
+}
+
+.farm-overview-card p {
+
+margin:
+    8px 0;
+
+font-size:
+    14px;
+
+color:
+    #475569;
+
+}
+
+.farm-overview-card strong {
+
+color:
+    #334155;
+
+}
+
+/* ==========================================================
+STATUS BADGES
+========================================================== */
+
+.status-active {
+
+display:
+    inline-block;
+
+background:
+    #dcfce7;
+
+color:
+    #166534;
+
+padding:
+    4px 9px;
+
+border-radius:
+    20px;
+
+font-size:
+    12px;
+
+font-weight:
+    bold;
+
+}
+
+.status-inactive {
+
+display:
+    inline-block;
+
+background:
+    #fee2e2;
+
+color:
+    #991b1b;
+
+padding:
+    4px 9px;
+
+border-radius:
+    20px;
+
+font-size:
+    12px;
+
+font-weight:
+    bold;
+
+}
+
+/* ==========================================================
+ACTIVITY LIST
+========================================================== */
+
+.activity-list {
+
+display:
+    flex;
+
+flex-direction:
+    column;
+
+gap:
+    10px;
+
+}
+
+.activity-item {
+
+display:
+    grid;
+
+grid-template-columns:
+    1fr auto;
+
+gap:
+    20px;
+
+padding:
+    15px;
+
+border:
+    1px solid #e5e7eb;
+
+border-radius:
+    8px;
+
+background:
+    #fafcfb;
+
+}
+
+.activity-item strong {
+
+color:
+    #14532d;
+
+font-size:
+    14px;
+
+}
+
+.activity-item p {
+
+margin-top:
+    5px;
+
+color:
+    #64748b;
+
+font-size:
+    13px;
+
+}
+
+.activity-item div:last-child {
+
+display:
+    flex;
+
+flex-direction:
+    column;
+
+align-items:
+    flex-end;
+
+gap:
+    4px;
+
+}
+
+.activity-item span {
+
+background:
+    #e8f5ec;
+
+color:
+    #14532d;
+
+padding:
+    3px 8px;
+
+border-radius:
+    12px;
+
+font-size:
+    11px;
+
+font-weight:
+    bold;
+
+}
+
+.activity-item small {
+
+color:
+    #64748b;
+
+font-size:
+    11px;
+
+}
+
+/* ==========================================================
+PAYMENTS
+========================================================== */
+
+.payments-list {
+
+display:
+    flex;
+
+flex-direction:
+    column;
+
+gap:
+    10px;
+
+}
+
+.payment-item {
+
+display:
+    grid;
+
+grid-template-columns:
+    1fr auto auto;
+
+align-items:
+    center;
+
+gap:
+    20px;
+
+padding:
+    15px;
+
+border:
+    1px solid #e5e7eb;
+
+border-radius:
+    8px;
+
+background:
+    #fafcfb;
+
+}
+
+.payment-item strong {
+
+color:
+    #14532d;
+
+font-size:
+    14px;
+
+}
+
+.payment-item p {
+
+margin-top:
+    4px;
+
+color:
+    #64748b;
+
+font-size:
+    12px;
+
+}
+
+.payment-item small {
+
+color:
+    #64748b;
+
+font-size:
+    11px;
+
+}
+
+.payment-item > div:nth-child(2) {
+
+text-align:
+    right;
+
+}
+
+/* ==========================================================
+FOOTER
+========================================================== */
+
+.platform-footer {
+
+text-align:
+    center;
+
+background:
+    #14532d;
+
+color:
+    white;
+
+padding:
+    20px;
+
+margin-top:
+    35px;
+
+font-size:
+    13px;
+
+line-height:
+    1.6;
+
+}
+
+/* ==========================================================
+TABLET
+========================================================== */
+
+@media (
+max-width: 1100px
+) {
+
+.statistics-grid {
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+}
+
+
+.farm-overview {
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+}
+
+}
+
+/* ==========================================================
+MOBILE
+========================================================== */
+
+@media (
+max-width: 700px
+) {
+
+.platform-header {
+
+    flex-direction:
+        column;
+
+    align-items:
+        flex-start;
+
+}
+
+
+.header-actions {
+
+    width:
+        100%;
+
+}
+
+
+.header-actions button {
+
+    flex:
+        1;
+
+}
+
+
+.statistics-grid {
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:
+        12px;
+
+}
+
+
+.stat-card {
+
+    padding:
+        14px;
+
+    min-height:
+        100px;
+
+    gap:
+        10px;
+
+}
+
+
+.stat-icon {
+
+    width:
+        40px;
+
+    height:
+        40px;
+
+    min-width:
+        40px;
+
+    font-size:
+        19px;
+
+}
+
+
+.stat-card h3 {
+
+    font-size:
+        12px;
+
+}
+
+
+.stat-card p {
+
+    font-size:
+        21px;
+
+}
+
+
+.farm-overview {
+
+    grid-template-columns:
+        1fr;
+
+}
+
+
+.section-heading {
+
+    align-items:
+        flex-start;
+
+    flex-direction:
+        column;
+
+}
+
+
+.activity-item {
+
+    grid-template-columns:
+        1fr;
+
+}
+
+
+.activity-item div:last-child {
+
+    align-items:
+        flex-start;
+
+}
+
+
+.payment-item {
+
+    grid-template-columns:
+        1fr;
+
+}
+
+
+.payment-item > div:nth-child(2) {
+
+    text-align:
+        left;
+
+}
+
+}
+
+/* ==========================================================
+SMALL PHONES
+========================================================== */
+
+@media (
+max-width: 430px
+) {
+
+.platform-container {
+
+    width:
+        93%;
+
+}
+
+
+.platform-header {
+
+    padding:
+        17px;
+
+}
+
+
+.platform-header h1 {
+
+    font-size:
+        23px;
+
+}
+
+
+.statistics-grid {
+
+    grid-template-columns:
+        1fr;
+
+}
+
+
+.stat-card {
+
+    min-height:
+        90px;
+
+}
+
+
+.welcome-section {
+
+    padding:
+        18px;
+
+}
+
+
+.dashboard-section {
+
+    padding:
+        16px;
+
+}
+
+}
+

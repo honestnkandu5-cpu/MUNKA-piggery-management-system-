@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>
+    MUNKA PIGGERY - Platform Activity
+</title>
+
+<link
+    rel="stylesheet"
+    href="platform_activity.css">
+
+</head>
+
+<body>
+
+<header class="platform-header">
+
+    <div>
+
+        <h1>
+            MUNKA PIGGERY
+        </h1>
+
+        <p>
+            Super Admin - Platform Activity Logs
+        </p>
+
+    </div>
+
+
+    <div class="header-actions">
+
+        <button
+            type="button"
+            onclick="window.location.href='platform_dashboard.html'">
+
+            ← Dashboard
+
+        </button>
+
+
+        <button
+            type="button"
+            onclick="logout()">
+
+            Logout
+
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="platform-container">
+
+    <section class="welcome-section">
+
+        <h2>
+            Platform Activity Logs
+        </h2>
+
+        <p>
+            View recent activities performed across the MUNKA PIGGERY platform.
+        </p>
+
+    </section>
+
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <h2>
+                Activity Logs
+            </h2>
+
+            <button
+                type="button"
+                onclick="loadActivityLogs()">
+
+                🔄 Refresh
+
+            </button>
+
+        </div>
+
+
+        <div
+            id="activityList"
+            class="activity-list">
+
+            <p>
+                Loading activity logs...
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="platform-footer">
+
+    MUNKA PIGGERY Management System
+    <br>
+
+    Super Admin Platform Activity
+
+</footer>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="platform_activity.js"></script>
+
+</body>
+
+</html>
