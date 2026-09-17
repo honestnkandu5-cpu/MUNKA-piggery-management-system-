@@ -24,237 +24,670 @@
 
 
 <!-- ======================================================
-     USER PANEL
+     TOP NAVIGATION
 ====================================================== -->
 
-<div class="user-panel">
+<header class="topbar">
 
-    <h3 id="welcomeUser"></h3>
+    <div class="brand">
 
-    <p id="userDetails"></p>
+        <div class="brand-icon">
+            🐖
+        </div>
 
-    <p id="lastLogin"></p>
+        <div>
 
+            <h1>
+                MUNKA PIGGERY
+            </h1>
 
-    <button
-        type="button"
-        onclick="window.location.href='change_password.html'">
+            <span>
+                Management System
+            </span>
 
-        🔐 Change Password
-
-    </button>
-
-
-    <button
-        type="button"
-        onclick="logout()">
-
-        Logout
-
-    </button>
-
-</div>
-
-
-
-<!-- ======================================================
-     HEADER
-====================================================== -->
-
-<div class="header">
-
-    <h1>
-        MUNKA PIGGERY
-    </h1>
-
-    <p>
-        Management System Dashboard
-    </p>
-
-</div>
-
-
-
-<!-- ======================================================
-     MAIN CONTAINER
-====================================================== -->
-
-<div class="container">
-
-    <h2>
-        Welcome to MUNKA PIGGERY Management System Dashboard
-    </h2>
-
-
-    <!-- ==================================================
-         DASHBOARD BUTTONS
-    ================================================== -->
-
-    <div
-        class="buttons"
-        id="dashboardButtons">
-
-
-        <!-- PIG REGISTRATION -->
-
-        <button
-            type="button"
-            data-permission-module="Pig Registration"
-            data-permission-type="can_view"
-            onclick="openPigRegistration()">
-
-            🐖 Pig Registration
-
-        </button>
-
-
-
-        <!-- GESTATION -->
-
-        <button
-            type="button"
-            data-permission-module="Gestation"
-            data-permission-type="can_view"
-            onclick="openGestation()">
-
-            🤰 Gestation Records
-
-        </button>
-
-
-
-        <!-- FARROWING -->
-
-        <button
-            type="button"
-            data-permission-module="Farrowing"
-            data-permission-type="can_view"
-            onclick="openFarrowing()">
-
-            🐷 Farrowing Records
-
-        </button>
-
-
-
-        <!-- WEANING -->
-
-        <button
-            type="button"
-            data-permission-module="Weaning"
-            data-permission-type="can_view"
-            onclick="window.location.href='weaning.html'">
-
-            🐷 Weaning Records
-
-        </button>
-
-
-
-        <!-- VACCINATION & TREATMENT -->
-
-        <button
-            type="button"
-            data-permission-module="Vaccination & Treatment"
-            data-permission-type="can_view"
-            onclick="window.location.href='vaccination.html'">
-
-            💉 Vaccination & Treatment
-
-        </button>
-
-
-
-        <!-- FEEDING -->
-
-        <button
-            type="button"
-            data-permission-module="Feeding"
-            data-permission-type="can_view"
-            onclick="window.location.href='feeding.html'">
-
-            🌾 Feeding Records
-
-        </button>
-
-
-
-        <!-- SALES -->
-
-        <button
-            type="button"
-            data-permission-module="Sales"
-            data-permission-type="can_view"
-            onclick="window.location.href='sales.html'">
-
-            💰 Sales Records
-
-        </button>
-
-
-
-        <!-- EXPENSES -->
-
-        <button
-            type="button"
-            data-permission-module="Expenses"
-            data-permission-type="can_view"
-            onclick="window.location.href='expenses.html'">
-
-            📊 Expenses Records
-
-        </button>
-
-
-
-        <!-- REPORTS & ANALYTICS -->
-
-        <button
-            type="button"
-            data-permission-module="Reports & Analytics"
-            data-permission-type="can_view"
-            onclick="window.location.href='reports.html'">
-
-            📈 Reports & Analytics
-
-        </button>
-
-
-
-        <!-- USER MANAGEMENT -->
-
-        <button
-            type="button"
-            data-permission-module="Users"
-            data-permission-type="can_view"
-            onclick="window.location.href='users.html'">
-
-            👥 User Management
-
-        </button>
-
-
-
-        <!-- ACTIVITY LOGS -->
-
-        <button
-            type="button"
-            data-permission-module="Activity Logs"
-            data-permission-type="can_view"
-            onclick="window.location.href='activity.html'">
-
-            📋 Activity Logs
-
-        </button>
-
+        </div>
 
     </div>
 
-</div>
+
+    <div class="top-actions">
+
+        <button
+            type="button"
+            class="change-password-btn"
+            onclick="window.location.href='change_password.html'">
+
+            🔐
+            <span>Change Password</span>
+
+        </button>
+
+
+        <button
+            type="button"
+            class="logout-btn"
+            onclick="logout()">
+
+            Logout
+
+        </button>
+
+    </div>
+
+</header>
 
 
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ======================================================
+     MAIN PAGE
+====================================================== -->
+
+<main class="dashboard-container">
+
+
+    <!-- ==================================================
+         WELCOME SECTION
+    ================================================== -->
+
+    <section class="welcome-section">
+
+        <div class="welcome-content">
+
+            <span class="welcome-label">
+                FARM MANAGEMENT DASHBOARD
+            </span>
+
+            <h2 id="welcomeUser">
+                Welcome
+            </h2>
+
+            <p>
+                Manage your piggery operations,
+                records and farm activities from one place.
+            </p>
+
+        </div>
+
+
+        <div class="user-information">
+
+            <div class="user-avatar">
+                👤
+            </div>
+
+            <div>
+
+                <p id="userDetails">
+                </p>
+
+                <p
+                    id="lastLogin"
+                    class="last-login">
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         QUICK OVERVIEW
+    ================================================== -->
+
+    <section class="overview-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span>
+                    OVERVIEW
+                </span>
+
+                <h3>
+                    Farm Operations
+                </h3>
+
+            </div>
+
+            <p>
+                Select a module below to continue.
+            </p>
+
+        </div>
+
+
+        <div class="overview-cards">
+
+
+            <div class="overview-card">
+
+                <div class="overview-icon">
+                    🐖
+                </div>
+
+                <div>
+
+                    <strong>
+                        Pig Management
+                    </strong>
+
+                    <span>
+                        Registration & records
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="overview-card">
+
+                <div class="overview-icon">
+                    ❤️
+                </div>
+
+                <div>
+
+                    <strong>
+                        Animal Care
+                    </strong>
+
+                    <span>
+                        Health & breeding
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="overview-card">
+
+                <div class="overview-icon">
+                    🌾
+                </div>
+
+                <div>
+
+                    <strong>
+                        Farm Resources
+                    </strong>
+
+                    <span>
+                        Feeding & expenses
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="overview-card">
+
+                <div class="overview-icon">
+                    📈
+                </div>
+
+                <div>
+
+                    <strong>
+                        Business
+                    </strong>
+
+                    <span>
+                        Sales & analytics
+                    </span>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         MODULES
+    ================================================== -->
+
+    <section class="modules-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span>
+                    SYSTEM MODULES
+                </span>
+
+                <h3>
+                    Farm Management
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="buttons"
+            id="dashboardButtons">
+
+
+            <!-- PIG REGISTRATION -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Pig Registration"
+                data-permission-type="can_view"
+                onclick="openPigRegistration()">
+
+                <span class="module-icon">
+                    🐖
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Pig Registration
+                    </strong>
+
+                    <small>
+                        Manage pig identification
+                        and registration records.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- GESTATION -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Gestation"
+                data-permission-type="can_view"
+                onclick="openGestation()">
+
+                <span class="module-icon">
+                    🤰
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Gestation Records
+                    </strong>
+
+                    <small>
+                        Monitor breeding,
+                        pregnancy and expected farrowing.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- FARROWING -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Farrowing"
+                data-permission-type="can_view"
+                onclick="openFarrowing()">
+
+                <span class="module-icon">
+                    🐷
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Farrowing Records
+                    </strong>
+
+                    <small>
+                        Record births,
+                        litter information and outcomes.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- WEANING -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Weaning"
+                data-permission-type="can_view"
+                onclick="window.location.href='weaning.html'">
+
+                <span class="module-icon">
+                    🐷
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Weaning Records
+                    </strong>
+
+                    <small>
+                        Manage piglet weaning
+                        and transfer records.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- VACCINATION -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Vaccination & Treatment"
+                data-permission-type="can_view"
+                onclick="window.location.href='vaccination.html'">
+
+                <span class="module-icon">
+                    💉
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Vaccination & Treatment
+                    </strong>
+
+                    <small>
+                        Monitor animal health,
+                        treatment and vaccination.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- FEEDING -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Feeding"
+                data-permission-type="can_view"
+                onclick="window.location.href='feeding.html'">
+
+                <span class="module-icon">
+                    🌾
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Feeding Records
+                    </strong>
+
+                    <small>
+                        Monitor feed usage,
+                        schedules and costs.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- SALES -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Sales"
+                data-permission-type="can_view"
+                onclick="window.location.href='sales.html'">
+
+                <span class="module-icon">
+                    💰
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Sales Records
+                    </strong>
+
+                    <small>
+                        Track pig sales,
+                        customers and revenue.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- EXPENSES -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Expenses"
+                data-permission-type="can_view"
+                onclick="window.location.href='expenses.html'">
+
+                <span class="module-icon">
+                    💳
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Expenses Records
+                    </strong>
+
+                    <small>
+                        Track farm expenses
+                        and operational costs.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- REPORTS -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Reports & Analytics"
+                data-permission-type="can_view"
+                onclick="window.location.href='reports.html'">
+
+                <span class="module-icon">
+                    📈
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Reports & Analytics
+                    </strong>
+
+                    <small>
+                        Analyse farm performance
+                        and generate reports.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- USER MANAGEMENT -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Users"
+                data-permission-type="can_view"
+                onclick="window.location.href='users.html'">
+
+                <span class="module-icon">
+                    👥
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        User Management
+                    </strong>
+
+                    <small>
+                        Manage system users,
+                        roles and access.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- ACTIVITY LOGS -->
+
+            <button
+                type="button"
+                class="module-card"
+                data-permission-module="Activity Logs"
+                data-permission-type="can_view"
+                onclick="window.location.href='activity.html'">
+
+                <span class="module-icon">
+                    📋
+                </span>
+
+                <span class="module-content">
+
+                    <strong>
+                        Activity Logs
+                    </strong>
+
+                    <small>
+                        Monitor system activities
+                        and security events.
+                    </small>
+
+                </span>
+
+                <span class="module-arrow">
+                    →
+                </span>
+
+            </button>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         FOOTER
+    ================================================== -->
+
+    <footer>
+
+        <strong>
+            MUNKA PIGGERY
+        </strong>
+
+        <span>
+            Professional Piggery Farm Management System
+        </span>
+
+    </footer>
+
+
+</main>
+
+
+
+<!-- ======================================================
+     JAVASCRIPT
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
 
 <script src="supabase.js"></script>
 
