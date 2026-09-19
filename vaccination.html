@@ -12,576 +12,786 @@
 
 </head>
 
-
 <body>
-
 
 <div class="container">
 
+    <!-- HEADER -->
+    <div class="page-header">
 
-<h1>MUNKA PIGGERY FARM LIMITED</h1>
+        <div>
+            <div class="brand-title">🐖 MUNKA PIGGERY FARM LIMITED</div>
+            <div class="brand-subtitle">
+                Vaccination & Treatment Management
+            </div>
+        </div>
 
-<h2>Vaccination & Treatment Records</h2>
+        <div class="header-buttons">
+
+            <button
+                type="button"
+                class="dashboard-btn"
+                onclick="window.location.href='dashboard.html'">
+                ↩️ Back to Dashboard
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="module-intro">
+
+        <h1>Vaccination & Treatment Records</h1>
+
+        <p>
+            Record, monitor and manage pig health treatments,
+            vaccination activities and follow-up administration dates.
+        </p>
+
+    </div>
 
 
 
-<form id="treatmentForm">
+    <!-- TREATMENT FORM -->
+
+    <form id="treatmentForm">
+
+
+        <!-- PIG INFORMATION -->
+
+        <div class="form-section">
+
+            <div class="section-title">
+                🐖 Pig Information
+            </div>
+
+            <div class="form-grid">
+
+
+                <div class="form-group">
+
+                    <label for="pigID">
+                        Pig ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="pigID"
+                        placeholder="Enter Pig ID"
+                        required>
+
+                </div>
 
 
 
-<div class="form-group">
+                <div class="form-group">
 
-<label>Pig ID</label>
+                    <label for="breed">
+                        Breed
+                    </label>
 
-<input type="text" id="pigID" required>
+                    <select id="breed">
+
+                        <option value="">
+                            Select Breed
+                        </option>
+
+                        <option>Large White</option>
+                        <option>Landrace</option>
+                        <option>Duroc</option>
+                        <option>Hampshire</option>
+                        <option>Pietrain</option>
+                        <option>Yorkshire</option>
+                        <option>Camborough</option>
+                        <option>Crossbreed</option>
+                        <option>Local Breed</option>
+                        <option>Other</option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="sex">
+                        Sex
+                    </label>
+
+                    <select id="sex">
+
+                        <option value="">
+                            Select Sex
+                        </option>
+
+                        <option>Male</option>
+                        <option>Female</option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="age">
+                        Age
+                    </label>
+
+                    <input
+                        type="number"
+                        id="age"
+                        min="0"
+                        placeholder="Enter Age">
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="ageUnit">
+                        Age Unit
+                    </label>
+
+                    <select id="ageUnit">
+
+                        <option>Days</option>
+                        <option>Weeks</option>
+                        <option>Months</option>
+                        <option>Years</option>
+
+                    </select>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- TREATMENT INFORMATION -->
+
+        <div class="form-section">
+
+            <div class="section-title">
+                💉 Treatment Information
+            </div>
+
+            <div class="form-grid">
+
+
+                <div class="form-group">
+
+                    <label for="treatmentDate">
+                        Treatment / Vaccination Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="treatmentDate"
+                        required>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="symptom">
+                        Symptom / Disease
+                    </label>
+
+                    <select id="symptom">
+
+                        <option value="">
+                            Select Condition
+                        </option>
+
+                        <option value="diarrhoea">
+                            Diarrhoea
+                        </option>
+
+                        <option value="coughing">
+                            Coughing / Breathing Problem
+                        </option>
+
+                        <option value="fever">
+                            Fever
+                        </option>
+
+                        <option value="mange">
+                            Mange / Skin Problem
+                        </option>
+
+                        <option value="worms">
+                            Worm Infestation
+                        </option>
+
+                        <option value="lameness">
+                            Lameness
+                        </option>
+
+                        <option value="loss_appetite">
+                            Loss of Appetite
+                        </option>
+
+                        <option value="african_swine_fever">
+                            African Swine Fever
+                        </option>
+
+                        <option value="foot_mouth">
+                            Foot and Mouth Disease
+                        </option>
+
+                        <option value="other">
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div
+                    class="form-group"
+                    id="otherDiseaseGroup"
+                    style="display:none;">
+
+                    <label for="otherDisease">
+                        Specify Disease / Condition
+                    </label>
+
+                    <input
+                        type="text"
+                        id="otherDisease"
+                        placeholder="Specify condition">
+
+                </div>
+
+
+
+                <div class="form-group full-width">
+
+                    <label for="possibleCause">
+                        Possible Cause
+                    </label>
+
+                    <textarea
+                        id="possibleCause"
+                        readonly></textarea>
+
+                </div>
+
+
+
+                <div class="form-group full-width">
+
+                    <label for="prevention">
+                        Prevention
+                    </label>
+
+                    <textarea
+                        id="prevention"
+                        readonly></textarea>
+
+                </div>
+
+
+
+                <div class="form-group full-width">
+
+                    <label for="medicine">
+                        Recommended Medicine
+                    </label>
+
+                    <textarea
+                        id="medicine"
+                        placeholder="Enter medicine used or recommended"></textarea>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="route">
+                        Administration Type
+                    </label>
+
+                    <select id="route">
+
+                        <option value="">
+                            Select Route
+                        </option>
+
+                        <option>Injection</option>
+                        <option>Oral</option>
+                        <option>Topical</option>
+                        <option>Spray</option>
+                        <option>Other</option>
+
+                    </select>
+
+                </div>
+
+
+
+                <!-- DOSAGE DROPDOWN -->
+
+                <div class="form-group">
+
+                    <label for="dosage">
+                        Dosage (mL)
+                    </label>
+
+                    <select id="dosage">
+
+                        <option value="">
+                            Select Dosage
+                        </option>
+
+                        <option value="0.5 mL">0.5 mL</option>
+                        <option value="0.6 mL">0.6 mL</option>
+                        <option value="0.7 mL">0.7 mL</option>
+                        <option value="0.8 mL">0.8 mL</option>
+                        <option value="0.9 mL">0.9 mL</option>
+                        <option value="1.0 mL">1.0 mL</option>
+                        <option value="1.1 mL">1.1 mL</option>
+                        <option value="1.2 mL">1.2 mL</option>
+                        <option value="1.3 mL">1.3 mL</option>
+                        <option value="1.4 mL">1.4 mL</option>
+                        <option value="1.5 mL">1.5 mL</option>
+                        <option value="1.6 mL">1.6 mL</option>
+                        <option value="1.7 mL">1.7 mL</option>
+                        <option value="1.8 mL">1.8 mL</option>
+                        <option value="1.9 mL">1.9 mL</option>
+                        <option value="2.0 mL">2.0 mL</option>
+                        <option value="2.1 mL">2.1 mL</option>
+                        <option value="2.2 mL">2.2 mL</option>
+                        <option value="2.3 mL">2.3 mL</option>
+                        <option value="2.4 mL">2.4 mL</option>
+                        <option value="2.5 mL">2.5 mL</option>
+                        <option value="2.6 mL">2.6 mL</option>
+                        <option value="2.7 mL">2.7 mL</option>
+                        <option value="2.8 mL">2.8 mL</option>
+                        <option value="2.9 mL">2.9 mL</option>
+                        <option value="3.0 mL">3.0 mL</option>
+
+                    </select>
+
+                    <small>
+                        Select the dosage actually administered.
+                    </small>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="interval">
+                        Treatment Interval
+                    </label>
+
+                    <select id="interval">
+
+                        <option value="1">1 Day</option>
+                        <option value="3">3 Days</option>
+                        <option value="5">5 Days</option>
+                        <option value="7">7 Days</option>
+                        <option value="14">14 Days</option>
+                        <option value="30">30 Days</option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="nextDate">
+                        Next Administration Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="nextDate"
+                        readonly>
+
+                    <small>
+                        Automatically calculated from treatment date and interval.
+                    </small>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ADMINISTRATION -->
+
+        <div class="form-section">
+
+            <div class="section-title">
+                👨‍⚕️ Administration Details
+            </div>
+
+            <div class="form-grid">
+
+
+                <div class="form-group">
+
+                    <label for="administeredBy">
+                        Administered By
+                    </label>
+
+                    <select id="administeredBy">
+
+                        <option value="">
+                            Select Person
+                        </option>
+
+                        <option>Farm Manager</option>
+                        <option>Veterinary Officer</option>
+                        <option>Farm Worker</option>
+                        <option>Animal Health Technician</option>
+                        <option>Owner</option>
+                        <option>Other</option>
+
+                    </select>
+
+                </div>
+
+
+
+                <!-- REMARKS / RECOMMENDATIONS -->
+
+                <div class="form-group full-width">
+
+                    <label for="remarks">
+                        Remarks / Recommendations
+                    </label>
+
+                    <select id="remarks">
+
+                        <option value="">
+                            Select Remark / Recommendation
+                        </option>
+
+                        <optgroup label="Properly Administered / Successful">
+
+                            <option>
+                                Properly administered and successfully completed.
+                            </option>
+
+                            <option>
+                                Correct dosage administered and pig responded well.
+                            </option>
+
+                            <option>
+                                Treatment administered correctly with no immediate complications.
+                            </option>
+
+                            <option>
+                                Vaccination/treatment was properly administered and tolerated well.
+                            </option>
+
+                            <option>
+                                Pig showed good response after treatment.
+                            </option>
+
+                            <option>
+                                Treatment completed according to the recommended schedule.
+                            </option>
+
+                        </optgroup>
+
+
+                        <optgroup label="Not Properly Administered">
+
+                            <option>
+                                Dosage may not have been administered correctly.
+                            </option>
+
+                            <option>
+                                Administration procedure was not followed correctly.
+                            </option>
+
+                            <option>
+                                Treatment was delayed.
+                            </option>
+
+                            <option>
+                                Part of the prescribed treatment was missed.
+                            </option>
+
+                            <option>
+                                Pig did not receive the full intended dose.
+                            </option>
+
+                            <option>
+                                Follow-up administration was not completed on schedule.
+                            </option>
+
+                        </optgroup>
+
+
+                        <optgroup label="Possible Reasons for Improper Administration">
+
+                            <option>
+                                Incorrect dosage measurement.
+                            </option>
+
+                            <option>
+                                Incorrect administration route.
+                            </option>
+
+                            <option>
+                                Incorrect injection site or administration technique.
+                            </option>
+
+                            <option>
+                                Treatment schedule was not followed.
+                            </option>
+
+                            <option>
+                                Medicine was unavailable at the required time.
+                            </option>
+
+                            <option>
+                                Pig was difficult to restrain safely.
+                            </option>
+
+                            <option>
+                                Treatment record was not properly checked.
+                            </option>
+
+                            <option>
+                                Human error during administration.
+                            </option>
+
+                            <option>
+                                Other operational or management reason.
+                            </option>
+
+                        </optgroup>
+
+
+                        <optgroup label="Corrective Recommendations">
+
+                            <option>
+                                Recheck dosage and administration procedure before the next treatment.
+                            </option>
+
+                            <option>
+                                Consult the veterinary officer before repeating treatment.
+                            </option>
+
+                            <option>
+                                Improve treatment record keeping and follow-up.
+                            </option>
+
+                            <option>
+                                Monitor the pig closely and record its response.
+                            </option>
+
+                            <option>
+                                Ensure the correct medicine and equipment are available.
+                            </option>
+
+                            <option>
+                                Provide proper training on treatment administration.
+                            </option>
+
+                            <option>
+                                Follow the prescribed treatment interval strictly.
+                            </option>
+
+                            <option>
+                                Isolate and monitor the pig where appropriate.
+                            </option>
+
+                        </optgroup>
+
+                    </select>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- FORM BUTTONS -->
+
+        <div class="buttons">
+
+            <button
+                type="button"
+                id="saveBtn"
+                class="save-btn">
+                💾 Save Record
+            </button>
+
+            <button
+                type="button"
+                id="updateBtn"
+                class="update-btn">
+                ✏️ Update Record
+            </button>
+
+            <button
+                type="button"
+                onclick="clearTreatmentForm()"
+                class="clear-btn">
+                🧹 Clear
+            </button>
+
+        </div>
+
+
+    </form>
+
+
+
+    <hr>
+
+
+
+    <!-- SEARCH -->
+
+    <div class="records-section">
+
+        <div class="section-title">
+            🔎 Treatment History
+        </div>
+
+        <div class="search-area">
+
+            <input
+                type="text"
+                id="searchPig"
+                placeholder="Enter Pig ID">
+
+            <button
+                type="button"
+                onclick="searchPig()"
+                class="search-btn">
+                🔍 Search
+            </button>
+
+            <button
+                type="button"
+                onclick="loadRecords()"
+                class="refresh-btn">
+                🔄 Refresh
+            </button>
+
+        </div>
+
+
+
+        <!-- REPORT BUTTONS -->
+
+        <div class="report-buttons">
+
+            <button
+                type="button"
+                onclick="generateTreatmentReport()"
+                class="report-btn">
+                📊 Generate Report
+            </button>
+
+            <button
+                type="button"
+                onclick="downloadTreatmentPDF()"
+                class="pdf-btn">
+                📄 Download PDF
+            </button>
+
+            <button
+                type="button"
+                onclick="printTreatmentReport()"
+                class="print-btn">
+                🖨️ Print
+            </button>
+
+        </div>
+
+
+
+        <!-- TABLE -->
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Pig ID</th>
+                        <th>Breed</th>
+                        <th>Symptom</th>
+                        <th>Medicine</th>
+                        <th>Route</th>
+                        <th>Dosage</th>
+                        <th>Treated Date</th>
+                        <th>Next Date</th>
+                        <th>Administered By</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="treatmentTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+
+    <footer>
+
+        <strong>MUNKA PIGGERY FARM LIMITED</strong><br>
+
+        Vaccination & Treatment Management System
+
+    </footer>
+
 
 </div>
 
 
 
-<div class="form-group">
-
-<label>Breed</label>
-
-<select id="breed">
-
-<option value="">
-Select Breed
-</option>
-
-<option>
-Large White
-</option>
-
-<option>
-Landrace
-</option>
-
-<option>
-Duroc
-</option>
-
-<option>
-Hampshire
-</option>
-
-<option>
-Pietrain
-</option>
-
-<option>
-Yorkshire
-</option>
-
-<option>
-Camborough
-</option>
-
-<option>
-Crossbreed
-</option>
-
-<option>
-Local Breed
-</option>
-
-<option>
-Other
-</option>
-
-</select>
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Sex</label>
-
-<select id="sex">
-
-<option value="">Select</option>
-
-<option>Male</option>
-
-<option>Female</option>
-
-</select>
-
-</div>
-
-
-
-
-
-<div class="form-group">
-
-<label>Age</label>
-
-<input type="number" id="age">
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Age Unit</label>
-
-<select id="ageUnit">
-
-<option>Days</option>
-
-<option>Weeks</option>
-
-<option>Months</option>
-
-<option>Years</option>
-
-</select>
-
-</div>
-
-
-
-
-
-<div class="form-group">
-
-<label>Treatment Date</label>
-
-<input type="date" id="treatmentDate" required>
-
-</div>
-
-
-
-
-
-<div class="form-group">
-
-<label>Symptom / Disease</label>
-
-
-<select id="symptom">
-
-
-<option value="">
-Select Condition
-</option>
-
-
-<option value="diarrhoea">
-Diarrhoea
-</option>
-
-
-<option value="coughing">
-Coughing / Breathing Problem
-</option>
-
-
-<option value="fever">
-Fever
-</option>
-
-
-<option value="mange">
-Mange / Skin Problem
-</option>
-
-
-<option value="worms">
-Worm Infestation
-</option>
-
-
-<option value="lameness">
-Lameness
-</option>
-
-
-<option value="loss_appetite">
-Loss of Appetite
-</option>
-
-
-<option value="african_swine_fever">
-African Swine Fever
-</option>
-
-
-<option value="foot_mouth">
-Foot and Mouth Disease
-</option>
-
-
-<option value="other">
-Other
-</option>
-
-
-</select>
-
-
-</div>
-
-
-
-
-
-<div class="form-group" id="otherDiseaseGroup" style="display:none;">
-
-
-<label>Specify Disease</label>
-
-
-<input type="text" id="otherDisease">
-
-
-</div>
-
-
-
-
-
-
-
-<div class="form-group">
-
-<label>Possible Cause</label>
-
-<textarea id="possibleCause" readonly></textarea>
-
-</div>
-
-
-
-
-
-<div class="form-group">
-
-<label>Prevention</label>
-
-<textarea id="prevention" readonly></textarea>
-
-</div>
-
-
-
-
-
-<div class="form-group">
-
-<label>Recommended Medicine</label>
-
-<textarea id="medicine"></textarea>
-
-</div>
-
-
-
-
-
-<div class="form-group">
-
-<label>Administration Type</label>
-
-
-<select id="route">
-
-<option value="">
-Select Route
-</option>
-
-
-<option>Injection</option>
-
-<option>Oral</option>
-
-<option>Topical</option>
-
-<option>Spray</option>
-
-<option>Other</option>
-
-
-</select>
-
-</div>
-
-
-
-
-
-
-
-<div class="form-group">
-
-<label>Dosage</label>
-
-<input type="text" id="dosage">
-
-</div>
-
-
-
-
-
-
-
-<div class="form-group">
-
-<label>Treatment Interval</label>
-
-
-<select id="interval">
-
-
-<option value="1">
-1 Day
-</option>
-
-
-<option value="3">
-3 Days
-</option>
-
-
-<option value="5">
-5 Days
-</option>
-
-
-<option value="7">
-7 Days
-</option>
-
-
-<option value="14">
-14 Days
-</option>
-
-
-<option value="30">
-30 Days
-</option>
-
-
-</select>
-
-
-</div>
-
-
-
-
-
-
-
-<div class="form-group">
-
-
-<label>Next Administration Date</label>
-
-
-<input type="date" id="nextDate" readonly>
-
-
-</div>
-
-
-
-
-
-
-
-<div class="form-group">
-
-<label>Administered By</label>
-
-<select id="administeredBy">
-
-<option value="">
-Select Person
-</option>
-
-<option>
-Farm Manager
-</option>
-
-<option>
-Veterinary Officer
-</option>
-
-<option>
-Farm Worker
-</option>
-
-<option>
-Animal Health Technician
-</option>
-
-<option>
-Owner
-</option>
-
-<option>
-Other
-</option>
-
-</select>
-
-</div>
-
-
-
-
-
-
-
-
-<div class="form-group">
-
-
-<label>Remarks</label>
-
-
-<textarea id="remarks"></textarea>
-
-
-</div>
-
-
-
-
-
-
-
-<div class="buttons">
-
-
-<button type="button" id="saveBtn">
-
-Save Record
-
-</button>
-
-
-
-<button type="button" id="updateBtn">
-
-Update Record
-
-</button>
-
-
-
-<button type="reset">
-
-Clear
-
-</button>
-
-
-</div>
-
-
-
-</form>
-
-
-
-
-
-
-<hr>
-
-
-
-
-
-<h3>Search Treatment History</h3>
-
-
-
-<input type="text" id="searchPig" placeholder="Enter Pig ID">
-
-
-<button onclick="searchPig()">
-
-Search
-
-</button>
-
-
-
-<button onclick="loadRecords()">
-
-Refresh
-
-</button>
-
-
-
-
-
- <table>
-<thead>
-
-<tr>
-
-<th>Pig ID</th>
-
-<th>Breed</th>
-
-<th>Symptom</th>
-
-<th>Medicine</th>
-
-<th>Route</th>
-
-<th>Dosage</th>
-
-<th>Treated Date</th>
-
-<th>Next Date</th>
-
-<th>Administered By</th>
-
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-
-
-<tbody id="treatmentTable">
-
-
-</tbody>
-
-
-</table>
-
-
-
-
-
-</div>
-
-
-
-
+<!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script src="supabase.js"></script>
+<!-- PDF LIBRARIES -->
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<script src="supabase.js"></script>
 <script src="activity.js"></script>
 <script src="security.js"></script>
 <script src="vaccination.js"></script>

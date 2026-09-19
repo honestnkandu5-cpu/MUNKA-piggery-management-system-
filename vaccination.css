@@ -1,7 +1,7 @@
 /* =====================================
    MUNKA PIGGERY FARM LIMITED
    VACCINATION & TREATMENT MODULE
-   CSS
+   PROFESSIONAL RESPONSIVE DESIGN
 ===================================== */
 
 
@@ -9,123 +9,287 @@
     box-sizing:border-box;
     margin:0;
     padding:0;
-    font-family:Arial, sans-serif;
 }
-
 
 
 body{
 
-    background:#f2f2f2;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:#f3f6f4;
+
+    color:#26352c;
+
+    min-height:100vh;
+
     padding:20px;
 
 }
 
 
-
+/* =====================================
+   MAIN CONTAINER
+===================================== */
 
 .container{
 
-    max-width:1200px;
-    margin:auto;
-    background:white;
-    padding:25px;
-    border-radius:12px;
-    box-shadow:0 4px 15px rgba(0,0,0,0.15);
+    width:100%;
+
+    max-width:1400px;
+
+    margin:0 auto;
+
+    background:#ffffff;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 5px 25px rgba(0,0,0,0.10);
 
 }
 
 
+/* =====================================
+   HEADER
+===================================== */
 
+.page-header{
 
-h1{
+    background:#123d2a;
 
-    text-align:center;
-    color:green;
-    margin-bottom:10px;
+    color:white;
 
-}
+    padding:22px 28px;
 
+    display:flex;
 
+    align-items:center;
 
-h2{
+    justify-content:space-between;
 
-    text-align:center;
-    margin-bottom:25px;
-    color:#333;
-
-}
-
-
-
-h3{
-
-    margin-top:25px;
-    color:green;
-
-}
-
-
-
-
-
-form{
-
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
     gap:20px;
 
 }
 
 
+.brand-title{
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    letter-spacing:.3px;
+
+}
+
+
+.brand-subtitle{
+
+    margin-top:5px;
+
+    font-size:14px;
+
+    opacity:.88;
+
+}
+
+
+.header-buttons{
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+
+.dashboard-btn{
+
+    background:#198754;
+
+    color:white;
+
+    border:none;
+
+    padding:11px 18px;
+
+    border-radius:8px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    white-space:nowrap;
+
+}
+
+
+.dashboard-btn:hover{
+
+    background:#157347;
+
+}
+
+
+/* =====================================
+   INTRODUCTION
+===================================== */
+
+.module-intro{
+
+    padding:25px 30px 10px;
+
+}
+
+
+.module-intro h1{
+
+    color:#123d2a;
+
+    font-size:25px;
+
+    margin-bottom:8px;
+
+}
+
+
+.module-intro p{
+
+    color:#68756d;
+
+    line-height:1.6;
+
+}
+
+
+/* =====================================
+   FORM
+===================================== */
+
+#treatmentForm{
+
+    padding:10px 30px 25px;
+
+}
+
+
+/* =====================================
+   FORM SECTION
+===================================== */
+
+.form-section{
+
+    background:#f8faf9;
+
+    border:1px solid #e1e8e3;
+
+    border-radius:12px;
+
+    padding:20px;
+
+    margin-top:20px;
+
+}
+
+
+.section-title{
+
+    color:#123d2a;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    padding-bottom:12px;
+
+    margin-bottom:18px;
+
+    border-bottom:2px solid #dce7df;
+
+}
+
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(250px,1fr)
+        );
+
+    gap:18px;
+
+}
 
 
 .form-group{
 
     display:flex;
+
     flex-direction:column;
 
 }
 
 
+.full-width{
 
-
-label{
-
-    font-weight:bold;
-    margin-bottom:6px;
+    grid-column:1 / -1;
 
 }
 
 
+label{
 
+    font-size:14px;
+
+    font-weight:bold;
+
+    color:#35463b;
+
+    margin-bottom:7px;
+
+}
 
 
 input,
 select,
 textarea{
 
+    width:100%;
 
-    padding:12px;
-    border:1px solid #ccc;
+    padding:12px 13px;
+
+    border:1px solid #ccd6cf;
+
     border-radius:8px;
-    font-size:15px;
 
+    background:#ffffff;
+
+    color:#26352c;
+
+    font-size:14px;
+
+    transition:
+        border-color .2s,
+        box-shadow .2s;
 
 }
-
-
-
 
 
 textarea{
 
     min-height:90px;
-    resize:none;
+
+    resize:vertical;
 
 }
-
-
 
 
 input:focus,
@@ -133,218 +297,700 @@ select:focus,
 textarea:focus{
 
     outline:none;
-    border:2px solid green;
+
+    border-color:#198754;
+
+    box-shadow:
+        0 0 0 3px rgba(25,135,84,.12);
 
 }
 
 
+input[readonly],
+textarea[readonly]{
+
+    background:#eef3ef;
+
+    color:#536158;
+
+}
 
 
+small{
+
+    color:#718078;
+
+    font-size:12px;
+
+    margin-top:5px;
+
+    line-height:1.4;
+
+}
+
+
+/* =====================================
+   FORM BUTTONS
+===================================== */
 
 .buttons{
 
-    grid-column:1/-1;
     display:flex;
-    gap:15px;
+
+    flex-wrap:wrap;
+
+    gap:12px;
+
+    margin-top:22px;
+
+}
+
+
+.buttons button{
+
+    min-width:150px;
+
+}
+
+
+button{
+
+    border:none;
+
+    border-radius:8px;
+
+    padding:11px 18px;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:
+        transform .15s,
+        opacity .15s,
+        background .15s;
+
+}
+
+
+button:hover{
+
+    opacity:.9;
+
+    transform:translateY(-1px);
+
+}
+
+
+button:active{
+
+    transform:translateY(0);
+
+}
+
+
+.save-btn{
+
+    background:#198754;
+
+    color:white;
+
+}
+
+
+.update-btn{
+
+    background:#0d6efd;
+
+    color:white;
+
+}
+
+
+.clear-btn{
+
+    background:#b02a37;
+
+    color:white;
+
+}
+
+
+/* =====================================
+   DIVIDER
+===================================== */
+
+hr{
+
+    border:0;
+
+    border-top:1px solid #e0e6e2;
+
+    margin:0 30px 25px;
+
+}
+
+
+/* =====================================
+   RECORDS SECTION
+===================================== */
+
+.records-section{
+
+    padding:0 30px 30px;
+
+}
+
+
+.search-area{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    align-items:center;
+
+}
+
+
+#searchPig{
+
+    flex:1;
+
+    min-width:220px;
+
+}
+
+
+.search-btn{
+
+    background:#198754;
+
+    color:white;
+
+}
+
+
+.refresh-btn{
+
+    background:#6c757d;
+
+    color:white;
+
+}
+
+
+/* =====================================
+   REPORT BUTTONS
+===================================== */
+
+.report-buttons{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    margin-top:18px;
+
+    margin-bottom:18px;
+
+}
+
+
+.report-btn{
+
+    background:#198754;
+
+    color:white;
+
+}
+
+
+.pdf-btn{
+
+    background:#6f42c1;
+
+    color:white;
+
+}
+
+
+.print-btn{
+
+    background:#495057;
+
+    color:white;
+
+}
+
+
+/* =====================================
+   TABLE
+===================================== */
+
+.table-wrapper{
+
+    width:100%;
+
+    overflow-x:auto;
+
+    border:1px solid #dce3de;
+
+    border-radius:10px;
+
     margin-top:10px;
 
 }
 
 
-
-
-button{
-
-    padding:12px 20px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:bold;
-
-}
-
-
-
-
-#saveBtn{
-
-    background:green;
-    color:white;
-
-}
-
-
-
-#updateBtn{
-
-    background:#0066cc;
-    color:white;
-
-}
-
-
-
-
-button[type="reset"]{
-
-    background:#cc0000;
-    color:white;
-
-}
-
-
-
-
-button:hover{
-
-    opacity:0.85;
-
-}
-
-
-
-
-hr{
-
-    margin:30px 0;
-
-}
-
-
-
-
-
-#searchPig{
-
-    padding:12px;
-    width:300px;
-    max-width:100%;
-    border-radius:8px;
-    border:1px solid #aaa;
-
-}
-
-
-
-
-
 table{
 
     width:100%;
+
+    min-width:1100px;
+
     border-collapse:collapse;
-    margin-top:20px;
+
+    background:white;
 
 }
-
-
-
 
 
 th{
 
-    background:green;
+    background:#123d2a;
+
     color:white;
-    padding:12px;
+
+    padding:13px 10px;
+
+    text-align:center;
+
+    font-size:13px;
+
+    white-space:nowrap;
 
 }
-
-
 
 
 td{
 
-    padding:10px;
-    border:1px solid #ddd;
+    padding:11px 9px;
+
+    border-bottom:1px solid #e2e7e3;
+
     text-align:center;
 
-}
+    font-size:13px;
 
-
-
-
-tr:nth-child(even){
-
-    background:#f8f8f8;
+    vertical-align:middle;
 
 }
 
 
+tbody tr:nth-child(even){
 
-
-
-.action-btn{
-
-    padding:7px 12px;
-    color:white;
-    border-radius:5px;
+    background:#f8faf9;
 
 }
 
 
+tbody tr:hover{
 
+    background:#eef7f1;
+
+}
+
+
+/* =====================================
+   ACTION BUTTONS
+===================================== */
+
+.action-cell{
+
+    white-space:nowrap;
+
+}
+
+
+.action-cell button{
+
+    padding:7px 10px;
+
+    margin:2px;
+
+    font-size:12px;
+
+}
 
 
 .edit-btn{
 
-    background:#0066cc;
+    background:#0d6efd;
+
+    color:white;
 
 }
-
-
 
 
 .delete-btn{
 
-    background:red;
+    background:#dc3545;
+
+    color:white;
 
 }
 
 
+.no-records{
 
+    padding:25px !important;
 
+    color:#6c757d;
 
-@media(max-width:700px){
-
-
-.container{
-
-    padding:15px;
+    font-style:italic;
 
 }
 
 
+/* =====================================
+   FOOTER
+===================================== */
 
-form{
+footer{
 
-    grid-template-columns:1fr;
+    background:#f1f5f2;
 
-}
+    color:#68756d;
 
+    text-align:center;
 
+    padding:20px;
 
-.buttons{
+    font-size:12px;
 
-    flex-direction:column;
+    line-height:1.7;
 
-}
-
-
-
-button{
-
-    width:100%;
-
-}
-
-
-
-table{
-
-    display:block;
-    overflow-x:auto;
+    border-top:1px solid #e0e6e2;
 
 }
 
 
+/* =====================================
+   PRINT
+===================================== */
+
+@media print{
+
+    body{
+
+        background:white;
+
+        padding:0;
+
+    }
+
+
+    .container{
+
+        max-width:none;
+
+        box-shadow:none;
+
+        border-radius:0;
+
+    }
+
+
+    .page-header,
+    .module-intro,
+    #treatmentForm,
+    .search-area,
+    .report-buttons,
+    footer,
+    hr{
+
+        display:none !important;
+
+    }
+
+
+    .records-section{
+
+        padding:0;
+
+    }
+
+
+    .table-wrapper{
+
+        overflow:visible;
+
+        border:none;
+
+    }
+
+
+    table{
+
+        min-width:0;
+
+        font-size:9px;
+
+    }
+
+
+    th{
+
+        background:#123d2a !important;
+
+        color:white !important;
+
+        -webkit-print-color-adjust:exact;
+
+        print-color-adjust:exact;
+
+    }
+
+
+    .action-cell{
+
+        display:none;
+
+    }
+
+}
+
+
+/* =====================================
+   TABLET
+===================================== */
+
+@media(max-width:900px){
+
+    body{
+
+        padding:10px;
+
+    }
+
+
+    .page-header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+
+    .header-buttons{
+
+        width:100%;
+
+    }
+
+
+    .dashboard-btn{
+
+        width:100%;
+
+    }
+
+
+    .module-intro,
+    #treatmentForm,
+    .records-section{
+
+        padding-left:18px;
+
+        padding-right:18px;
+
+    }
+
+
+    hr{
+
+        margin-left:18px;
+
+        margin-right:18px;
+
+    }
+
+}
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media(max-width:600px){
+
+    body{
+
+        padding:0;
+
+    }
+
+
+    .container{
+
+        border-radius:0;
+
+    }
+
+
+    .page-header{
+
+        padding:18px;
+
+    }
+
+
+    .brand-title{
+
+        font-size:19px;
+
+    }
+
+
+    .brand-subtitle{
+
+        font-size:12px;
+
+    }
+
+
+    .module-intro{
+
+        padding:20px 15px 5px;
+
+    }
+
+
+    .module-intro h1{
+
+        font-size:21px;
+
+    }
+
+
+    #treatmentForm{
+
+        padding:5px 15px 20px;
+
+    }
+
+
+    .form-section{
+
+        padding:15px;
+
+        margin-top:15px;
+
+    }
+
+
+    .section-title{
+
+        font-size:16px;
+
+    }
+
+
+    .form-grid{
+
+        grid-template-columns:1fr;
+
+        gap:14px;
+
+    }
+
+
+    .full-width{
+
+        grid-column:auto;
+
+    }
+
+
+    .buttons{
+
+        flex-direction:column;
+
+    }
+
+
+    .buttons button{
+
+        width:100%;
+
+    }
+
+
+    hr{
+
+        margin-left:15px;
+
+        margin-right:15px;
+
+    }
+
+
+    .records-section{
+
+        padding:0 15px 20px;
+
+    }
+
+
+    .search-area{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+
+    #searchPig{
+
+        width:100%;
+
+    }
+
+
+    .search-area button{
+
+        width:100%;
+
+    }
+
+
+    .report-buttons{
+
+        flex-direction:column;
+
+    }
+
+
+    .report-buttons button{
+
+        width:100%;
+
+    }
+
+
+    footer{
+
+        padding:16px;
+
+    }
 
 }
