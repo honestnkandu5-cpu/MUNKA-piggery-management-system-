@@ -1,6 +1,6 @@
 // ==========================================
 // MUNKA PIGGERY FARM LIMITED
-// FINAL FEEDING RECORDS MODULE
+// FEEDING RECORDS MODULE
 // FARM-SECURED VERSION
 // ==========================================
 
@@ -43,15 +43,16 @@ function getFarmID(){
 // INITIAL LOAD
 // ==========================================
 
-window.addEventListener("DOMContentLoaded",()=>{
+window.addEventListener("DOMContentLoaded", () => {
 
     generateRecordID();
 
-    let today = new Date()
-        .toISOString()
-        .split("T")[0];
+    const today =
+        new Date().toISOString().split("T")[0];
 
     document.getElementById("feedingDate").value = today;
+
+    setupFeedCostCalculation();
 
     loadFeedingRecords();
 
@@ -64,9 +65,17 @@ window.addEventListener("DOMContentLoaded",()=>{
 
 function generateRecordID(){
 
-    let id = "FEED-" + Date.now();
+    const id =
+        "FEED-" + Date.now();
 
-    document.getElementById("recordID").value = id;
+    const recordID =
+        document.getElementById("recordID");
+
+    if(recordID){
+
+        recordID.value = id;
+
+    }
 
 }
 
@@ -77,13 +86,14 @@ function generateRecordID(){
 
 function calculateFeedCost(){
 
-    let quantity =
-        Number(document.getElementById("quantity").value);
+    const quantity =
+        Number(document.getElementById("quantity").value || 0);
 
-    let price =
-        Number(document.getElementById("feedPrice").value);
+    const price =
+        Number(document.getElementById("feedPrice").value || 0);
 
-    let total = quantity * price;
+    const total =
+        quantity * price;
 
     document.getElementById("feedCost").value =
         total.toFixed(2);
@@ -91,14 +101,56 @@ function calculateFeedCost(){
 }
 
 
-document
-    .getElementById("quantity")
-    .addEventListener("input",calculateFeedCost);
+function setupFeedCostCalculation(){
+
+    const quantity =
+        document.getElementById("quantity");
+
+    const price =
+        document.getElementById("feedPrice");
+
+    if(quantity){
+
+        quantity.addEventListener(
+            "change",
+            calculateFeedCost
+        );
+
+    }
+
+    if(price){
+
+        price.addEventListener(
+            "change",
+            calculateFeedCost
+        );
+
+    }
+
+}
 
 
-document
-    .getElementById("feedPrice")
-    .addEventListener("input",calculateFeedCost);
+// ==========================================
+// ESCAPE HTML
+// ==========================================
+
+function escapeHTML(value){
+
+    if(value === null || value === undefined){
+
+        return "";
+
+    }
+
+    return String(value)
+
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
 
 
 // ==========================================
@@ -107,14 +159,18 @@ document
 
 async function saveFeedingRecord(){
 
-    const loggedUser = getLoggedUser();
+    const loggedUser =
+        getLoggedUser();
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
 
     if(!loggedUser){
 
-        alert("No logged-in user found. Please login again.");
+        alert(
+            "No logged-in user found. Please login again."
+        );
 
         return;
     }
@@ -122,89 +178,101 @@ async function saveFeedingRecord(){
 
     if(!farmID){
 
-        alert("Farm information not found. Please login again.");
+        alert(
+            "Farm information not found. Please login again."
+        );
 
         return;
     }
 
 
-    let data = {
+    calculateFeedCost();
 
-        // FARM SECURITY
-        farm_id: farmID,
+
+    const data = {
+
+        farm_id:
+            farmID,
 
         record_id:
-        document.getElementById("recordID").value,
+            document.getElementById("recordID").value,
 
         feeding_date:
-        document.getElementById("feedingDate").value,
+            document.getElementById("feedingDate").value,
 
         pen_number:
-        document.getElementById("penNumber").value,
+            document.getElementById("penNumber").value,
 
         pig_category:
-        document.getElementById("pigCategory").value,
+            document.getElementById("pigCategory").value,
 
         breed:
-        document.getElementById("breed").value,
+            document.getElementById("breed").value,
 
         feed_type:
-        document.getElementById("feedType").value,
+            document.getElementById("feedType").value,
 
         feed_brand:
-        document.getElementById("feedBrand").value,
+            document.getElementById("feedBrand").value,
 
         quantity:
-        Number(document.getElementById("quantity").value),
+            Number(
+                document.getElementById("quantity").value
+            ),
 
         feed_price:
-        Number(document.getElementById("feedPrice").value),
+            Number(
+                document.getElementById("feedPrice").value
+            ),
 
         feed_cost:
-        Number(document.getElementById("feedCost").value),
+            Number(
+                document.getElementById("feedCost").value
+            ),
 
         morning_feeding:
-        document.getElementById("morningFeeding").value,
+            document.getElementById("morningFeeding").value,
 
         evening_feeding:
-        document.getElementById("eveningFeeding").value,
+            document.getElementById("eveningFeeding").value,
 
         water_available:
-        document.getElementById("waterAvailable").value,
+            document.getElementById("waterAvailable").value,
 
         feed_supplier:
-        document.getElementById("feedSupplier").value,
+            document.getElementById("feedSupplier").value,
 
         responsible_person:
-        document.getElementById("responsiblePerson").value,
+            document.getElementById("responsiblePerson").value,
 
         remarks:
-        document.getElementById("remarks").value,
+            document.getElementById("remarks").value,
 
-        // CREATION INFORMATION
         created_by:
-        loggedUser.full_name,
+            loggedUser.full_name,
 
         created_at:
-        new Date().toISOString(),
+            new Date().toISOString(),
 
-        // NEW RECORD HAS NOT BEEN UPDATED YET
-        updated_by: null,
+        updated_by:
+            null,
 
-        updated_at: null
+        updated_at:
+            null
     };
 
 
-    const {error} = await supabaseClient
+    const { error } =
+        await supabaseClient
 
-        .from("feeding_records")
+            .from("feeding_records")
 
-        .insert([data]);
+            .insert([data]);
 
 
     if(error){
 
-        console.log(error);
+        console.error(error);
 
         alert(error.message);
 
@@ -212,9 +280,7 @@ async function saveFeedingRecord(){
     }
 
 
-    // ==========================================
     // ACTIVITY LOG
-    // ==========================================
 
     await saveActivity(
 
@@ -233,7 +299,9 @@ async function saveFeedingRecord(){
     );
 
 
-    alert("Feeding record saved successfully");
+    alert(
+        "Feeding record saved successfully."
+    );
 
 
     document
@@ -241,17 +309,25 @@ async function saveFeedingRecord(){
         .reset();
 
 
+    editID = null;
+
     generateRecordID();
 
+    document.getElementById("feedingDate").value =
+        new Date().toISOString().split("T")[0];
+
+    document.getElementById("morningFeeding").value =
+        "08:00";
+
+    document.getElementById("eveningFeeding").value =
+        "16:00";
+
+    document.getElementById("feedCost").value =
+        "";
 
     loadFeedingRecords();
 
 }
-
-
-// ==========================================
-// PART 4 - LOAD, SEARCH, EDIT, UPDATE, DELETE
-// ==========================================
 
 
 // ==========================================
@@ -260,38 +336,43 @@ async function saveFeedingRecord(){
 
 async function loadFeedingRecords(){
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
 
     if(!farmID){
 
-        console.error("Farm ID not found.");
+        console.error(
+            "Farm ID not found."
+        );
 
         return;
     }
 
 
-    const {data,error}=await supabaseClient
+    const { data, error } =
+        await supabaseClient
 
-        .from("feeding_records")
+            .from("feeding_records")
 
-        .select("*")
+            .select("*")
 
-        // FARM SECURITY
-        .eq("farm_id", farmID)
+            .eq("farm_id", farmID)
 
-        .order("id",{ascending:false});
+            .order("id", {
+                ascending:false
+            });
 
 
     if(error){
 
-        console.log(error);
+        console.error(error);
 
         return;
     }
 
 
-    displayFeedingRecords(data);
+    displayFeedingRecords(data || []);
 
 }
 
@@ -302,53 +383,114 @@ async function loadFeedingRecords(){
 
 function displayFeedingRecords(data){
 
-    let table =
+    const table =
         document.getElementById("feedingTable");
 
 
-    table.innerHTML="";
+    table.innerHTML = "";
 
 
-    data.forEach(row=>{
+    if(!data.length){
 
-        table.innerHTML += `
+        table.innerHTML = `
 
-        <tr>
+            <tr>
 
-        <td>${row.feeding_date || ""}</td>
+                <td colspan="11" class="empty-state">
 
-        <td>${row.pen_number || ""}</td>
+                    No feeding records found.
 
-        <td>${row.pig_category || ""}</td>
+                </td>
 
-        <td>${row.breed || ""}</td>
-
-        <td>${row.feed_type || ""}</td>
-
-        <td>${row.quantity || ""}</td>
-
-        <td>${row.feed_cost || ""}</td>
-
-        <td>${row.responsible_person || ""}</td>
-
-
-        <td>
-
-        <button onclick="editFeedingRecord(${row.id})">
-        Edit
-        </button>
-
-
-        <button onclick="deleteFeedingRecord(${row.id})">
-        Delete
-        </button>
-
-        </td>
-
-
-        </tr>
+            </tr>
 
         `;
+
+        return;
+
+    }
+
+
+    data.forEach(row => {
+
+        const tr =
+            document.createElement("tr");
+
+
+        tr.innerHTML = `
+
+            <td>
+                ${escapeHTML(row.feeding_date || "")}
+            </td>
+
+            <td>
+                ${escapeHTML(row.pen_number || "")}
+            </td>
+
+            <td>
+                ${escapeHTML(row.pig_category || "")}
+            </td>
+
+            <td>
+                ${escapeHTML(row.breed || "")}
+            </td>
+
+            <td>
+                ${escapeHTML(row.feed_type || "")}
+            </td>
+
+            <td>
+                ${escapeHTML(row.feed_brand || "")}
+            </td>
+
+            <td>
+                ${row.quantity !== null &&
+                  row.quantity !== undefined
+                    ? escapeHTML(row.quantity) + " Kg"
+                    : ""}
+            </td>
+
+            <td>
+                ZMW ${
+                    row.feed_cost !== null &&
+                    row.feed_cost !== undefined
+                        ? escapeHTML(
+                            Number(row.feed_cost).toFixed(2)
+                          )
+                        : "0.00"
+                }
+            </td>
+
+            <td>
+                ${escapeHTML(row.remarks || "")}
+            </td>
+
+            <td>
+                ${escapeHTML(
+                    row.responsible_person || ""
+                )}
+            </td>
+
+            <td class="action-cell">
+
+                <button
+                    class="small-btn edit-action"
+                    onclick="editFeedingRecord(${row.id})">
+                    Edit
+                </button>
+
+                <button
+                    class="small-btn delete-action"
+                    onclick="deleteFeedingRecord(${row.id})">
+                    Delete
+                </button>
+
+            </td>
+
+        `;
+
+
+        table.appendChild(tr);
 
     });
 
@@ -361,39 +503,46 @@ function displayFeedingRecords(data){
 
 async function searchFeedingRecord(){
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
 
     if(!farmID){
 
-        alert("Farm information not found. Please login again.");
+        alert(
+            "Farm information not found. Please login again."
+        );
 
         return;
     }
 
 
-    let pen =
+    const pen =
         document.getElementById("penNumber").value;
 
 
-    if(pen===""){
+    if(pen === ""){
 
-        alert("Enter Pen Number");
+        alert("Select a Pen Number first.");
 
         return;
     }
 
 
-    const {data,error}=await supabaseClient
+    const { data, error } =
+        await supabaseClient
 
-        .from("feeding_records")
+            .from("feeding_records")
 
-        .select("*")
+            .select("*")
 
-        // FARM SECURITY
-        .eq("farm_id", farmID)
+            .eq("farm_id", farmID)
 
-        .eq("pen_number",pen);
+            .eq("pen_number", pen)
+
+            .order("id", {
+                ascending:false
+            });
 
 
     if(error){
@@ -404,7 +553,7 @@ async function searchFeedingRecord(){
     }
 
 
-    displayFeedingRecords(data);
+    displayFeedingRecords(data || []);
 
 }
 
@@ -415,29 +564,32 @@ async function searchFeedingRecord(){
 
 async function editFeedingRecord(id){
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
 
     if(!farmID){
 
-        alert("Farm information not found. Please login again.");
+        alert(
+            "Farm information not found. Please login again."
+        );
 
         return;
     }
 
 
-    const {data,error}=await supabaseClient
+    const { data, error } =
+        await supabaseClient
 
-        .from("feeding_records")
+            .from("feeding_records")
 
-        .select("*")
+            .select("*")
 
-        // FARM SECURITY
-        .eq("id",id)
+            .eq("id", id)
 
-        .eq("farm_id",farmID)
+            .eq("farm_id", farmID)
 
-        .single();
+            .single();
 
 
     if(error){
@@ -448,7 +600,7 @@ async function editFeedingRecord(id){
     }
 
 
-    editID=id;
+    editID = id;
 
 
     document.getElementById("recordID").value =
@@ -492,11 +644,11 @@ async function editFeedingRecord(id){
 
 
     document.getElementById("morningFeeding").value =
-        data.morning_feeding || "";
+        data.morning_feeding || "08:00";
 
 
     document.getElementById("eveningFeeding").value =
-        data.evening_feeding || "";
+        data.evening_feeding || "16:00";
 
 
     document.getElementById("waterAvailable").value =
@@ -515,7 +667,10 @@ async function editFeedingRecord(id){
         data.remarks || "";
 
 
-    window.scrollTo(0,0);
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
 
 }
 
@@ -528,20 +683,26 @@ async function updateFeedingRecord(){
 
     if(editID === null){
 
-        alert("Select record first");
+        alert(
+            "Select a record first by clicking Edit."
+        );
 
         return;
     }
 
 
-    const loggedUser = getLoggedUser();
+    const loggedUser =
+        getLoggedUser();
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
 
     if(!loggedUser){
 
-        alert("No logged-in user found. Please login again.");
+        alert(
+            "No logged-in user found. Please login again."
+        );
 
         return;
     }
@@ -549,96 +710,102 @@ async function updateFeedingRecord(){
 
     if(!farmID){
 
-        alert("Farm information not found. Please login again.");
+        alert(
+            "Farm information not found. Please login again."
+        );
 
         return;
     }
 
 
-    let updated = {
+    calculateFeedCost();
+
+
+    const updated = {
 
         record_id:
-        document.getElementById("recordID").value,
+            document.getElementById("recordID").value,
 
         feeding_date:
-        document.getElementById("feedingDate").value,
+            document.getElementById("feedingDate").value,
 
         pen_number:
-        document.getElementById("penNumber").value,
+            document.getElementById("penNumber").value,
 
         pig_category:
-        document.getElementById("pigCategory").value,
+            document.getElementById("pigCategory").value,
 
         breed:
-        document.getElementById("breed").value,
+            document.getElementById("breed").value,
 
         feed_type:
-        document.getElementById("feedType").value,
+            document.getElementById("feedType").value,
 
         feed_brand:
-        document.getElementById("feedBrand").value,
+            document.getElementById("feedBrand").value,
 
         quantity:
-        Number(document.getElementById("quantity").value),
+            Number(
+                document.getElementById("quantity").value
+            ),
 
         feed_price:
-        Number(document.getElementById("feedPrice").value),
+            Number(
+                document.getElementById("feedPrice").value
+            ),
 
         feed_cost:
-        Number(document.getElementById("feedCost").value),
+            Number(
+                document.getElementById("feedCost").value
+            ),
 
         morning_feeding:
-        document.getElementById("morningFeeding").value,
+            document.getElementById("morningFeeding").value,
 
         evening_feeding:
-        document.getElementById("eveningFeeding").value,
+            document.getElementById("eveningFeeding").value,
 
         water_available:
-        document.getElementById("waterAvailable").value,
+            document.getElementById("waterAvailable").value,
 
         feed_supplier:
-        document.getElementById("feedSupplier").value,
+            document.getElementById("feedSupplier").value,
 
         responsible_person:
-        document.getElementById("responsiblePerson").value,
+            document.getElementById("responsiblePerson").value,
 
         remarks:
-        document.getElementById("remarks").value,
+            document.getElementById("remarks").value,
 
-        // UPDATE INFORMATION
         updated_by:
-        loggedUser.full_name,
+            loggedUser.full_name,
 
         updated_at:
-        new Date().toISOString()
+            new Date().toISOString()
     };
 
 
-    const {error} = await supabaseClient
+    const { error } =
+        await supabaseClient
 
-        .from("feeding_records")
+            .from("feeding_records")
 
-        .update(updated)
+            .update(updated)
 
-        // FARM SECURITY
-        .eq("id", editID)
+            .eq("id", editID)
 
-        .eq("farm_id", farmID);
+            .eq("farm_id", farmID);
 
 
     if(error){
 
-        console.log(error);
+        console.error(error);
 
         alert(error.message);
 
         return;
     }
 
-
-    // ==========================================
-    // ACTIVITY LOG
-    // ==========================================
 
     await saveActivity(
 
@@ -657,7 +824,9 @@ async function updateFeedingRecord(){
     );
 
 
-    alert("Record updated successfully");
+    alert(
+        "Feeding record updated successfully."
+    );
 
 
     editID = null;
@@ -671,6 +840,19 @@ async function updateFeedingRecord(){
     generateRecordID();
 
 
+    document.getElementById("feedingDate").value =
+        new Date().toISOString().split("T")[0];
+
+    document.getElementById("morningFeeding").value =
+        "08:00";
+
+    document.getElementById("eveningFeeding").value =
+        "16:00";
+
+    document.getElementById("feedCost").value =
+        "";
+
+
     loadFeedingRecords();
 
 }
@@ -682,35 +864,41 @@ async function updateFeedingRecord(){
 
 async function deleteFeedingRecord(id){
 
-    if(!confirm("Delete this feeding record?"))
-
-        return;
-
-
-    const farmID = getFarmID();
-
-
-    const loggedUser = getLoggedUser();
-
-
-    if(!farmID){
-
-        alert("Farm information not found. Please login again.");
+    if(!confirm(
+        "Delete this feeding record?"
+    )){
 
         return;
     }
 
 
-    const {error}=await supabaseClient
+    const farmID =
+        getFarmID();
 
-        .from("feeding_records")
+    const loggedUser =
+        getLoggedUser();
 
-        .delete()
 
-        // FARM SECURITY
-        .eq("id",id)
+    if(!farmID){
 
-        .eq("farm_id",farmID);
+        alert(
+            "Farm information not found. Please login again."
+        );
+
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+
+            .from("feeding_records")
+
+            .delete()
+
+            .eq("id", id)
+
+            .eq("farm_id", farmID);
 
 
     if(error){
@@ -734,11 +922,17 @@ async function deleteFeedingRecord(id){
 
             "Feeding Records",
 
-            "Deleted feeding record ID: " + id
+            "Deleted feeding record ID: " +
+            id
 
         );
 
     }
+
+
+    alert(
+        "Feeding record deleted successfully."
+    );
 
 
     loadFeedingRecords();
@@ -747,35 +941,33 @@ async function deleteFeedingRecord(id){
 
 
 // ==========================================
-// PART 5 - REPORT & STATISTICS
-// ==========================================
-
-
-// ==========================================
-// GENERATE FEEDING REPORT
+// FEEDING REPORT
 // ==========================================
 
 async function generateReport(){
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
 
     if(!farmID){
 
-        alert("Farm information not found. Please login again.");
+        alert(
+            "Farm information not found. Please login again."
+        );
 
         return;
     }
 
 
-    const {data,error}=await supabaseClient
+    const { data, error } =
+        await supabaseClient
 
-        .from("feeding_records")
+            .from("feeding_records")
 
-        .select("*")
+            .select("*")
 
-        // FARM SECURITY
-        .eq("farm_id",farmID);
+            .eq("farm_id", farmID);
 
 
     if(error){
@@ -790,23 +982,23 @@ async function generateReport(){
 
     let totalCost = 0;
 
-    let feedCount = data.length;
+    const feedCount =
+        data.length;
+
+    const feedTypes = {};
 
 
-    let feedTypes = {};
-
-
-    data.forEach(record=>{
+    data.forEach(record => {
 
         totalQuantity +=
             Number(record.quantity || 0);
-
 
         totalCost +=
             Number(record.feed_cost || 0);
 
 
-        let type = record.feed_type;
+        const type =
+            record.feed_type;
 
 
         if(type){
@@ -818,7 +1010,7 @@ async function generateReport(){
             }
             else{
 
-                feedTypes[type]=1;
+                feedTypes[type] = 1;
 
             }
 
@@ -832,7 +1024,7 @@ async function generateReport(){
     let highest = 0;
 
 
-    for(let feed in feedTypes){
+    for(const feed in feedTypes){
 
         if(feedTypes[feed] > highest){
 
@@ -849,19 +1041,21 @@ async function generateReport(){
 
     alert(
 
-        "MUNKA PIGGERY FEEDING REPORT\n\n"+
+        "MUNKA PIGGERY FEEDING REPORT\n\n" +
 
-        "Total Records: "+
-        feedCount+"\n\n"+
+        "Total Records: " +
+        feedCount +
+        "\n\n" +
 
-        "Total Feed Used: "+
-        totalQuantity.toFixed(2)+
-        " Kg\n\n"+
+        "Total Feed Used: " +
+        totalQuantity.toFixed(2) +
+        " Kg\n\n" +
 
-        "Total Feed Cost: ZMW "+
-        totalCost.toFixed(2)+"\n\n"+
+        "Total Feed Cost: ZMW " +
+        totalCost.toFixed(2) +
+        "\n\n" +
 
-        "Most Used Feed: "+
+        "Most Used Feed: " +
         mostUsedFeed
 
     );
