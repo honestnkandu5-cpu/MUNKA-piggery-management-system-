@@ -25,7 +25,6 @@
 <h2>User Management</h2>
 
 
-
 <form id="userForm">
 
 
@@ -38,35 +37,46 @@
 </div>
 
 
-
 <div class="form-group">
 
 <label>Full Name</label>
 
-<input type="text" id="fullName" placeholder="Enter Full Name" required>
+<input
+type="text"
+id="fullName"
+placeholder="Enter Full Name"
+required
+>
 
 </div>
-
 
 
 <div class="form-group">
 
 <label>Username</label>
 
-<input type="text" id="username" placeholder="Create Username" required>
+<input
+type="text"
+id="username"
+placeholder="Create Username"
+required
+>
 
 </div>
-
 
 
 <div class="form-group">
 
 <label>Password</label>
 
-<input type="password" id="password" placeholder="Create Password" required>
+<input
+type="password"
+id="password"
+placeholder="Create Password"
+required
+>
 
 </div>
-
 
 
 <div class="form-group">
@@ -77,18 +87,23 @@
 
 <option value="">Select Role</option>
 
-<option>Admin</option>
+<option value="Admin">Admin</option>
 
-<option>Manager</option>
+<option value="Manager">Manager</option>
 
-<option>Vet</option>
+<option value="Vet">Vet</option>
 
-<option>Worker</option>
+<option value="Worker">Worker</option>
+
+<option value="Sales Officer">Sales Officer</option>
+
+<option value="Service Man">Service Man</option>
+
+<option value="Farrow Man">Farrow Man</option>
 
 </select>
 
 </div>
-
 
 
 <div class="form-group">
@@ -97,14 +112,13 @@
 
 <select id="status">
 
-<option>Active</option>
+<option value="Active">Active</option>
 
-<option>Inactive</option>
+<option value="Inactive">Inactive</option>
 
 </select>
 
 </div>
-
 
 
 <div class="buttons">
@@ -125,7 +139,19 @@ Clear
 </button>
 
 
-<button type="button" onclick="window.location.href='dashboard.html'">
+<button
+type="button"
+onclick="downloadUsersPDF()"
+class="pdf-button"
+>
+Download PDF
+</button>
+
+
+<button
+type="button"
+onclick="window.location.href='dashboard.html'"
+>
 Back to Dashboard
 </button>
 
@@ -136,11 +162,10 @@ Back to Dashboard
 </form>
 
 
-
 <h2>Registered Users</h2>
 
 
-<table border="1">
+<table id="usersTable" border="1">
 
 
 <thead>
@@ -166,17 +191,26 @@ Back to Dashboard
 
 <tbody id="userTable">
 
-
 </tbody>
 
 
 </table>
 
 
-
 </div>
 
 
+
+<!-- jsPDF -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- jsPDF AutoTable -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+
+<!-- Supabase -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
@@ -188,6 +222,7 @@ Back to Dashboard
 
 <script src="users.js"></script>
 
-</body>
-</html>
 
+</body>
+
+</html>

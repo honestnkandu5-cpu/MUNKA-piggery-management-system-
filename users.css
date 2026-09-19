@@ -1,29 +1,76 @@
+/* =========================================
+   MUNKA PIGGERY
+   USER MANAGEMENT SYSTEM
+   PROFESSIONAL STYLING
+========================================= */
+
+
+/* =========================================
+   GLOBAL
+========================================= */
+
+*{
+    box-sizing:border-box;
+}
+
+
 body{
 
-    font-family: Arial, sans-serif;
-    background:#f2f2f2;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:#f2f5f3;
+
     margin:0;
+
     padding:20px;
+
+    color:#333;
 
 }
 
+
+/* =========================================
+   MAIN CONTAINER
+========================================= */
 
 .container{
 
     width:95%;
+
+    max-width:1200px;
+
     margin:auto;
-    background:white;
-    padding:25px;
-    border-radius:10px;
-    box-shadow:0 0 10px #ccc;
+
+    background:#ffffff;
+
+    padding:30px;
+
+    border-radius:12px;
+
+    box-shadow:
+        0 4px 18px rgba(0,0,0,0.10);
 
 }
 
 
+/* =========================================
+   HEADINGS
+========================================= */
+
 h1{
 
     text-align:center;
-    color:green;
+
+    color:#176b35;
+
+    margin-top:0;
+
+    margin-bottom:5px;
+
+    font-size:28px;
 
 }
 
@@ -31,124 +78,360 @@ h1{
 h2{
 
     text-align:center;
+
     color:#444;
+
+    margin-top:10px;
+
+    margin-bottom:25px;
+
+    font-size:21px;
 
 }
 
 
+/* =========================================
+   FORM
+========================================= */
 
 .form-group{
 
-    margin-bottom:15px;
+    margin-bottom:16px;
 
 }
-
 
 
 label{
 
     display:block;
+
     font-weight:bold;
-    margin-bottom:5px;
+
+    margin-bottom:6px;
+
+    color:#333;
 
 }
 
 
-
-input, select{
+input,
+select{
 
     width:100%;
-    padding:10px;
+
+    padding:11px 12px;
+
     border:1px solid #ccc;
-    border-radius:5px;
+
+    border-radius:6px;
+
+    font-size:14px;
+
+    background:#fff;
+
+    outline:none;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 
 }
 
 
+input:focus,
+select:focus{
+
+    border-color:#176b35;
+
+    box-shadow:
+        0 0 0 2px rgba(23,107,53,0.12);
+
+}
+
+
+input[readonly]{
+
+    background:#f1f1f1;
+
+    color:#666;
+
+}
+
+
+/* =========================================
+   BUTTON AREA
+========================================= */
 
 .buttons{
 
     display:flex;
+
     gap:10px;
+
     flex-wrap:wrap;
-    margin-top:20px;
+
+    margin-top:22px;
 
 }
 
 
+/* =========================================
+   GENERAL BUTTON
+========================================= */
 
 button{
 
-    padding:10px 15px;
-    background:green;
+    padding:11px 17px;
+
+    background:#176b35;
+
     color:white;
+
     border:none;
-    border-radius:5px;
+
+    border-radius:6px;
+
     cursor:pointer;
 
-}
+    font-size:14px;
 
+    font-weight:bold;
+
+    transition:
+        background 0.2s,
+        transform 0.1s;
+
+}
 
 
 button:hover{
 
-    background:darkgreen;
+    background:#0f5228;
 
 }
 
 
+button:active{
+
+    transform:scale(0.98);
+
+}
+
+
+/* =========================================
+   PDF BUTTON
+========================================= */
+
+.pdf-button{
+
+    background:#1565c0;
+
+}
+
+
+.pdf-button:hover{
+
+    background:#0d47a1;
+
+}
+
+
+/* =========================================
+   TABLE
+========================================= */
 
 table{
 
     width:100%;
+
     margin-top:20px;
+
     border-collapse:collapse;
 
-}
+    background:white;
 
+    overflow:hidden;
+
+}
 
 
 th{
 
-    background:green;
+    background:#176b35;
+
     color:white;
-    padding:10px;
+
+    padding:12px 10px;
+
+    text-align:center;
+
+    font-size:14px;
 
 }
-
 
 
 td{
 
-    padding:10px;
+    padding:11px 10px;
+
     text-align:center;
 
-}
+    border-bottom:1px solid #e2e2e2;
 
-
-
-.action-btn{
-
-    background:red;
+    font-size:14px;
 
 }
 
 
+tbody tr:hover{
 
-@media(max-width:600px){
-
-.container{
-
-    width:100%;
+    background:#f5faf6;
 
 }
 
 
-table{
+tbody tr:last-child td{
+
+    border-bottom:none;
+
+}
+
+
+/* =========================================
+   ACTION BUTTONS
+========================================= */
+
+td button{
+
+    background:#d32f2f;
+
+    padding:7px 12px;
 
     font-size:12px;
 
 }
 
+
+td button:hover{
+
+    background:#b71c1c;
+
 }
 
+
+/* =========================================
+   STATUS DISPLAY
+========================================= */
+
+td:nth-child(5){
+
+    font-weight:bold;
+
+}
+
+
+/* =========================================
+   RESPONSIVE TABLE
+========================================= */
+
+@media(max-width:800px){
+
+    .container{
+
+        width:100%;
+
+        padding:20px;
+
+    }
+
+
+    table{
+
+        display:block;
+
+        overflow-x:auto;
+
+        white-space:nowrap;
+
+    }
+
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media(max-width:600px){
+
+    body{
+
+        padding:10px;
+
+    }
+
+
+    .container{
+
+        width:100%;
+
+        padding:18px;
+
+        border-radius:8px;
+
+    }
+
+
+    h1{
+
+        font-size:23px;
+
+    }
+
+
+    h2{
+
+        font-size:18px;
+
+    }
+
+
+    input,
+    select{
+
+        font-size:14px;
+
+        padding:10px;
+
+    }
+
+
+    .buttons{
+
+        flex-direction:column;
+
+    }
+
+
+    .buttons button{
+
+        width:100%;
+
+    }
+
+
+    table{
+
+        font-size:12px;
+
+    }
+
+
+    th,
+    td{
+
+        padding:8px;
+
+    }
+
+}
