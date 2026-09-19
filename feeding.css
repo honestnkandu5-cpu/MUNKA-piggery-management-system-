@@ -800,4 +800,17 @@ tbody tr:nth-child(even){
 
     }
 
+}.pdf-btn{
+
+    background:#8e44ad;
+
+    color:white;
+
+}
+
+
+.pdf-btn:hover{
+
+    background:#6f3488;
+
 }
