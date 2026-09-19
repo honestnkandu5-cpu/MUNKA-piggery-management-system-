@@ -3,12 +3,18 @@
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>MUNKA PIGGERY - Expenses Records</title>
+    <title>MUNKA PIGGERY - Expenses Records</title>
 
-<link rel="stylesheet" href="expenses.css">
+    <link rel="stylesheet" href="expenses.css">
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- jsPDF AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 </head>
 
@@ -19,343 +25,594 @@
 <div class="container">
 
 
-<h1>MUNKA PIGGERY FARM</h1>
+    <!-- HEADER -->
 
-<h2>Expenses Records</h2>
+    <div class="page-header">
+
+        <div>
+
+            <h1>MUNKA PIGGERY FARM</h1>
+
+            <p class="subtitle">
+                Farm Expenses Management System
+            </p>
+
+        </div>
+
+        <div class="module-badge">
+            EXPENSE RECORDS
+        </div>
+
+    </div>
 
 
 
-<form id="expensesForm">
+    <!-- EXPENSE FORM -->
+
+    <form id="expensesForm">
 
 
-<div class="form-group">
+        <div class="form-grid">
 
-<label>Expense ID</label>
 
-<input type="text" id="expenseID" readonly>
+            <!-- EXPENSE ID -->
+
+            <div class="form-group">
+
+                <label for="expenseID">
+                    Expense ID
+                </label>
+
+                <input
+                    type="text"
+                    id="expenseID"
+                    readonly
+                    placeholder="Automatically generated">
+
+            </div>
+
+
+
+            <!-- EXPENSE DATE -->
+
+            <div class="form-group">
+
+                <label for="expenseDate">
+                    Expense Date
+                </label>
+
+                <input
+                    type="date"
+                    id="expenseDate"
+                    required>
+
+            </div>
+
+
+
+            <!-- EXPENSE CATEGORY -->
+
+            <div class="form-group">
+
+                <label for="category">
+                    Expense Category
+                </label>
+
+                <select id="category" required>
+
+                    <option value="">
+                        Select Expense Category
+                    </option>
+
+                    <option>Feed</option>
+                    <option>Medicine</option>
+                    <option>Vaccination</option>
+                    <option>Labour</option>
+                    <option>Transport</option>
+                    <option>Repairs & Maintenance</option>
+                    <option>Utilities</option>
+                    <option>Equipment</option>
+                    <option>Breeding / Artificial Insemination</option>
+                    <option>Cleaning & Disinfection</option>
+                    <option>Marketing</option>
+                    <option>Other</option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- DESCRIPTION -->
+
+            <div class="form-group">
+
+                <label for="description">
+                    Expense Description
+                </label>
+
+                <select id="description" required>
+
+                    <option value="">
+                        Select expense category first
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- QUANTITY -->
+
+            <div class="form-group">
+
+                <label for="quantity">
+                    Quantity
+                </label>
+
+                <select id="quantity" required>
+
+                    <option value="">
+                        Select Quantity
+                    </option>
+
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="25">25</option>
+                    <option value="30">30</option>
+                    <option value="40">40</option>
+                    <option value="50">50</option>
+                    <option value="60">60</option>
+                    <option value="70">70</option>
+                    <option value="80">80</option>
+                    <option value="90">90</option>
+                    <option value="100">100</option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- UNIT -->
+
+            <div class="form-group">
+
+                <label for="unit">
+                    Unit
+                </label>
+
+                <select id="unit">
+
+                    <option value="">
+                        Select Unit
+                    </option>
+
+                    <option>kg</option>
+                    <option>bags</option>
+                    <option>litres</option>
+                    <option>bottles</option>
+                    <option>packets</option>
+                    <option>pieces</option>
+                    <option>hours</option>
+                    <option>days</option>
+                    <option>service</option>
+                    <option>trip</option>
+                    <option>Other</option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- UNIT COST -->
+
+            <div class="form-group">
+
+                <label for="unitCost">
+                    Unit Cost (ZMW)
+                </label>
+
+                <select
+                    id="unitCost"
+                    required>
+
+                    <option value="">
+                        Select Unit Cost
+                    </option>
+
+                    <option value="5">ZMW 5</option>
+                    <option value="10">ZMW 10</option>
+                    <option value="15">ZMW 15</option>
+                    <option value="20">ZMW 20</option>
+                    <option value="25">ZMW 25</option>
+                    <option value="30">ZMW 30</option>
+                    <option value="35">ZMW 35</option>
+                    <option value="40">ZMW 40</option>
+                    <option value="45">ZMW 45</option>
+                    <option value="50">ZMW 50</option>
+                    <option value="60">ZMW 60</option>
+                    <option value="70">ZMW 70</option>
+                    <option value="80">ZMW 80</option>
+                    <option value="90">ZMW 90</option>
+                    <option value="100">ZMW 100</option>
+                    <option value="120">ZMW 120</option>
+                    <option value="140">ZMW 140</option>
+                    <option value="160">ZMW 160</option>
+                    <option value="180">ZMW 180</option>
+                    <option value="200">ZMW 200</option>
+                    <option value="220">ZMW 220</option>
+                    <option value="240">ZMW 240</option>
+                    <option value="260">ZMW 260</option>
+                    <option value="280">ZMW 280</option>
+                    <option value="300">ZMW 300</option>
+                    <option value="350">ZMW 350</option>
+                    <option value="400">ZMW 400</option>
+                    <option value="450">ZMW 450</option>
+                    <option value="500">ZMW 500</option>
+                    <option value="600">ZMW 600</option>
+                    <option value="700">ZMW 700</option>
+                    <option value="800">ZMW 800</option>
+                    <option value="900">ZMW 900</option>
+                    <option value="1000">ZMW 1000</option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- TOTAL -->
+
+            <div class="form-group">
+
+                <label for="totalAmount">
+                    Total Amount (ZMW)
+                </label>
+
+                <input
+                    type="number"
+                    id="totalAmount"
+                    readonly
+                    placeholder="Automatically calculated">
+
+            </div>
+
+
+
+            <!-- PAYMENT METHOD -->
+
+            <div class="form-group">
+
+                <label for="paymentMethod">
+                    Payment Method
+                </label>
+
+                <select id="paymentMethod">
+
+                    <option value="">
+                        Select Payment Method
+                    </option>
+
+                    <option>Cash</option>
+                    <option>Mobile Money</option>
+                    <option>Bank Transfer</option>
+                    <option>Other</option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- SUPPLIER / PAYEE -->
+
+            <div class="form-group">
+
+                <label for="supplierName">
+                    Supplier / Payee Name
+                </label>
+
+                <!-- Type is UI-only and does NOT go to Supabase -->
+
+                <select id="supplierType">
+
+                    <option value="">
+                        Select Supplier / Payee Type
+                    </option>
+
+                    <option>Feed Supplier</option>
+                    <option>Veterinary Supplier</option>
+                    <option>Pharmacy</option>
+                    <option>Farmer</option>
+                    <option>Transporter</option>
+                    <option>Contractor</option>
+                    <option>Worker</option>
+                    <option>Service Provider</option>
+                    <option>Shop / Business</option>
+                    <option>Company</option>
+                    <option>Other</option>
+
+                </select>
+
+                <input
+                    type="text"
+                    id="supplierName"
+                    placeholder="Enter actual supplier / payee name or company"
+                    class="sub-input">
+
+            </div>
+
+
+
+            <!-- SUPPLIER CONTACT -->
+
+            <div class="form-group">
+
+                <label for="supplierContact">
+                    Supplier / Payee Contact
+                </label>
+
+                <!-- Type is UI-only and does NOT go to Supabase -->
+
+                <select id="supplierContactType">
+
+                    <option value="">
+                        Select Contact Type
+                    </option>
+
+                    <option>WhatsApp Number</option>
+                    <option>Phone Number</option>
+                    <option>Business Contact</option>
+                    <option>Email Address</option>
+                    <option>Not Provided</option>
+
+                </select>
+
+                <input
+                    type="text"
+                    id="supplierContact"
+                    placeholder="Enter actual phone / WhatsApp number"
+                    class="sub-input">
+
+            </div>
+
+
+
+            <!-- RESPONSIBLE PERSON -->
+
+            <div class="form-group">
+
+                <label for="responsiblePerson">
+                    Responsible Person
+                </label>
+
+                <select id="responsiblePerson">
+
+                    <option value="">
+                        Select Person
+                    </option>
+
+                    <option>Farm Manager</option>
+                    <option>Owner</option>
+                    <option>Accountant</option>
+                    <option>Farm Worker</option>
+                    <option>Other</option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- REMARKS -->
+
+            <div class="form-group full-width">
+
+                <label for="remarks">
+                    Remarks / Recommendation
+                </label>
+
+                <select id="remarks" required>
+
+                    <option value="">
+                        Select Expense Category First
+                    </option>
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- BUTTONS -->
+
+        <div class="buttons">
+
+
+            <button
+                type="submit"
+                class="save-btn"
+                data-permission="add"
+                data-module="Expenses">
+
+                💾 Save Expense
+
+            </button>
+
+
+
+            <button
+                type="button"
+                class="update-btn"
+                onclick="updateExpenseRecord()"
+                data-permission="edit"
+                data-module="Expenses">
+
+                ✏️ Update Expense
+
+            </button>
+
+
+
+            <button
+                type="button"
+                class="search-btn"
+                onclick="searchExpenseRecord()"
+                data-permission="view"
+                data-module="Expenses">
+
+                🔍 Search
+
+            </button>
+
+
+
+            <button
+                type="button"
+                class="report-btn"
+                onclick="generateExpenseReport()"
+                data-permission="report"
+                data-module="Expenses">
+
+                📊 Report
+
+            </button>
+
+
+
+            <button
+                type="button"
+                class="pdf-btn"
+                onclick="downloadExpensesPDF()"
+                data-permission="report"
+                data-module="Expenses">
+
+                📄 Download PDF
+
+            </button>
+
+
+
+            <button
+                type="button"
+                class="clear-btn"
+                onclick="clearExpenseForm()">
+
+                🧹 Clear
+
+            </button>
+
+
+
+            <button
+                type="button"
+                class="back-btn"
+                onclick="window.location.href='dashboard.html'">
+
+                ↩️ Back
+
+            </button>
+
+
+        </div>
+
+
+    </form>
+
+
+
+    <!-- HISTORY -->
+
+    <div class="history-header">
+
+        <h2>
+            Expenses History
+        </h2>
+
+        <span id="recordCount">
+            0 Records
+        </span>
+
+    </div>
+
+
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Unit Cost</th>
+                    <th>Total Amount</th>
+                    <th>Supplier / Payee</th>
+                    <th>Payment</th>
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="expensesTable">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
 
 </div>
 
 
 
-
-<div class="form-group">
-
-<label>Expense Date</label>
-
-<input type="date" id="expenseDate" required>
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Expense Category</label>
-
-<select id="category" required>
-
-<option value="">Select Category</option>
-
-<option>Feed</option>
-
-<option>Medicine</option>
-
-<option>Vaccination</option>
-
-<option>Labour</option>
-
-<option>Transport</option>
-
-<option>Repairs & Maintenance</option>
-
-<option>Utilities</option>
-
-<option>Equipment</option>
-
-<option>Other</option>
-
-</select>
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Description</label>
-
-<textarea id="description"
-placeholder="Enter description"></textarea>
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Quantity</label>
-
-<input type="number" id="quantity" min="0" step="0.01">
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Unit</label>
-
-<select id="unit">
-
-<option value="">Select Unit</option>
-
-<option>kg</option>
-
-<option>bags</option>
-
-<option>litres</option>
-
-<option>bottles</option>
-
-<option>pieces</option>
-
-<option>hours</option>
-
-<option>service</option>
-
-<option>Other</option>
-
-</select>
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Unit Cost (ZMW)</label>
-
-<input type="number"
-id="unitCost"
-step="0.01"
-oninput="calculateExpenseTotal()">
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Total Amount (ZMW)</label>
-
-<input type="number"
-id="totalAmount"
-readonly>
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Payment Method</label>
-
-<select id="paymentMethod">
-
-<option value="">Select Payment Method</option>
-
-<option>Cash</option>
-
-<option>Mobile Money</option>
-
-<option>Bank Transfer</option>
-
-<option>Other</option>
-
-</select>
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Supplier / Payee Name</label>
-
-<input type="text" id="supplierName">
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Supplier / Payee Contact</label>
-
-<input type="text" id="supplierContact">
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Responsible Person</label>
-
-<select id="responsiblePerson">
-
-<option value="">Select Person</option>
-
-<option>Farm Manager</option>
-
-<option>Owner</option>
-
-<option>Accountant</option>
-
-<option>Farm Worker</option>
-
-<option>Other</option>
-
-</select>
-
-</div>
-
-
-
-
-<div class="form-group">
-
-<label>Remarks</label>
-
-<textarea id="remarks"></textarea>
-
-</div>
-
-
-
-
-<div class="buttons">
-
-
-<button type="submit">
-
-Save Expense
-
-</button>
-
-<button type="button" onclick="updateExpenseRecord()">Update Expense</button>
-
-<button type="button"
-onclick="searchExpenseRecord()">
-
-Search
-
-</button>
-
-
-
-<button type="button"
-onclick="generateExpenseReport()">
-
-Generate Report
-
-</button>
-
-
-
-<button type="reset">
-
-Clear
-
-</button>
-
-
-
-<button type="button"
-onclick="window.location.href='dashboard.html'">
-
-Back
-
-</button>
-
-
-</div>
-
-
-</form>
-
-
-
-
-<h2>Expenses History</h2>
-
-
-<table>
-
-
-<thead>
-
-<tr>
-
-<th>Date</th>
-
-<th>Category</th>
-
-<th>Description</th>
-
-<th>Quantity</th>
-
-<th>Total Amount</th>
-
-<th>Supplier</th>
-
-<th>Payment</th>
-
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-
-
-<tbody id="expensesTable">
-
-</tbody>
-
-
-
-</table>
-
-
-
-
-</div>
-
-
-
+<!-- ACTIVITY -->
 
 <script src="activity.js"></script>
+
+
+
+<!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase.js"></script>
 
+
+
+<!-- SECURITY -->
+
 <script src="security.js"></script>
 
-<script src="expenses.js"></script>
 
+
+<!-- EXPENSES -->
+
+<script src="expenses.js"></script>
 
 
 </body>

@@ -1,69 +1,171 @@
 /* =====================================
    MUNKA PIGGERY FARM
-   EXPENSES RECORDS CSS
+   EXPENSES RECORDS
+   PROFESSIONAL CSS
 ===================================== */
+
+*{
+    box-sizing:border-box;
+}
 
 
 body{
-
-    font-family: Arial, sans-serif;
-
-    background:#f2f2f2;
 
     margin:0;
 
     padding:20px;
 
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:#f1f5f2;
+
+    color:#26332a;
+
 }
 
 
+/* =====================================
+   MAIN CONTAINER
+===================================== */
 
 .container{
 
-    max-width:1000px;
+    max-width:1250px;
 
-    margin:auto;
+    margin:0 auto;
 
-    background:white;
+    background:#ffffff;
 
-    padding:20px;
+    padding:25px;
 
-    border-radius:10px;
+    border-radius:14px;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.08);
+
+}
+
+
+/* =====================================
+   HEADER
+===================================== */
+
+.page-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
+    padding-bottom:20px;
+
+    margin-bottom:25px;
+
+    border-bottom:2px solid #e8eee9;
 
 }
 
 
+.page-header h1{
 
-h1,
-h2{
+    margin:0;
 
-    text-align:center;
+    color:#1b5e20;
 
-    color:#2e7d32;
+    font-size:28px;
 
 }
 
+
+.subtitle{
+
+    margin:6px 0 0;
+
+    color:#6b756d;
+
+    font-size:15px;
+
+}
+
+
+.module-badge{
+
+    background:#2e7d32;
+
+    color:white;
+
+    padding:10px 16px;
+
+    border-radius:20px;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    letter-spacing:.5px;
+
+}
+
+
+/* =====================================
+   FORM GRID
+===================================== */
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0,1fr));
+
+    gap:18px 20px;
+
+}
 
 
 .form-group{
 
-    margin-bottom:15px;
+    width:100%;
 
 }
 
 
+.full-width{
+
+    grid-column:
+        1 / -1;
+
+}
+
+
+/* =====================================
+   LABELS
+===================================== */
 
 label{
 
     display:block;
 
+    margin-bottom:7px;
+
     font-weight:bold;
 
-    margin-bottom:5px;
+    color:#37443a;
+
+    font-size:14px;
 
 }
 
 
+/* =====================================
+   INPUTS
+===================================== */
 
 input,
 select,
@@ -71,25 +173,72 @@ textarea{
 
     width:100%;
 
-    padding:10px;
+    padding:11px 12px;
 
-    border:1px solid #ccc;
+    border:1px solid #ccd5ce;
 
-    border-radius:5px;
+    border-radius:7px;
 
-    box-sizing:border-box;
+    background:#fff;
+
+    color:#26332a;
+
+    font-size:14px;
+
+    outline:none;
+
+    transition:
+        border-color .2s,
+        box-shadow .2s;
 
 }
 
 
+input:focus,
+select:focus,
+textarea:focus{
+
+    border-color:#2e7d32;
+
+    box-shadow:
+        0 0 0 3px rgba(46,125,50,.10);
+
+}
+
+
+input[readonly]{
+
+    background:#f5f7f5;
+
+    color:#68736b;
+
+}
+
 
 textarea{
+
+    min-height:100px;
 
     resize:vertical;
 
 }
 
 
+/* =====================================
+   SECOND INPUT
+   Supplier name/contact
+===================================== */
+
+.sub-input{
+
+    margin-top:8px;
+
+}
+
+
+/* =====================================
+   BUTTONS
+===================================== */
 
 .buttons{
 
@@ -99,49 +248,187 @@ textarea{
 
     gap:10px;
 
-    margin-top:20px;
+    margin-top:25px;
+
+    padding-top:20px;
+
+    border-top:1px solid #e6ebe7;
 
 }
-
 
 
 button{
 
-    background:#2e7d32;
+    border:none;
+
+    border-radius:7px;
+
+    padding:11px 16px;
 
     color:white;
 
-    border:none;
+    font-size:14px;
 
-    padding:10px 15px;
-
-    border-radius:5px;
+    font-weight:bold;
 
     cursor:pointer;
 
-}
+    transition:
+        transform .15s,
+        opacity .15s,
+        background .2s;
 
+}
 
 
 button:hover{
 
-    background:#1b5e20;
+    transform:translateY(-1px);
+
+    opacity:.93;
 
 }
 
 
+button:active{
+
+    transform:translateY(0);
+
+}
+
+
+/* =====================================
+   BUTTON COLORS
+===================================== */
+
+.save-btn{
+
+    background:#2e7d32;
+
+}
+
+
+.update-btn{
+
+    background:#1565c0;
+
+}
+
+
+.search-btn{
+
+    background:#455a64;
+
+}
+
+
+.report-btn{
+
+    background:#6a1b9a;
+
+}
+
+
+.pdf-btn{
+
+    background:#c62828;
+
+}
+
+
+.clear-btn{
+
+    background:#ef6c00;
+
+}
+
+
+.back-btn{
+
+    background:#37474f;
+
+}
+
+
+/* =====================================
+   HISTORY
+===================================== */
+
+.history-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin-top:35px;
+
+    margin-bottom:15px;
+
+    padding-bottom:10px;
+
+    border-bottom:2px solid #e8eee9;
+
+}
+
+
+.history-header h2{
+
+    margin:0;
+
+    color:#1b5e20;
+
+    font-size:21px;
+
+}
+
+
+#recordCount{
+
+    background:#e8f5e9;
+
+    color:#2e7d32;
+
+    padding:7px 12px;
+
+    border-radius:15px;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+}
+
+
+/* =====================================
+   TABLE
+===================================== */
+
+.table-container{
+
+    width:100%;
+
+    overflow-x:auto;
+
+    border:1px solid #e0e6e1;
+
+    border-radius:8px;
+
+}
 
 
 table{
 
     width:100%;
 
+    min-width:1050px;
+
     border-collapse:collapse;
 
-    margin-top:20px;
-
 }
-
 
 
 th{
@@ -150,35 +437,110 @@ th{
 
     color:white;
 
-    padding:10px;
+    padding:12px 9px;
 
-}
+    font-size:13px;
 
-
-
-td{
-
-    padding:8px;
-
-    border:1px solid #ddd;
+    white-space:nowrap;
 
     text-align:center;
 
 }
 
 
+td{
 
-.table-container{
+    padding:10px 9px;
 
-    overflow-x:auto;
+    border-bottom:1px solid #e5e9e6;
+
+    font-size:13px;
+
+    text-align:center;
+
+    white-space:nowrap;
 
 }
 
 
+tbody tr:nth-child(even){
+
+    background:#f8faf8;
+
+}
 
 
-@media(max-width:600px){
+tbody tr:hover{
 
+    background:#eef7ef;
+
+}
+
+
+.amount-cell{
+
+    font-weight:bold;
+
+    color:#1b5e20;
+
+}
+
+
+/* =====================================
+   ACTION BUTTONS
+===================================== */
+
+.action-cell{
+
+    white-space:nowrap;
+
+}
+
+
+.edit-btn{
+
+    background:#1565c0;
+
+    padding:7px 10px;
+
+    font-size:12px;
+
+    margin-right:4px;
+
+}
+
+
+.delete-btn{
+
+    background:#c62828;
+
+    padding:7px 10px;
+
+    font-size:12px;
+
+}
+
+
+/* =====================================
+   NO RECORDS
+===================================== */
+
+.no-records{
+
+    padding:25px;
+
+    color:#777;
+
+    text-align:center;
+
+}
+
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media(max-width:800px){
 
     body{
 
@@ -189,23 +551,104 @@ td{
 
     .container{
 
-        padding:15px;
+        padding:16px;
+
+        border-radius:10px;
 
     }
 
 
-    button{
+    .page-header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+
+    .page-header h1{
+
+        font-size:23px;
+
+    }
+
+
+    .form-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .full-width{
+
+        grid-column:auto;
+
+    }
+
+
+    .buttons{
+
+        flex-direction:column;
+
+    }
+
+
+    .buttons button{
 
         width:100%;
 
     }
 
 
-    table{
+    .history-header{
 
-        font-size:12px;
+        align-items:flex-start;
+
+        flex-direction:column;
 
     }
 
+}
+
+
+@media(max-width:500px){
+
+    body{
+
+        padding:5px;
+
+    }
+
+
+    .container{
+
+        padding:12px;
+
+    }
+
+
+    .page-header h1{
+
+        font-size:20px;
+
+    }
+
+
+    .module-badge{
+
+        font-size:11px;
+
+    }
+
+
+    input,
+    select,
+    textarea{
+
+        font-size:13px;
+
+    }
 
 }
