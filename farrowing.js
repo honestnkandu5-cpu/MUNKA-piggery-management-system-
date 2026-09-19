@@ -2,6 +2,7 @@
 // MUNKA PIGGERY
 // FARROWING RECORDS - SUPABASE
 // FARM-SECURED VERSION
+// PDF REPORT VERSION
 // =====================================
 
 let farrowingRecords = [];
@@ -12,20 +13,23 @@ let editID = null;
 // GET LOGGED-IN USER
 // =====================================
 
-function getLoggedUser(){
+function getLoggedUser() {
 
-    let user = JSON.parse(localStorage.getItem("loggedInUser"));
+    const user =
+        JSON.parse(
+            localStorage.getItem("loggedInUser")
+        );
 
-    if(!user){
+    if (!user) {
 
-        alert("No logged-in user found. Please login again.");
+        alert(
+            "No logged-in user found. Please login again."
+        );
 
         return null;
-
     }
 
     return user;
-
 }
 
 
@@ -33,24 +37,24 @@ function getLoggedUser(){
 // GET FARM ID
 // =====================================
 
-function getFarmID(){
+function getFarmID() {
 
     const loggedUser = getLoggedUser();
 
-    if(!loggedUser){
+    if (!loggedUser) {
         return null;
     }
 
-    if(!loggedUser.farm_id){
+    if (!loggedUser.farm_id) {
 
-        alert("Your account is not linked to a farm. Please contact the administrator.");
+        alert(
+            "Your account is not linked to a farm. Please contact the administrator."
+        );
 
         return null;
-
     }
 
     return loggedUser.farm_id;
-
 }
 
 
@@ -64,23 +68,36 @@ async function loadRecords() {
 
         const farmID = getFarmID();
 
-        if(!farmID) return;
+        if (!farmID) return;
 
-        const { data, error } = await supabaseClient
+
+        const { data, error } =
+
+            await supabaseClient
+
             .from("farrowing_records")
+
             .select("*")
+
             .eq("farm_id", farmID)
-            .order("id", { ascending: true });
+
+            .order("id", {
+                ascending: true
+            });
+
 
         if (error) throw error;
+
 
         farrowingRecords = data || [];
 
         displayRecords();
 
+
     } catch (error) {
 
         console.error(error);
+
         alert(error.message);
 
     }
@@ -92,28 +109,69 @@ async function loadRecords() {
 // AUTOMATIC DATE CALCULATION
 // =====================================
 
-document.getElementById("farrowDate").addEventListener("change", function () {
+function calculateFarrowingDates() {
 
-    let farrowDate = new Date(this.value);
+    const farrowDateValue =
+        document.getElementById("farrowDate").value;
 
-    if (isNaN(farrowDate)) return;
+
+    if (!farrowDateValue) {
+
+        document.getElementById("teethDate").value = "";
+        document.getElementById("tailDate").value = "";
+        document.getElementById("ironDate").value = "";
+        document.getElementById("weaningDate").value = "";
+
+        return;
+    }
+
+
+    const farrowDate =
+        new Date(
+            farrowDateValue + "T00:00:00"
+        );
+
+
+    if (isNaN(farrowDate.getTime())) return;
+
 
     function addDays(days) {
 
-        let date = new Date(farrowDate);
+        const date =
+            new Date(farrowDate);
 
-        date.setDate(date.getDate() + days);
+        date.setDate(
+            date.getDate() + days
+        );
 
-        return date.toISOString().split("T")[0];
+        return date
+            .toISOString()
+            .split("T")[0];
 
     }
 
-    document.getElementById("teethDate").value = addDays(3);
-    document.getElementById("tailDate").value = addDays(3);
-    document.getElementById("ironDate").value = addDays(3);
-    document.getElementById("weaningDate").value = addDays(33);
 
-});
+    document.getElementById("teethDate").value =
+        addDays(3);
+
+    document.getElementById("tailDate").value =
+        addDays(3);
+
+    document.getElementById("ironDate").value =
+        addDays(3);
+
+    document.getElementById("weaningDate").value =
+        addDays(33);
+
+}
+
+
+document
+    .getElementById("farrowDate")
+    .addEventListener(
+        "change",
+        calculateFarrowingDates
+    );
 
 
 // =====================================
@@ -122,279 +180,478 @@ document.getElementById("farrowDate").addEventListener("change", function () {
 
 function calculateTotalBorn() {
 
-    let bornAlive =
-        Number(document.getElementById("bornAlive").value) || 0;
+    const bornAlive =
+        Number(
+            document.getElementById("bornAlive").value
+        ) || 0;
 
-    let stillborn =
-        Number(document.getElementById("stillborn").value) || 0;
 
-    let mummified =
-        Number(document.getElementById("mummified").value) || 0;
+    const stillborn =
+        Number(
+            document.getElementById("stillborn").value
+        ) || 0;
+
+
+    const mummified =
+        Number(
+            document.getElementById("mummified").value
+        ) || 0;
+
 
     document.getElementById("totalBorn").value =
-        bornAlive + stillborn + mummified;
+        bornAlive +
+        stillborn +
+        mummified;
 
 }
 
-document.getElementById("bornAlive")
-    .addEventListener("input", calculateTotalBorn);
 
-document.getElementById("stillborn")
-    .addEventListener("input", calculateTotalBorn);
+document
+    .getElementById("bornAlive")
+    .addEventListener(
+        "change",
+        calculateTotalBorn
+    );
 
-document.getElementById("mummified")
-    .addEventListener("input", calculateTotalBorn);
+
+document
+    .getElementById("stillborn")
+    .addEventListener(
+        "change",
+        calculateTotalBorn
+    );
+
+
+document
+    .getElementById("mummified")
+    .addEventListener(
+        "change",
+        calculateTotalBorn
+    );
 
 
 // =====================================
 // SAVE / UPDATE RECORD
 // =====================================
 
-document.getElementById("farrowingForm")
-.addEventListener("submit", async function (e) {
+document
+    .getElementById("farrowingForm")
+    .addEventListener(
+        "submit",
+        async function (e) {
 
-    e.preventDefault();
-
-    let loggedUser = getLoggedUser();
-
-    if(!loggedUser) return;
-
-    const farmID = getFarmID();
-
-    if(!farmID) return;
+            e.preventDefault();
 
 
-    let record = {
+            const loggedUser =
+                getLoggedUser();
 
-        farm_id: farmID,
-
-        sow_id:
-            document.getElementById("sowID").value.trim(),
-
-        breed:
-            document.getElementById("breed").value,
-
-        farrow_date:
-            document.getElementById("farrowDate").value,
-
-        teeth_date:
-            document.getElementById("teethDate").value,
-
-        tail_date:
-            document.getElementById("tailDate").value,
-
-        iron_date:
-            document.getElementById("ironDate").value,
-
-        weaning_date:
-            document.getElementById("weaningDate").value,
-
-        born_alive:
-            Number(document.getElementById("bornAlive").value) || 0,
-
-        stillborn:
-            Number(document.getElementById("stillborn").value) || 0,
-
-        mummified:
-            Number(document.getElementById("mummified").value) || 0,
-
-        total_born:
-            Number(document.getElementById("totalBorn").value) || 0,
-
-        male_piglets:
-            Number(document.getElementById("malePiglets").value) || 0,
-
-        female_piglets:
-            Number(document.getElementById("femalePiglets").value) || 0,
-
-        total_weaned:
-            Number(document.getElementById("totalWeaned").value) || 0,
-
-        birth_weight:
-            Number(document.getElementById("birthWeight").value) || 0,
-
-        mortality:
-            Number(document.getElementById("mortality").value) || 0,
-
-        mortality_reason:
-            document.getElementById("mortalityReason").value,
-
-        sow_condition:
-            document.getElementById("sowCondition").value,
-
-        notes:
-            document.getElementById("notes").value.trim(),
-
-        created_by:
-            loggedUser.full_name,
-
-        updated_by:
-            null,
-
-        updated_at:
-            null
-
-    };
+            if (!loggedUser) return;
 
 
-    try {
+            const farmID =
+                getFarmID();
 
-        // =====================================
-        // ADD NEW RECORD
-        // =====================================
-
-        if (editID === null) {
-
-            const { error } = await supabaseClient
-                .from("farrowing_records")
-                .insert([record]);
-
-            if (error) throw error;
+            if (!farmID) return;
 
 
-            await saveActivity(
-
-                loggedUser.full_name +
-                " (" +
-                loggedUser.role +
-                ")",
-
-                "Added",
-
-                "Farrowing Records",
-
-                "Saved farrowing record for Sow ID: " +
-                record.sow_id
-
-            );
+            calculateTotalBorn();
 
 
-            alert("Farrowing record saved successfully.");
+            const record = {
 
+                farm_id:
+                    farmID,
+
+                sow_id:
+                    document
+                        .getElementById("sowID")
+                        .value
+                        .trim(),
+
+                breed:
+                    document
+                        .getElementById("breed")
+                        .value,
+
+                farrow_date:
+                    document
+                        .getElementById("farrowDate")
+                        .value,
+
+                teeth_date:
+                    document
+                        .getElementById("teethDate")
+                        .value,
+
+                tail_date:
+                    document
+                        .getElementById("tailDate")
+                        .value,
+
+                iron_date:
+                    document
+                        .getElementById("ironDate")
+                        .value,
+
+                weaning_date:
+                    document
+                        .getElementById("weaningDate")
+                        .value,
+
+                born_alive:
+                    Number(
+                        document
+                            .getElementById("bornAlive")
+                            .value
+                    ) || 0,
+
+                stillborn:
+                    Number(
+                        document
+                            .getElementById("stillborn")
+                            .value
+                    ) || 0,
+
+                mummified:
+                    Number(
+                        document
+                            .getElementById("mummified")
+                            .value
+                    ) || 0,
+
+                total_born:
+                    Number(
+                        document
+                            .getElementById("totalBorn")
+                            .value
+                    ) || 0,
+
+                male_piglets:
+                    Number(
+                        document
+                            .getElementById("malePiglets")
+                            .value
+                    ) || 0,
+
+                female_piglets:
+                    Number(
+                        document
+                            .getElementById("femalePiglets")
+                            .value
+                    ) || 0,
+
+                total_weaned:
+                    Number(
+                        document
+                            .getElementById("totalWeaned")
+                            .value
+                    ) || 0,
+
+                birth_weight:
+                    Number(
+                        document
+                            .getElementById("birthWeight")
+                            .value
+                    ) || 0,
+
+                mortality:
+                    Number(
+                        document
+                            .getElementById("mortality")
+                            .value
+                    ) || 0,
+
+                mortality_reason:
+                    document
+                        .getElementById("mortalityReason")
+                        .value,
+
+                sow_condition:
+                    document
+                        .getElementById("sowCondition")
+                        .value,
+
+                notes:
+                    document
+                        .getElementById("notes")
+                        .value,
+
+                created_by:
+                    loggedUser.full_name,
+
+                updated_by:
+                    null,
+
+                updated_at:
+                    null
+
+            };
+
+
+            try {
+
+                // =================================
+                // ADD NEW RECORD
+                // =================================
+
+                if (editID === null) {
+
+                    const { error } =
+
+                        await supabaseClient
+
+                        .from("farrowing_records")
+
+                        .insert([record]);
+
+
+                    if (error) throw error;
+
+
+                    await saveActivity(
+
+                        loggedUser.full_name +
+                        " (" +
+                        loggedUser.role +
+                        ")",
+
+                        "Added",
+
+                        "Farrowing Records",
+
+                        "Saved farrowing record for Sow ID: " +
+                        record.sow_id
+
+                    );
+
+
+                    alert(
+                        "Farrowing record saved successfully."
+                    );
+
+                }
+
+
+                // =================================
+                // UPDATE EXISTING RECORD
+                // =================================
+
+                else {
+
+                    record.updated_by =
+                        loggedUser.full_name;
+
+
+                    record.updated_at =
+                        new Date().toISOString();
+
+
+                    // Prevent changing farm ownership
+                    delete record.farm_id;
+
+
+                    const { error } =
+
+                        await supabaseClient
+
+                        .from("farrowing_records")
+
+                        .update(record)
+
+                        .eq("id", editID)
+
+                        .eq("farm_id", farmID);
+
+
+                    if (error) throw error;
+
+
+                    await saveActivity(
+
+                        loggedUser.full_name +
+                        " (" +
+                        loggedUser.role +
+                        ")",
+
+                        "Updated",
+
+                        "Farrowing Records",
+
+                        "Updated farrowing record for Sow ID: " +
+                        record.sow_id
+
+                    );
+
+
+                    alert(
+                        "Farrowing record updated successfully."
+                    );
+
+
+                    editID = null;
+
+                }
+
+
+                document
+                    .getElementById("farrowingForm")
+                    .reset();
+
+
+                document.getElementById("totalBorn").value = "";
+
+
+                loadRecords();
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(error.message);
+
+            }
 
         }
-
-        // =====================================
-        // UPDATE EXISTING RECORD
-        // =====================================
-
-        else {
-
-            record.updated_by =
-                loggedUser.full_name;
-
-            record.updated_at =
-                new Date().toISOString();
+    );
 
 
-            // Do not allow farm_id to be changed
-            delete record.farm_id;
+// =====================================
+// ESCAPE HTML
+// =====================================
 
+function escapeHTML(value) {
 
-            const { error } = await supabaseClient
-
-                .from("farrowing_records")
-
-                .update(record)
-
-                .eq("id", editID)
-
-                .eq("farm_id", farmID);
-
-
-            if (error) throw error;
-
-
-            // ===============================
-            // ACTIVITY LOG - UPDATE
-            // ===============================
-
-            await saveActivity(
-
-                loggedUser.full_name +
-                " (" +
-                loggedUser.role +
-                ")",
-
-                "Updated",
-
-                "Farrowing Records",
-
-                "Updated farrowing record for Sow ID: " +
-                record.sow_id
-
-            );
-
-
-            alert(
-                "Farrowing record updated successfully."
-            );
-
-
-            editID = null;
-
-        }
-
-
-        document
-            .getElementById("farrowingForm")
-            .reset();
-
-        loadRecords();
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(error.message);
-
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
     }
 
-});
+
+    return String(value)
+
+        .replace(/&/g, "&amp;")
+
+        .replace(/</g, "&lt;")
+
+        .replace(/>/g, "&gt;")
+
+        .replace(/"/g, "&quot;")
+
+        .replace(/'/g, "&#039;");
+
+}
 
 
 // =====================================
 // DISPLAY RECORDS
 // =====================================
 
-function displayRecords(records = farrowingRecords) {
+function displayRecords(
+    records = farrowingRecords
+) {
 
     const table =
-        document.getElementById("farrowingTable");
+        document.getElementById(
+            "farrowingTable"
+        );
+
 
     table.innerHTML = "";
+
+
+    if (!records || records.length === 0) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="11" class="no-records">
+
+                    No farrowing records found.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+    }
 
 
     records.forEach(function (record) {
 
         table.innerHTML += `
 
-        <tr>
+            <tr>
 
-            <td>${record.sow_id}</td>
+                <td>
+                    ${escapeHTML(record.sow_id)}
+                </td>
 
-            <td>${record.breed}</td>
+                <td>
+                    ${escapeHTML(record.breed)}
+                </td>
 
-            <td>${record.farrow_date}</td>
+                <td>
+                    ${escapeHTML(record.farrow_date)}
+                </td>
 
-            <td>${record.total_born}</td>
+                <td>
+                    ${escapeHTML(record.born_alive)}
+                </td>
 
-            <td>${record.weaning_date}</td>
+                <td>
+                    ${escapeHTML(record.stillborn)}
+                </td>
 
-            <td>
+                <td>
+                    ${escapeHTML(record.mummified)}
+                </td>
 
-                <button onclick="editRecord(${record.id})">
-                    Edit
-                </button>
+                <td>
+                    <strong>
+                        ${escapeHTML(record.total_born)}
+                    </strong>
+                </td>
 
-                <button onclick="deleteRecord(${record.id})">
-                    Delete
-                </button>
+                <td>
+                    ${escapeHTML(record.mortality)}
+                </td>
 
-            </td>
+                <td>
+                    ${escapeHTML(record.total_weaned)}
+                </td>
 
-        </tr>
+                <td>
+                    ${escapeHTML(record.weaning_date)}
+                </td>
+
+                <td class="action-cell">
+
+                    <button
+                        type="button"
+                        class="edit-btn"
+                        onclick="editRecord(${record.id})"
+                    >
+                        ✏️ Edit
+                    </button>
+
+                    <button
+                        type="button"
+                        class="delete-btn"
+                        onclick="deleteRecord(${record.id})"
+                    >
+                        🗑️ Delete
+                    </button>
+
+                </td>
+
+            </tr>
 
         `;
 
@@ -413,22 +670,28 @@ async function deleteRecord(id) {
         !confirm(
             "Delete this farrowing record?"
         )
-    ) return;
+    ) {
+        return;
+    }
 
 
-    const loggedUser = getLoggedUser();
+    const loggedUser =
+        getLoggedUser();
 
-    if(!loggedUser) return;
+    if (!loggedUser) return;
 
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
-    if(!farmID) return;
+    if (!farmID) return;
 
 
     try {
 
-        const { error } = await supabaseClient
+        const { error } =
+
+            await supabaseClient
 
             .from("farrowing_records")
 
@@ -441,10 +704,6 @@ async function deleteRecord(id) {
 
         if (error) throw error;
 
-
-        // ===============================
-        // ACTIVITY LOG - DELETE
-        // ===============================
 
         await saveActivity(
 
@@ -488,14 +747,17 @@ async function deleteRecord(id) {
 
 async function editRecord(id) {
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
-    if(!farmID) return;
+    if (!farmID) return;
 
 
     try {
 
-        const { data, error } = await supabaseClient
+        const { data, error } =
+
+            await supabaseClient
 
             .from("farrowing_records")
 
@@ -512,61 +774,80 @@ async function editRecord(id) {
 
 
         document.getElementById("sowID").value =
-            data.sow_id;
+            data.sow_id || "";
+
 
         document.getElementById("breed").value =
-            data.breed;
+            data.breed || "";
+
 
         document.getElementById("farrowDate").value =
-            data.farrow_date;
+            data.farrow_date || "";
+
 
         document.getElementById("teethDate").value =
-            data.teeth_date;
+            data.teeth_date || "";
+
 
         document.getElementById("tailDate").value =
-            data.tail_date;
+            data.tail_date || "";
+
 
         document.getElementById("ironDate").value =
-            data.iron_date;
+            data.iron_date || "";
+
 
         document.getElementById("weaningDate").value =
-            data.weaning_date;
+            data.weaning_date || "";
+
 
         document.getElementById("bornAlive").value =
-            data.born_alive;
+            data.born_alive || "";
+
 
         document.getElementById("stillborn").value =
-            data.stillborn;
+            data.stillborn || 0;
+
 
         document.getElementById("mummified").value =
-            data.mummified;
+            data.mummified || 0;
+
 
         document.getElementById("totalBorn").value =
-            data.total_born;
+            data.total_born || 0;
+
 
         document.getElementById("malePiglets").value =
-            data.male_piglets;
+            data.male_piglets || 0;
+
 
         document.getElementById("femalePiglets").value =
-            data.female_piglets;
+            data.female_piglets || 0;
+
 
         document.getElementById("totalWeaned").value =
-            data.total_weaned;
+            data.total_weaned || 0;
+
 
         document.getElementById("birthWeight").value =
-            data.birth_weight;
+            data.birth_weight || 0;
+
 
         document.getElementById("mortality").value =
-            data.mortality;
+            data.mortality || 0;
+
 
         document.getElementById("mortalityReason").value =
-            data.mortality_reason;
+            data.mortality_reason || "";
+
 
         document.getElementById("sowCondition").value =
-            data.sow_condition;
+            data.sow_condition ||
+            "Good - Normal recovery";
+
 
         document.getElementById("notes").value =
-            data.notes;
+            data.notes || "";
 
 
         editID = id;
@@ -600,20 +881,24 @@ async function searchRecord() {
 
     const keyword =
         document
-            .getElementById("searchFarrowing")
+            .getElementById(
+                "searchFarrowing"
+            )
             .value
             .trim();
 
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
-    if(!farmID) return;
+    if (!farmID) return;
 
 
     try {
 
-        const { data, error } =
-            await supabaseClient
+        let query =
+
+            supabaseClient
 
             .from("farrowing_records")
 
@@ -621,18 +906,30 @@ async function searchRecord() {
 
             .eq("farm_id", farmID)
 
-            .ilike(
-                "sow_id",
-                `%${keyword}%`
-            )
+            .order("id", {
+                ascending: true
+            });
 
-            .order("id");
+
+        if (keyword) {
+
+            query =
+                query.ilike(
+                    "sow_id",
+                    `%${keyword}%`
+                );
+
+        }
+
+
+        const { data, error } =
+            await query;
 
 
         if (error) throw error;
 
 
-        displayRecords(data);
+        displayRecords(data || []);
 
 
     } catch (error) {
@@ -646,62 +943,125 @@ async function searchRecord() {
 }
 
 
-document
-    .getElementById("searchFarrowing")
-    .addEventListener(
-        "keyup",
-        searchRecord
-    );
-
-
 // =====================================
 // GENERATE REPORT
 // =====================================
 
-async function generateReport(){
+async function generateReport() {
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
-    if(!farmID) return;
+    if (!farmID) return;
 
 
-    try{
+    try {
 
-        const { count, error } =
+        const { data, error } =
 
             await supabaseClient
 
             .from("farrowing_records")
 
-            .select(
-                "*",
-                {
-                    count: "exact",
-                    head: true
-                }
-            )
+            .select("*")
 
-            .eq(
-                "farm_id",
-                farmID
+            .eq("farm_id", farmID);
+
+
+        if (error) throw error;
+
+
+        const records =
+            data || [];
+
+
+        const totalRecords =
+            records.length;
+
+
+        const totalBorn =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.total_born) || 0),
+                0
             );
 
 
-        if(error) throw error;
+        const totalBornAlive =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.born_alive) || 0),
+                0
+            );
+
+
+        const totalStillborn =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.stillborn) || 0),
+                0
+            );
+
+
+        const totalMummified =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.mummified) || 0),
+                0
+            );
+
+
+        const totalMortality =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.mortality) || 0),
+                0
+            );
+
+
+        const totalWeaned =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.total_weaned) || 0),
+                0
+            );
 
 
         alert(
 
-            "FARROWING REPORT\n\n" +
+            "MUNKA PIGGERY - FARROWING REPORT\n\n" +
 
             "Total Farrowing Records: " +
+            totalRecords +
 
-            count
+            "\nTotal Born: " +
+            totalBorn +
+
+            "\nBorn Alive: " +
+            totalBornAlive +
+
+            "\nStillborn: " +
+            totalStillborn +
+
+            "\nMummified: " +
+            totalMummified +
+
+            "\nPiglets Lost: " +
+            totalMortality +
+
+            "\nTotal Weaned: " +
+            totalWeaned
 
         );
 
 
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
@@ -713,10 +1073,479 @@ async function generateReport(){
 
 
 // =====================================
+// PDF DOWNLOAD
+// =====================================
+
+async function downloadPDF() {
+
+    const farmID =
+        getFarmID();
+
+    if (!farmID) return;
+
+
+    if (
+        !window.jspdf ||
+        !window.jspdf.jsPDF
+    ) {
+
+        alert(
+            "PDF library could not be loaded. Please check your internet connection and try again."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const { data, error } =
+
+            await supabaseClient
+
+            .from("farrowing_records")
+
+            .select("*")
+
+            .eq("farm_id", farmID)
+
+            .order("id", {
+                ascending: true
+            });
+
+
+        if (error) throw error;
+
+
+        const records =
+            data || [];
+
+
+        if (records.length === 0) {
+
+            alert(
+                "There are no farrowing records available to download."
+            );
+
+            return;
+
+        }
+
+
+        const {
+            jsPDF
+        } = window.jspdf;
+
+
+        const doc =
+            new jsPDF({
+                orientation: "landscape",
+                unit: "mm",
+                format: "a4"
+            });
+
+
+        // =================================
+        // PDF HEADER
+        // =================================
+
+        doc.setFontSize(20);
+
+        doc.setFont(undefined, "bold");
+
+        doc.text(
+            "MUNKA PIGGERY",
+            148,
+            15,
+            {
+                align: "center"
+            }
+        );
+
+
+        doc.setFontSize(13);
+
+        doc.setFont(undefined, "normal");
+
+        doc.text(
+            "Farrowing & Litter Management Report",
+            148,
+            23,
+            {
+                align: "center"
+            }
+        );
+
+
+        doc.setFontSize(9);
+
+        doc.text(
+            "Farm ID: " + farmID,
+            14,
+            32
+        );
+
+
+        const loggedUser =
+            getLoggedUser();
+
+
+        doc.text(
+            "Generated By: " +
+            (loggedUser
+                ? loggedUser.full_name
+                : "System"),
+            14,
+            38
+        );
+
+
+        doc.text(
+            "Generated: " +
+            new Date().toLocaleString("en-ZM"),
+            14,
+            44
+        );
+
+
+        // =================================
+        // SUMMARY
+        // =================================
+
+        const totalBorn =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.total_born) || 0),
+                0
+            );
+
+
+        const totalBornAlive =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.born_alive) || 0),
+                0
+            );
+
+
+        const totalStillborn =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.stillborn) || 0),
+                0
+            );
+
+
+        const totalMummified =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.mummified) || 0),
+                0
+            );
+
+
+        const totalMortality =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.mortality) || 0),
+                0
+            );
+
+
+        const totalWeaned =
+            records.reduce(
+                (sum, record) =>
+                    sum +
+                    (Number(record.total_weaned) || 0),
+                0
+            );
+
+
+        doc.setFontSize(10);
+
+        doc.setFont(undefined, "bold");
+
+        doc.text(
+            "SUMMARY",
+            14,
+            52
+        );
+
+
+        doc.setFont(undefined, "normal");
+
+        doc.text(
+            "Records: " + records.length,
+            14,
+            59
+        );
+
+        doc.text(
+            "Born Alive: " + totalBornAlive,
+            60,
+            59
+        );
+
+        doc.text(
+            "Total Born: " + totalBorn,
+            110,
+            59
+        );
+
+        doc.text(
+            "Stillborn: " + totalStillborn,
+            160,
+            59
+        );
+
+        doc.text(
+            "Mummified: " + totalMummified,
+            215,
+            59
+        );
+
+
+        doc.text(
+            "Piglets Lost: " + totalMortality,
+            14,
+            65
+        );
+
+        doc.text(
+            "Total Weaned: " + totalWeaned,
+            70,
+            65
+        );
+
+
+        // =================================
+        // TABLE
+        // =================================
+
+        const tableRows =
+            records.map(function (record) {
+
+                return [
+
+                    record.sow_id || "",
+
+                    record.breed || "",
+
+                    record.farrow_date || "",
+
+                    record.born_alive || 0,
+
+                    record.stillborn || 0,
+
+                    record.mummified || 0,
+
+                    record.total_born || 0,
+
+                    record.male_piglets || 0,
+
+                    record.female_piglets || 0,
+
+                    record.mortality || 0,
+
+                    record.total_weaned || 0,
+
+                    record.weaning_date || "",
+
+                    record.sow_condition || ""
+
+                ];
+
+            });
+
+
+        doc.autoTable({
+
+            startY: 72,
+
+            head: [[
+
+                "Sow ID",
+
+                "Breed",
+
+                "Farrow Date",
+
+                "Born Alive",
+
+                "Stillborn",
+
+                "Mummified",
+
+                "Total Born",
+
+                "Male",
+
+                "Female",
+
+                "Lost",
+
+                "Weaned",
+
+                "Weaning Date",
+
+                "Sow Condition"
+
+            ]],
+
+
+            body: tableRows,
+
+
+            theme: "grid",
+
+
+            styles: {
+
+                fontSize: 6.5,
+
+                cellPadding: 2,
+
+                overflow: "linebreak",
+
+                valign: "middle"
+
+            },
+
+
+            headStyles: {
+
+                fontStyle: "bold",
+
+                halign: "center"
+
+            },
+
+
+            columnStyles: {
+
+                0: { cellWidth: 20 },
+
+                1: { cellWidth: 25 },
+
+                2: { cellWidth: 21 },
+
+                3: { cellWidth: 15 },
+
+                4: { cellWidth: 15 },
+
+                5: { cellWidth: 15 },
+
+                6: { cellWidth: 15 },
+
+                7: { cellWidth: 12 },
+
+                8: { cellWidth: 12 },
+
+                9: { cellWidth: 12 },
+
+                10: { cellWidth: 13 },
+
+                11: { cellWidth: 21 },
+
+                12: { cellWidth: 30 }
+
+            }
+
+        });
+
+
+        // =================================
+        // FOOTER
+        // =================================
+
+        const pageCount =
+            doc.internal.getNumberOfPages();
+
+
+        for (
+            let page = 1;
+            page <= pageCount;
+            page++
+        ) {
+
+            doc.setPage(page);
+
+
+            doc.setFontSize(8);
+
+            doc.text(
+
+                "MUNKA PIGGERY - Farrowing Records",
+
+                14,
+
+                202
+
+            );
+
+
+            doc.text(
+
+                "Page " +
+                page +
+                " of " +
+                pageCount,
+
+                270,
+
+                202,
+
+                {
+                    align: "right"
+                }
+
+            );
+
+        }
+
+
+        // =================================
+        // DOWNLOAD
+        // =================================
+
+        const today =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        doc.save(
+            "MUNKA-PIGGERY-Farrowing-Records-" +
+            today +
+            ".pdf"
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Unable to generate PDF: " +
+            error.message
+        );
+
+    }
+
+}
+
+
+// =====================================
 // PRINT REPORT
 // =====================================
 
-function printReport(){
+function printReport() {
 
     window.print();
 
@@ -727,11 +1556,15 @@ function printReport(){
 // CLEAR FORM
 // =====================================
 
-function clearForm(){
+function clearForm() {
 
     document
         .getElementById("farrowingForm")
         .reset();
+
+
+    document.getElementById("totalBorn").value = "";
+
 
     editID = null;
 
@@ -747,7 +1580,8 @@ const searchBox =
         "searchFarrowing"
     );
 
-if(searchBox){
+
+if (searchBox) {
 
     searchBox.addEventListener(
         "keyup",
@@ -763,7 +1597,7 @@ if(searchBox){
 
 document.addEventListener(
     "DOMContentLoaded",
-    function(){
+    function () {
 
         loadRecords();
 

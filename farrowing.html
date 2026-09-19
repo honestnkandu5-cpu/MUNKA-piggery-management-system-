@@ -1,7 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>MUNKA PIGGERY - Farrowing Records</title>
 
@@ -9,276 +13,955 @@
 
 </head>
 
-
 <body>
-
 
 <div class="container">
 
+    <div class="page-header">
 
-<h1>MUNKA PIGGERY</h1>
+        <div class="header-icon">🐷</div>
 
-<h2>Farrowing Records</h2>
+        <div>
+            <h1>MUNKA PIGGERY</h1>
+            <p>Farrowing &amp; Litter Management Records</p>
+        </div>
 
+    </div>
 
 
-<form id="farrowingForm">
+    <form id="farrowingForm">
 
+        <!-- ============================= -->
+        <!-- SOW INFORMATION -->
+        <!-- ============================= -->
 
-<label>Sow ID</label>
+        <div class="section">
 
-<input type="text" id="sowID" required>
+            <div class="section-title">
+                <span>🐖</span>
+                <h2>Sow Information</h2>
+            </div>
 
+            <div class="form-grid">
 
+                <div class="form-group">
 
-<label>Breed</label>
+                    <label for="sowID">Sow ID</label>
 
-<select id="breed" required>
+                    <input
+                        type="text"
+                        id="sowID"
+                        placeholder="Enter Sow ID"
+                        required
+                    >
 
-<option value="">Select Breed</option>
+                </div>
 
-<option>Large White</option>
 
-<option>Landrace</option>
+                <div class="form-group">
 
-<option>Large White × Landrace Cross</option>
+                    <label for="breed">Breed</label>
 
-<option>Duroc</option>
+                    <select id="breed" required>
 
-<option>Pietrain</option>
+                        <option value="">Select Breed</option>
 
-<option>Hampshire</option>
+                        <option>Large White</option>
+                        <option>Landrace</option>
+                        <option>Large White × Landrace Cross</option>
+                        <option>Duroc</option>
+                        <option>Pietrain</option>
+                        <option>Hampshire</option>
+                        <option>Other</option>
 
-<option>Other</option>
+                    </select>
 
-</select>
+                </div>
 
 
+                <div class="form-group">
 
-<label>Farrow Date</label>
+                    <label for="farrowDate">Farrow Date</label>
 
-<input type="date" id="farrowDate" required>
+                    <input
+                        type="date"
+                        id="farrowDate"
+                        required
+                    >
 
+                </div>
 
+            </div>
 
+        </div>
 
-<h3>Automatic Dates</h3>
 
+        <!-- ============================= -->
+        <!-- AUTOMATIC DATES -->
+        <!-- ============================= -->
 
-<label>Teeth Clipping Date</label>
+        <div class="section">
 
-<input type="date" id="teethDate" readonly>
+            <div class="section-title">
 
+                <span>📅</span>
 
+                <h2>Automatic Farrowing Dates</h2>
 
-<label>Tail Docking Date</label>
+            </div>
 
-<input type="date" id="tailDate" readonly>
+            <p class="section-description">
+                These dates are automatically calculated from the farrowing date.
+            </p>
 
 
+            <div class="date-grid">
 
-<label>Iron Injection Date</label>
+                <div class="date-card">
 
-<input type="date" id="ironDate" readonly>
+                    <label>Teeth Clipping</label>
 
+                    <input
+                        type="date"
+                        id="teethDate"
+                        readonly
+                    >
 
+                    <small>3 days after farrowing</small>
 
-<label>Weaning Date</label>
+                </div>
 
-<input type="date" id="weaningDate" readonly>
 
+                <div class="date-card">
 
+                    <label>Tail Docking</label>
 
+                    <input
+                        type="date"
+                        id="tailDate"
+                        readonly
+                    >
 
-<h3>Birth Records</h3>
+                    <small>3 days after farrowing</small>
 
+                </div>
 
 
-<label>Born Alive</label>
+                <div class="date-card">
 
-<input type="number" id="bornAlive" min="0">
+                    <label>Iron Injection</label>
 
+                    <input
+                        type="date"
+                        id="ironDate"
+                        readonly
+                    >
 
+                    <small>3 days after farrowing</small>
 
-<label>Stillborn</label>
+                </div>
 
-<input type="number" id="stillborn" min="0">
 
+                <div class="date-card">
 
+                    <label>Weaning Date</label>
 
-<label>Mummified Piglets</label>
+                    <input
+                        type="date"
+                        id="weaningDate"
+                        readonly
+                    >
 
-<input type="number" id="mummified" min="0">
+                    <small>33 days after farrowing</small>
 
+                </div>
 
+            </div>
 
-<label>Total Born</label>
+        </div>
 
-<input type="number" id="totalBorn" readonly>
 
+        <!-- ============================= -->
+        <!-- BIRTH RECORDS -->
+        <!-- ============================= -->
 
+        <div class="section">
 
+            <div class="section-title">
 
-<label>Male Piglets</label>
+                <span>🐽</span>
 
-<input type="number" id="malePiglets" min="0">
+                <h2>Birth Records</h2>
 
+            </div>
 
 
-<label>Female Piglets</label>
+            <div class="form-grid">
 
-<input type="number" id="femalePiglets" min="0">
-<label>Total Weaned</label>
+                <div class="form-group">
 
-<input type="number" id="totalWeaned" min="0">
+                    <label for="bornAlive">Born Alive</label>
 
+                    <select id="bornAlive" required>
 
-<label>Average Birth Weight (Kg)</label>
+                        <option value="">Select Number</option>
 
-<input type="number" id="birthWeight" min="0">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
 
+                    </select>
 
+                </div>
 
 
+                <div class="form-group">
 
-<h3>Mortality Records</h3>
+                    <label for="stillborn">Stillborn</label>
 
+                    <select id="stillborn">
 
-<label>Number of Piglets Lost</label>
+                        <option value="0">0 - None</option>
 
-<input type="number" id="mortality" min="0">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
 
+                    </select>
 
+                </div>
 
-<label>Reason for Mortality</label>
 
-<textarea id="mortalityReason"></textarea>
+                <div class="form-group">
 
+                    <label for="mummified">Mummified Piglets</label>
 
+                    <select id="mummified">
 
+                        <option value="0">0 - None</option>
 
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
 
-<label>Sow Condition After Farrowing</label>
+                    </select>
 
+                </div>
 
-<select id="sowCondition">
 
-<option>Good</option>
+                <div class="form-group">
 
-<option>Weak</option>
+                    <label for="totalBorn">Total Born</label>
 
-<option>Under Treatment</option>
+                    <input
+                        type="number"
+                        id="totalBorn"
+                        readonly
+                        placeholder="Automatically calculated"
+                    >
 
-</select>
+                </div>
 
 
+                <div class="form-group">
 
+                    <label for="malePiglets">Male Piglets</label>
 
+                    <select id="malePiglets">
 
-<label>Notes</label>
+                        <option value="0">0 - None</option>
 
-<textarea id="notes"></textarea>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
 
+                    </select>
 
+                </div>
 
 
-<br><br>
+                <div class="form-group">
 
+                    <label for="femalePiglets">Female Piglets</label>
 
-<button type="submit">
+                    <select id="femalePiglets">
 
-Save Record
+                        <option value="0">0 - None</option>
 
-</button>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
 
+                    </select>
 
+                </div>
 
-<button type="button" onclick="generateReport()">
 
-Generate Report
+                <div class="form-group">
 
-</button>
+                    <label for="birthWeight">
+                        Average Birth Weight (Kg)
+                    </label>
 
+                    <input
+                        type="number"
+                        id="birthWeight"
+                        min="0"
+                        step="0.01"
+                        placeholder="e.g. 1.40"
+                    >
 
+                </div>
 
-<button type="button" onclick="printReport()">
 
-Print
+                <div class="form-group">
 
-</button>
+                    <label for="totalWeaned">
+                        Total Weaned
+                    </label>
 
+                    <select id="totalWeaned">
 
+                        <option value="0">0 - Not Yet Weaned</option>
 
-</form>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
 
+                    </select>
 
+                    <small class="help-text">
+                        Update this field when the litter reaches the weaning period.
+                    </small>
 
+                </div>
 
-<hr>
+            </div>
 
+        </div>
 
 
-<h2>Search Farrowing Records</h2>
+        <!-- ============================= -->
+        <!-- MORTALITY -->
+        <!-- ============================= -->
 
+        <div class="section">
 
-<input type="text" id="searchFarrowing" placeholder="Search Sow ID">
+            <div class="section-title">
 
+                <span>⚕️</span>
 
-<button onclick="searchRecord()">
+                <h2>Mortality &amp; Farrowing Complications</h2>
 
-Search
+            </div>
 
-</button>
 
+            <div class="form-grid">
 
+                <div class="form-group">
 
+                    <label for="mortality">
+                        Number of Piglets Lost
+                    </label>
 
-<h2>Registered Farrowing Records</h2>
+                    <select id="mortality">
 
+                        <option value="0">0 - None</option>
 
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
 
-<table border="1">
+                    </select>
 
+                </div>
 
-<thead>
 
-<tr>
+                <div class="form-group full-width">
 
-<th>Sow ID</th>
+                    <label for="mortalityReason">
+                        Reason for Mortality / Complication
+                    </label>
 
-<th>Breed</th>
+                    <select id="mortalityReason">
 
-<th>Farrow Date</th>
+                        <option value="">Select Reason</option>
 
-<th>Total Born</th>
+                        <optgroup label="Birth & Farrowing Complications">
 
-<th>Weaning Date</th>
+                            <option>Difficult birth / Dystocia</option>
+                            <option>Prolonged farrowing</option>
+                            <option>Stillbirth</option>
+                            <option>Weak piglet at birth</option>
+                            <option>Low birth weight</option>
+                            <option>Birth trauma</option>
+                            <option>Delayed birth</option>
+                            <option>Failure to breathe normally</option>
+                            <option>Birth defect / Congenital abnormality</option>
+                            <option>Umbilical bleeding</option>
 
-<th>Action</th>
+                        </optgroup>
 
-</tr>
 
-</thead>
+                        <optgroup label="Sow-Related Causes">
 
+                            <option>Crushing by sow</option>
+                            <option>Sow lying on piglet</option>
+                            <option>Poor maternal behaviour</option>
+                            <option>Insufficient milk production</option>
+                            <option>Sow illness after farrowing</option>
+                            <option>Sow exhaustion</option>
+                            <option>Large litter / competition for milk</option>
 
+                        </optgroup>
 
-<tbody id="farrowingTable">
 
+                        <optgroup label="Piglet Health Problems">
 
-</tbody>
+                            <option>Starvation</option>
+                            <option>Failure to suckle</option>
+                            <option>Failure to receive colostrum</option>
+                            <option>Hypothermia / chilling</option>
+                            <option>Diarrhoea / Scours</option>
+                            <option>Respiratory infection</option>
+                            <option>Septicaemia</option>
+                            <option>General infection</option>
+                            <option>Umbilical infection</option>
+                            <option>Joint infection</option>
+                            <option>Weakness / poor vitality</option>
 
+                        </optgroup>
 
 
-</table>
+                        <optgroup label="Other Causes">
 
+                            <option>Injury / Trauma</option>
+                            <option>Dehydration</option>
+                            <option>Hunger / inadequate milk intake</option>
+                            <option>Poor hygiene</option>
+                            <option>Unknown cause</option>
+                            <option>Other</option>
 
+                        </optgroup>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ============================= -->
+        <!-- SOW CONDITION -->
+        <!-- ============================= -->
+
+        <div class="section">
+
+            <div class="section-title">
+
+                <span>❤️</span>
+
+                <h2>Sow Condition After Farrowing</h2>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="sowCondition">Sow Condition</label>
+
+                    <select id="sowCondition">
+
+                        <option>Excellent - Active and healthy</option>
+                        <option>Good - Normal recovery</option>
+                        <option>Fair - Requires monitoring</option>
+                        <option>Weak - Requires attention</option>
+                        <option>Under Treatment</option>
+                        <option>Complications Observed</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ============================= -->
+        <!-- NOTES & RECOMMENDATIONS -->
+        <!-- ============================= -->
+
+        <div class="section">
+
+            <div class="section-title">
+
+                <span>📝</span>
+
+                <h2>Notes &amp; Recommendations</h2>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="notes">
+                    Select Observation / Recommendation
+                </label>
+
+                <select id="notes">
+
+                    <option value="">
+                        Select Note / Recommendation
+                    </option>
+
+
+                    <optgroup label="Positive Farrowing Observations">
+
+                        <option>
+                            Excellent farrowing condition - sow active and healthy
+                        </option>
+
+                        <option>
+                            Good litter size and healthy piglets
+                        </option>
+
+                        <option>
+                            Piglets active and feeding well
+                        </option>
+
+                        <option>
+                            Good colostrum intake observed
+                        </option>
+
+                        <option>
+                            Good maternal behaviour observed
+                        </option>
+
+                        <option>
+                            Sow recovered well after farrowing
+                        </option>
+
+                        <option>
+                            No major farrowing complications observed
+                        </option>
+
+                        <option>
+                            Piglets showing good vitality
+                        </option>
+
+                        <option>
+                            Litter condition satisfactory
+                        </option>
+
+                    </optgroup>
+
+
+                    <optgroup label="Monitoring Recommendations">
+
+                        <option>
+                            Monitor weak piglets closely
+                        </option>
+
+                        <option>
+                            Monitor piglet feeding and colostrum intake
+                        </option>
+
+                        <option>
+                            Monitor sow milk production
+                        </option>
+
+                        <option>
+                            Monitor sow temperature and general condition
+                        </option>
+
+                        <option>
+                            Monitor piglets for signs of infection
+                        </option>
+
+                        <option>
+                            Monitor piglet weight gain
+                        </option>
+
+                        <option>
+                            Closely monitor the litter during the first week
+                        </option>
+
+                    </optgroup>
+
+
+                    <optgroup label="Corrective Recommendations">
+
+                        <option>
+                            Provide additional warmth to weak piglets
+                        </option>
+
+                        <option>
+                            Assist weak piglets to obtain colostrum
+                        </option>
+
+                        <option>
+                            Separate and assist weak piglets where necessary
+                        </option>
+
+                        <option>
+                            Improve farrowing pen hygiene
+                        </option>
+
+                        <option>
+                            Reduce risk of piglet crushing
+                        </option>
+
+                        <option>
+                            Monitor and assist piglets during feeding
+                        </option>
+
+                        <option>
+                            Review sow nutrition and feeding programme
+                        </option>
+
+                        <option>
+                            Investigate unusual piglet mortality
+                        </option>
+
+                        <option>
+                            Veterinary attention recommended
+                        </option>
+
+                        <option>
+                            Continue treatment and monitor recovery
+                        </option>
+
+                        <option>
+                            Review farrowing management practices
+                        </option>
+
+                    </optgroup>
+
+
+                    <optgroup label="Urgent Attention">
+
+                        <option>
+                            Immediate veterinary assessment recommended
+                        </option>
+
+                        <option>
+                            Multiple piglet deaths require investigation
+                        </option>
+
+                        <option>
+                            Severe farrowing complications require attention
+                        </option>
+
+                        <option>
+                            Sow requires close observation after farrowing
+                        </option>
+
+                    </optgroup>
+
+
+                    <optgroup label="Other">
+
+                        <option>Other - See farm records</option>
+
+                    </optgroup>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- ============================= -->
+        <!-- ACTION BUTTONS -->
+        <!-- ============================= -->
+
+        <div class="action-buttons">
+
+            <button
+                type="submit"
+                class="btn-primary"
+                data-permission="add"
+                data-module="Farrowing Records"
+            >
+                💾 Save Record
+            </button>
+
+
+            <button
+                type="button"
+                class="btn-secondary"
+                onclick="clearForm()"
+            >
+                🧹 Clear
+            </button>
+
+
+            <button
+                type="button"
+                class="btn-report"
+                onclick="generateReport()"
+                data-permission="report"
+                data-module="Farrowing Records"
+            >
+                📊 Generate Report
+            </button>
+
+
+            <button
+                type="button"
+                class="btn-pdf"
+                onclick="downloadPDF()"
+                data-permission="report"
+                data-module="Farrowing Records"
+            >
+                📥 Download PDF
+            </button>
+
+
+            <button
+                type="button"
+                class="btn-print"
+                onclick="printReport()"
+                data-permission="report"
+                data-module="Farrowing Records"
+            >
+                🖨️ Print
+            </button>
+
+
+            <button
+                type="button"
+                class="btn-back"
+                onclick="window.location.href='dashboard.html'"
+            >
+                ↩️ Back
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <!-- ============================= -->
+    <!-- SEARCH -->
+    <!-- ============================= -->
+
+    <div class="section search-section">
+
+        <div class="section-title">
+
+            <span>🔍</span>
+
+            <h2>Search Farrowing Records</h2>
+
+        </div>
+
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="searchFarrowing"
+                placeholder="Search by Sow ID"
+            >
+
+            <button
+                type="button"
+                onclick="searchRecord()"
+                data-permission="view"
+                data-module="Farrowing Records"
+            >
+                🔍 Search
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- RECORDS TABLE -->
+    <!-- ============================= -->
+
+    <div class="section records-section">
+
+        <div class="section-title">
+
+            <span>📋</span>
+
+            <h2>Registered Farrowing Records</h2>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Sow ID</th>
+                        <th>Breed</th>
+                        <th>Farrow Date</th>
+                        <th>Born Alive</th>
+                        <th>Stillborn</th>
+                        <th>Mummified</th>
+                        <th>Total Born</th>
+                        <th>Pigs Lost</th>
+                        <th>Total Weaned</th>
+                        <th>Weaning Date</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="farrowingTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <footer>
+
+        <strong>MUNKA PIGGERY</strong>
+
+        <span>Farrowing &amp; Litter Management System</span>
+
+    </footer>
 
 </div>
 
 
-
+<!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<!-- PDF LIBRARIES -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+
+<!-- PROJECT SCRIPTS -->
 
 <script src="supabase.js"></script>
 

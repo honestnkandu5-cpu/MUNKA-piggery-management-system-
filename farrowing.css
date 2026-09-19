@@ -1,197 +1,876 @@
-body{
+/* =====================================
+   MUNKA PIGGERY
+   FARROWING RECORDS
+   PROFESSIONAL DESIGN
+===================================== */
 
-    margin:0;
-    padding:0;
-    font-family:Arial, sans-serif;
-    background:#f2f2f2;
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin: 0;
+
+    padding: 25px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        #f3f6f4;
+
+    color:
+        #26352c;
 
 }
 
 
-.container{
+/* =====================================
+   MAIN CONTAINER
+===================================== */
 
-    width:90%;
-    margin:30px auto;
-    background:white;
-    padding:30px;
+.container {
 
-    border-radius:10px;
+    width: 96%;
 
-    box-shadow:0 0 15px rgba(0,0,0,0.2);
+    max-width: 1350px;
 
-}
+    margin: 0 auto;
 
+    background: #ffffff;
 
+    border-radius: 16px;
 
-h1{
+    overflow: hidden;
 
-    text-align:center;
-    color:green;
-
-}
-
-
-h2{
-
-    text-align:center;
-    color:#333;
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.10);
 
 }
 
 
-h3{
+/* =====================================
+   HEADER
+===================================== */
 
-    color:green;
-    border-bottom:1px solid #ccc;
-    padding-bottom:5px;
+.page-header {
+
+    background:
+        linear-gradient(
+            135deg,
+            #0d4f2d,
+            #198754
+        );
+
+    color: white;
+
+    padding: 28px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 18px;
 
 }
 
 
+.header-icon {
 
-label{
+    width: 58px;
 
-    display:block;
-    margin-top:12px;
-    font-weight:bold;
+    height: 58px;
+
+    background:
+        rgba(255,255,255,0.15);
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 30px;
 
 }
 
+
+.page-header h1 {
+
+    margin: 0;
+
+    font-size: 29px;
+
+    letter-spacing: 1px;
+
+}
+
+
+.page-header p {
+
+    margin: 6px 0 0;
+
+    opacity: 0.90;
+
+    font-size: 14px;
+
+}
+
+
+/* =====================================
+   SECTION
+===================================== */
+
+.section {
+
+    margin: 25px;
+
+    padding: 23px;
+
+    background: #ffffff;
+
+    border: 1px solid #e1e7e3;
+
+    border-radius: 13px;
+
+}
+
+
+.section-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    border-bottom: 2px solid #e4ebe6;
+
+    padding-bottom: 12px;
+
+    margin-bottom: 20px;
+
+}
+
+
+.section-title span {
+
+    font-size: 22px;
+
+}
+
+
+.section-title h2 {
+
+    margin: 0;
+
+    color: #123d2a;
+
+    font-size: 20px;
+
+}
+
+
+.section-description {
+
+    margin-top: -10px;
+
+    margin-bottom: 20px;
+
+    color: #6b756f;
+
+    font-size: 14px;
+
+}
+
+
+/* =====================================
+   FORM GRID
+===================================== */
+
+.form-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 18px 25px;
+
+}
+
+
+.form-group {
+
+    min-width: 0;
+
+}
+
+
+.full-width {
+
+    grid-column:
+        1 / -1;
+
+}
+
+
+label {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-weight: 700;
+
+    color: #34443a;
+
+    font-size: 14px;
+
+}
 
 
 input,
 select,
-textarea{
+textarea {
 
-    width:100%;
+    width: 100%;
 
-    padding:12px;
+    padding: 12px 13px;
 
-    margin-top:5px;
+    border: 1px solid #cfd8d2;
 
-    border:1px solid #ccc;
+    border-radius: 8px;
 
-    border-radius:5px;
+    background: #ffffff;
 
-    box-sizing:border-box;
+    color: #26352c;
 
-}
+    font-size: 15px;
 
+    outline: none;
 
-
-textarea{
-
-    height:80px;
-
-    resize:none;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 
 }
 
 
+input:focus,
+select:focus,
+textarea:focus {
 
-button{
+    border-color: #198754;
 
-    background:green;
-
-    color:white;
-
-    border:none;
-
-    padding:12px 20px;
-
-    margin:10px 5px;
-
-    border-radius:5px;
-
-    cursor:pointer;
-
-    font-size:16px;
+    box-shadow:
+        0 0 0 3px rgba(25, 135, 84, 0.10);
 
 }
 
 
+input[readonly] {
 
-button:hover{
+    background: #f0f5f2;
 
-    background:darkgreen;
+    color: #52635a;
 
-}
-
-
-
-table{
-
-    width:100%;
-
-    border-collapse:collapse;
-
-    margin-top:20px;
+    font-weight: 600;
 
 }
 
 
+.help-text {
 
-th{
+    display: block;
 
-    background:green;
+    margin-top: 6px;
 
-    color:white;
+    color: #6b756f;
 
-    padding:10px;
-
-}
-
-
-
-td{
-
-    padding:10px;
-
-    text-align:center;
+    font-size: 12px;
 
 }
 
 
+textarea {
 
-tr:nth-child(even){
+    min-height: 100px;
 
-    background:#f2f2f2;
-
-}
-
-
-
-hr{
-
-    margin:30px 0;
+    resize: vertical;
 
 }
 
 
+/* =====================================
+   AUTOMATIC DATE CARDS
+===================================== */
 
-@media(max-width:700px){
+.date-grid {
 
+    display: grid;
 
-.container{
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
 
-    width:95%;
-
-}
-
-
-table{
-
-    font-size:12px;
+    gap: 15px;
 
 }
 
 
-button{
+.date-card {
 
-    width:100%;
+    padding: 15px;
+
+    border-radius: 10px;
+
+    background: #f4f9f6;
+
+    border: 1px solid #dce9e1;
 
 }
 
 
+.date-card label {
+
+    color: #155b37;
+
 }
 
+
+.date-card small {
+
+    display: block;
+
+    margin-top: 6px;
+
+    color: #6c7770;
+
+    font-size: 11px;
+
+}
+
+
+/* =====================================
+   ACTION BUTTONS
+===================================== */
+
+.action-buttons {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    padding: 0 25px 25px;
+
+}
+
+
+button {
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 12px 18px;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s,
+        box-shadow 0.15s,
+        opacity 0.15s;
+
+}
+
+
+button:hover {
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.12);
+
+}
+
+
+button:active {
+
+    transform: translateY(0);
+
+}
+
+
+.btn-primary {
+
+    background: #198754;
+
+    color: white;
+
+}
+
+
+.btn-secondary {
+
+    background: #6c757d;
+
+    color: white;
+
+}
+
+
+.btn-report {
+
+    background: #0d6efd;
+
+    color: white;
+
+}
+
+
+.btn-pdf {
+
+    background: #6f42c1;
+
+    color: white;
+
+}
+
+
+.btn-print {
+
+    background: #495057;
+
+    color: white;
+
+}
+
+
+.btn-back {
+
+    background: #343a40;
+
+    color: white;
+
+}
+
+
+/* =====================================
+   SEARCH
+===================================== */
+
+.search-section {
+
+    background:
+        #f8faf9;
+
+}
+
+
+.search-box {
+
+    display: flex;
+
+    gap: 10px;
+
+}
+
+
+.search-box input {
+
+    flex: 1;
+
+}
+
+
+.search-box button {
+
+    background: #198754;
+
+    color: white;
+
+    white-space: nowrap;
+
+}
+
+
+/* =====================================
+   TABLE
+===================================== */
+
+.records-section {
+
+    overflow: hidden;
+
+}
+
+
+.table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+}
+
+
+table {
+
+    width: 100%;
+
+    min-width: 1100px;
+
+    border-collapse: collapse;
+
+    margin-top: 5px;
+
+}
+
+
+thead th {
+
+    background: #123d2a;
+
+    color: white;
+
+    padding: 13px 10px;
+
+    border: 1px solid #285c43;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+
+}
+
+
+tbody td {
+
+    padding: 11px 9px;
+
+    border: 1px solid #e0e5e2;
+
+    text-align: center;
+
+    font-size: 13px;
+
+}
+
+
+tbody tr:nth-child(even) {
+
+    background: #f7faf8;
+
+}
+
+
+tbody tr:hover {
+
+    background: #eef7f1;
+
+}
+
+
+.action-cell {
+
+    white-space: nowrap;
+
+}
+
+
+.edit-btn {
+
+    background: #0d6efd;
+
+    color: white;
+
+    padding: 7px 10px;
+
+    margin: 2px;
+
+    font-size: 12px;
+
+}
+
+
+.delete-btn {
+
+    background: #dc3545;
+
+    color: white;
+
+    padding: 7px 10px;
+
+    margin: 2px;
+
+    font-size: 12px;
+
+}
+
+
+.no-records {
+
+    padding: 30px !important;
+
+    color: #6c757d;
+
+    font-style: italic;
+
+}
+
+
+/* =====================================
+   FOOTER
+===================================== */
+
+footer {
+
+    background: #123d2a;
+
+    color: white;
+
+    padding: 18px 25px;
+
+    text-align: center;
+
+    font-size: 13px;
+
+}
+
+
+footer strong {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: 15px;
+
+}
+
+
+footer span {
+
+    opacity: 0.8;
+
+}
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width: 900px) {
+
+    body {
+
+        padding: 10px;
+
+    }
+
+
+    .container {
+
+        width: 100%;
+
+        border-radius: 10px;
+
+    }
+
+
+    .form-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .date-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .page-header {
+
+        padding: 22px 15px;
+
+    }
+
+
+    .page-header h1 {
+
+        font-size: 22px;
+
+    }
+
+
+    .page-header p {
+
+        font-size: 12px;
+
+    }
+
+
+    .header-icon {
+
+        width: 48px;
+
+        height: 48px;
+
+        font-size: 24px;
+
+    }
+
+
+    .section {
+
+        margin: 15px;
+
+        padding: 17px;
+
+    }
+
+
+    .date-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .action-buttons {
+
+        padding:
+            0 15px 20px;
+
+    }
+
+
+    .action-buttons button {
+
+        width: 100%;
+
+    }
+
+
+    .search-box {
+
+        flex-direction: column;
+
+    }
+
+
+    .search-box button {
+
+        width: 100%;
+
+    }
+
+}
+
+
+/* =====================================
+   PRINT
+===================================== */
+
+@media print {
+
+    body {
+
+        padding: 0;
+
+        background: white;
+
+    }
+
+
+    .container {
+
+        width: 100%;
+
+        max-width: none;
+
+        box-shadow: none;
+
+        border-radius: 0;
+
+    }
+
+
+    .action-buttons,
+    .search-section,
+    footer {
+
+        display: none !important;
+
+    }
+
+
+    .section {
+
+        margin: 10px 0;
+
+        border: none;
+
+        box-shadow: none;
+
+    }
+
+
+    .page-header {
+
+        background: white;
+
+        color: black;
+
+        border-bottom: 2px solid #123d2a;
+
+    }
+
+
+    .header-icon {
+
+        display: none;
+
+    }
+
+
+    table {
+
+        min-width: 0;
+
+        font-size: 9px;
+
+    }
+
+
+    thead th {
+
+        background: #eeeeee !important;
+
+        color: black !important;
+
+    }
+
+}
