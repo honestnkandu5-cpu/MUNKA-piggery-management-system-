@@ -8,54 +8,47 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>
-        MUNKA PIGGERY FARM - Reports & Analytics
-    </title>
+    <title>MUNKA PIGGERY FARM - Reports & Analytics</title>
 
     <link rel="stylesheet" href="reports.css">
 
 </head>
 
-
 <body>
-
-
-<!-- ==========================================
-     HEADER
-========================================== -->
 
 <header class="reports-header">
 
-    <div>
+    <div class="header-brand">
 
-        <h1>
-            🐖 MUNKA PIGGERY FARM
-        </h1>
+        <div class="brand-icon">🐖</div>
 
-        <p>
-            Reports & Analytics
-        </p>
+        <div>
+            <h1>MUNKA PIGGERY FARM</h1>
+            <p>Reports & Analytics</p>
+        </div>
 
     </div>
 
-
     <div class="header-actions">
 
-        <button
-            type="button"
-            onclick="window.location.href='dashboard.html'">
-
+        <button type="button"
+                onclick="window.location.href='dashboard.html'">
             🏠 Dashboard
-
         </button>
 
+        <button type="button"
+                onclick="loadReports()">
+            🔄 Refresh
+        </button>
 
-        <button
-            type="button"
-            onclick="window.print()">
-
+        <button type="button"
+                onclick="printReports()">
             🖨 Print
+        </button>
 
+        <button type="button"
+                onclick="downloadReportsPDF()">
+            📄 Download PDF
         </button>
 
     </div>
@@ -63,818 +56,661 @@
 </header>
 
 
-
-<!-- ==========================================
-     MAIN CONTENT
-========================================== -->
-
 <main class="reports-container">
 
 
-<!-- ==========================================
-     REPORT FILTER
-========================================== -->
+    <!-- REPORT FILTER -->
 
-<section class="report-filter">
+    <section class="report-filter">
 
-    <h2>
-        📊 Report Period
-    </h2>
+        <div>
+
+            <h2>📊 Report Period</h2>
+
+            <p>
+                Analyse your farm automatically using the records already
+                stored in the MUNKA PIGGERY Management System.
+            </p>
+
+        </div>
+
+        <div class="filter-row">
+
+            <div class="form-group">
+
+                <label for="reportMonth">
+                    Select Month
+                </label>
+
+                <input
+                    type="month"
+                    id="reportMonth">
+
+            </div>
+
+            <button
+                type="button"
+                class="primary-btn"
+                onclick="loadReports()">
+                🔄 Generate Report
+            </button>
+
+            <button
+                type="button"
+                class="secondary-btn"
+                onclick="clearReportFilter()">
+                Clear Filter
+            </button>
+
+        </div>
+
+    </section>
 
 
-    <div class="filter-row">
+    <!-- SYSTEM STATUS -->
 
-        <div class="form-group">
+    <section class="system-status">
 
-            <label for="reportMonth">
-                Select Month
-            </label>
+        <div>
 
-            <input
-                type="month"
-                id="reportMonth">
+            <span class="status-dot"></span>
+
+            <strong id="reportStatus">
+                Loading farm records...
+            </strong>
+
+        </div>
+
+        <span id="reportLastUpdated">
+            —
+        </span>
+
+    </section>
+
+
+    <!-- FARM SUMMARY -->
+
+    <section class="summary-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2>📈 Farm Summary</h2>
+
+                <p>
+                    Automatic summary from your farm records
+                </p>
+
+            </div>
 
         </div>
 
 
+        <div class="summary-grid">
+
+
+            <div class="summary-card">
+
+                <div class="card-icon">🐖</div>
+
+                <div>
+
+                    <h3>Total Pigs</h3>
+
+                    <p id="totalPigs">0</p>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="card-icon">💰</div>
+
+                <div>
+
+                    <h3>Total Sales</h3>
+
+                    <p id="totalSales">ZMW 0.00</p>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="card-icon">💸</div>
+
+                <div>
+
+                    <h3>Total Expenses</h3>
+
+                    <p id="totalExpenses">ZMW 0.00</p>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="card-icon">📊</div>
+
+                <div>
+
+                    <h3>Profit / Loss</h3>
+
+                    <p id="profitLoss">ZMW 0.00</p>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="card-icon">🐷</div>
+
+                <div>
+
+                    <h3>Piglets Weaned</h3>
+
+                    <p id="totalWeaned">0</p>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="card-icon">💉</div>
+
+                <div>
+
+                    <h3>Treatments</h3>
+
+                    <p id="totalTreatments">0</p>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="card-icon">🌾</div>
+
+                <div>
+
+                    <h3>Feed Used</h3>
+
+                    <p id="totalFeeding">0 Kg</p>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="card-icon">🐖</div>
+
+                <div>
+
+                    <h3>Farrowing Records</h3>
+
+                    <p id="totalFarrowing">0</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- MANAGEMENT INSIGHTS -->
+
+    <section class="report-section">
+
+        <h2>💡 Management Insights</h2>
+
+        <p class="section-description">
+            Automatic observations based on your current farm records.
+        </p>
+
+        <div id="managementInsights"
+             class="insights-grid">
+
+            <div class="insight-card">
+                <strong>Preparing analysis...</strong>
+                <p>Please wait while the system analyses your farm.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FINANCIAL REPORT -->
+
+    <section class="report-section">
+
+        <h2>💰 Financial Report</h2>
+
+        <div class="financial-grid">
+
+            <div class="report-box">
+
+                <h3>Total Sales</h3>
+
+                <strong id="financialSales">
+                    ZMW 0.00
+                </strong>
+
+            </div>
+
+
+            <div class="report-box">
+
+                <h3>Total Expenses</h3>
+
+                <strong id="financialExpenses">
+                    ZMW 0.00
+                </strong>
+
+            </div>
+
+
+            <div class="report-box">
+
+                <h3>Net Profit / Loss</h3>
+
+                <strong id="financialProfit">
+                    ZMW 0.00
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <h3>Sales vs Expenses</h3>
+
+            <canvas id="financialChart"></canvas>
+
+        </div>
+
+    </section>
+
+
+    <!-- PIG REPORT -->
+
+    <section class="report-section">
+
+        <h2>🐖 Pig Population Report</h2>
+
+        <div class="statistics-grid">
+
+            <div class="stat-box">
+
+                <span>Total Pigs</span>
+
+                <strong id="pigReportTotal">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Male Pigs</span>
+
+                <strong id="malePigs">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Female Pigs</span>
+
+                <strong id="femalePigs">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Healthy Pigs</span>
+
+                <strong id="healthyPigs">0</strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <h3>Pig Population by Sex</h3>
+
+            <canvas id="pigChart"></canvas>
+
+        </div>
+
+    </section>
+
+
+    <!-- GESTATION -->
+
+    <section class="report-section">
+
+        <h2>🤰 Gestation Report</h2>
+
+        <div class="statistics-grid">
+
+            <div class="stat-box">
+
+                <span>Total Gestation Records</span>
+
+                <strong id="gestationCount">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Gestations This Month</span>
+
+                <strong id="gestationMonthCount">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Active Gestations</span>
+
+                <strong id="activeGestations">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Completed Gestations</span>
+
+                <strong id="completedGestations">0</strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <h3>Gestation Status</h3>
+
+            <canvas id="gestationChart"></canvas>
+
+        </div>
+
+    </section>
+
+
+    <!-- PRODUCTION -->
+
+    <section class="report-section">
+
+        <h2>🐷 Production Report</h2>
+
+        <div class="statistics-grid">
+
+            <div class="stat-box">
+
+                <span>Farrowing Records</span>
+
+                <strong id="productionFarrowing">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Piglets Born</span>
+
+                <strong id="totalBorn">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Piglets Weaned</span>
+
+                <strong id="productionWeaned">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Mortality</span>
+
+                <strong id="productionMortality">0</strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <h3>Production Performance</h3>
+
+            <canvas id="productionChart"></canvas>
+
+        </div>
+
+    </section>
+
+
+    <!-- HEALTH -->
+
+    <section class="report-section">
+
+        <h2>💉 Health Report</h2>
+
+        <div class="statistics-grid">
+
+            <div class="stat-box">
+
+                <span>Treatment Records</span>
+
+                <strong id="healthTreatments">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Health Events</span>
+
+                <strong id="healthEvents">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Mortality</span>
+
+                <strong id="healthMortality">0</strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <h3>Health / Treatment Records</h3>
+
+            <canvas id="healthChart"></canvas>
+
+        </div>
+
+    </section>
+
+
+    <!-- FEEDING -->
+
+    <section class="report-section">
+
+        <h2>🌾 Feeding Report</h2>
+
+        <div class="statistics-grid">
+
+            <div class="stat-box">
+
+                <span>Feeding Records</span>
+
+                <strong id="feedingReportRecords">0</strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Total Feed Used</span>
+
+                <strong id="feedingReportQuantity">
+                    0 Kg
+                </strong>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <span>Total Feed Cost</span>
+
+                <strong id="feedingReportCost">
+                    ZMW 0.00
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <h3>Feed Consumption</h3>
+
+            <canvas id="feedingChart"></canvas>
+
+        </div>
+
+    </section>
+
+
+    <!-- MONTHLY FINANCIAL TABLE -->
+
+    <section class="report-section">
+
+        <h2>📅 Monthly Financial Summary</h2>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Month</th>
+                        <th>Sales</th>
+                        <th>Expenses</th>
+                        <th>Profit / Loss</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="monthlyFinancialTable">
+
+                    <tr>
+
+                        <td colspan="4">
+                            No report generated yet.
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- REPORT ACTIONS -->
+
+    <section class="report-actions">
+
         <button
             type="button"
-            onclick="loadReports()">
-
-            🔄 Generate Report
-
+            class="primary-btn"
+            onclick="generateFullReport()">
+            📊 Generate Full Report
         </button>
 
 
         <button
             type="button"
-            onclick="clearReportFilter()">
-
-            Clear Filter
-
+            class="pdf-btn"
+            onclick="downloadReportsPDF()">
+            📄 Download PDF
         </button>
 
-    </div>
 
-</section>
-
-
-
-<!-- ==========================================
-     DASHBOARD SUMMARY
-========================================== -->
-
-<section class="summary-section">
-
-    <h2>
-        📈 Farm Summary
-    </h2>
-
-
-    <div class="summary-grid">
-
-
-        <!-- TOTAL PIGS -->
-
-        <div class="summary-card">
-
-            <div class="card-icon">
-                🐖
-            </div>
-
-            <div>
-
-                <h3>
-                    Total Pigs
-                </h3>
-
-                <p id="totalPigs">
-                    0
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- TOTAL SALES -->
-
-        <div class="summary-card">
-
-            <div class="card-icon">
-                💰
-            </div>
-
-            <div>
-
-                <h3>
-                    Total Sales
-                </h3>
-
-                <p id="totalSales">
-                    ZMW 0.00
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- TOTAL EXPENSES -->
-
-        <div class="summary-card">
-
-            <div class="card-icon">
-                💸
-            </div>
-
-            <div>
-
-                <h3>
-                    Total Expenses
-                </h3>
-
-                <p id="totalExpenses">
-                    ZMW 0.00
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- PROFIT / LOSS -->
-
-        <div class="summary-card">
-
-            <div class="card-icon">
-                📊
-            </div>
-
-            <div>
-
-                <h3>
-                    Profit / Loss
-                </h3>
-
-                <p id="profitLoss">
-                    ZMW 0.00
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- TOTAL WEANED -->
-
-        <div class="summary-card">
-
-            <div class="card-icon">
-                🐷
-            </div>
-
-            <div>
-
-                <h3>
-                    Piglets Weaned
-                </h3>
-
-                <p id="totalWeaned">
-                    0
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- TOTAL TREATMENTS -->
-
-        <div class="summary-card">
-
-            <div class="card-icon">
-                💉
-            </div>
-
-            <div>
-
-                <h3>
-                    Treatments
-                </h3>
-
-                <p id="totalTreatments">
-                    0
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- TOTAL FEEDING -->
-
-        <div class="summary-card">
-
-            <div class="card-icon">
-                🌾
-            </div>
-
-            <div>
-
-                <h3>
-                    Feeding Records
-                </h3>
-
-                <p id="totalFeeding">
-                    0
-                </p>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- TOTAL FARROWING -->
-
-        <div class="summary-card">
-
-            <div class="card-icon">
-                🐖
-            </div>
-
-            <div>
-
-                <h3>
-                    Farrowing Records
-                </h3>
-
-                <p id="totalFarrowing">
-                    0
-                </p>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- ==========================================
-     FINANCIAL REPORT
-========================================== -->
-
-<section class="report-section">
-
-    <h2>
-        💰 Financial Report
-    </h2>
-
-
-    <div class="financial-grid">
-
-
-        <div class="report-box">
-
-            <h3>
-                Total Sales
-            </h3>
-
-            <strong id="financialSales">
-                ZMW 0.00
-            </strong>
-
-        </div>
-
-
-        <div class="report-box">
-
-            <h3>
-                Total Expenses
-            </h3>
-
-            <strong id="financialExpenses">
-                ZMW 0.00
-            </strong>
-
-        </div>
-
-
-        <div class="report-box">
-
-            <h3>
-                Net Profit / Loss
-            </h3>
-
-            <strong id="financialProfit">
-                ZMW 0.00
-            </strong>
-
-        </div>
-
-    </div>
-
-
-
-    <div class="chart-container">
-
-        <h3>
-            Monthly Sales vs Expenses
-        </h3>
-
-        <canvas id="financialChart">
-        </canvas>
-
-    </div>
-
-</section>
-
-
-
-<!-- ==========================================
-     PIG REPORT
-========================================== -->
-
-<section class="report-section">
-
-    <h2>
-        🐖 Pig Population Report
-    </h2>
-
-
-    <div class="statistics-grid">
-
-        <div class="stat-box">
-
-            <span>
-                Total Pigs
-            </span>
-
-            <strong id="pigReportTotal">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Male Pigs
-            </span>
-
-            <strong id="malePigs">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Female Pigs
-            </span>
-
-            <strong id="femalePigs">
-                0
-            </strong>
-
-        </div>
-
-    </div>
-
-
-    <div class="chart-container">
-
-        <h3>
-            Pig Population by Sex
-        </h3>
-
-        <canvas id="pigChart">
-        </canvas>
-
-    </div>
-
-</section>
-
-
-<!-- ==========================================
-     GESTATION REPORT
-========================================== -->
-
-<section class="report-section">
-
-    <h2>
-        🤰 Gestation Report
-    </h2>
-
-
-    <div class="statistics-grid">
-
-
-        <div class="stat-box">
-
-            <span>
-                Total Gestation Records
-            </span>
-
-            <strong id="gestationCount">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Gestations This Month
-            </span>
-
-            <strong id="gestationMonthCount">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Active Gestations
-            </span>
-
-            <strong id="activeGestations">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Completed Gestations
-            </span>
-
-            <strong id="completedGestations">
-                0
-            </strong>
-
-        </div>
-
-
-    </div>
-
-
-    <div class="chart-container">
-
-        <h3>
-            Gestation Records
-        </h3>
-
-        <canvas id="gestationChart">
-        </canvas>
-
-    </div>
-
-</section>
-<!-- ==========================================
-     PRODUCTION REPORT
-========================================== -->
-
-<section class="report-section">
-
-    <h2>
-        🐷 Production Report
-    </h2>
-
-
-    <div class="statistics-grid">
-
-
-        <div class="stat-box">
-
-            <span>
-                Farrowing Records
-            </span>
-
-            <strong id="productionFarrowing">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Piglets Born
-            </span>
-
-            <strong id="totalBorn">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Piglets Weaned
-            </span>
-
-            <strong id="productionWeaned">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Mortality
-            </span>
-
-            <strong id="productionMortality">
-                0
-            </strong>
-
-        </div>
-
-    </div>
-
-
-    <div class="chart-container">
-
-        <h3>
-            Pig Population / Production
-        </h3>
-
-        <canvas id="productionChart">
-        </canvas>
-
-    </div>
-
-</section>
-
-
-
-<!-- ==========================================
-     HEALTH REPORT
-========================================== -->
-
-<section class="report-section">
-
-    <h2>
-        💉 Health Report
-    </h2>
-
-
-    <div class="statistics-grid">
-
-
-        <div class="stat-box">
-
-            <span>
-                Treatment Records
-            </span>
-
-            <strong id="healthTreatments">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Vaccination / Treatment Events
-            </span>
-
-            <strong id="healthEvents">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Mortality
-            </span>
-
-            <strong id="healthMortality">
-                0
-            </strong>
-
-        </div>
-
-    </div>
-
-
-    <div class="chart-container">
-
-        <h3>
-            Health / Treatment Records
-        </h3>
-
-        <canvas id="healthChart">
-        </canvas>
-
-    </div>
-
-</section>
-
-
-
-<!-- ==========================================
-     FEEDING REPORT
-========================================== -->
-
-<section class="report-section">
-
-    <h2>
-        🌾 Feeding Report
-    </h2>
-
-
-    <div class="statistics-grid">
-
-
-        <div class="stat-box">
-
-            <span>
-                Feeding Records
-            </span>
-
-            <strong id="feedingReportRecords">
-                0
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Total Feed Used
-            </span>
-
-            <strong id="feedingReportQuantity">
-                0 Kg
-            </strong>
-
-        </div>
-
-
-        <div class="stat-box">
-
-            <span>
-                Total Feed Cost
-            </span>
-
-            <strong id="feedingReportCost">
-                ZMW 0.00
-            </strong>
-
-        </div>
-
-    </div>
-
-
-    <div class="chart-container">
-
-        <h3>
-            Feed Consumption
-        </h3>
-
-        <canvas id="feedingChart">
-        </canvas>
-
-    </div>
-
-</section>
-
-
-
-<!-- ==========================================
-     MONTHLY FINANCIAL TABLE
-========================================== -->
-
-<section class="report-section">
-
-    <h2>
-        📅 Monthly Financial Summary
-    </h2>
-
-
-    <div class="table-wrapper">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        Month
-                    </th>
-
-                    <th>
-                        Sales
-                    </th>
-
-                    <th>
-                        Expenses
-                    </th>
-
-                    <th>
-                        Profit / Loss
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody id="monthlyFinancialTable">
-
-                <tr>
-
-                    <td colspan="4">
-                        No report generated yet.
-                    </td>
-
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
-
-
-
-<!-- ==========================================
-     REPORT ACTIONS
-========================================== -->
-
-<section class="report-actions">
-
-    <button
-        type="button"
-        onclick="generateFullReport()">
-
-        📊 Generate Full Report
-
-    </button>
-
-
-    <button
-        type="button"
-        onclick="printReports()">
-
-        🖨 Print Report
-
-    </button>
-
-
-    <button
-        type="button"
-        onclick="window.location.href='dashboard.html'">
-
-        ← Back to Dashboard
-
-    </button>
-
-</section>
-
+        <button
+            type="button"
+            class="secondary-btn"
+            onclick="printReports()">
+            🖨 Print Report
+        </button>
+
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="window.location.href='dashboard.html'">
+            ← Back to Dashboard
+        </button>
+
+    </section>
 
 </main>
-
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 <script src="supabase.js"></script>
 
@@ -883,7 +719,6 @@
 <script src="activity.js"></script>
 
 <script src="reports.js"></script>
-
 
 </body>
 

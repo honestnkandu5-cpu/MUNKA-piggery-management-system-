@@ -1,8 +1,13 @@
 /* =========================================================
    MUNKA PIGGERY FARM
    REPORTS & ANALYTICS
-   reports.css
-   MATCHED TO REPORTS.HTML
+   PROFESSIONAL RESPONSIVE DESIGN
+   FINANCIAL COLOUR SYSTEM:
+   SALES   = BLUE
+   EXPENSE = RED
+   PROFIT  = GREEN
+   LOSS    = RED
+   BALANCE = YELLOW
 ========================================================= */
 
 
@@ -16,11 +21,24 @@
     padding: 0;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: #f4f6f8;
-    color: #222;
-    line-height: 1.5;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        #f4f7f5;
+
+    color:
+        #1f2937;
+
+    line-height:
+        1.5;
 }
 
 
@@ -29,476 +47,1393 @@ body {
 ========================================================= */
 
 .reports-header {
-    background: linear-gradient(135deg, #14532d, #166534);
-    color: white;
-    padding: 20px 25px;
 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background:
+        linear-gradient(
+            135deg,
+            #14532d,
+            #166534
+        );
 
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    color:
+        white;
+
+    padding:
+        18px 25px;
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    gap:
+        20px;
+
+    box-shadow:
+        0 4px 15px
+        rgba(0,0,0,0.15);
+}
+
+.brand-area {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        13px;
+}
+
+.brand-icon {
+
+    width:
+        52px;
+
+    height:
+        52px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    background:
+        rgba(255,255,255,0.15);
+
+    border-radius:
+        12px;
+
+    font-size:
+        30px;
 }
 
 .reports-header h1 {
-    font-size: 28px;
-    margin-bottom: 5px;
+
+    font-size:
+        27px;
+
+    margin-bottom:
+        2px;
 }
 
 .reports-header p {
-    font-size: 16px;
-    opacity: 0.9;
+
+    font-size:
+        15px;
+
+    opacity:
+        0.9;
 }
 
 .header-actions {
-    display: flex;
-    gap: 10px;
+
+    display:
+        flex;
+
+    gap:
+        10px;
 }
 
 .header-actions button {
-    border: none;
-    background: white;
-    color: #14532d;
 
-    padding: 10px 16px;
-    border-radius: 7px;
+    border:
+        none;
 
-    font-weight: bold;
-    cursor: pointer;
+    background:
+        white;
+
+    color:
+        #14532d;
+
+    padding:
+        10px 16px;
+
+    border-radius:
+        8px;
+
+    font-weight:
+        bold;
+
+    cursor:
+        pointer;
+
+    transition:
+        0.2s;
 }
 
 .header-actions button:hover {
-    background: #dcfce7;
+
+    background:
+        #dcfce7;
+
+    transform:
+        translateY(-1px);
 }
 
 
 /* =========================================================
-   MAIN CONTAINER
+   MAIN
 ========================================================= */
 
 .reports-container {
-    width: 95%;
-    max-width: 1400px;
-    margin: 25px auto;
+
+    width:
+        95%;
+
+    max-width:
+        1450px;
+
+    margin:
+        25px auto;
 }
 
 
 /* =========================================================
-   REPORT FILTER
+   FILTER
 ========================================================= */
 
 .report-filter {
-    background: white;
-    padding: 20px;
-    margin-bottom: 25px;
 
-    border-radius: 12px;
+    background:
+        white;
 
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    padding:
+        22px;
+
+    margin-bottom:
+        25px;
+
+    border-radius:
+        14px;
+
+    box-shadow:
+        0 4px 15px
+        rgba(0,0,0,0.07);
+
+    border:
+        1px solid #e5e7eb;
 }
 
-.report-filter h2 {
-    color: #14532d;
-    margin-bottom: 15px;
+.section-heading {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    margin-bottom:
+        18px;
+}
+
+.report-filter h2,
+.report-section h2 {
+
+    color:
+        #14532d;
+
+    margin-bottom:
+        5px;
+
+    font-size:
+        22px;
+}
+
+.section-heading p,
+.section-description {
+
+    color:
+        #6b7280;
+
+    font-size:
+        14px;
 }
 
 .filter-row {
-    display: flex;
-    align-items: end;
-    gap: 15px;
-    flex-wrap: wrap;
+
+    display:
+        flex;
+
+    align-items:
+        end;
+
+    gap:
+        12px;
+
+    flex-wrap:
+        wrap;
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        6px;
 }
 
 .form-group label {
-    font-weight: bold;
+
+    font-weight:
+        bold;
+
+    font-size:
+        14px;
 }
 
 .form-group input {
-    min-width: 200px;
 
-    padding: 11px;
+    min-width:
+        220px;
 
-    border: 1px solid #bbb;
-    border-radius: 7px;
+    padding:
+        11px;
 
-    font-size: 15px;
+    border:
+        1px solid #cbd5e1;
+
+    border-radius:
+        8px;
+
+    font-size:
+        15px;
+
+    outline:
+        none;
 }
 
-.filter-row button {
-    padding: 11px 18px;
+.form-group input:focus {
 
-    border: none;
-    border-radius: 7px;
+    border-color:
+        #166534;
 
-    background: #166534;
-    color: white;
-
-    font-weight: bold;
-    cursor: pointer;
+    box-shadow:
+        0 0 0 3px
+        rgba(22,101,52,0.10);
 }
 
-.filter-row button:hover {
-    background: #14532d;
+.filter-row button,
+.report-actions button {
+
+    padding:
+        11px 18px;
+
+    border:
+        none;
+
+    border-radius:
+        8px;
+
+    background:
+        #166534;
+
+    color:
+        white;
+
+    font-weight:
+        bold;
+
+    cursor:
+        pointer;
+
+    font-size:
+        14px;
+
+    transition:
+        0.2s;
+}
+
+.filter-row button:hover,
+.report-actions button:hover {
+
+    background:
+        #14532d;
+
+    transform:
+        translateY(-1px);
+}
+
+.secondary-btn {
+
+    background:
+        #64748b !important;
+}
+
+.secondary-btn:hover {
+
+    background:
+        #475569 !important;
+}
+
+.report-status {
+
+    margin-top:
+        15px;
+
+    padding:
+        10px 13px;
+
+    border-radius:
+        8px;
+
+    background:
+        #f1f5f9;
+
+    color:
+        #475569;
+
+    font-size:
+        13px;
+}
+
+.report-status.success {
+
+    background:
+        #dcfce7;
+
+    color:
+        #166534;
+}
+
+.report-status.error {
+
+    background:
+        #fee2e2;
+
+    color:
+        #991b1b;
 }
 
 
 /* =========================================================
-   SUMMARY SECTION
+   SUMMARY
 ========================================================= */
 
 .summary-section {
-    margin-bottom: 30px;
+
+    margin-bottom:
+        30px;
 }
-
-.summary-section h2,
-.report-section h2 {
-    margin-bottom: 15px;
-    color: #14532d;
-}
-
-
-/* =========================================================
-   SUMMARY CARDS
-========================================================= */
 
 .summary-grid {
-    display: grid;
+
+    display:
+        grid;
 
     grid-template-columns:
-        repeat(auto-fit, minmax(220px, 1fr));
+        repeat(
+            auto-fit,
+            minmax(220px, 1fr)
+        );
 
-    gap: 18px;
+    gap:
+        16px;
 }
 
 .summary-card {
-    background: white;
 
-    padding: 20px;
+    background:
+        white;
 
-    border-radius: 12px;
+    padding:
+        19px;
 
-    display: flex;
-    align-items: center;
+    border-radius:
+        13px;
 
-    gap: 15px;
+    display:
+        flex;
 
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    align-items:
+        center;
 
-    border-left: 5px solid #166534;
+    gap:
+        14px;
 
-    transition: transform 0.2s ease;
+    box-shadow:
+        0 3px 12px
+        rgba(0,0,0,0.07);
+
+    border-left:
+        5px solid #166534;
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
 }
 
 .summary-card:hover {
-    transform: translateY(-3px);
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 7px 18px
+        rgba(0,0,0,0.10);
 }
 
+
+/* =========================================================
+   FINANCIAL SUMMARY CARD COLOURS
+========================================================= */
+
+/* SALES = BLUE */
+
+.sales-card {
+
+    border-left-color:
+        #2563eb;
+}
+
+.sales-card .card-icon {
+
+    background:
+        #eff6ff;
+
+    color:
+        #2563eb;
+}
+
+.sales-card p {
+
+    color:
+        #2563eb;
+}
+
+
+/* EXPENSES = RED */
+
+.expense-card {
+
+    border-left-color:
+        #dc2626;
+}
+
+.expense-card .card-icon {
+
+    background:
+        #fef2f2;
+
+    color:
+        #dc2626;
+}
+
+.expense-card p {
+
+    color:
+        #dc2626;
+}
+
+
+/* PROFIT = GREEN */
+
+.profit-card {
+
+    border-left-color:
+        #16a34a;
+}
+
+.profit-card .card-icon {
+
+    background:
+        #f0fdf4;
+
+    color:
+        #16a34a;
+}
+
+.profit-card p {
+
+    color:
+        #16a34a;
+}
+
+
+/* LOSS = RED */
+
+.loss-card {
+
+    border-left-color:
+        #dc2626;
+}
+
+.loss-card .card-icon {
+
+    background:
+        #fef2f2;
+
+    color:
+        #dc2626;
+}
+
+.loss-card p {
+
+    color:
+        #dc2626;
+}
+
+
+/* BALANCE = YELLOW */
+
+.balance-card {
+
+    border-left-color:
+        #eab308;
+}
+
+.balance-card .card-icon {
+
+    background:
+        #fefce8;
+
+    color:
+        #ca8a04;
+}
+
+.balance-card p {
+
+    color:
+        #ca8a04;
+}
+
+
+/* =========================================================
+   CARD ICON
+========================================================= */
+
 .card-icon {
-    font-size: 35px;
+
+    width:
+        48px;
+
+    height:
+        48px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    background:
+        #f0fdf4;
+
+    border-radius:
+        10px;
+
+    font-size:
+        27px;
 }
 
 .summary-card h3 {
-    font-size: 15px;
-    color: #555;
 
-    margin-bottom: 5px;
+    font-size:
+        14px;
+
+    color:
+        #64748b;
+
+    margin-bottom:
+        4px;
 }
 
 .summary-card p {
-    font-size: 22px;
 
-    font-weight: bold;
+    font-size:
+        21px;
 
-    color: #14532d;
+    font-weight:
+        bold;
 }
 
 
 /* =========================================================
-   GENERAL REPORT SECTION
+   GENERAL REPORT
 ========================================================= */
 
 .report-section {
-    background: white;
 
-    padding: 22px;
+    background:
+        white;
 
-    margin-bottom: 30px;
+    padding:
+        23px;
 
-    border-radius: 12px;
+    margin-bottom:
+        25px;
 
-    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    border-radius:
+        14px;
+
+    box-shadow:
+        0 4px 15px
+        rgba(0,0,0,0.07);
+
+    border:
+        1px solid #e5e7eb;
 }
 
 
 /* =========================================================
-   FINANCIAL REPORT
+   FINANCIAL
 ========================================================= */
 
 .financial-grid {
-    display: grid;
+
+    display:
+        grid;
 
     grid-template-columns:
-        repeat(auto-fit, minmax(220px, 1fr));
+        repeat(
+            auto-fit,
+            minmax(220px, 1fr)
+        );
 
-    gap: 18px;
+    gap:
+        16px;
 
-    margin-bottom: 25px;
+    margin-bottom:
+        22px;
 }
 
 .report-box {
-    padding: 20px;
 
-    border-radius: 10px;
+    padding:
+        20px;
 
-    background: #f8fafc;
+    border-radius:
+        11px;
 
-    border: 1px solid #ddd;
+    background:
+        #f8fafc;
 
-    text-align: center;
+    border:
+        1px solid #e2e8f0;
+
+    text-align:
+        center;
+}
+
+
+/* SALES BOX = BLUE */
+
+.sales-box {
+
+    border-top:
+        4px solid #2563eb;
+
+    background:
+        #eff6ff;
+}
+
+.sales-box .report-box-icon,
+.sales-box strong {
+
+    color:
+        #2563eb;
+}
+
+
+/* EXPENSE BOX = RED */
+
+.expense-box {
+
+    border-top:
+        4px solid #dc2626;
+
+    background:
+        #fef2f2;
+}
+
+.expense-box .report-box-icon,
+.expense-box strong {
+
+    color:
+        #dc2626;
+}
+
+
+/* PROFIT BOX = GREEN */
+
+.profit-box {
+
+    border-top:
+        4px solid #16a34a;
+
+    background:
+        #f0fdf4;
+}
+
+.profit-box .report-box-icon,
+.profit-box strong {
+
+    color:
+        #16a34a;
+}
+
+
+/* LOSS BOX = RED */
+
+.loss-box {
+
+    border-top:
+        4px solid #dc2626;
+
+    background:
+        #fef2f2;
+}
+
+.loss-box .report-box-icon,
+.loss-box strong {
+
+    color:
+        #dc2626;
+}
+
+
+/* BALANCE BOX = YELLOW */
+
+.balance-box {
+
+    border-top:
+        4px solid #eab308;
+
+    background:
+        #fefce8;
+}
+
+.balance-box .report-box-icon,
+.balance-box strong {
+
+    color:
+        #ca8a04;
+}
+
+
+.report-box-icon {
+
+    display:
+        block;
+
+    font-size:
+        28px;
+
+    margin-bottom:
+        7px;
 }
 
 .report-box h3 {
-    color: #555;
 
-    margin-bottom: 10px;
+    color:
+        #64748b;
+
+    font-size:
+        15px;
+
+    margin-bottom:
+        8px;
 }
 
 .report-box strong {
-    font-size: 24px;
 
-    color: #14532d;
+    font-size:
+        23px;
 }
 
 
 /* =========================================================
-   STATISTICS GRID
+   MODULE GRID
+========================================================= */
+
+.module-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(190px, 1fr)
+        );
+
+    gap:
+        14px;
+
+    margin-top:
+        18px;
+}
+
+.module-card {
+
+    background:
+        #f8fafc;
+
+    border:
+        1px solid #e2e8f0;
+
+    border-radius:
+        11px;
+
+    padding:
+        16px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        auto 1fr;
+
+    align-items:
+        center;
+
+    column-gap:
+        10px;
+
+    row-gap:
+        3px;
+}
+
+.module-card span {
+
+    grid-row:
+        span 2;
+
+    font-size:
+        28px;
+}
+
+.module-card strong {
+
+    font-size:
+        13px;
+
+    color:
+        #475569;
+}
+
+.module-card b {
+
+    font-size:
+        20px;
+
+    color:
+        #14532d;
+}
+
+
+/* =========================================================
+   STATISTICS
 ========================================================= */
 
 .statistics-grid {
-    display: grid;
+
+    display:
+        grid;
 
     grid-template-columns:
-        repeat(auto-fit, minmax(180px, 1fr));
+        repeat(
+            auto-fit,
+            minmax(180px, 1fr)
+        );
 
-    gap: 18px;
+    gap:
+        16px;
 
-    margin-bottom: 25px;
+    margin-bottom:
+        22px;
 }
 
 .stat-box {
-    background: #f8fafc;
 
-    border: 1px solid #ddd;
+    background:
+        #f8fafc;
 
-    border-radius: 10px;
+    border:
+        1px solid #e2e8f0;
 
-    padding: 18px;
+    border-radius:
+        10px;
 
-    text-align: center;
+    padding:
+        17px;
+
+    text-align:
+        center;
 }
 
 .stat-box span {
-    display: block;
 
-    color: #555;
+    display:
+        block;
 
-    font-size: 14px;
+    color:
+        #64748b;
 
-    margin-bottom: 8px;
+    font-size:
+        13px;
+
+    margin-bottom:
+        7px;
 }
 
 .stat-box strong {
-    display: block;
 
-    color: #14532d;
+    display:
+        block;
 
-    font-size: 25px;
+    color:
+        #14532d;
+
+    font-size:
+        23px;
 }
 
 
 /* =========================================================
-   CHART CONTAINER
+   PROFIT / LOSS VALUES
+========================================================= */
+
+.profit-value {
+
+    color:
+        #16a34a !important;
+
+    font-weight:
+        bold;
+}
+
+.loss-value {
+
+    color:
+        #dc2626 !important;
+
+    font-weight:
+        bold;
+}
+
+
+/* BALANCE / ZERO RESULT */
+
+.balance-value {
+
+    color:
+        #ca8a04 !important;
+
+    font-weight:
+        bold;
+}
+
+
+/* =========================================================
+   STATUS INDICATORS
+========================================================= */
+
+.profit-indicator {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        6px;
+
+    padding:
+        5px 10px;
+
+    border-radius:
+        20px;
+
+    background:
+        #dcfce7;
+
+    color:
+        #15803d;
+
+    font-weight:
+        bold;
+
+    font-size:
+        13px;
+}
+
+.loss-indicator {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        6px;
+
+    padding:
+        5px 10px;
+
+    border-radius:
+        20px;
+
+    background:
+        #fee2e2;
+
+    color:
+        #b91c1c;
+
+    font-weight:
+        bold;
+
+    font-size:
+        13px;
+}
+
+.balance-indicator {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        6px;
+
+    padding:
+        5px 10px;
+
+    border-radius:
+        20px;
+
+    background:
+        #fef9c3;
+
+    color:
+        #a16207;
+
+    font-weight:
+        bold;
+
+    font-size:
+        13px;
+}
+
+
+/* =========================================================
+   CHART
 ========================================================= */
 
 .chart-container {
-    position: relative;
 
-    width: 100%;
+    position:
+        relative;
 
-    min-height: 320px;
+    width:
+        100%;
 
-    padding: 20px;
+    height:
+        350px;
 
-    margin-top: 20px;
+    padding:
+        18px;
 
-    background: #fafafa;
+    margin-top:
+        20px;
 
-    border-radius: 10px;
+    background:
+        #fafafa;
 
-    border: 1px solid #e2e2e2;
+    border-radius:
+        10px;
+
+    border:
+        1px solid #e2e8f0;
 }
 
 .chart-container h3 {
-    margin-bottom: 15px;
 
-    color: #333;
+    margin-bottom:
+        12px;
 
-    text-align: center;
+    color:
+        #334155;
+
+    text-align:
+        center;
+
+    font-size:
+        16px;
 }
 
 .chart-container canvas {
-    width: 100% !important;
 
-    max-height: 350px;
+    width:
+        100% !important;
+
+    height:
+        280px !important;
 }
 
 
 /* =========================================================
-   MONTHLY FINANCIAL TABLE
+   TABLE
 ========================================================= */
 
 .table-wrapper {
-    width: 100%;
 
-    overflow-x: auto;
+    width:
+        100%;
 
-    border-radius: 8px;
+    overflow-x:
+        auto;
+
+    border-radius:
+        9px;
+
+    margin-top:
+        15px;
 }
 
 table {
-    width: 100%;
 
-    border-collapse: collapse;
+    width:
+        100%;
 
-    min-width: 600px;
+    border-collapse:
+        collapse;
 
-    background: white;
+    min-width:
+        650px;
+
+    background:
+        white;
 }
 
 thead {
-    background: #166534;
 
-    color: white;
+    background:
+        #166534;
+
+    color:
+        white;
 }
 
 th,
 td {
-    padding: 12px 15px;
 
-    border-bottom: 1px solid #ddd;
+    padding:
+        12px 14px;
 
-    text-align: left;
+    border-bottom:
+        1px solid #e2e8f0;
+
+    text-align:
+        left;
 }
 
 th {
-    font-weight: bold;
+
+    font-size:
+        14px;
+}
+
+td {
+
+    font-size:
+        14px;
 }
 
 tbody tr:hover {
-    background: #f1f5f9;
-}
 
-tbody td {
-    color: #333;
+    background:
+        #f8fafc;
 }
 
 
 /* =========================================================
-   REPORT ACTIONS
+   FINANCIAL TABLE COLOURS
+========================================================= */
+
+.sales-value {
+
+    color:
+        #2563eb;
+
+    font-weight:
+        bold;
+}
+
+.expense-value {
+
+    color:
+        #dc2626;
+
+    font-weight:
+        bold;
+}
+
+.profit-value {
+
+    color:
+        #16a34a;
+
+    font-weight:
+        bold;
+}
+
+.loss-value {
+
+    color:
+        #dc2626;
+
+    font-weight:
+        bold;
+}
+
+.balance-value {
+
+    color:
+        #ca8a04;
+
+    font-weight:
+        bold;
+}
+
+
+/* =========================================================
+   ACTIONS
 ========================================================= */
 
 .report-actions {
-    display: flex;
 
-    justify-content: center;
+    display:
+        flex;
 
-    align-items: center;
+    justify-content:
+        center;
 
-    flex-wrap: wrap;
+    align-items:
+        center;
 
-    gap: 12px;
+    flex-wrap:
+        wrap;
 
-    margin: 30px 0;
+    gap:
+        12px;
+
+    margin:
+        30px 0;
 }
 
 .report-actions button {
-    padding: 12px 20px;
 
-    border: none;
-
-    border-radius: 8px;
-
-    background: #166534;
-
-    color: white;
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-    font-size: 15px;
+    min-width:
+        175px;
 }
 
-.report-actions button:hover {
-    background: #14532d;
+.back-button {
 
-    transform: translateY(-1px);
+    background:
+        #475569 !important;
+}
+
+.back-button:hover {
+
+    background:
+        #334155 !important;
 }
 
 
 /* =========================================================
-   PRINT BUTTON / PRINTING
+   PRINT
 ========================================================= */
 
 @media print {
 
     body {
-        background: white;
+
+        background:
+            white;
     }
 
     .reports-header {
-        background: white;
 
-        color: black;
+        background:
+            white;
 
-        box-shadow: none;
+        color:
+            black;
 
-        border-bottom: 2px solid #222;
+        box-shadow:
+            none;
+
+        border-bottom:
+            2px solid #222;
     }
 
     .header-actions,
     .report-filter,
     .report-actions {
-        display: none;
+
+        display:
+            none !important;
     }
 
     .reports-container {
-        width: 100%;
 
-        margin: 0;
+        width:
+            100%;
+
+        margin:
+            0;
     }
 
     .report-section,
     .summary-section {
-        box-shadow: none;
 
-        border: 1px solid #ddd;
+        box-shadow:
+            none;
 
-        break-inside: avoid;
+        border:
+            1px solid #ccc;
+
+        break-inside:
+            avoid;
+
+        margin-bottom:
+            15px;
     }
 
     .chart-container {
-        break-inside: avoid;
+
+        break-inside:
+            avoid;
     }
 
     table {
-        min-width: 100%;
+
+        min-width:
+            100%;
     }
 }
 
@@ -510,124 +1445,185 @@ tbody td {
 @media (max-width: 900px) {
 
     .reports-header {
-        flex-direction: column;
 
-        align-items: flex-start;
+        flex-direction:
+            column;
 
-        gap: 15px;
+        align-items:
+            flex-start;
     }
 
     .header-actions {
-        width: 100%;
+
+        width:
+            100%;
     }
 
     .header-actions button {
-        flex: 1;
+
+        flex:
+            1;
     }
 
     .reports-container {
-        width: 94%;
-    }
 
+        width:
+            94%;
+    }
 }
 
 
 /* =========================================================
-   MOBILE PHONE
+   MOBILE
 ========================================================= */
 
 @media (max-width: 600px) {
 
     .reports-header {
-        padding: 16px;
+
+        padding:
+            15px;
+    }
+
+    .brand-icon {
+
+        width:
+            44px;
+
+        height:
+            44px;
+
+        font-size:
+            25px;
     }
 
     .reports-header h1 {
-        font-size: 21px;
+
+        font-size:
+            20px;
     }
 
     .reports-header p {
-        font-size: 14px;
+
+        font-size:
+            13px;
     }
 
     .header-actions {
-        flex-direction: column;
+
+        flex-direction:
+            column;
+
+        width:
+            100%;
     }
 
     .header-actions button {
-        width: 100%;
+
+        width:
+            100%;
     }
 
     .reports-container {
-        width: 94%;
 
-        margin: 15px auto;
+        width:
+            94%;
+
+        margin:
+            15px auto;
     }
 
     .report-filter,
     .report-section {
-        padding: 15px;
+
+        padding:
+            15px;
     }
 
     .report-filter h2,
     .report-section h2 {
-        font-size: 20px;
+
+        font-size:
+            19px;
     }
 
     .filter-row {
-        flex-direction: column;
 
-        align-items: stretch;
+        flex-direction:
+            column;
+
+        align-items:
+            stretch;
+    }
+
+    .form-group {
+
+        width:
+            100%;
     }
 
     .form-group input {
-        width: 100%;
 
-        min-width: 0;
+        width:
+            100%;
+
+        min-width:
+            0;
     }
 
     .filter-row button {
-        width: 100%;
+
+        width:
+            100%;
     }
 
-    .summary-grid {
-        grid-template-columns: 1fr;
-    }
+    .summary-grid,
+    .financial-grid,
+    .statistics-grid,
+    .module-grid {
 
-    .financial-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .statistics-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
 
     .summary-card {
-        padding: 16px;
+
+        padding:
+            15px;
     }
 
     .summary-card p {
-        font-size: 20px;
+
+        font-size:
+            19px;
     }
 
     .chart-container {
-        min-height: 280px;
 
-        padding: 10px;
+        height:
+            300px;
+
+        padding:
+            10px;
     }
 
     .chart-container canvas {
-        max-height: 280px;
+
+        height:
+            235px !important;
     }
 
     .report-actions {
-        flex-direction: column;
+
+        flex-direction:
+            column;
     }
 
     .report-actions button {
-        width: 100%;
-    }
 
+        width:
+            100%;
+    }
 }
 
 
@@ -638,24 +1634,43 @@ tbody td {
 @media (max-width: 380px) {
 
     .reports-header h1 {
-        font-size: 18px;
+
+        font-size:
+            18px;
     }
 
     .summary-card {
-        gap: 10px;
+
+        gap:
+            9px;
     }
 
     .card-icon {
-        font-size: 28px;
+
+        width:
+            42px;
+
+        height:
+            42px;
+
+        font-size:
+            24px;
     }
 
     .summary-card p {
-        font-size: 18px;
+
+        font-size:
+            17px;
     }
 
     .report-box strong,
     .stat-box strong {
-        font-size: 21px;
-    }
 
+        font-size:
+            20px;
+    }
 }
+
+Important: this CSS supports classes such as ".sales-card", ".expense-card", ".profit-card", ".loss-card", ".balance-card", ".sales-box", ".expense-box", etc. Your HTML/JavaScript must use those classes for the colours to appear on the corresponding elements.
+
+After replacing the CSS, refresh the Reports & Analytics page. If the colours still don't change, send me your "reports.html" and "reports.js", because the next step will be to make sure the HTML/JavaScript is actually assigning the correct Sales/Expense/Profit/Loss/Balance classes.
