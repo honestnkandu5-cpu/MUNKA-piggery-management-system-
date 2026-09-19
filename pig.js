@@ -2,6 +2,7 @@
 // MUNKA PIGGERY FARM
 // PIG REGISTRATION MODULE
 // MULTI-FARM + PERMISSION-CONTROLLED VERSION
+// WITH PDF DOWNLOAD
 // ==========================================================
 
 let editID = null;
@@ -513,6 +514,7 @@ function displayPigs(records){
 
                     <td>
                         ${pig.weight || ""}
+                        ${pig.weight ? "Kg" : ""}
                     </td>
 
                     <td>
@@ -1007,6 +1009,489 @@ function printReport(){
 
 
     window.print();
+
+}
+
+
+// ==========================================================
+// DOWNLOAD PDF REPORT
+// ==========================================================
+
+async function downloadPDF(){
+
+    // ======================================================
+    // PERMISSION CHECK
+    // ======================================================
+
+    if(
+        typeof canReport !== "function" ||
+        !canReport("Pig Registration")
+    ){
+
+        alert(
+            "Access Denied.\n\n" +
+            "You do not have permission to download pig reports."
+        );
+
+        return;
+    }
+
+
+    // ======================================================
+    // CHECK PDF LIBRARY
+    // ======================================================
+
+    if(
+        typeof window.jspdf === "undefined"
+    ){
+
+        alert(
+            "PDF library could not be loaded. " +
+            "Please check your internet connection and try again."
+        );
+
+        return;
+    }
+
+
+    // ======================================================
+    // GET FARM
+    // ======================================================
+
+    const farmID =
+        getFarmID();
+
+    if(!farmID){
+        return;
+    }
+
+
+    const loggedUser =
+        getLoggedUser();
+
+    if(!loggedUser){
+        return;
+    }
+
+
+    try{
+
+        // ==================================================
+        // GET FARM NAME
+        // ==================================================
+
+        let farmName =
+            "MUNKA PIGGERY FARM";
+
+
+        const {
+            data: farmData
+        } =
+            await supabaseClient
+
+                .from("farms")
+
+                .select("farm_name")
+
+                .eq(
+                    "id",
+                    farmID
+                )
+
+                .maybeSingle();
+
+
+        if(
+            farmData &&
+            farmData.farm_name
+        ){
+
+            farmName =
+                farmData.farm_name;
+
+        }
+
+
+        // ==================================================
+        // GET ALL PIG RECORDS
+        // ==================================================
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+
+                .from("pigs")
+
+                .select("*")
+
+                .eq(
+                    "farm_id",
+                    farmID
+                )
+
+                .order(
+                    "id",
+                    {
+                        ascending:true
+                    }
+                );
+
+
+        if(error){
+            throw error;
+        }
+
+
+        const records =
+            data || [];
+
+
+        // ==================================================
+        // CREATE PDF
+        // ==================================================
+
+        const {
+            jsPDF
+        } =
+            window.jspdf;
+
+
+        const doc =
+            new jsPDF({
+                orientation: "landscape",
+                unit: "mm",
+                format: "a4"
+            });
+
+
+        // ==================================================
+        // TITLE
+        // ==================================================
+
+        doc.setFontSize(20);
+
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
+
+        doc.text(
+            "MUNKA PIGGERY",
+            148,
+            16,
+            {
+                align: "center"
+            }
+        );
+
+
+        // ==================================================
+        // FARM NAME
+        // ==================================================
+
+        doc.setFontSize(13);
+
+        doc.setFont(
+            "helvetica",
+            "normal"
+        );
+
+        doc.text(
+            farmName,
+            148,
+            24,
+            {
+                align: "center"
+            }
+        );
+
+
+        // ==================================================
+        // REPORT TITLE
+        // ==================================================
+
+        doc.setFontSize(15);
+
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
+
+        doc.text(
+            "PIG REGISTRATION REPORT",
+            148,
+            34,
+            {
+                align: "center"
+            }
+        );
+
+
+        // ==================================================
+        // REPORT INFORMATION
+        // ==================================================
+
+        const generatedDate =
+            new Date()
+            .toLocaleString(
+                "en-ZM",
+                {
+                    timeZone:
+                        "Africa/Lusaka"
+                }
+            );
+
+
+        doc.setFontSize(9);
+
+        doc.setFont(
+            "helvetica",
+            "normal"
+        );
+
+
+        doc.text(
+            "Generated: " +
+            generatedDate,
+            14,
+            43
+        );
+
+
+        doc.text(
+            "Generated By: " +
+            (
+                loggedUser.full_name ||
+                "System User"
+            ),
+            14,
+            49
+        );
+
+
+        doc.text(
+            "Total Registered Pigs: " +
+            records.length,
+            14,
+            55
+        );
+
+
+        // ==================================================
+        // TABLE DATA
+        // ==================================================
+
+        const tableRows =
+            records.map(
+                function(pig){
+
+                    return [
+
+                        pig.pig_id || "",
+
+                        pig.breed || "",
+
+                        pig.sex || "",
+
+                        pig.farrow_date || "",
+
+                        pig.source || "",
+
+                        pig.weight
+                            ? pig.weight + " Kg"
+                            : "",
+
+                        pig.health_status || ""
+
+                    ];
+
+                }
+            );
+
+
+        // ==================================================
+        // PDF TABLE
+        // ==================================================
+
+        doc.autoTable({
+
+            startY: 62,
+
+            head: [[
+
+                "Pig ID",
+
+                "Breed",
+
+                "Sex",
+
+                "Farrow Date",
+
+                "Source",
+
+                "Weight",
+
+                "Health Status"
+
+            ]],
+
+            body: tableRows,
+
+            theme: "grid",
+
+            styles: {
+
+                fontSize: 8,
+
+                cellPadding: 3,
+
+                valign: "middle"
+
+            },
+
+            headStyles: {
+
+                fontSize: 8,
+
+                fontStyle: "bold",
+
+                halign: "center"
+
+            },
+
+            columnStyles: {
+
+                0: {
+                    cellWidth: 25
+                },
+
+                1: {
+                    cellWidth: 35
+                },
+
+                2: {
+                    cellWidth: 20
+                },
+
+                3: {
+                    cellWidth: 30
+                },
+
+                4: {
+                    cellWidth: 50
+                },
+
+                5: {
+                    cellWidth: 25
+                },
+
+                6: {
+                    cellWidth: 45
+                }
+
+            },
+
+            margin: {
+                left: 10,
+                right: 10
+            }
+
+        });
+
+
+        // ==================================================
+        // FOOTER ON EVERY PAGE
+        // ==================================================
+
+        const pageCount =
+            doc.internal.getNumberOfPages();
+
+
+        for(
+            let page = 1;
+            page <= pageCount;
+            page++
+        ){
+
+            doc.setPage(page);
+
+            const pageHeight =
+                doc.internal.pageSize.height;
+
+
+            doc.setFontSize(8);
+
+            doc.setFont(
+                "helvetica",
+                "normal"
+            );
+
+
+            doc.text(
+                "MUNKA PIGGERY Management System",
+                10,
+                pageHeight - 8
+            );
+
+
+            doc.text(
+                "Page " +
+                page +
+                " of " +
+                pageCount,
+                287,
+                pageHeight - 8,
+                {
+                    align: "right"
+                }
+            );
+
+        }
+
+
+        // ==================================================
+        // FILE NAME
+        // ==================================================
+
+        const datePart =
+            new Date()
+            .toISOString()
+            .split("T")[0];
+
+
+        const fileName =
+            "MUNKA_PIGGERY_Pig_Registration_" +
+            datePart +
+            ".pdf";
+
+
+        // ==================================================
+        // DOWNLOAD
+        // ==================================================
+
+        doc.save(
+            fileName
+        );
+
+
+    }
+
+
+    catch(error){
+
+        console.error(
+            "DOWNLOAD PDF ERROR:",
+            error
+        );
+
+        alert(
+            "Unable to generate PDF.\n\n" +
+            error.message
+        );
+
+    }
 
 }
 

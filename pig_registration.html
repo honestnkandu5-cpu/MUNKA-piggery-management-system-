@@ -9,9 +9,13 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0">
 
-<title>MUNKA PIGGERY - Pig Registration</title>
+<title>
+    MUNKA PIGGERY - Pig Registration
+</title>
 
-<link rel="stylesheet" href="pig.css">
+<link
+    rel="stylesheet"
+    href="pig.css">
 
 </head>
 
@@ -22,294 +26,699 @@
 <div class="container">
 
 
-<h1>MUNKA PIGGERY</h1>
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
 
-<h2>Pig Registration</h2>
+    <div class="page-header">
 
+        <div class="pig-icon">
+            🐖
+        </div>
 
+        <div>
 
-<!-- =====================================================
-     PIG REGISTRATION FORM
-===================================================== -->
+            <h1>
+                MUNKA PIGGERY
+            </h1>
 
-<form id="pigForm">
+            <p>
+                Pig Registration Management
+            </p>
 
+        </div>
 
-<label>Pig ID</label>
-
-<input
-    type="text"
-    id="pigID"
-    placeholder="Enter Pig ID"
-    required>
-
-
-
-<label>Breed</label>
-
-<select id="breed" required>
-
-<option value="">Select Breed</option>
-
-<option>Large White</option>
-<option>Landrace</option>
-<option>Duroc</option>
-<option>Pietrain</option>
-<option>Hampshire</option>
-<option>Berkshire</option>
-<option>Yorkshire</option>
-<option>Tamworth</option>
-<option>Chester White</option>
-<option>Poland China</option>
-<option>Meishan</option>
-<option>Cross Breed</option>
-<option>Other</option>
-
-</select>
+    </div>
 
 
+    <!-- =====================================================
+         REGISTRATION FORM
+    ====================================================== -->
 
-<label>Sex</label>
+    <section class="form-section">
 
-<select id="sex" required>
+        <div class="section-title">
 
-<option value="">Select Sex</option>
+            <div>
 
-<option>Male</option>
-<option>Female</option>
+                <span>
+                    PIG MANAGEMENT
+                </span>
 
-</select>
+                <h2>
+                    Register Pig
+                </h2>
 
+            </div>
 
-
-<label>Farrow Date</label>
-
-<input
-    type="date"
-    id="farrowDate"
-    required>
-
-
-
-<label>
-Source (Farm name/Seller name)
-</label>
-
-<input
-    type="text"
-    id="source"
-    placeholder="Enter Farm name or Seller name"
-    required>
+        </div>
 
 
-
-<label>Weight (Kg)</label>
-
-<input
-    type="number"
-    id="weight"
-    placeholder="Enter Weight"
-    min="1"
-    required>
+        <form id="pigForm">
 
 
+            <!-- PIG ID -->
 
-<label>Health Status</label>
+            <div class="form-group">
 
-<select id="healthStatus" required>
+                <label for="pigID">
+                    Pig ID
+                </label>
 
-<option value="">
-    Select Health Status
-</option>
+                <input
+                    type="text"
+                    id="pigID"
+                    placeholder="Enter Pig ID"
+                    autocomplete="off"
+                    required>
 
-<option>Healthy</option>
-<option>Sick</option>
-<option>Under Treatment</option>
-<option>Recovered</option>
-<option>Dead</option>
-
-</select>
-
-
-
-<!-- =====================================================
-     FORM ACTION BUTTONS
-===================================================== -->
-
-<div class="buttons">
+            </div>
 
 
-<button
-    type="submit"
-    data-permission="add"
-    data-module="Pig Registration">
+            <!-- BREED -->
 
-    💾 Save Pig Record
+            <div class="form-group">
 
-</button>
+                <label for="breed">
+                    Breed
+                </label>
+
+                <select
+                    id="breed"
+                    required>
+
+                    <option value="">
+                        Select Breed
+                    </option>
+
+                    <option>
+                        Large White
+                    </option>
+
+                    <option>
+                        Landrace
+                    </option>
+
+                    <option>
+                        Duroc
+                    </option>
+
+                    <option>
+                        Pietrain
+                    </option>
+
+                    <option>
+                        Hampshire
+                    </option>
+
+                    <option>
+                        Berkshire
+                    </option>
+
+                    <option>
+                        Yorkshire
+                    </option>
+
+                    <option>
+                        Tamworth
+                    </option>
+
+                    <option>
+                        Chester White
+                    </option>
+
+                    <option>
+                        Poland China
+                    </option>
+
+                    <option>
+                        Meishan
+                    </option>
+
+                    <option>
+                        Cross Breed
+                    </option>
+
+                    <option>
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
 
 
-<button
-    type="button"
-    onclick="clearForm()">
+            <!-- SEX -->
 
-    🧹 Clear
+            <div class="form-group">
 
-</button>
+                <label for="sex">
+                    Sex
+                </label>
+
+                <select
+                    id="sex"
+                    required>
+
+                    <option value="">
+                        Select Sex
+                    </option>
+
+                    <option>
+                        Male
+                    </option>
+
+                    <option>
+                        Female
+                    </option>
+
+                </select>
+
+            </div>
 
 
-<button
-    type="button"
-    onclick="window.location.href='dashboard.html'">
+            <!-- FARROW DATE -->
 
-    ↩️ Back
+            <div class="form-group">
 
-</button>
+                <label for="farrowDate">
+                    Farrow Date
+                </label>
+
+                <input
+                    type="date"
+                    id="farrowDate"
+                    required>
+
+            </div>
+
+
+            <!-- SOURCE -->
+
+            <div class="form-group">
+
+                <label for="source">
+                    Source (Farm name/Seller name)
+                </label>
+
+                <input
+                    type="text"
+                    id="source"
+                    placeholder="Enter Farm name or Seller name"
+                    autocomplete="off"
+                    required>
+
+            </div>
+
+
+            <!-- WEIGHT -->
+
+            <div class="form-group">
+
+                <label for="weight">
+                    Weight (Kg)
+                </label>
+
+                <select
+                    id="weight"
+                    required>
+
+                    <option value="">
+                        Select Weight
+                    </option>
+
+                    <option value="1">
+                        1 Kg
+                    </option>
+
+                    <option value="2">
+                        2 Kg
+                    </option>
+
+                    <option value="3">
+                        3 Kg
+                    </option>
+
+                    <option value="4">
+                        4 Kg
+                    </option>
+
+                    <option value="5">
+                        5 Kg
+                    </option>
+
+                    <option value="6">
+                        6 Kg
+                    </option>
+
+                    <option value="7">
+                        7 Kg
+                    </option>
+
+                    <option value="8">
+                        8 Kg
+                    </option>
+
+                    <option value="9">
+                        9 Kg
+                    </option>
+
+                    <option value="10">
+                        10 Kg
+                    </option>
+
+                    <option value="15">
+                        15 Kg
+                    </option>
+
+                    <option value="20">
+                        20 Kg
+                    </option>
+
+                    <option value="25">
+                        25 Kg
+                    </option>
+
+                    <option value="30">
+                        30 Kg
+                    </option>
+
+                    <option value="35">
+                        35 Kg
+                    </option>
+
+                    <option value="40">
+                        40 Kg
+                    </option>
+
+                    <option value="45">
+                        45 Kg
+                    </option>
+
+                    <option value="50">
+                        50 Kg
+                    </option>
+
+                    <option value="55">
+                        55 Kg
+                    </option>
+
+                    <option value="60">
+                        60 Kg
+                    </option>
+
+                    <option value="65">
+                        65 Kg
+                    </option>
+
+                    <option value="70">
+                        70 Kg
+                    </option>
+
+                    <option value="75">
+                        75 Kg
+                    </option>
+
+                    <option value="80">
+                        80 Kg
+                    </option>
+
+                    <option value="85">
+                        85 Kg
+                    </option>
+
+                    <option value="90">
+                        90 Kg
+                    </option>
+
+                    <option value="95">
+                        95 Kg
+                    </option>
+
+                    <option value="100">
+                        100 Kg
+                    </option>
+
+                    <option value="110">
+                        110 Kg
+                    </option>
+
+                    <option value="120">
+                        120 Kg
+                    </option>
+
+                    <option value="130">
+                        130 Kg
+                    </option>
+
+                    <option value="140">
+                        140 Kg
+                    </option>
+
+                    <option value="150">
+                        150 Kg
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- HEALTH STATUS -->
+
+            <div class="form-group">
+
+                <label for="healthStatus">
+                    Health Status
+                </label>
+
+                <select
+                    id="healthStatus"
+                    required>
+
+                    <option value="">
+                        Select Health Status
+                    </option>
+
+                    <option>
+                        Healthy
+                    </option>
+
+                    <option>
+                        Sick
+                    </option>
+
+                    <option>
+                        Under Treatment
+                    </option>
+
+                    <option>
+                        Recovered
+                    </option>
+
+                    <option>
+                        Dead
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- =================================================
+                 FORM BUTTONS
+            ================================================== -->
+
+            <div class="buttons">
+
+
+                <button
+                    type="submit"
+                    data-permission="add"
+                    data-module="Pig Registration">
+
+                    💾 Save Pig Record
+
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="clearForm()"
+                    class="secondary-button">
+
+                    🧹 Clear
+
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="window.location.href='dashboard.html'"
+                    class="secondary-button">
+
+                    ↩️ Back
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+    </section>
+
+
+    <!-- =====================================================
+         SEARCH SECTION
+    ====================================================== -->
+
+    <section class="records-section">
+
+
+        <div class="section-title">
+
+            <div>
+
+                <span>
+                    RECORD MANAGEMENT
+                </span>
+
+                <h2>
+                    Search Pig Records
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="search-area">
+
+            <input
+                type="text"
+                id="searchPig"
+                placeholder="Search by Pig ID or Breed"
+                autocomplete="off">
+
+
+            <button
+                type="button"
+                onclick="searchPig()"
+                data-permission="view"
+                data-module="Pig Registration">
+
+                🔍 Search
+
+            </button>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =====================================================
+         REGISTERED PIGS
+    ====================================================== -->
+
+    <section class="records-section">
+
+
+        <div class="section-title">
+
+            <div>
+
+                <span>
+                    FARM RECORDS
+                </span>
+
+                <h2>
+                    Registered Pigs
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Pig ID
+                        </th>
+
+                        <th>
+                            Breed
+                        </th>
+
+                        <th>
+                            Sex
+                        </th>
+
+                        <th>
+                            Farrow Date
+                        </th>
+
+                        <th>
+                            Source
+                        </th>
+
+                        <th>
+                            Weight
+                        </th>
+
+                        <th>
+                            Health Status
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="pigTable">
+                </tbody>
+
+
+            </table>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =====================================================
+         REPORT SECTION
+    ====================================================== -->
+
+    <section class="report-section">
+
+
+        <div class="section-title">
+
+            <div>
+
+                <span>
+                    REPORTING
+                </span>
+
+                <h2>
+                    Pig Registration Reports
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="report-buttons">
+
+
+            <button
+                type="button"
+                onclick="generateReport()"
+                data-permission="report"
+                data-module="Pig Registration">
+
+                📊 Generate Report
+
+            </button>
+
+
+            <button
+                type="button"
+                onclick="printReport()"
+                data-permission="report"
+                data-module="Pig Registration"
+                class="print-button">
+
+                🖨️ Print
+
+            </button>
+
+
+            <button
+                type="button"
+                onclick="downloadPDF()"
+                data-permission="report"
+                data-module="Pig Registration"
+                class="pdf-button">
+
+                📥 Download PDF
+
+            </button>
+
+
+        </div>
+
+
+    </section>
 
 
 </div>
-
-
-</form>
-
-
-
-<hr>
-
-
-
-<!-- =====================================================
-     SEARCH
-===================================================== -->
-
-<h2>Search Pig Records</h2>
-
-
-<input
-    type="text"
-    id="searchPig"
-    placeholder="Search Pig ID or Breed">
-
-
-<button
-    type="button"
-    onclick="searchPig()"
-    data-permission="view"
-    data-module="Pig Registration">
-
-    🔍 Search
-
-</button>
-
-
-
-<!-- =====================================================
-     REGISTERED PIGS
-===================================================== -->
-
-<h2>Registered Pigs</h2>
-
-
-
-<table border="1">
-
-
-<thead>
-
-<tr>
-
-<th>Pig ID</th>
-
-<th>Breed</th>
-
-<th>Sex</th>
-
-<th>Farrow Date</th>
-
-<th>Source</th>
-
-<th>Weight</th>
-
-<th>Health Status</th>
-
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-
-
-<tbody id="pigTable">
-
-</tbody>
-
-
-</table>
-
-
-
-<br>
-
-
-
-<!-- =====================================================
-     REPORT BUTTONS
-===================================================== -->
-
-<button
-    type="button"
-    onclick="generateReport()"
-    data-permission="report"
-    data-module="Pig Registration">
-
-    📊 Generate Report
-
-</button>
-
-
-<button
-    type="button"
-    onclick="printReport()"
-    data-permission="report"
-    data-module="Pig Registration">
-
-    🖨️ Print
-
-</button>
-
-
-
-</div>
-
 
 
 <!-- =====================================================
      SUPABASE
-===================================================== -->
+====================================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
+
+
+<!-- =====================================================
+     PDF LIBRARY
+====================================================== -->
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+</script>
+
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js">
+</script>
+
+
+<!-- =====================================================
+     SUPABASE CONFIGURATION
+====================================================== -->
 
 <script src="supabase.js"></script>
 
 
 <!-- =====================================================
      ACTIVITY LOG
-===================================================== -->
+====================================================== -->
 
 <script src="activity.js"></script>
 
 
 <!-- =====================================================
      SECURITY
-===================================================== -->
+====================================================== -->
 
 <script src="security.js"></script>
 
 
 <!-- =====================================================
-     PIG JAVASCRIPT
-===================================================== -->
+     PIG REGISTRATION JAVASCRIPT
+====================================================== -->
 
 <script src="pig.js"></script>
 
