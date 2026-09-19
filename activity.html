@@ -1,4 +1,9 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
 
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0">
@@ -9,11 +14,18 @@
 
 <link rel="stylesheet" href="activity.css">
 
-</head><body><!-- ==========================================
-     MAIN CONTAINER
-========================================== --><div class="activity-container"><!-- ======================================
+</head>
+
+
+<body>
+
+
+<div class="activity-container">
+
+
+<!-- ==========================================
      HEADER
-====================================== -->
+========================================== -->
 
 <header class="activity-header">
 
@@ -36,6 +48,7 @@
 
     <div class="header-actions">
 
+
         <button
             type="button"
             onclick="window.location.href='dashboard.html'">
@@ -56,11 +69,27 @@
 
         <button
             type="button"
+            onclick="downloadActivityPDF()"
+            class="pdf-button">
+
+            📄 Download PDF
+
+        </button>
+<button
+    type="button"
+    class="delete-all-button"
+    onclick="clearAllActivityLogs()">
+    🗑️ Clear All Logs
+</button>
+
+        <button
+            type="button"
             onclick="window.print()">
 
             🖨 Print
 
         </button>
+
 
     </div>
 
@@ -84,6 +113,19 @@
             This page records important activities
             performed by users in the MUNKA PIGGERY
             FARM management system.
+        </p>
+
+    </div>
+
+
+    <div class="summary-box">
+
+        <h3>
+            👥 Total Activities
+        </h3>
+
+        <p id="activityCount">
+            0
         </p>
 
     </div>
@@ -116,7 +158,11 @@
                     </th>
 
                     <th>
-                        Username
+                        Name
+                    </th>
+
+                    <th>
+                        Role
                     </th>
 
                     <th>
@@ -140,7 +186,7 @@
 
                 <tr>
 
-                    <td colspan="5">
+                    <td colspan="6">
                         Loading activity logs...
                     </td>
 
@@ -162,11 +208,22 @@
 
 <section class="activity-actions">
 
+
     <button
         type="button"
         onclick="loadActivityLogs()">
 
         🔄 Refresh Activity Logs
+
+    </button>
+
+
+    <button
+        type="button"
+        onclick="downloadActivityPDF()"
+        class="pdf-button">
+
+        📄 Download Activity PDF
 
     </button>
 
@@ -179,16 +236,63 @@
 
     </button>
 
+
 </section>
 
-</div><!-- ==========================================
+
+</div>
+
+
+
+<!-- ==========================================
+     jsPDF
+========================================== -->
+
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+</script>
+
+
+<!-- ==========================================
+     jsPDF AUTOTABLE
+========================================== -->
+
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js">
+</script>
+
+
+
+<!-- ==========================================
      SUPABASE
-========================================== --><script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-</script><!-- ==========================================
+========================================== -->
+
+<script
+src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
+
+
+<!-- ==========================================
      SUPABASE CONNECTION
-========================================== --><script src="supabase.js"></script><!-- ==========================================
+========================================== -->
+
+<script src="supabase.js"></script>
+
+
+<!-- ==========================================
      PAGE SECURITY
-========================================== --><script src="security.js"></script><!-- ==========================================
+========================================== -->
+
+<script src="security.js"></script>
+
+
+<!-- ==========================================
      ACTIVITY LOG JAVASCRIPT
-========================================== --><script src="activity.js"></script></body></html>
+========================================== -->
+
+<script src="activity.js"></script>
+
+
+</body>
+
+</html>
