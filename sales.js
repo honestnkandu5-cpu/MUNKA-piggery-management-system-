@@ -1,23 +1,9 @@
 // ==========================================================
 // MUNKA PIGGERY FARM
 // SALES RECORDS MODULE
-// FARM-SECURED + PERMISSION-CONTROLLED VERSION
+// PROFESSIONAL VERSION
+// FARM-SECURED + PERMISSION-CONTROLLED
 // ==========================================================
-//
-// FARM SECURITY:
-// Uses loggedInUser.farm_id
-//
-// PERMISSIONS COME FROM:
-// security.js
-//
-// Uses:
-// canView("Sales")
-// canAdd("Sales")
-// canEdit("Sales")
-// canDelete("Sales")
-// canReport("Sales")
-// ==========================================================
-
 
 let editID = null;
 
@@ -36,7 +22,7 @@ function getLoggedUser(){
 
 
 // ==========================================================
-// GET CURRENT FARM ID
+// GET FARM ID
 // ==========================================================
 
 function getFarmID(){
@@ -75,18 +61,26 @@ function calculateTotalAmount(){
         ) || 0;
 
 
+    /*
+       Preserved from your original system:
+
+       Total Amount =
+       Weight × Price Per Kg
+    */
+
     const total =
         weight * pricePerKg;
 
 
-    document.getElementById("totalAmount").value =
-        total.toFixed(2);
+    document.getElementById(
+        "totalAmount"
+    ).value = total.toFixed(2);
 
 }
 
 
 // ==========================================================
-// PAGE LOAD
+// PAGE INITIALIZATION
 // ==========================================================
 
 document.addEventListener(
@@ -104,7 +98,7 @@ document.addEventListener(
         if(weight){
 
             weight.addEventListener(
-                "input",
+                "change",
                 calculateTotalAmount
             );
 
@@ -114,9 +108,46 @@ document.addEventListener(
         if(pricePerKg){
 
             pricePerKg.addEventListener(
-                "input",
+                "change",
                 calculateTotalAmount
             );
+
+        }
+
+
+        // Set today's date automatically for new records
+
+        const saleDate =
+            document.getElementById("saleDate");
+
+
+        if(
+            saleDate &&
+            !saleDate.value
+        ){
+
+            const today =
+                new Date();
+
+
+            const year =
+                today.getFullYear();
+
+
+            const month =
+                String(
+                    today.getMonth() + 1
+                ).padStart(2, "0");
+
+
+            const day =
+                String(
+                    today.getDate()
+                ).padStart(2, "0");
+
+
+            saleDate.value =
+                `${year}-${month}-${day}`;
 
         }
 
@@ -136,10 +167,6 @@ document
 
         e.preventDefault();
 
-
-        // ------------------------------------------
-        // ADD PERMISSION
-        // ------------------------------------------
 
         if(
             typeof canAdd === "function" &&
@@ -186,11 +213,10 @@ document
         }
 
 
-        const sale = {
+        calculateTotalAmount();
 
-            // --------------------------------------
-            // FARM SECURITY
-            // --------------------------------------
+
+        const sale = {
 
             farm_id:
                 farmID,
@@ -201,67 +227,95 @@ document
 
 
             sale_date:
-                document.getElementById("saleDate").value,
+                document.getElementById(
+                    "saleDate"
+                ).value,
 
 
             pig_id:
-                document.getElementById("pigID").value.trim(),
+                document.getElementById(
+                    "pigID"
+                ).value.trim(),
 
 
             breed:
-                document.getElementById("breed").value,
+                document.getElementById(
+                    "breed"
+                ).value,
 
 
             category:
-                document.getElementById("category").value,
+                document.getElementById(
+                    "category"
+                ).value,
 
 
             quantity:
                 Number(
-                    document.getElementById("quantity").value
+                    document.getElementById(
+                        "quantity"
+                    ).value
                 ) || 0,
 
 
             weight:
                 Number(
-                    document.getElementById("weight").value
+                    document.getElementById(
+                        "weight"
+                    ).value
                 ) || 0,
 
 
             price_per_kg:
                 Number(
-                    document.getElementById("pricePerKg").value
+                    document.getElementById(
+                        "pricePerKg"
+                    ).value
                 ) || 0,
 
 
             total_amount:
                 Number(
-                    document.getElementById("totalAmount").value
+                    document.getElementById(
+                        "totalAmount"
+                    ).value
                 ) || 0,
 
 
             buyer_name:
-                document.getElementById("buyerName").value,
+                document.getElementById(
+                    "buyerName"
+                ).value,
 
 
             buyer_contact:
-                document.getElementById("buyerContact").value,
+                document.getElementById(
+                    "buyerContact"
+                ).value,
 
 
             payment_method:
-                document.getElementById("paymentMethod").value,
+                document.getElementById(
+                    "paymentMethod"
+                ).value,
 
 
             payment_status:
-                document.getElementById("paymentStatus").value,
+                document.getElementById(
+                    "paymentStatus"
+                ).value,
 
 
             responsible_person:
-                document.getElementById("responsiblePerson").value,
+                document.getElementById(
+                    "responsiblePerson"
+                ).value,
 
 
             remarks:
-                document.getElementById("remarks").value,
+                document.getElementById(
+                    "remarks"
+                ).value,
 
 
             created_by:
@@ -323,17 +377,7 @@ document
             );
 
 
-            document
-                .getElementById("salesForm")
-                .reset();
-
-
-            document
-                .getElementById("recordID")
-                .value = "";
-
-
-            editID = null;
+            clearSaleForm();
 
 
             loadSalesRecords();
@@ -391,10 +435,6 @@ async function loadSalesRecords(){
 
                 .select("*")
 
-                // ----------------------------------
-                // FARM SECURITY
-                // ----------------------------------
-
                 .eq(
                     "farm_id",
                     farmID
@@ -439,6 +479,44 @@ async function loadSalesRecords(){
 
 
 // ==========================================================
+// ESCAPE HTML
+// ==========================================================
+
+function escapeHTML(value){
+
+    if(value === null || value === undefined){
+
+        return "";
+
+    }
+
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+// ==========================================================
 // DISPLAY SALES RECORDS
 // ==========================================================
 
@@ -460,15 +538,48 @@ function displaySalesRecords(records){
     table.innerHTML = "";
 
 
+    const recordCount =
+        document.getElementById(
+            "recordCount"
+        );
+
+
+    if(recordCount){
+
+        recordCount.textContent =
+            `${records.length} Record${records.length === 1 ? "" : "s"}`;
+
+    }
+
+
+    if(records.length === 0){
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="10"
+                    class="empty-row">
+
+                    No sales records found.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
     records.forEach(
         function(sale){
 
             let actionButtons = "";
 
-
-            // ------------------------------------------
-            // EDIT
-            // ------------------------------------------
 
             if(
                 typeof canEdit === "function" &&
@@ -479,6 +590,7 @@ function displaySalesRecords(records){
 
                     <button
                         type="button"
+                        class="small-edit"
                         onclick="editSale(${sale.id})">
 
                         ✏️ Edit
@@ -490,10 +602,6 @@ function displaySalesRecords(records){
             }
 
 
-            // ------------------------------------------
-            // DELETE
-            // ------------------------------------------
-
             if(
                 typeof canDelete === "function" &&
                 canDelete("Sales")
@@ -503,6 +611,7 @@ function displaySalesRecords(records){
 
                     <button
                         type="button"
+                        class="small-delete"
                         onclick="deleteSale(${sale.id})">
 
                         🗑️ Delete
@@ -513,10 +622,6 @@ function displaySalesRecords(records){
 
             }
 
-
-            // ------------------------------------------
-            // IF NO ACTIONS
-            // ------------------------------------------
 
             if(!actionButtons){
 
@@ -531,19 +636,27 @@ function displaySalesRecords(records){
                 <tr>
 
                     <td>
-                        ${sale.sale_date || ""}
+                        ${escapeHTML(
+                            sale.sale_date || ""
+                        )}
                     </td>
 
                     <td>
-                        ${sale.pig_id || ""}
+                        ${escapeHTML(
+                            sale.pig_id || ""
+                        )}
                     </td>
 
                     <td>
-                        ${sale.breed || ""}
+                        ${escapeHTML(
+                            sale.breed || ""
+                        )}
                     </td>
 
                     <td>
-                        ${sale.category || ""}
+                        ${escapeHTML(
+                            sale.category || ""
+                        )}
                     </td>
 
                     <td>
@@ -551,22 +664,28 @@ function displaySalesRecords(records){
                     </td>
 
                     <td>
-                        ${sale.weight || 0}
+                        ${sale.weight || 0} kg
                     </td>
 
                     <td>
-                        ${sale.total_amount || 0}
+                        ZMW ${Number(
+                            sale.total_amount || 0
+                        ).toFixed(2)}
                     </td>
 
                     <td>
-                        ${sale.buyer_name || ""}
+                        ${escapeHTML(
+                            sale.buyer_name || ""
+                        )}
                     </td>
 
                     <td>
-                        ${sale.payment_status || ""}
+                        ${escapeHTML(
+                            sale.payment_status || ""
+                        )}
                     </td>
 
-                    <td>
+                    <td class="action-cell">
                         ${actionButtons}
                     </td>
 
@@ -628,10 +747,6 @@ async function editSale(id){
 
                 .select("*")
 
-                // ----------------------------------
-                // FARM SECURITY
-                // ----------------------------------
-
                 .eq(
                     "id",
                     id
@@ -655,64 +770,102 @@ async function editSale(id){
         editID = id;
 
 
-        document.getElementById("recordID").value =
+        document.getElementById(
+            "recordID"
+        ).value =
             data.record_id || "";
 
 
-        document.getElementById("saleDate").value =
+        document.getElementById(
+            "saleDate"
+        ).value =
             data.sale_date || "";
 
 
-        document.getElementById("pigID").value =
+        document.getElementById(
+            "pigID"
+        ).value =
             data.pig_id || "";
 
 
-        document.getElementById("breed").value =
+        document.getElementById(
+            "breed"
+        ).value =
             data.breed || "";
 
 
-        document.getElementById("category").value =
+        document.getElementById(
+            "category"
+        ).value =
             data.category || "";
 
 
-        document.getElementById("quantity").value =
+        document.getElementById(
+            "quantity"
+        ).value =
             data.quantity || "";
 
 
-        document.getElementById("weight").value =
+        document.getElementById(
+            "weight"
+        ).value =
             data.weight || "";
 
 
-        document.getElementById("pricePerKg").value =
+        document.getElementById(
+            "pricePerKg"
+        ).value =
             data.price_per_kg || "";
 
 
-        document.getElementById("totalAmount").value =
-            data.total_amount || "";
+        document.getElementById(
+            "totalAmount"
+        ).value =
+            Number(
+                data.total_amount || 0
+            ).toFixed(2);
 
 
-        document.getElementById("buyerName").value =
+        document.getElementById(
+            "buyerName"
+        ).value =
             data.buyer_name || "";
 
 
-        document.getElementById("buyerContact").value =
+        document.getElementById(
+            "buyerContact"
+        ).value =
             data.buyer_contact || "";
 
 
-        document.getElementById("paymentMethod").value =
+        document.getElementById(
+            "paymentMethod"
+        ).value =
             data.payment_method || "";
 
 
-        document.getElementById("paymentStatus").value =
+        document.getElementById(
+            "paymentStatus"
+        ).value =
             data.payment_status || "";
 
 
-        document.getElementById("responsiblePerson").value =
+        document.getElementById(
+            "responsiblePerson"
+        ).value =
             data.responsible_person || "";
 
 
-        document.getElementById("remarks").value =
+        document.getElementById(
+            "remarks"
+        ).value =
             data.remarks || "";
+
+
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
 
     }
 
@@ -795,70 +948,101 @@ async function updateSaleRecord(){
     }
 
 
+    calculateTotalAmount();
+
+
     const updatedSale = {
 
         sale_date:
-            document.getElementById("saleDate").value,
+            document.getElementById(
+                "saleDate"
+            ).value,
 
 
         pig_id:
-            document.getElementById("pigID").value,
+            document.getElementById(
+                "pigID"
+            ).value,
 
 
         breed:
-            document.getElementById("breed").value,
+            document.getElementById(
+                "breed"
+            ).value,
 
 
         category:
-            document.getElementById("category").value,
+            document.getElementById(
+                "category"
+            ).value,
 
 
         quantity:
             Number(
-                document.getElementById("quantity").value
+                document.getElementById(
+                    "quantity"
+                ).value
             ) || 0,
 
 
         weight:
             Number(
-                document.getElementById("weight").value
+                document.getElementById(
+                    "weight"
+                ).value
             ) || 0,
 
 
         price_per_kg:
             Number(
-                document.getElementById("pricePerKg").value
+                document.getElementById(
+                    "pricePerKg"
+                ).value
             ) || 0,
 
 
         total_amount:
             Number(
-                document.getElementById("totalAmount").value
+                document.getElementById(
+                    "totalAmount"
+                ).value
             ) || 0,
 
 
         buyer_name:
-            document.getElementById("buyerName").value,
+            document.getElementById(
+                "buyerName"
+            ).value,
 
 
         buyer_contact:
-            document.getElementById("buyerContact").value,
+            document.getElementById(
+                "buyerContact"
+            ).value,
 
 
         payment_method:
-            document.getElementById("paymentMethod").value,
+            document.getElementById(
+                "paymentMethod"
+            ).value,
 
 
         payment_status:
-            document.getElementById("paymentStatus").value,
+            document.getElementById(
+                "paymentStatus"
+            ).value,
 
 
         responsible_person:
-            document.getElementById("responsiblePerson").value,
+            document.getElementById(
+                "responsiblePerson"
+            ).value,
 
 
         remarks:
-            document.getElementById("remarks").value,
+            document.getElementById(
+                "remarks"
+            ).value,
 
 
         updated_by:
@@ -881,10 +1065,6 @@ async function updateSaleRecord(){
                 .from("sales_records")
 
                 .update(updatedSale)
-
-                // ----------------------------------
-                // FARM SECURITY
-                // ----------------------------------
 
                 .eq(
                     "id",
@@ -929,14 +1109,7 @@ async function updateSaleRecord(){
         editID = null;
 
 
-        document
-            .getElementById("salesForm")
-            .reset();
-
-
-        document
-            .getElementById("recordID")
-            .value = "";
+        clearSaleForm();
 
 
         loadSalesRecords();
@@ -1019,10 +1192,6 @@ async function deleteSale(id){
                 .from("sales_records")
 
                 .delete()
-
-                // ----------------------------------
-                // FARM SECURITY
-                // ----------------------------------
 
                 .eq(
                     "id",
@@ -1154,10 +1323,6 @@ async function searchSaleRecord(){
 
                 .select("*")
 
-                // ----------------------------------
-                // FARM SECURITY
-                // ----------------------------------
-
                 .eq(
                     "farm_id",
                     farmID
@@ -1191,11 +1356,6 @@ async function searchSaleRecord(){
             data
         );
 
-
-        // ------------------------------------------
-        // Only open the first result for editing if
-        // the user has edit permission.
-        // ------------------------------------------
 
         if(
             typeof canEdit === "function" &&
@@ -1275,13 +1435,16 @@ async function generateSalesReport(){
 
                 .select("*")
 
-                // ----------------------------------
-                // FARM SECURITY
-                // ----------------------------------
-
                 .eq(
                     "farm_id",
                     farmID
+                )
+
+                .order(
+                    "sale_date",
+                    {
+                        ascending:false
+                    }
                 );
 
 
@@ -1304,6 +1467,8 @@ async function generateSalesReport(){
 
 
         let totalSales = 0;
+        let totalQuantity = 0;
+        let totalWeight = 0;
 
 
         data.forEach(
@@ -1312,6 +1477,18 @@ async function generateSalesReport(){
                 totalSales +=
                     Number(
                         sale.total_amount || 0
+                    );
+
+
+                totalQuantity +=
+                    Number(
+                        sale.quantity || 0
+                    );
+
+
+                totalWeight +=
+                    Number(
+                        sale.weight || 0
                     );
 
             }
@@ -1327,6 +1504,14 @@ SALES REPORT
 
 Total Records:
 ${data.length}
+
+
+Total Quantity Sold:
+${totalQuantity}
+
+
+Total Weight Sold:
+${totalWeight.toFixed(2)} kg
 
 
 Total Sales:
@@ -1367,6 +1552,27 @@ ${new Date().toLocaleDateString()}
                     Sales Report
                 </title>
 
+                <style>
+
+                    body{
+                        font-family:Arial;
+                        padding:30px;
+                    }
+
+                    h1{
+                        color:#2e7d32;
+                    }
+
+                    button{
+                        padding:10px 20px;
+                        background:#2e7d32;
+                        color:white;
+                        border:none;
+                        cursor:pointer;
+                    }
+
+                </style>
+
             </head>
 
             <body>
@@ -1376,13 +1582,13 @@ ${new Date().toLocaleDateString()}
                 </h1>
 
                 <pre>
-${report}
+${escapeHTML(report)}
                 </pre>
 
                 <button
                     onclick="window.print()">
 
-                    Print
+                    Print Report
 
                 </button>
 
@@ -1406,6 +1612,421 @@ ${report}
 
 
         alert(
+            error.message
+        );
+
+    }
+
+}
+
+
+// ==========================================================
+// DOWNLOAD SALES PDF
+// ==========================================================
+
+async function downloadSalesPDF(){
+
+    if(
+        typeof canReport === "function" &&
+        !canReport("Sales")
+    ){
+
+        alert(
+            "Access Denied.\n\n" +
+            "You do not have permission to download sales reports."
+        );
+
+        return;
+
+    }
+
+
+    const farmID =
+        getFarmID();
+
+
+    const loggedUser =
+        getLoggedUser();
+
+
+    if(!farmID){
+
+        alert(
+            "Farm information not found. Please login again."
+        );
+
+        return;
+
+    }
+
+
+    if(
+        typeof window.jspdf === "undefined"
+    ){
+
+        alert(
+            "PDF library has not loaded yet. Please refresh the page and try again."
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+
+                .from("sales_records")
+
+                .select("*")
+
+                .eq(
+                    "farm_id",
+                    farmID
+                )
+
+                .order(
+                    "sale_date",
+                    {
+                        ascending:false
+                    }
+                );
+
+
+        if(error){
+
+            throw error;
+
+        }
+
+
+        if(!data || data.length === 0){
+
+            alert(
+                "No sales records available for PDF."
+            );
+
+            return;
+
+        }
+
+
+        const {
+            jsPDF
+        } =
+            window.jspdf;
+
+
+        const doc =
+            new jsPDF({
+                orientation:"landscape",
+                unit:"mm",
+                format:"a4"
+            });
+
+
+        // ==================================================
+        // REPORT HEADER
+        // ==================================================
+
+        doc.setFontSize(18);
+
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
+
+        doc.text(
+            "MUNKA PIGGERY FARM",
+            148,
+            15,
+            {
+                align:"center"
+            }
+        );
+
+
+        doc.setFontSize(13);
+
+        doc.setFont(
+            "helvetica",
+            "normal"
+        );
+
+        doc.text(
+            "SALES RECORDS REPORT",
+            148,
+            23,
+            {
+                align:"center"
+            }
+        );
+
+
+        // ==================================================
+        // SUMMARY
+        // ==================================================
+
+        let totalSales = 0;
+        let totalQuantity = 0;
+        let totalWeight = 0;
+
+
+        data.forEach(
+            function(sale){
+
+                totalSales +=
+                    Number(
+                        sale.total_amount || 0
+                    );
+
+
+                totalQuantity +=
+                    Number(
+                        sale.quantity || 0
+                    );
+
+
+                totalWeight +=
+                    Number(
+                        sale.weight || 0
+                    );
+
+            }
+        );
+
+
+        doc.setFontSize(9);
+
+
+        doc.text(
+            `Farm ID: ${farmID}`,
+            14,
+            32
+        );
+
+
+        doc.text(
+            `Generated By: ${
+                loggedUser
+                    ? loggedUser.full_name
+                    : ""
+            }`,
+            14,
+            38
+        );
+
+
+        doc.text(
+            `Generated: ${
+                new Date().toLocaleString()
+            }`,
+            14,
+            44
+        );
+
+
+        doc.text(
+            `Total Records: ${data.length}`,
+            200,
+            32
+        );
+
+
+        doc.text(
+            `Total Quantity: ${totalQuantity}`,
+            200,
+            38
+        );
+
+
+        doc.text(
+            `Total Weight: ${totalWeight.toFixed(2)} kg`,
+            200,
+            44
+        );
+
+
+        doc.text(
+            `Total Sales: ZMW ${totalSales.toFixed(2)}`,
+            200,
+            50
+        );
+
+
+        // ==================================================
+        // TABLE
+        // ==================================================
+
+        const tableData =
+            data.map(
+                function(sale){
+
+                    return [
+
+                        sale.sale_date || "",
+
+                        sale.pig_id || "",
+
+                        sale.breed || "",
+
+                        sale.category || "",
+
+                        sale.quantity || 0,
+
+                        `${Number(
+                            sale.weight || 0
+                        ).toFixed(2)} kg`,
+
+                        `ZMW ${
+                            Number(
+                                sale.price_per_kg || 0
+                            ).toFixed(2)
+                        }`,
+
+                        `ZMW ${
+                            Number(
+                                sale.total_amount || 0
+                            ).toFixed(2)
+                        }`,
+
+                        sale.buyer_name || "",
+
+                        sale.payment_status || ""
+
+                    ];
+
+                }
+            );
+
+
+        doc.autoTable({
+
+            startY:58,
+
+            head:[[
+
+                "Date",
+                "Pig ID",
+                "Breed",
+                "Category",
+                "Qty",
+                "Weight",
+                "Price/Kg",
+                "Total",
+                "Buyer",
+                "Payment"
+
+            ]],
+
+
+            body:tableData,
+
+
+            theme:"grid",
+
+
+            styles:{
+
+                fontSize:7,
+
+                cellPadding:2
+
+            },
+
+
+            headStyles:{
+
+                fontStyle:"bold"
+
+            },
+
+
+            columnStyles:{
+
+                0:{cellWidth:21},
+                1:{cellWidth:20},
+                2:{cellWidth:27},
+                3:{cellWidth:20},
+                4:{cellWidth:12},
+                5:{cellWidth:20},
+                6:{cellWidth:22},
+                7:{cellWidth:24},
+                8:{cellWidth:32},
+                9:{cellWidth:20}
+
+            },
+
+
+            margin:{
+
+                left:10,
+                right:10
+
+            },
+
+
+            didDrawPage:function(){
+
+                const pageNumber =
+                    doc.internal.getNumberOfPages();
+
+
+                doc.setFontSize(8);
+
+
+                doc.text(
+                    "MUNKA PIGGERY FARM - Sales Records",
+                    10,
+                    202
+                );
+
+
+                doc.text(
+                    `Page ${pageNumber}`,
+                    287,
+                    202,
+                    {
+                        align:"right"
+                    }
+                );
+
+            }
+
+        });
+
+
+        // ==================================================
+        // SAVE PDF
+        // ==================================================
+
+        const today =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        doc.save(
+            `MUNKA_PIGGERY_Sales_Report_${today}.pdf`
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "SALES PDF ERROR:",
+            error
+        );
+
+
+        alert(
+            "Unable to generate PDF.\n\n" +
             error.message
         );
 
@@ -1461,11 +2082,47 @@ function clearSaleForm(){
 
     editID = null;
 
+
+    // Restore today's date
+
+    const saleDate =
+        document.getElementById(
+            "saleDate"
+        );
+
+
+    if(saleDate){
+
+        const today =
+            new Date();
+
+
+        const year =
+            today.getFullYear();
+
+
+        const month =
+            String(
+                today.getMonth() + 1
+            ).padStart(2, "0");
+
+
+        const day =
+            String(
+                today.getDate()
+            ).padStart(2, "0");
+
+
+        saleDate.value =
+            `${year}-${month}-${day}`;
+
+    }
+
 }
 
 
 // ==========================================================
-// LOAD RECORDS
+// LOAD RECORDS WHEN PAGE OPENS
 // ==========================================================
 
 window.addEventListener(
