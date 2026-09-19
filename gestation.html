@@ -19,345 +19,421 @@
 
 <div class="container">
 
-<h1>🐷 MUNKA PIGGERY FARM</h1>
+    <div class="page-header">
 
-<h2>Gestation Records</h2>
+        <div class="pig-icon">
+            🐷
+        </div>
 
+        <div>
+            <h1>MUNKA PIGGERY FARM</h1>
+            <p>Gestation Records Management</p>
+        </div>
 
-<!-- ==================================================
-     GESTATION FORM
-================================================== -->
+    </div>
 
-<form id="gestationForm">
 
+    <!-- ==================================================
+         GESTATION FORM
+    ================================================== -->
 
-<label for="sowID">
-Sow ID
-</label>
+    <form id="gestationForm">
 
-<input
-    type="text"
-    id="sowID"
-    required>
+        <div class="section-title">
+            Gestation Record Details
+        </div>
 
 
-<label for="registrationDate">
-Registration Date
-</label>
+        <label for="sowID">
+            Sow ID
+        </label>
 
-<input
-    type="date"
-    id="registrationDate"
-    required>
+        <input
+            type="text"
+            id="sowID"
+            placeholder="Enter Sow ID"
+            required>
 
 
-<label for="breed">
-Breed
-</label>
+        <label for="registrationDate">
+            Registration Date
+        </label>
 
-<select
-    id="breed"
-    required>
+        <input
+            type="date"
+            id="registrationDate"
+            required>
 
-    <option value="">
-        Select Breed
-    </option>
 
-    <option>Large White</option>
-    <option>Landrace</option>
-    <option>Large White × Landrace Cross</option>
-    <option>Duroc</option>
-    <option>Pietrain</option>
-    <option>Hampshire</option>
-    <option>Other</option>
+        <label for="breed">
+            Breed
+        </label>
 
-</select>
+        <select
+            id="breed"
+            required>
 
+            <option value="">
+                Select Breed
+            </option>
 
-<label for="teats">
-Number of Teats
-</label>
+            <option>Large White</option>
+            <option>Landrace</option>
+            <option>Large White × Landrace Cross</option>
+            <option>Duroc</option>
+            <option>Pietrain</option>
+            <option>Hampshire</option>
+            <option>Other</option>
 
-<input
-    type="number"
-    id="teats"
-    min="1">
+        </select>
 
 
-<label for="parity">
-Parity
-</label>
+        <!-- ==================================================
+             NUMBER OF TEATS - DROPDOWN
+        ================================================== -->
 
-<select id="parity">
+        <label for="teats">
+            Number of Teats
+        </label>
 
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6+</option>
+        <select
+            id="teats"
+            required>
 
-</select>
+            <option value="">
+                Select Number of Teats
+            </option>
 
+            <option value="8">
+                8 Teats
+            </option>
 
-<label for="serviceDate">
-Service Date
-</label>
+            <option value="10">
+                10 Teats
+            </option>
 
-<input
-    type="date"
-    id="serviceDate"
-    required>
+            <option value="12">
+                12 Teats
+            </option>
 
+            <option value="14">
+                14 Teats
+            </option>
 
-<label for="boar">
-Boar / Semen Used
-</label>
+            <option value="16">
+                16 Teats
+            </option>
 
-<input
-    type="text"
-    id="boar">
+            <option value="18">
+                18 Teats
+            </option>
 
+            <option value="20">
+                20 Teats
+            </option>
 
-<h3>
-Automatic Gestation Dates
-</h3>
+        </select>
 
 
-<label>
-21 Days Check
-</label>
+        <label for="parity">
+            Parity
+        </label>
 
-<input
-    type="date"
-    id="check21"
-    readonly>
+        <select
+            id="parity"
+            required>
 
+            <option value="">
+                Select Parity
+            </option>
 
-<label>
-90 Day Feed Up
-</label>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6+</option>
 
-<input
-    type="date"
-    id="feed90"
-    readonly>
+        </select>
 
 
-<label>
-101 Day Dewormer
-</label>
+        <label for="serviceDate">
+            Service Date
+        </label>
 
-<input
-    type="date"
-    id="deworm101"
-    readonly>
+        <input
+            type="date"
+            id="serviceDate"
+            required>
 
 
-<label>
-101 Day Litter Guard
-</label>
+        <label for="boar">
+            Boar / Semen Used
+        </label>
 
-<input
-    type="date"
-    id="litter101"
-    readonly>
+        <input
+            type="text"
+            id="boar"
+            placeholder="Enter Boar or Semen Used">
 
 
-<label>
-Action Day
-</label>
+        <!-- ==================================================
+             AUTOMATIC GESTATION DATES
+        ================================================== -->
 
-<input
-    type="date"
-    id="actionDay"
-    readonly>
+        <div class="automatic-section">
 
+            <div class="section-title">
+                Automatic Gestation Dates
+            </div>
 
-<label>
-Expected Delivery
-</label>
+            <p class="info-text">
+                Dates are automatically calculated from the Service Date.
+            </p>
 
-<input
-    type="date"
-    id="deliveryDate"
-    readonly>
 
+            <label>
+                21 Days Check
+            </label>
 
-<label>
-FarrowSure Date
-</label>
+            <input
+                type="date"
+                id="check21"
+                readonly>
 
-<input
-    type="date"
-    id="farrowsure"
-    readonly>
 
+            <label>
+                90 Day Feed Up
+            </label>
 
-<label for="status">
-Status
-</label>
+            <input
+                type="date"
+                id="feed90"
+                readonly>
 
-<select id="status">
 
-    <option>Pregnant</option>
-    <option>Farrowed</option>
-    <option>Empty</option>
-    <option>Aborted</option>
+            <label>
+                101 Day Dewormer
+            </label>
 
-</select>
+            <input
+                type="date"
+                id="deworm101"
+                readonly>
 
 
-<label for="notes">
-Notes
-</label>
+            <label>
+                101 Day Litter Guard
+            </label>
 
-<textarea
-    id="notes"
-    rows="4">
-</textarea>
+            <input
+                type="date"
+                id="litter101"
+                readonly>
 
 
-<!-- ==================================================
-     ACTION BUTTONS
-================================================== -->
+            <label>
+                Action Day
+            </label>
 
-<div class="buttons">
+            <input
+                type="date"
+                id="actionDay"
+                readonly>
 
 
-    <!-- ADD -->
+            <label>
+                Expected Delivery
+            </label>
 
-    <button
-        type="submit"
-        data-permission="add"
-        data-module="Gestation">
+            <input
+                type="date"
+                id="deliveryDate"
+                readonly>
 
-        💾 Save Record
 
-    </button>
+            <label>
+                FarrowSure Date
+            </label>
 
+            <input
+                type="date"
+                id="farrowsure"
+                readonly>
 
-    <!-- REPORT -->
+        </div>
 
-    <button
-        type="button"
-        onclick="generateReport()"
-        data-permission="report"
-        data-module="Gestation">
 
-        📊 Generate Report
+        <label for="status">
+            Status
+        </label>
 
-    </button>
+        <select id="status" required>
 
+            <option>Pregnant</option>
+            <option>Farrowed</option>
+            <option>Empty</option>
+            <option>Aborted</option>
 
-    <!-- PRINT -->
+        </select>
 
-    <button
-        type="button"
-        onclick="printReport()">
 
-        🖨️ Print
+        <label for="notes">
+            Notes
+        </label>
 
-    </button>
+        <textarea
+            id="notes"
+            rows="4"
+            placeholder="Enter any additional notes"></textarea>
 
 
-    <!-- CLEAR -->
+        <!-- ==================================================
+             ACTION BUTTONS
+        ================================================== -->
 
-    <button
-        type="button"
-        onclick="clearForm()">
+        <div class="buttons">
 
-        🧹 Clear
+            <button
+                type="submit"
+                data-permission="add"
+                data-module="Gestation">
 
-    </button>
+                💾 Save Record
 
+            </button>
 
-    <!-- BACK -->
 
-    <button
-        type="button"
-        onclick="window.location.href='dashboard.html'">
+            <button
+                type="button"
+                onclick="generateReport()"
+                data-permission="report"
+                data-module="Gestation">
 
-        ↩️ Back
+                📊 Generate Report
 
-    </button>
+            </button>
 
 
-</div>
+            <button
+                type="button"
+                onclick="downloadPDF()"
+                data-permission="report"
+                data-module="Gestation">
 
+                📄 Download PDF
 
-</form>
+            </button>
 
 
-<hr>
+            <button
+                type="button"
+                onclick="printReport()"
+                data-permission="report"
+                data-module="Gestation">
 
+                🖨️ Print
 
-<!-- ==================================================
-     SEARCH
-================================================== -->
+            </button>
 
-<h2>
-Search Gestation Records
-</h2>
 
+            <button
+                type="button"
+                onclick="clearForm()">
 
-<input
-    type="text"
-    id="searchGestation"
-    placeholder="Search Sow ID, Breed or Status">
+                🧹 Clear
 
+            </button>
 
-<button
-    type="button"
-    onclick="searchRecord()"
-    data-permission="view"
-    data-module="Gestation">
 
-    🔍 Search
+            <button
+                type="button"
+                onclick="window.location.href='dashboard.html'">
 
-</button>
+                ↩️ Back
 
+            </button>
 
-<hr>
+        </div>
 
+    </form>
 
-<!-- ==================================================
-     RECORD HISTORY
-================================================== -->
 
-<h2>
-Registered Gestation Records
-</h2>
+    <hr>
 
 
-<table>
+    <!-- ==================================================
+         SEARCH
+    ================================================== -->
 
-<thead>
+    <div class="section-title">
+        Search Gestation Records
+    </div>
 
-<tr>
+    <div class="search-area">
 
-<th>Sow ID</th>
+        <input
+            type="text"
+            id="searchGestation"
+            placeholder="Search Sow ID, Breed or Status">
 
-<th>Breed</th>
+        <button
+            type="button"
+            onclick="searchRecord()"
+            data-permission="view"
+            data-module="Gestation">
 
-<th>Service Date</th>
+            🔍 Search
 
-<th>Expected Delivery</th>
+        </button>
 
-<th>Status</th>
+    </div>
 
-<th>Action</th>
 
-</tr>
+    <hr>
 
-</thead>
 
+    <!-- ==================================================
+         RECORD HISTORY
+    ================================================== -->
 
-<tbody id="gestationTable">
+    <div class="section-title">
+        Registered Gestation Records
+    </div>
 
-</tbody>
 
-</table>
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Sow ID</th>
+
+                    <th>Breed</th>
+
+                    <th>Service Date</th>
+
+                    <th>Expected Delivery</th>
+
+                    <th>Status</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="gestationTable">
+
+            </tbody>
+
+        </table>
+
+    </div>
 
 
 </div>
@@ -367,29 +443,27 @@ Registered Gestation Records
      SUPABASE
 ================================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+
+<!-- ==================================================
+     PDF LIBRARIES
+================================================== -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+
+<!-- ==================================================
+     PROJECT SCRIPTS
+================================================== -->
 
 <script src="supabase.js"></script>
 
-
-<!-- ==================================================
-     ACTIVITY
-================================================== -->
-
 <script src="activity.js"></script>
 
-
-<!-- ==================================================
-     SECURITY
-================================================== -->
-
 <script src="security.js"></script>
-
-
-<!-- ==================================================
-     GESTATION
-================================================== -->
 
 <script src="gestation.js"></script>
 
