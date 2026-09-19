@@ -15,309 +15,744 @@
 
 <div class="container">
 
-<h1>🐖 MUNKA PIGGERY FARM</h1>
+    <div class="page-header">
+        <div class="pig-icon">🐖</div>
+        <h1>MUNKA PIGGERY FARM</h1>
+        <p>Weaning Records Management</p>
+    </div>
 
-<h2>Weaning Records</h2>
 
-<!-- ===========================
-SEARCH
-=========================== -->
+    <!-- =========================
+         SEARCH
+    ========================== -->
 
-<div class="searchBox">
+    <section class="search-section">
 
-<input
-type="text"
-id="searchWeaning"
-placeholder="Search by Sow ID">
+        <h2>Search Weaning Records</h2>
+
+        <div class="searchBox">
+
+            <input
+                type="text"
+                id="searchWeaning"
+                placeholder="Search by Sow ID..."
+            >
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         WEANING FORM
+    ========================== -->
+
+    <form id="weaningForm">
+
+        <!-- SOW INFORMATION -->
+
+        <div class="form-section full-width">
+
+            <div class="section-title">
+                🐷 Sow & Weaning Information
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="sowID">Sow ID</label>
+
+                    <div class="input-button-group">
+
+                        <input
+                            type="text"
+                            id="sowID"
+                            placeholder="Enter Sow ID"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="search-sow-btn"
+                            onclick="loadFarrowingSow()"
+                        >
+                            🔍 Search
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="farrowDate">
+                        Farrow Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="farrowDate"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="weaningDate">
+                        Weaning Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="weaningDate"
+                        readonly
+                    >
+
+                    <small>
+                        Automatically calculated as 33 days after farrowing.
+                    </small>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="totalBorn">
+                        Total Born
+                    </label>
+
+                    <input
+                        type="number"
+                        id="totalBorn"
+                        min="0"
+                        readonly
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- WEANED PIGLETS -->
+
+        <div class="form-section full-width">
+
+            <div class="section-title">
+                🐷 Weaned Piglets
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="maleWeaned">
+                        Male Weaned
+                    </label>
+
+                    <select id="maleWeaned" required>
+
+                        <option value="">
+                            Select
+                        </option>
+
+                        <script>
+                            for(let i = 1; i <= 20; i++){
+                                document.write(
+                                    `<option value="${i}">${i}</option>`
+                                );
+                            }
+                        </script>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="femaleWeaned">
+                        Female Weaned
+                    </label>
+
+                    <select id="femaleWeaned" required>
+
+                        <option value="">
+                            Select
+                        </option>
+
+                        <script>
+                            for(let i = 1; i <= 20; i++){
+                                document.write(
+                                    `<option value="${i}">${i}</option>`
+                                );
+                            }
+                        </script>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="totalWeaned">
+                        Total Weaned
+                    </label>
+
+                    <input
+                        type="number"
+                        id="totalWeaned"
+                        readonly
+                    >
+
+                    <small>
+                        Automatically calculated.
+                    </small>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="averageWeight">
+                        Average Weaning Weight (Kg)
+                    </label>
+
+                    <select
+                        id="averageWeight"
+                        required
+                    >
+
+                        <option value="">
+                            Select Weight
+                        </option>
+
+                        <script>
+                            for(let i = 1; i <= 30; i++){
+                                document.write(
+                                    `<option value="${i}">${i} Kg</option>`
+                                );
+                            }
+                        </script>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="mortality">
+                        Mortality
+                    </label>
+
+                    <select
+                        id="mortality"
+                        required
+                    >
+
+                        <option value="">
+                            Select Number
+                        </option>
+
+                        <script>
+                            for(let i = 1; i <= 18; i++){
+                                document.write(
+                                    `<option value="${i}">${i}</option>`
+                                );
+                            }
+                        </script>
+
+                    </select>
+
+                    <small>
+                        Number of piglets lost before/during weaning.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MORTALITY INFORMATION -->
+
+        <div class="form-section full-width">
+
+            <div class="section-title">
+                ⚠️ Mortality Information
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="mortalityReason">
+                        Mortality Reason
+                    </label>
+
+                    <select id="mortalityReason">
+
+                        <option value="">
+                            Select Reason
+                        </option>
+
+                        <optgroup label="Sow-Related Causes">
+
+                            <option>Crushing by Sow</option>
+                            <option>Poor Maternal Behaviour</option>
+                            <option>Insufficient Milk Production</option>
+                            <option>Sow Illness</option>
+
+                        </optgroup>
+
+                        <optgroup label="Piglet Health Causes">
+
+                            <option>Starvation</option>
+                            <option>Failure to Suckle</option>
+                            <option>Scours (Diarrhoea)</option>
+                            <option>Pneumonia</option>
+                            <option>Respiratory Infection</option>
+                            <option>Weak Piglet</option>
+                            <option>Dehydration</option>
+                            <option>Infection</option>
+                            <option>Hypothermia / Chilling</option>
+
+                        </optgroup>
+
+                        <optgroup label="Other Causes">
+
+                            <option>Injury / Trauma</option>
+                            <option>Congenital Defect</option>
+                            <option>Poor Hygiene</option>
+                            <option>Unknown Cause</option>
+                            <option>Other</option>
+
+                        </optgroup>
+
+                    </select>
+
+                </div>
+
+
+                <div
+                    class="form-group"
+                    id="otherReasonGroup"
+                    style="display:none;"
+                >
+
+                    <label for="otherReason">
+                        Other Mortality Reason
+                    </label>
+
+                    <input
+                        type="text"
+                        id="otherReason"
+                        placeholder="Enter other reason"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="destinationPen">
+                        Destination Pen
+                    </label>
+
+                    <select id="destinationPen">
+
+                        <option value="">
+                            Select Pen
+                        </option>
+
+                        <option>Nursery Pen 1</option>
+                        <option>Nursery Pen 2</option>
+                        <option>Nursery Pen 3</option>
+                        <option>Nursery Pen 4</option>
+
+                        <option>Grower Pen 1</option>
+                        <option>Grower Pen 2</option>
+                        <option>Grower Pen 3</option>
+
+                        <option>Isolation Pen</option>
+
+                        <option>Other</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- REMARKS -->
+
+        <div class="form-section full-width">
+
+            <div class="section-title">
+                📝 Weaning Assessment & Recommendations
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group full-width">
+
+                    <label for="remarks">
+                        Remarks / Recommendations
+                    </label>
+
+                    <select id="remarks">
+
+                        <option value="">
+                            Select Assessment / Recommendation
+                        </option>
+
+                        <optgroup label="✅ Positive - Good Weaning">
+
+                            <option>
+                                Excellent weaning condition - piglets healthy and active
+                            </option>
+
+                            <option>
+                                Good average weaning weight - satisfactory growth
+                            </option>
+
+                            <option>
+                                Healthy and active piglets at weaning
+                            </option>
+
+                            <option>
+                                Good feed intake before weaning
+                            </option>
+
+                            <option>
+                                Good growth rate observed
+                            </option>
+
+                            <option>
+                                Good body condition
+                            </option>
+
+                            <option>
+                                Low mortality recorded
+                            </option>
+
+                            <option>
+                                No obvious signs of disease
+                            </option>
+
+                            <option>
+                                Good litter uniformity
+                            </option>
+
+                            <option>
+                                Successful weaning achieved
+                            </option>
+
+                            <option>
+                                Good feeding and management practices observed
+                            </option>
+
+                        </optgroup>
+
+
+                        <optgroup label="⚠️ Negative - Poor Weaning">
+
+                            <option>
+                                Low average weaning weight - poor growth
+                            </option>
+
+                            <option>
+                                High mortality - investigate the cause
+                            </option>
+
+                            <option>
+                                Poor feed intake observed
+                            </option>
+
+                            <option>
+                                Diarrhoea / scours observed
+                            </option>
+
+                            <option>
+                                Respiratory problems observed
+                            </option>
+
+                            <option>
+                                Weak piglets at weaning
+                            </option>
+
+                            <option>
+                                Uneven litter growth
+                            </option>
+
+                            <option>
+                                Poor body condition
+                            </option>
+
+                            <option>
+                                Suspected nutritional deficiency
+                            </option>
+
+                            <option>
+                                Poor hygiene conditions
+                            </option>
+
+                            <option>
+                                Disease suspected - monitor closely
+                            </option>
+
+                            <option>
+                                Stress during weaning
+                            </option>
+
+                            <option>
+                                Delayed growth observed
+                            </option>
+
+                        </optgroup>
+
+
+                        <optgroup label="🔍 Reasons for Poor Weaning">
+
+                            <option>
+                                Inadequate milk intake before weaning
+                            </option>
+
+                            <option>
+                                Poor creep feed intake
+                            </option>
+
+                            <option>
+                                Large litter competition
+                            </option>
+
+                            <option>
+                                Poor housing conditions
+                            </option>
+
+                            <option>
+                                Poor hygiene and sanitation
+                            </option>
+
+                            <option>
+                                Disease or infection
+                            </option>
+
+                            <option>
+                                Inadequate nutrition
+                            </option>
+
+                            <option>
+                                High pre-weaning mortality
+                            </option>
+
+                            <option>
+                                Poor maternal performance
+                            </option>
+
+                            <option>
+                                Environmental stress
+                            </option>
+
+                        </optgroup>
+
+
+                        <optgroup label="💡 Recommended Corrective Actions">
+
+                            <option>
+                                Improve feeding programme
+                            </option>
+
+                            <option>
+                                Increase monitoring of piglets
+                            </option>
+
+                            <option>
+                                Improve housing and hygiene
+                            </option>
+
+                            <option>
+                                Review sow nutrition and milk production
+                            </option>
+
+                            <option>
+                                Monitor piglet growth closely
+                            </option>
+
+                            <option>
+                                Veterinary assessment recommended
+                            </option>
+
+                            <option>
+                                Separate weak or affected piglets
+                            </option>
+
+                            <option>
+                                Investigate mortality causes
+                            </option>
+
+                            <option>
+                                Improve creep feeding programme
+                            </option>
+
+                            <option>
+                                Maintain clean and dry nursery pens
+                            </option>
+
+                        </optgroup>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- BUTTONS -->
+
+        <div class="buttons full-width">
+
+            <button
+                type="submit"
+                class="btn-primary"
+                data-permission="add"
+                data-module="Weaning Records"
+            >
+                💾 Save Record
+            </button>
+
+            <button
+                type="button"
+                class="btn-secondary"
+                onclick="clearForm()"
+            >
+                🧹 Clear
+            </button>
+
+            <button
+                type="button"
+                class="btn-report"
+                onclick="generateReport()"
+                data-permission="report"
+                data-module="Weaning Records"
+            >
+                📊 Report
+            </button>
+
+            <button
+                type="button"
+                class="btn-pdf"
+                onclick="downloadPDF()"
+                data-permission="report"
+                data-module="Weaning Records"
+            >
+                📄 Download PDF
+            </button>
+
+            <button
+                type="button"
+                class="btn-print"
+                onclick="printReport()"
+                data-permission="report"
+                data-module="Weaning Records"
+            >
+                🖨 Print
+            </button>
+
+            <button
+                type="button"
+                class="btn-back"
+                onclick="window.location.href='dashboard.html'"
+            >
+                ↩️ Back
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <hr>
+
+
+    <!-- =========================
+         REGISTERED RECORDS
+    ========================== -->
+
+    <section class="records-section">
+
+        <h2>Registered Weaning Records</h2>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Sow ID</th>
+                        <th>Farrow Date</th>
+                        <th>Weaning Date</th>
+                        <th>Total Born</th>
+                        <th>Male Weaned</th>
+                        <th>Female Weaned</th>
+                        <th>Total Weaned</th>
+                        <th>Average Weight</th>
+                        <th>Mortality</th>
+                        <th>Destination Pen</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="weaningTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
 
 </div>
 
-<!-- ===========================
-WEANING FORM
-=========================== -->
 
-<form id="weaningForm">
+<!-- =========================
+     PDF LIBRARIES
+========================== -->
 
-<div class="form-group">
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
-<label>Sow ID</label>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 
-<input
-type="text"
-id="sowID"
-placeholder="Enter Sow ID"
-required>
 
-<button
-type="button"
-onclick="loadFarrowingSow()">
-🔍 Search Sow ID
-</button>
+<!-- =========================
+     SUPABASE / SYSTEM SCRIPTS
+========================== -->
 
-</div>
-
-
-<div class="form-group">
-
-<label>Farrow Date</label>
-
-<input
-type="date"
-id="farrowDate"
-required>
-
-</div>
-
-
-<div class="form-group">
-
-<label>Weaning Date</label>
-
-<input
-type="date"
-id="weaningDate"
-readonly>
-
-</div>
-
-
-<div class="form-group">
-
-<label>Total Born</label>
-
-<input
-type="number"
-id="totalBorn"
-min="0">
-
-</div>
-
-
-<div class="form-group">
-
-<label>Male Weaned</label>
-
-<input
-type="number"
-id="maleWeaned"
-min="0"
-value="0">
-
-</div>
-
-
-<div class="form-group">
-
-<label>Female Weaned</label>
-
-<input
-type="number"
-id="femaleWeaned"
-min="0"
-value="0">
-
-</div>
-
-
-<div class="form-group">
-
-<label>Total Weaned</label>
-
-<input
-type="number"
-id="totalWeaned"
-readonly>
-
-</div>
-
-
-<div class="form-group">
-
-<label>Average Weight (Kg)</label>
-
-<input
-type="number"
-step="0.01"
-id="averageWeight">
-
-</div>
-
-
-<div class="form-group">
-
-<label>Mortality</label>
-
-<input
-type="number"
-id="mortality"
-min="0"
-value="0">
-
-</div>
-
-
-<div class="form-group">
-
-<label>Mortality Reason</label>
-
-<select id="mortalityReason">
-
-<option value="">Select</option>
-
-<option>Crushing by Sow</option>
-
-<option>Starvation</option>
-
-<option>Scours (Diarrhoea)</option>
-
-<option>Pneumonia</option>
-
-<option>Weak Piglet</option>
-
-<option>Congenital Defect</option>
-
-<option>Injury</option>
-
-<option>Unknown Cause</option>
-
-<option>Other</option>
-
-</select>
-
-</div>
-
-
-<div
-class="form-group"
-id="otherReasonGroup"
-style="display:none;">
-
-<label>Other Reason</label>
-
-<input
-type="text"
-id="otherReason">
-
-</div>
-
-
-<div class="form-group">
-
-<label>Destination Pen</label>
-
-<select id="destinationPen">
-
-<option value="">Select Pen</option>
-
-<option>Nursery Pen 1</option>
-
-<option>Nursery Pen 2</option>
-
-<option>Nursery Pen 3</option>
-
-<option>Grower Pen 1</option>
-
-<option>Grower Pen 2</option>
-
-<option>Isolation Pen</option>
-
-<option>Other</option>
-
-</select>
-
-</div>
-
-
-<div class="form-group">
-
-<label>Remarks</label>
-
-<textarea
-id="remarks"
-rows="4"></textarea>
-
-</div>
-
-<!-- ===========================
-BUTTONS
-=========================== -->
-
-<div class="buttons">
-
-<button type="submit">
-💾 Save Record
-</button>
-
-<button
-type="button"
-onclick="clearForm()">
-🧹 Clear
-</button>
-
-<button
-type="button"
-onclick="generateReport()">
-📊 Report
-</button>
-
-<button
-type="button"
-onclick="printReport()">
-🖨 Print
-</button>
-
-</div>
-
-</form>
-
-<hr>
-
-<!-- ===========================
-TABLE
-=========================== -->
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Sow ID</th>
-
-<th>Farrow Date</th>
-
-<th>Weaning Date</th>
-
-<th>Total Born</th>
-
-<th>Total Weaned</th>
-
-<th>Average Weight</th>
-
-<th>Destination Pen</th>
-
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-<tbody id="weaningTable">
-
-</tbody>
-
-</table>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase.js"></script>
 
 <script src="activity.js"></script>
+
 <script src="security.js"></script>
+
 <script src="weaning.js"></script>
 
 </body>
-
 </html>
