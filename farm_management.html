@@ -3,21 +3,24 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-<title>MUNKA PIGGERY - Farm Management</title>
+    <title>
+        MUNKA PIGGERY - Farm Management
+    </title>
 
-<link
-    rel="stylesheet"
-    href="farm_management.css">
+    <link
+        rel="stylesheet"
+        href="farm_management.css">
 
 </head>
 
 <body>
+
 
 <header class="super-admin-header">
 
@@ -31,6 +34,7 @@
     </p>
 
 </header>
+
 
 
 <main class="super-admin-container">
@@ -47,7 +51,9 @@
         </h2>
 
 
-        <!-- EXISTING FARM DROPDOWN -->
+        <!-- =================================================
+             EXISTING FARM
+             ================================================= -->
 
         <div class="form-group">
 
@@ -71,14 +77,18 @@
 
             <small class="form-help">
 
-                Select a farm to view or edit its details.
+                Select a registered farm to view,
+                edit, or assign its Owner/Admin.
 
             </small>
 
         </div>
 
 
-        <!-- NEW FARM NAME -->
+
+        <!-- =================================================
+             FARM NAME
+             ================================================= -->
 
         <div class="form-group">
 
@@ -91,37 +101,46 @@
             <input
                 type="text"
                 id="farmName"
-                placeholder="Enter new farm name">
+                placeholder="Enter farm name">
 
             <small class="form-help">
 
-                Enter a new name when registering a new farm.
+                Enter a new name when registering
+                a new farm.
 
             </small>
 
         </div>
 
 
-        <!-- FARM DETAILS -->
+
+        <!-- =================================================
+             FARM DETAILS
+             ================================================= -->
 
         <div class="farm-form-grid">
 
+
+            <!-- OWNER NAME -->
 
             <div class="form-group">
 
                 <label for="ownerName">
 
-                    Owner Name
+                    Farm Owner Name
 
                 </label>
 
                 <input
                     type="text"
                     id="ownerName"
-                    placeholder="Enter owner name">
+                    placeholder="Enter farm owner name">
 
             </div>
 
+
+
+            <!-- PHONE -->
 
             <div class="form-group">
 
@@ -139,11 +158,14 @@
             </div>
 
 
+
+            <!-- EMAIL -->
+
             <div class="form-group">
 
                 <label for="farmEmail">
 
-                    Email Address
+                    Farm Email Address
 
                 </label>
 
@@ -154,6 +176,9 @@
 
             </div>
 
+
+
+            <!-- LOCATION -->
 
             <div class="form-group">
 
@@ -171,6 +196,9 @@
             </div>
 
 
+
+            <!-- STATUS -->
+
             <div class="form-group">
 
                 <label for="farmStatus">
@@ -182,11 +210,15 @@
                 <select id="farmStatus">
 
                     <option value="Active">
+
                         Active
+
                     </option>
 
                     <option value="Inactive">
+
                         Inactive
+
                     </option>
 
                 </select>
@@ -196,7 +228,90 @@
         </div>
 
 
-        <!-- BUTTONS -->
+
+        <!-- =================================================
+             OWNER / ADMIN ASSIGNMENT
+             ================================================= -->
+
+        <div class="form-group">
+
+            <label for="farmOwnerUser">
+
+                Assign Registered Owner/Admin *
+
+            </label>
+
+
+            <select
+                id="farmOwnerUser">
+
+                <option value="">
+
+                    -- Select registered Owner/Admin --
+
+                </option>
+
+            </select>
+
+
+            <small class="form-help">
+
+                Select the registered Owner/Admin who
+                should have access to this farm.
+
+                The system will connect this user
+                to the farm using the user's farm ID.
+
+            </small>
+
+        </div>
+
+
+
+        <!-- =================================================
+             ASSIGNMENT INFORMATION
+             ================================================= -->
+
+        <div class="subscription-box">
+
+            <h3>
+                Farm Access
+            </h3>
+
+            <p>
+
+                <strong>
+                    Access relationship:
+                </strong>
+
+                Owner/Admin → Farm ID
+
+            </p>
+
+            <p>
+
+                The selected Owner/Admin will be
+                assigned to this farm. When the user
+                logs in, the system will identify
+                their farm through <strong>farm_id</strong>.
+
+            </p>
+
+            <p>
+
+                Farm access will also depend on the
+                farm being active and having a valid
+                subscription.
+
+            </p>
+
+        </div>
+
+
+
+        <!-- =================================================
+             BUTTONS
+             ================================================= -->
 
         <div class="form-buttons">
 
@@ -236,6 +351,7 @@
             Registered Farms
         </h2>
 
+
         <div id="farmList">
 
             <p>
@@ -271,6 +387,7 @@
 <footer class="super-admin-footer">
 
     MUNKA PIGGERY Management System
+
     <br>
 
     Super Admin Platform
@@ -279,11 +396,27 @@
 
 
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- =================================================
+     SUPABASE
+     ================================================= -->
 
-<script src="supabase.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
 
-<script src="farm_management.js"></script>
+<script
+    src="supabase.js">
+</script>
+
+
+<!-- =================================================
+     FARM MANAGEMENT
+     ================================================= -->
+
+<script
+    src="farm_management.js">
+</script>
+
 
 </body>
 

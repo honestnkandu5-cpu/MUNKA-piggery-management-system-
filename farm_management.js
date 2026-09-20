@@ -1,12 +1,12 @@
 // =====================================
 // MUNKA PIGGERY
 // SUPER ADMIN - FARM MANAGEMENT
-// FARM + SUBSCRIPTION MANAGEMENT
+// FARM + OWNER ASSIGNMENT + SUBSCRIPTION
 // =====================================
 
 let editingFarmID = null;
-
 let allFarms = [];
+let allOwners = [];
 
 
 // =====================================
@@ -22,26 +22,19 @@ async function checkSuperAdmin() {
 
     if (error || !session) {
 
-        window.location.href =
-            "login.html";
+        window.location.href = "login.html";
 
         return false;
     }
 
-
     const {
         data: user,
         error: userError
-    } =
-        await supabaseClient
-            .from("users")
-            .select("*")
-            .eq(
-                "auth_user_id",
-                session.user.id
-            )
-            .single();
-
+    } = await supabaseClient
+        .from("users")
+        .select("*")
+        .eq("auth_user_id", session.user.id)
+        .single();
 
     if (
         userError ||
@@ -52,12 +45,10 @@ async function checkSuperAdmin() {
 
         alert("Access denied.");
 
-        window.location.href =
-            "login.html";
+        window.location.href = "login.html";
 
         return false;
     }
-
 
     return true;
 }
@@ -70,31 +61,22 @@ async function checkSuperAdmin() {
 async function loadFarms() {
 
     const farmList =
-        document.getElementById(
-            "farmList"
-        );
+        document.getElementById("farmList");
 
     if (!farmList) return;
-
 
     farmList.innerHTML =
         "<p>Loading farms...</p>";
 
-
     const {
         data,
         error
-    } =
-        await supabaseClient
-            .from("farms")
-            .select("*")
-            .order(
-                "id",
-                {
-                    ascending: true
-                }
-            );
-
+    } = await supabaseClient
+        .from("farms")
+        .select("*")
+        .order("id", {
+            ascending: true
+        });
 
     if (error) {
 
@@ -109,17 +91,11 @@ async function loadFarms() {
         return;
     }
 
-
-    allFarms =
-        data || [];
-
+    allFarms = data || [];
 
     populateFarmDropdown();
 
-
-    if (
-        allFarms.length === 0
-    ) {
+    if (allFarms.length === 0) {
 
         farmList.innerHTML =
             "<p>No farms have been registered.</p>";
@@ -127,393 +103,480 @@ async function loadFarms() {
         return;
     }
 
+    farmList.innerHTML = "";
 
-    farmList.innerHTML =
-        "";
+    allFarms.forEach(farm => {
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "farm-card";
+
+        const farmStatus =
+            farm.status === "Active"
+                ? "active"
+                : "inactive";
+
+        const statusText =
+            farm.status || "N/A";
 
 
-    allFarms.forEach(
-        farm => {
+        // =================================
+        // SUBSCRIPTION
+        // =================================
 
-            const card =
-                document.createElement(
-                    "div"
+        let subscriptionText =
+            "No subscription date";
+
+        let subscriptionClass =
+            "subscription-warning";
+
+        let daysRemainingText =
+            "Not available";
+
+        let formattedStart =
+            "N/A";
+
+        let formattedEnd =
+            "N/A";
+
+        if (farm.subscription_end) {
+
+            const now = new Date();
+
+            const endDate =
+                new Date(
+                    farm.subscription_end
                 );
 
+            const startDate =
+                farm.subscription_start
+                    ? new Date(
+                        farm.subscription_start
+                    )
+                    : null;
 
-            card.className =
-                "farm-card";
+            const difference =
+                endDate.getTime() -
+                now.getTime();
 
+            const daysRemaining =
+                Math.ceil(
+                    difference /
+                    (
+                        1000 *
+                        60 *
+                        60 *
+                        24
+                    )
+                );
 
-            const farmStatus =
-                farm.status === "Active"
-                    ? "active"
-                    : "inactive";
+            if (daysRemaining > 0) {
 
+                subscriptionText =
+                    "Active subscription";
 
-            const statusText =
-                farm.status ||
-                "N/A";
+                subscriptionClass =
+                    "subscription-active";
 
-
-            // =================================
-            // SUBSCRIPTION
-            // =================================
-
-            let subscriptionText =
-                "No subscription date";
-
-            let subscriptionClass =
-                "subscription-warning";
-
-            let daysRemainingText =
-                "Not available";
-
-            let formattedStart =
-                "N/A";
-
-            let formattedEnd =
-                "N/A";
-
-
-            if (
-                farm.subscription_end
-            ) {
-
-                const now =
-                    new Date();
-
-
-                const endDate =
-                    new Date(
-                        farm.subscription_end
+                daysRemainingText =
+                    daysRemaining +
+                    (
+                        daysRemaining === 1
+                            ? " day remaining"
+                            : " days remaining"
                     );
 
+            } else {
 
-                const startDate =
-                    farm.subscription_start
-                        ? new Date(
-                            farm.subscription_start
-                        )
-                        : null;
+                subscriptionText =
+                    "Expired";
 
+                subscriptionClass =
+                    "subscription-expired";
 
-                const difference =
-                    endDate.getTime() -
-                    now.getTime();
+                daysRemainingText =
+                    "Subscription expired";
+            }
 
-
-                const daysRemaining =
-                    Math.ceil(
-                        difference /
-                        (
-                            1000 *
-                            60 *
-                            60 *
-                            24
-                        )
-                    );
-
-
-                if (
-                    daysRemaining > 0
-                ) {
-
-                    subscriptionText =
-                        "Active subscription";
-
-                    subscriptionClass =
-                        "subscription-active";
-
-                    daysRemainingText =
-                        daysRemaining +
-                        (
-                            daysRemaining === 1
-                                ? " day remaining"
-                                : " days remaining"
-                        );
-
-                }
-
-                else {
-
-                    subscriptionText =
-                        "Expired";
-
-                    subscriptionClass =
-                        "subscription-expired";
-
-                    daysRemainingText =
-                        "Subscription expired";
-
-                }
-
-
-                formattedStart =
-                    startDate
-                        ? startDate.toLocaleDateString(
-                            "en-ZM",
-                            {
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric"
-                            }
-                        )
-                        : "N/A";
-
-
-                formattedEnd =
-                    endDate.toLocaleDateString(
+            formattedStart =
+                startDate
+                    ? startDate.toLocaleDateString(
                         "en-ZM",
                         {
                             day: "2-digit",
                             month: "long",
                             year: "numeric"
                         }
-                    );
+                    )
+                    : "N/A";
 
-            }
+            formattedEnd =
+                endDate.toLocaleDateString(
+                    "en-ZM",
+                    {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric"
+                    }
+                );
+        }
 
 
-            // =================================
-            // CARD
-            // =================================
+        // =================================
+        // FIND ASSIGNED OWNER
+        // =================================
 
-            card.innerHTML = `
+        const assignedOwner =
+            allOwners.find(
+                owner =>
+                    Number(owner.farm_id) ===
+                    Number(farm.id)
+            );
 
-                <h2>
+
+        const assignedOwnerText =
+            assignedOwner
+                ? `${assignedOwner.full_name || assignedOwner.username} (${assignedOwner.username})`
+                : "No Owner/Admin assigned";
+
+
+        const ownerAssignmentClass =
+            assignedOwner
+                ? "owner-assigned"
+                : "owner-not-assigned";
+
+
+        // =================================
+        // FARM CARD
+        // =================================
+
+        card.innerHTML = `
+
+            <h2>
+
+                ${escapeHTML(
+                    farm.farm_name ||
+                    "Unnamed Farm"
+                )}
+
+            </h2>
+
+
+            <p>
+
+                <strong>Farm ID:</strong>
+                ${farm.id}
+
+            </p>
+
+
+            <p>
+
+                <strong>Farm Owner:</strong>
+                ${escapeHTML(
+                    farm.owner_name ||
+                    "N/A"
+                )}
+
+            </p>
+
+
+            <p>
+
+                <strong>Assigned Owner/Admin:</strong>
+
+                <span class="${ownerAssignmentClass}">
 
                     ${escapeHTML(
-                        farm.farm_name ||
-                        "Unnamed Farm"
+                        assignedOwnerText
                     )}
 
-                </h2>
+                </span>
+
+            </p>
 
 
-                <p>
-                    <strong>Farm ID:</strong>
-                    ${farm.id}
-                </p>
+            <p>
+
+                <strong>Phone:</strong>
+
+                ${escapeHTML(
+                    farm.phone ||
+                    "N/A"
+                )}
+
+            </p>
 
 
-                <p>
-                    <strong>Owner:</strong>
+            <p>
+
+                <strong>Email:</strong>
+
+                ${escapeHTML(
+                    farm.email ||
+                    "N/A"
+                )}
+
+            </p>
+
+
+            <p>
+
+                <strong>Location:</strong>
+
+                ${escapeHTML(
+                    farm.location ||
+                    "N/A"
+                )}
+
+            </p>
+
+
+            <p>
+
+                <strong>Farm Status:</strong>
+
+                <span class="farm-status ${farmStatus}">
+
                     ${escapeHTML(
-                        farm.owner_name ||
-                        "N/A"
+                        statusText
                     )}
-                </p>
+
+                </span>
+
+            </p>
 
 
-                <p>
-                    <strong>Phone:</strong>
-                    ${escapeHTML(
-                        farm.phone ||
-                        "N/A"
-                    )}
-                </p>
+            <div class="subscription-box">
 
-
-                <p>
-                    <strong>Email:</strong>
-                    ${escapeHTML(
-                        farm.email ||
-                        "N/A"
-                    )}
-                </p>
-
-
-                <p>
-                    <strong>Location:</strong>
-                    ${escapeHTML(
-                        farm.location ||
-                        "N/A"
-                    )}
-                </p>
+                <h3>
+                    Subscription
+                </h3>
 
 
                 <p>
 
-                    <strong>
-                        Farm Status:
-                    </strong>
+                    <strong>Status:</strong>
 
-                    <span class="farm-status ${farmStatus}">
+                    <span class="${subscriptionClass}">
 
-                        ${escapeHTML(
-                            statusText
-                        )}
+                        ${subscriptionText}
 
                     </span>
 
                 </p>
 
 
-                <div class="subscription-box">
+                <p>
 
-                    <h3>
-                        Subscription
-                    </h3>
+                    <strong>Start Date:</strong>
 
+                    ${formattedStart}
 
-                    <p>
-
-                        <strong>
-                            Status:
-                        </strong>
-
-                        <span class="${subscriptionClass}">
-
-                            ${subscriptionText}
-
-                        </span>
-
-                    </p>
+                </p>
 
 
-                    <p>
+                <p>
 
-                        <strong>
-                            Start Date:
-                        </strong>
+                    <strong>Expiry Date:</strong>
 
-                        ${formattedStart}
+                    ${formattedEnd}
 
-                    </p>
+                </p>
 
 
-                    <p>
+                <p>
 
-                        <strong>
-                            Expiry Date:
-                        </strong>
+                    <strong>Time Remaining:</strong>
 
-                        ${formattedEnd}
+                    ${daysRemainingText}
 
-                    </p>
+                </p>
 
-
-                    <p>
-
-                        <strong>
-                            Time Remaining:
-                        </strong>
-
-                        ${daysRemainingText}
-
-                    </p>
-
-                </div>
+            </div>
 
 
-                <div class="farm-actions">
+            <div class="farm-actions">
+
+                <button
+                    class="edit-btn"
+                    onclick="editFarm(${farm.id})">
+
+                    Edit
+
+                </button>
 
 
-                    <button
-                        class="edit-btn"
-                        onclick="editFarm(${farm.id})">
+                <button
+                    class="status-btn"
+                    onclick="toggleFarmStatus(
+                        ${farm.id},
+                        '${escapeJS(farm.status)}'
+                    )">
 
-                        Edit
+                    ${
+                        farm.status === "Active"
+                            ? "Deactivate"
+                            : "Activate"
+                    }
 
-                    </button>
-
-
-                    <button
-                        class="status-btn"
-                        onclick="toggleFarmStatus(
-                            ${farm.id},
-                            '${escapeJS(farm.status)}'
-                        )">
-
-                        ${
-                            farm.status === "Active"
-                                ? "Deactivate"
-                                : "Activate"
-                        }
-
-                    </button>
+                </button>
 
 
-                    <button
-                        class="renew-btn"
-                        onclick="renewSubscription(${farm.id})">
+                <button
+                    class="renew-btn"
+                    onclick="renewSubscription(${farm.id})">
 
-                        ${
-                            farm.status === "Active"
-                                ? "Renew Subscription"
-                                : "Start Subscription"
-                        }
+                    ${
+                        farm.status === "Active"
+                            ? "Renew Subscription"
+                            : "Start Subscription"
+                    }
 
-                    </button>
+                </button>
 
+            </div>
 
-                </div>
+        `;
 
-            `;
+        farmList.appendChild(card);
 
-
-            farmList.appendChild(
-                card
-            );
-
-        }
-    );
-
+    });
 }
 
 
 // =====================================
-// POPULATE FARM DROPDOWN
+// LOAD OWNER / ADMIN USERS
 // =====================================
 
-function populateFarmDropdown() {
+async function loadOwners() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("users")
+        .select(
+            `
+            id,
+            userID,
+            full_name,
+            username,
+            email,
+            role,
+            status,
+            farm_id
+            `
+        )
+        .in(
+            "role",
+            [
+                "Owner/Admin"
+            ]
+        )
+        .order(
+            "full_name",
+            {
+                ascending: true
+            }
+        );
+
+    if (error) {
+
+        console.error(
+            "LOAD OWNER USERS ERROR:",
+            error
+        );
+
+        alert(
+            "Unable to load registered Owner/Admin users.\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
+    allOwners = data || [];
+
+    populateOwnerDropdown();
+}
+
+
+// =====================================
+// POPULATE OWNER DROPDOWN
+// =====================================
+
+function populateOwnerDropdown() {
 
     const dropdown =
         document.getElementById(
-            "existingFarm"
+            "farmOwnerUser"
         );
 
-
     if (!dropdown) return;
-
 
     dropdown.innerHTML = `
 
         <option value="">
 
-            -- Select a registered farm --
+            -- Select registered Owner/Admin --
 
         </option>
 
     `;
 
 
-    allFarms.forEach(
-        farm => {
+    allOwners.forEach(owner => {
 
-            const option =
-                document.createElement(
-                    "option"
+        const option =
+            document.createElement("option");
+
+        option.value =
+            owner.id;
+
+        let ownerName =
+            owner.full_name ||
+            owner.username ||
+            "Unnamed User";
+
+        let farmText =
+            "No farm assigned";
+
+        if (owner.farm_id) {
+
+            const assignedFarm =
+                allFarms.find(
+                    farm =>
+                        Number(farm.id) ===
+                        Number(owner.farm_id)
                 );
 
+            if (assignedFarm) {
 
-            option.value =
-                farm.id;
+                farmText =
+                    "Assigned to: " +
+                    assignedFarm.farm_name;
 
+            } else {
 
-            option.textContent =
-                farm.farm_name ||
-                "Unnamed Farm";
-
-
-            dropdown.appendChild(
-                option
-            );
-
+                farmText =
+                    "Assigned to Farm ID " +
+                    owner.farm_id;
+            }
         }
-    );
 
+        option.textContent =
+            ownerName +
+            " | @" +
+            owner.username +
+            " | " +
+            farmText;
+
+        dropdown.appendChild(option);
+
+    });
 }
 
 
@@ -528,12 +591,8 @@ function selectExistingFarm() {
             "existingFarm"
         );
 
-
     const selectedID =
-        Number(
-            dropdown.value
-        );
-
+        Number(dropdown.value);
 
     if (!selectedID) {
 
@@ -542,7 +601,6 @@ function selectExistingFarm() {
         return;
     }
 
-
     const farm =
         allFarms.find(
             item =>
@@ -550,50 +608,69 @@ function selectExistingFarm() {
                 selectedID
         );
 
-
     if (!farm) return;
 
 
     document.getElementById(
         "farmName"
     ).value =
-        farm.farm_name ||
-        "";
+        farm.farm_name || "";
 
 
     document.getElementById(
         "ownerName"
     ).value =
-        farm.owner_name ||
-        "";
+        farm.owner_name || "";
 
 
     document.getElementById(
         "farmPhone"
     ).value =
-        farm.phone ||
-        "";
+        farm.phone || "";
 
 
     document.getElementById(
         "farmEmail"
     ).value =
-        farm.email ||
-        "";
+        farm.email || "";
 
 
     document.getElementById(
         "farmLocation"
     ).value =
-        farm.location ||
-        "";
+        farm.location || "";
 
 
     document.getElementById(
         "farmStatus"
     ).value =
-        farm.status ||
-        "Active";
+        farm.status || "Active";
+
+
+    // =================================
+    // SELECT ASSIGNED OWNER
+    // =================================
+
+    const assignedOwner =
+        allOwners.find(
+            owner =>
+                Number(owner.farm_id) ===
+                Number(farm.id)
+        );
+
+    const ownerDropdown =
+        document.getElementById(
+            "farmOwnerUser"
+        );
+
+    if (ownerDropdown) {
+
+        ownerDropdown.value =
+            assignedOwner
+                ? assignedOwner.id
+                : "";
+
+    }
 
 
     editingFarmID =
@@ -610,7 +687,6 @@ function selectExistingFarm() {
         top: 0,
         behavior: "smooth"
     });
-
 }
 
 
@@ -626,13 +702,11 @@ async function addFarm() {
             .value
             .trim();
 
-
     const ownerName =
         document
             .getElementById("ownerName")
             .value
             .trim();
-
 
     const phone =
         document
@@ -640,20 +714,17 @@ async function addFarm() {
             .value
             .trim();
 
-
     const email =
         document
             .getElementById("farmEmail")
             .value
             .trim();
 
-
     const location =
         document
             .getElementById("farmLocation")
             .value
             .trim();
-
 
     const status =
         document
@@ -678,15 +749,14 @@ async function addFarm() {
     const {
         data: existingFarm,
         error: duplicateError
-    } =
-        await supabaseClient
-            .from("farms")
-            .select("id, farm_name")
-            .ilike(
-                "farm_name",
-                farmName
-            )
-            .limit(1);
+    } = await supabaseClient
+        .from("farms")
+        .select("id, farm_name")
+        .ilike(
+            "farm_name",
+            farmName
+        )
+        .limit(1);
 
 
     if (duplicateError) {
@@ -695,7 +765,6 @@ async function addFarm() {
             "DUPLICATE CHECK ERROR:",
             duplicateError
         );
-
     }
 
 
@@ -719,58 +788,54 @@ async function addFarm() {
     const subscriptionStart =
         new Date();
 
-
     const subscriptionEnd =
         new Date(
             subscriptionStart
         );
 
-
     subscriptionEnd.setDate(
-        subscriptionEnd.getDate() +
-        30
+        subscriptionEnd.getDate() + 30
     );
 
 
     const {
         data: newFarm,
         error
-    } =
-        await supabaseClient
-            .from("farms")
-            .insert({
+    } = await supabaseClient
+        .from("farms")
+        .insert({
 
-                farm_name:
-                    farmName,
+            farm_name:
+                farmName,
 
-                owner_name:
-                    ownerName ||
-                    null,
+            owner_name:
+                ownerName ||
+                null,
 
-                phone:
-                    phone ||
-                    null,
+            phone:
+                phone ||
+                null,
 
-                email:
-                    email ||
-                    null,
+            email:
+                email ||
+                null,
 
-                location:
-                    location ||
-                    null,
+            location:
+                location ||
+                null,
 
-                status:
-                    status,
+            status:
+                status,
 
-                subscription_start:
-                    subscriptionStart.toISOString(),
+            subscription_start:
+                subscriptionStart.toISOString(),
 
-                subscription_end:
-                    subscriptionEnd.toISOString()
+            subscription_end:
+                subscriptionEnd.toISOString()
 
-            })
-            .select()
-            .single();
+        })
+        .select()
+        .single();
 
 
     if (error) {
@@ -789,16 +854,192 @@ async function addFarm() {
     }
 
 
-    alert(
-        "Farm added successfully.\n\n" +
-        "A 30-day subscription has been started."
-    );
+    // =================================
+    // ASSIGN OWNER IF SELECTED
+    // =================================
+
+    const ownerDropdown =
+        document.getElementById(
+            "farmOwnerUser"
+        );
+
+    const ownerID =
+        ownerDropdown
+            ? Number(ownerDropdown.value)
+            : 0;
+
+
+    if (ownerID) {
+
+        const assignmentResult =
+            await assignOwnerToFarm(
+                ownerID,
+                newFarm.id
+            );
+
+        if (!assignmentResult) {
+
+            alert(
+                "Farm was created successfully, " +
+                "but the Owner/Admin could not be assigned.\n\n" +
+                "Please select the farm and assign the Owner/Admin again."
+            );
+
+        } else {
+
+            alert(
+                "Farm added successfully.\n\n" +
+                "The selected Owner/Admin has been assigned to this farm.\n\n" +
+                "A 30-day subscription has been started."
+            );
+        }
+
+    } else {
+
+        alert(
+            "Farm added successfully.\n\n" +
+            "A 30-day subscription has been started.\n\n" +
+            "Important: No Owner/Admin has been assigned yet."
+        );
+    }
 
 
     clearFarmForm();
 
-    await loadFarms();
+    await loadOwners();
 
+    await loadFarms();
+}
+
+
+// =====================================
+// ASSIGN OWNER TO FARM
+// =====================================
+
+async function assignOwnerToFarm(
+    ownerID,
+    farmID
+) {
+
+    if (!ownerID || !farmID) {
+
+        return false;
+    }
+
+
+    const owner =
+        allOwners.find(
+            item =>
+                Number(item.id) ===
+                Number(ownerID)
+        );
+
+
+    const farm =
+        allFarms.find(
+            item =>
+                Number(item.id) ===
+                Number(farmID)
+        );
+
+
+    if (!owner || !farm) {
+
+        console.error(
+            "OWNER OR FARM NOT FOUND"
+        );
+
+        return false;
+    }
+
+
+    // =================================
+    // PREVENT SAME OWNER ON DIFFERENT
+    // FARM WITHOUT CONFIRMATION
+    // =================================
+
+    if (
+        owner.farm_id &&
+        Number(owner.farm_id) !==
+        Number(farmID)
+    ) {
+
+        const oldFarm =
+            allFarms.find(
+                item =>
+                    Number(item.id) ===
+                    Number(owner.farm_id)
+            );
+
+
+        const oldFarmName =
+            oldFarm
+                ? oldFarm.farm_name
+                : "another farm";
+
+
+        const confirmed =
+            confirm(
+
+                owner.full_name +
+                " (" +
+                owner.username +
+                ") is currently assigned to " +
+                oldFarmName +
+                ".\n\n" +
+
+                "Do you want to move this Owner/Admin " +
+                "to " +
+                farm.farm_name +
+                "?"
+
+            );
+
+
+        if (!confirmed) {
+
+            return false;
+        }
+    }
+
+
+    const {
+        error
+    } = await supabaseClient
+        .from("users")
+        .update({
+
+            farm_id:
+                Number(farmID)
+
+        })
+        .eq(
+            "id",
+            Number(ownerID)
+        )
+        .eq(
+            "role",
+            "Owner/Admin"
+        );
+
+
+    if (error) {
+
+        console.error(
+            "ASSIGN OWNER ERROR:",
+            error
+        );
+
+        alert(
+            "Unable to assign Owner/Admin.\n\n" +
+            error.message
+        );
+
+        return false;
+    }
+
+
+    return true;
 }
 
 
@@ -814,7 +1055,6 @@ async function editFarm(id) {
                 Number(item.id) ===
                 Number(id)
         );
-
 
     if (!farm) {
 
@@ -835,43 +1075,65 @@ async function editFarm(id) {
     document.getElementById(
         "farmName"
     ).value =
-        farm.farm_name ||
-        "";
+        farm.farm_name || "";
 
 
     document.getElementById(
         "ownerName"
     ).value =
-        farm.owner_name ||
-        "";
+        farm.owner_name || "";
 
 
     document.getElementById(
         "farmPhone"
     ).value =
-        farm.phone ||
-        "";
+        farm.phone || "";
 
 
     document.getElementById(
         "farmEmail"
     ).value =
-        farm.email ||
-        "";
+        farm.email || "";
 
 
     document.getElementById(
         "farmLocation"
     ).value =
-        farm.location ||
-        "";
+        farm.location || "";
 
 
     document.getElementById(
         "farmStatus"
     ).value =
-        farm.status ||
-        "Active";
+        farm.status || "Active";
+
+
+    // =================================
+    // SELECT ASSIGNED OWNER
+    // =================================
+
+    const assignedOwner =
+        allOwners.find(
+            owner =>
+                Number(owner.farm_id) ===
+                Number(farm.id)
+        );
+
+
+    const ownerDropdown =
+        document.getElementById(
+            "farmOwnerUser"
+        );
+
+
+    if (ownerDropdown) {
+
+        ownerDropdown.value =
+            assignedOwner
+                ? assignedOwner.id
+                : "";
+
+    }
 
 
     editingFarmID =
@@ -888,7 +1150,6 @@ async function editFarm(id) {
         top: 0,
         behavior: "smooth"
     });
-
 }
 
 
@@ -904,13 +1165,11 @@ async function updateFarm() {
             .value
             .trim();
 
-
     const ownerName =
         document
             .getElementById("ownerName")
             .value
             .trim();
-
 
     const phone =
         document
@@ -918,20 +1177,17 @@ async function updateFarm() {
             .value
             .trim();
 
-
     const email =
         document
             .getElementById("farmEmail")
             .value
             .trim();
 
-
     const location =
         document
             .getElementById("farmLocation")
             .value
             .trim();
-
 
     const status =
         document
@@ -951,38 +1207,37 @@ async function updateFarm() {
 
     const {
         error
-    } =
-        await supabaseClient
-            .from("farms")
-            .update({
+    } = await supabaseClient
+        .from("farms")
+        .update({
 
-                farm_name:
-                    farmName,
+            farm_name:
+                farmName,
 
-                owner_name:
-                    ownerName ||
-                    null,
+            owner_name:
+                ownerName ||
+                null,
 
-                phone:
-                    phone ||
-                    null,
+            phone:
+                phone ||
+                null,
 
-                email:
-                    email ||
-                    null,
+            email:
+                email ||
+                null,
 
-                location:
-                    location ||
-                    null,
+            location:
+                location ||
+                null,
 
-                status:
-                    status
+            status:
+                status
 
-            })
-            .eq(
-                "id",
-                editingFarmID
-            );
+        })
+        .eq(
+            "id",
+            editingFarmID
+        );
 
 
     if (error) {
@@ -1001,6 +1256,38 @@ async function updateFarm() {
     }
 
 
+    // =================================
+    // UPDATE OWNER ASSIGNMENT
+    // =================================
+
+    const ownerDropdown =
+        document.getElementById(
+            "farmOwnerUser"
+        );
+
+    const selectedOwnerID =
+        ownerDropdown
+            ? Number(ownerDropdown.value)
+            : 0;
+
+
+    if (selectedOwnerID) {
+
+        const assigned =
+            await assignOwnerToFarm(
+                selectedOwnerID,
+                editingFarmID
+            );
+
+
+        if (!assigned) {
+
+            return;
+        }
+
+    }
+
+
     alert(
         "Farm updated successfully."
     );
@@ -1008,8 +1295,9 @@ async function updateFarm() {
 
     clearFarmForm();
 
-    await loadFarms();
+    await loadOwners();
 
+    await loadFarms();
 }
 
 
@@ -1041,19 +1329,18 @@ async function toggleFarmStatus(
 
     const {
         error
-    } =
-        await supabaseClient
-            .from("farms")
-            .update({
+    } = await supabaseClient
+        .from("farms")
+        .update({
 
-                status:
-                    newStatus
+            status:
+                newStatus
 
-            })
-            .eq(
-                "id",
-                id
-            );
+        })
+        .eq(
+            "id",
+            id
+        );
 
 
     if (error) {
@@ -1073,7 +1360,6 @@ async function toggleFarmStatus(
 
 
     await loadFarms();
-
 }
 
 
@@ -1086,17 +1372,16 @@ async function renewSubscription(id) {
     const {
         data: farm,
         error: farmError
-    } =
-        await supabaseClient
-            .from("farms")
-            .select(
-                "id, farm_name, status, subscription_start, subscription_end"
-            )
-            .eq(
-                "id",
-                id
-            )
-            .single();
+    } = await supabaseClient
+        .from("farms")
+        .select(
+            "id, farm_name, status, subscription_start, subscription_end"
+        )
+        .eq(
+            "id",
+            id
+        )
+        .single();
 
 
     if (
@@ -1119,6 +1404,7 @@ async function renewSubscription(id) {
 
     const choice =
         prompt(
+
             "Renew subscription for " +
             farm.farm_name +
             ".\n\n" +
@@ -1129,12 +1415,11 @@ async function renewSubscription(id) {
             "90 = 3 months\n" +
             "180 = 6 months\n" +
             "365 = 1 year"
+
         );
 
 
-    if (
-        choice === null
-    ) return;
+    if (choice === null) return;
 
 
     const days =
@@ -1163,10 +1448,8 @@ async function renewSubscription(id) {
     const now =
         new Date();
 
-
     let newStart =
         now;
-
 
     let newEnd;
 
@@ -1183,31 +1466,23 @@ async function renewSubscription(id) {
                 farm.subscription_end
             );
 
-
         newEnd.setDate(
             newEnd.getDate() +
             days
         );
 
-    }
-
-    else {
+    } else {
 
         newStart =
             now;
 
-
         newEnd =
-            new Date(
-                now
-            );
-
+            new Date(now);
 
         newEnd.setDate(
             newEnd.getDate() +
             days
         );
-
     }
 
 
@@ -1248,25 +1523,24 @@ async function renewSubscription(id) {
 
     const {
         error
-    } =
-        await supabaseClient
-            .from("farms")
-            .update({
+    } = await supabaseClient
+        .from("farms")
+        .update({
 
-                subscription_start:
-                    newStart.toISOString(),
+            subscription_start:
+                newStart.toISOString(),
 
-                subscription_end:
-                    newEnd.toISOString(),
+            subscription_end:
+                newEnd.toISOString(),
 
-                status:
-                    "Active"
+            status:
+                "Active"
 
-            })
-            .eq(
-                "id",
-                id
-            );
+        })
+        .eq(
+            "id",
+            id
+        );
 
 
     if (error) {
@@ -1291,7 +1565,6 @@ async function renewSubscription(id) {
 
 
     await loadFarms();
-
 }
 
 
@@ -1312,23 +1585,18 @@ function clearFarmForm() {
     ];
 
 
-    fields.forEach(
-        id => {
+    fields.forEach(id => {
 
-            const element =
-                document.getElementById(
-                    id
-                );
+        const element =
+            document.getElementById(id);
 
-            if (element) {
+        if (element) {
 
-                element.value =
-                    "";
-
-            }
+            element.value = "";
 
         }
-    );
+
+    });
 
 
     document.getElementById(
@@ -1343,6 +1611,20 @@ function clearFarmForm() {
         "";
 
 
+    const ownerDropdown =
+        document.getElementById(
+            "farmOwnerUser"
+        );
+
+
+    if (ownerDropdown) {
+
+        ownerDropdown.value =
+            "";
+
+    }
+
+
     editingFarmID =
         null;
 
@@ -1351,7 +1633,6 @@ function clearFarmForm() {
         "saveFarmButton"
     ).textContent =
         "Add Farm";
-
 }
 
 
@@ -1367,14 +1648,11 @@ async function saveFarm() {
 
         await addFarm();
 
-    }
-
-    else {
+    } else {
 
         await updateFarm();
 
     }
-
 }
 
 
@@ -1387,32 +1665,26 @@ function escapeHTML(value) {
     return String(
         value ?? ""
     )
-
         .replace(
             /&/g,
             "&amp;"
         )
-
         .replace(
             /</g,
             "&lt;"
         )
-
         .replace(
             />/g,
             "&gt;"
         )
-
         .replace(
             /"/g,
             "&quot;"
         )
-
         .replace(
             /'/g,
             "&#039;"
         );
-
 }
 
 
@@ -1445,7 +1717,6 @@ function escapeJS(value) {
             /\r/g,
             "\\r"
         );
-
 }
 
 
@@ -1460,10 +1731,19 @@ document.addEventListener(
         const allowed =
             await checkSuperAdmin();
 
-
         if (!allowed) return;
 
 
+        // Load farms first
+        await loadFarms();
+
+
+        // Then load Owner/Admin users
+        await loadOwners();
+
+
+        // Refresh farm cards after
+        // Owner/Admin information is loaded
         await loadFarms();
 
     }
