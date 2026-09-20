@@ -1,26 +1,31 @@
+// ==========================================================
+// MUNKA PIGGERY
+// SUPER ADMIN CONTROL CENTRE
+// ==========================================================
+
 let superAdminPermissions = [];
+
 
 // ==========================================================
 // GET SUPER ADMIN PERMISSIONS
 // ==========================================================
 
-async function loadSuperAdminPermissions(){
+async function loadSuperAdminPermissions() {
 
     const {
         data,
         error
-    } =
-        await supabaseClient
-            .from("platform_permissions")
-            .select(
-                "id, role, module, can_view, can_add, can_edit, can_delete, can_report"
-            )
-            .eq(
-                "role",
-                "Super Admin"
-            );
+    } = await supabaseClient
+        .from("platform_permissions")
+        .select(
+            "id, role, module, can_view, can_add, can_edit, can_delete, can_report"
+        )
+        .eq(
+            "role",
+            "Super Admin"
+        );
 
-    if(error){
+    if (error) {
 
         console.error(
             "SUPER ADMIN PERMISSIONS ERROR:",
@@ -28,12 +33,15 @@ async function loadSuperAdminPermissions(){
         );
 
         throw error;
-
     }
 
     superAdminPermissions =
         data || [];
 
+    console.log(
+        "SUPER ADMIN PERMISSIONS:",
+        superAdminPermissions
+    );
 }
 
 
@@ -41,25 +49,35 @@ async function loadSuperAdminPermissions(){
 // FIND PLATFORM PERMISSION
 // ==========================================================
 
-function getPlatformPermission(
-    moduleName
-){
+function getPlatformPermission(moduleName) {
+
+    if (!moduleName) {
+        return null;
+    }
 
     return superAdminPermissions.find(
-        permission =>
+        permission => {
 
-            String(permission.module)
+            const permissionModule =
+                String(
+                    permission.module || ""
+                )
                 .trim()
-                .toLowerCase()
+                .toLowerCase();
 
-            ===
-
-            String(moduleName)
+            const requestedModule =
+                String(
+                    moduleName
+                )
                 .trim()
-                .toLowerCase()
+                .toLowerCase();
 
+            return (
+                permissionModule ===
+                requestedModule
+            );
+        }
     ) || null;
-
 }
 
 
@@ -67,20 +85,29 @@ function getPlatformPermission(
 // CHECK VIEW PERMISSION
 // ==========================================================
 
-function canViewPlatform(
-    moduleName
-){
+function canViewPlatform(moduleName) {
 
     const permission =
         getPlatformPermission(
             moduleName
         );
 
-    return !!(
-        permission &&
-        permission.can_view === true
-    );
+    if (!permission) {
 
+        console.warn(
+            "No platform permission found for:",
+            moduleName
+        );
+
+        return false;
+    }
+
+    return (
+        permission.can_view === true ||
+        permission.can_view === "true" ||
+        permission.can_view === 1 ||
+        permission.can_view === "1"
+    );
 }
 
 
@@ -88,13 +115,17 @@ function canViewPlatform(
 // APPLY SUPER ADMIN PERMISSIONS
 // ==========================================================
 
-function applySuperAdminPermissions(){
+function applySuperAdminPermissions() {
 
     const buttons =
         document.querySelectorAll(
             "#superAdminButtons button[data-platform-module]"
         );
 
+    console.log(
+        "Platform buttons found:",
+        buttons.length
+    );
 
     buttons.forEach(
         button => {
@@ -104,46 +135,39 @@ function applySuperAdminPermissions(){
                     "data-platform-module"
                 );
 
-
             const permissionType =
                 button.getAttribute(
                     "data-platform-permission-type"
                 );
 
-
             let allowed = false;
 
-
-            if(
-                permissionType ===
-                "can_view"
-            ){
+            if (
+                !permissionType ||
+                permissionType === "can_view"
+            ) {
 
                 allowed =
                     canViewPlatform(
                         module
                     );
-
             }
 
-
-            if(allowed){
+            if (allowed) {
 
                 button.style.display =
-                    "block";
+                    "";
 
-            }
+                button.disabled =
+                    false;
 
-            else{
+            } else {
 
                 button.style.display =
                     "none";
-
             }
-
         }
     );
-
 }
 
 
@@ -151,51 +175,44 @@ function applySuperAdminPermissions(){
 // DISPLAY SUPER ADMIN
 // ==========================================================
 
-function displaySuperAdmin(){
+function displaySuperAdmin() {
 
     const storedUser =
         localStorage.getItem(
             "loggedInUser"
         );
 
-
-    if(!storedUser){
+    if (!storedUser) {
 
         window.location.href =
             "login.html";
 
         return;
-
     }
 
-
-    try{
+    try {
 
         const user =
             JSON.parse(
                 storedUser
             );
 
-
         const welcomeUser =
             document.getElementById(
                 "welcomeUser"
             );
-
 
         const userDetails =
             document.getElementById(
                 "userDetails"
             );
 
-
         const lastLogin =
             document.getElementById(
                 "lastLogin"
             );
 
-
-        if(welcomeUser){
+        if (welcomeUser) {
 
             welcomeUser.textContent =
                 "Welcome " +
@@ -204,11 +221,9 @@ function displaySuperAdmin(){
                     user.username ||
                     "Super Admin"
                 );
-
         }
 
-
-        if(userDetails){
+        if (userDetails) {
 
             userDetails.innerHTML =
                 "Username: " +
@@ -221,50 +236,54 @@ function displaySuperAdmin(){
                     user.role ||
                     "Super Admin"
                 );
-
         }
 
-
-        if(lastLogin){
+        if (lastLogin) {
 
             const loginValue =
                 user.lastLogin ||
                 user.last_login ||
                 user.last_login_at;
 
-
-            if(loginValue){
+            if (loginValue) {
 
                 lastLogin.textContent =
                     "Last Login: " +
                     new Date(
                         loginValue
                     ).toLocaleString(
-                        "en-ZM"
+                        "en-ZM",
+                        {
+                            timeZone:
+                                "Africa/Lusaka"
+                        }
                     );
 
-            }
-
-            else{
+            } else {
 
                 lastLogin.textContent =
                     "Last Login: Not available";
-
             }
-
         }
 
-    }
-
-    catch(error){
+    } catch (error) {
 
         console.error(
             "SUPER ADMIN DISPLAY ERROR:",
             error
         );
-
     }
+}
 
+
+// ==========================================================
+// CHANGE PASSWORD
+// ==========================================================
+
+function changePassword() {
+
+    window.location.href =
+        "change_password.html";
 }
 
 
@@ -272,51 +291,52 @@ function displaySuperAdmin(){
 // NAVIGATION
 // ==========================================================
 
-function openSuperAdminDashboard(){
+function openSuperAdminDashboard() {
 
     window.location.href =
         "platform_dashboard.html";
-
 }
 
 
-function openFarmManagement(){
+function openFarmManagement() {
 
     window.location.href =
         "farm_management.html";
-
 }
 
 
-function openPlatformUsers(){
+function openPlatformUsers() {
 
     window.location.href =
         "platform_users.html";
-
 }
 
 
-function openPlatformActivity(){
+function openPlatformActivity() {
 
     window.location.href =
         "platform_activity.html";
-
 }
 
 
-function openPlatformReports(){
+function openPlatformReports() {
 
     window.location.href =
         "platform_reports.html";
-
 }
 
 
-function openPlatformPermissions(){
+function openPlatformPermissions() {
 
     window.location.href =
         "platform_permissions.html";
+}
 
+
+function openSubscriptionPayment() {
+
+    window.location.href =
+        "records_payment.html";
 }
 
 
@@ -324,41 +344,34 @@ function openPlatformPermissions(){
 // LOGOUT
 // ==========================================================
 
-async function logout(){
+async function logout() {
 
-    try{
+    try {
 
-        if(
+        if (
             typeof supabaseClient !==
             "undefined"
-        ){
+        ) {
 
             await supabaseClient
                 .auth
                 .signOut();
-
         }
 
-    }
-
-    catch(error){
+    } catch (error) {
 
         console.error(
             "LOGOUT ERROR:",
             error
         );
-
     }
-
 
     localStorage.removeItem(
         "loggedInUser"
     );
 
-
     window.location.href =
         "login.html";
-
 }
 
 
@@ -368,9 +381,9 @@ async function logout(){
 
 document.addEventListener(
     "DOMContentLoaded",
-    async function(){
+    async function() {
 
-        try{
+        try {
 
             displaySuperAdmin();
 
@@ -378,21 +391,36 @@ document.addEventListener(
 
             applySuperAdminPermissions();
 
-        }
-
-        catch(error){
+        } catch (error) {
 
             console.error(
                 "SUPER ADMIN INITIALIZATION ERROR:",
                 error
             );
 
-            alert(
-                "Unable to load Super Admin permissions."
+            /*
+             * Do NOT automatically hide every
+             * module when permissions fail.
+             */
+
+            const buttons =
+                document.querySelectorAll(
+                    "#superAdminButtons button[data-platform-module]"
+                );
+
+            buttons.forEach(
+                button => {
+
+                    button.style.display =
+                        "";
+
+                }
             );
 
+            console.warn(
+                "Platform permissions could not be loaded. " +
+                "Modules have been left visible for troubleshooting."
+            );
         }
-
     }
 );
-

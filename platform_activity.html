@@ -3,35 +3,43 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-<title>
-    MUNKA PIGGERY - Platform Activity
-</title>
+    <title>MUNKA PIGGERY - Platform Activity</title>
 
-<link
-    rel="stylesheet"
-    href="platform_activity.css">
+    <link rel="stylesheet"
+          href="platform_activity.css">
 
 </head>
 
+
 <body>
+
+
+<!-- =====================================================
+     TOP NAVIGATION
+====================================================== -->
 
 <header class="platform-header">
 
-    <div>
+    <div class="brand-area">
 
-        <h1>
-            MUNKA PIGGERY
-        </h1>
+        <div class="brand-logo">
+            M
+        </div>
 
-        <p>
-            Super Admin - Platform Activity Logs
-        </p>
+        <div>
+
+            <h1>MUNKA PIGGERY</h1>
+
+            <span>
+                Platform Administration
+            </span>
+
+        </div>
 
     </div>
 
@@ -39,8 +47,8 @@
     <div class="header-actions">
 
         <button
-            type="button"
-            onclick="window.location.href='platform_dashboard.html'">
+            class="dashboard-btn"
+            onclick="goToDashboard()">
 
             ← Dashboard
 
@@ -48,7 +56,7 @@
 
 
         <button
-            type="button"
+            class="logout-btn"
             onclick="logout()">
 
             Logout
@@ -60,70 +68,427 @@
 </header>
 
 
+
+<!-- =====================================================
+     MAIN CONTENT
+====================================================== -->
+
 <main class="platform-container">
 
-    <section class="welcome-section">
 
-        <h2>
-            Platform Activity Logs
-        </h2>
+    <!-- =================================================
+         PAGE INTRO
+    ================================================== -->
 
-        <p>
-            View recent activities performed across the MUNKA PIGGERY platform.
-        </p>
+    <section class="page-intro">
+
+        <div>
+
+            <div class="eyebrow">
+                SUPER ADMIN
+            </div>
+
+            <h2>
+                Platform Activity Logs
+            </h2>
+
+            <p>
+                Monitor activities performed across all
+                registered farms and platform users.
+            </p>
+
+        </div>
+
+
+        <div class="security-badge">
+
+            <span class="security-dot"></span>
+
+            Super Admin Access
+
+        </div>
 
     </section>
 
 
-    <section class="dashboard-section">
 
-        <div class="section-heading">
+    <!-- =================================================
+         ADMIN INFORMATION
+    ================================================== -->
 
-            <h2>
-                Activity Logs
-            </h2>
+    <section class="admin-info-card">
+
+        <div class="admin-avatar">
+            🛡️
+        </div>
+
+        <div>
+
+            <strong id="welcomeUser">
+                Welcome, Super Admin
+            </strong>
+
+            <p id="userDetails">
+                Loading administrator details...
+            </p>
+
+            <small id="lastLogin">
+                Last login: Loading...
+            </small>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         STATISTICS
+    ================================================== -->
+
+    <section class="activity-stat-grid">
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                📋
+            </div>
+
+            <div>
+
+                <span>
+                    Total Activities
+                </span>
+
+                <strong id="totalActivities">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                🏠
+            </div>
+
+            <div>
+
+                <span>
+                    Farms Represented
+                </span>
+
+                <strong id="totalFarms">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                👤
+            </div>
+
+            <div>
+
+                <span>
+                    Active Users
+                </span>
+
+                <strong id="totalUsers">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                🕒
+            </div>
+
+            <div>
+
+                <span>
+                    Latest Activity
+                </span>
+
+                <strong id="latestActivity">
+                    —
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         ACTIVITY LOG PANEL
+    ================================================== -->
+
+    <section class="activity-panel">
+
+
+        <!-- PANEL HEADER -->
+
+        <div class="activity-panel-header">
+
+            <div>
+
+                <div class="panel-label">
+                    AUDIT CENTRE
+                </div>
+
+                <h3>
+                    Recent Platform Activity
+                </h3>
+
+                <p id="activitySummary">
+                    Showing platform activities
+                </p>
+
+            </div>
+
 
             <button
-                type="button"
+                class="refresh-btn"
                 onclick="loadActivityLogs()">
 
-                🔄 Refresh
+                ↻ Refresh
 
             </button>
 
         </div>
 
 
+
+        <!-- =================================================
+             FILTER BAR
+        ================================================== -->
+
+        <div class="filter-bar">
+
+
+            <div class="filter-group">
+
+                <label for="farmFilter">
+                    Farm
+                </label>
+
+                <select
+                    id="farmFilter"
+                    onchange="filterActivityLogs()">
+
+                    <option value="">
+                        All Farms
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <div class="filter-group search-group">
+
+                <label for="activitySearch">
+                    Search Activity
+                </label>
+
+                <input
+                    type="search"
+                    id="activitySearch"
+                    placeholder="Search name, action, module..."
+                    oninput="filterActivityLogs()">
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             TABLE
+        ================================================== -->
+
+        <div class="table-wrapper">
+
+            <table class="activity-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>#</th>
+
+                        <th>Date & Time</th>
+
+                        <th>Farm</th>
+
+                        <th>Name</th>
+
+                        <th>Role</th>
+
+                        <th>Action</th>
+
+                        <th>Module</th>
+
+                        <th>Description</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="activityTable">
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            class="loading-cell">
+
+                            Loading activity logs...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             EMPTY STATE
+        ================================================== -->
+
         <div
-            id="activityList"
-            class="activity-list">
+            id="emptyState"
+            class="empty-state"
+            style="display:none;">
+
+            <div class="empty-icon">
+                📋
+            </div>
+
+            <h3>
+                No Activity Found
+            </h3>
 
             <p>
-                Loading activity logs...
+                There are no activity records matching
+                the selected filter.
+            </p>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =================================================
+         SECURITY NOTICE
+    ================================================== -->
+
+    <section class="security-notice">
+
+        <div class="notice-icon">
+            🔐
+        </div>
+
+        <div>
+
+            <strong>
+                Platform Audit Security
+            </strong>
+
+            <p>
+                These logs provide Super Administrators
+                with platform-wide visibility. Farm users
+                can only access activity records belonging
+                to their authorised farm.
             </p>
 
         </div>
 
     </section>
 
+
 </main>
 
 
+
+<!-- =====================================================
+     FOOTER
+====================================================== -->
+
 <footer class="platform-footer">
 
-    MUNKA PIGGERY Management System
-    <br>
+    <div>
 
-    Super Admin Platform Activity
+        <strong>
+            MUNKA PIGGERY
+        </strong>
+
+        <span>
+            Management System
+        </span>
+
+    </div>
+
+
+    <p>
+        © <span id="currentYear"></span>
+        MUNKA PIGGERY. Super Admin Platform.
+    </p>
 
 </footer>
 
+
+
+<!-- =====================================================
+     SUPABASE
+====================================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase.js"></script>
 
+<script src="security.js"></script>
+
 <script src="platform_activity.js"></script>
+
+
+
+<script>
+
+    document.getElementById("currentYear").textContent =
+        new Date().getFullYear();
+
+</script>
+
 
 </body>
 

@@ -6,6 +6,8 @@
 
 let editingFarmID = null;
 
+let allFarms = [];
+
 
 // =====================================
 // CHECK SUPER ADMIN
@@ -19,16 +21,27 @@ async function checkSuperAdmin() {
     } = await supabaseClient.auth.getSession();
 
     if (error || !session) {
-        window.location.href = "login.html";
+
+        window.location.href =
+            "login.html";
+
         return false;
     }
 
-    const { data: user, error: userError } =
+
+    const {
+        data: user,
+        error: userError
+    } =
         await supabaseClient
             .from("users")
             .select("*")
-            .eq("auth_user_id", session.user.id)
+            .eq(
+                "auth_user_id",
+                session.user.id
+            )
             .single();
+
 
     if (
         userError ||
@@ -36,10 +49,15 @@ async function checkSuperAdmin() {
         user.role !== "Super Admin" ||
         user.status !== "Active"
     ) {
+
         alert("Access denied.");
-        window.location.href = "login.html";
+
+        window.location.href =
+            "login.html";
+
         return false;
     }
+
 
     return true;
 }
@@ -52,7 +70,12 @@ async function checkSuperAdmin() {
 async function loadFarms() {
 
     const farmList =
-        document.getElementById("farmList");
+        document.getElementById(
+            "farmList"
+        );
+
+    if (!farmList) return;
+
 
     farmList.innerHTML =
         "<p>Loading farms...</p>";
@@ -61,15 +84,24 @@ async function loadFarms() {
     const {
         data,
         error
-    } = await supabaseClient
-        .from("farms")
-        .select("*")
-        .order("id", { ascending: true });
+    } =
+        await supabaseClient
+            .from("farms")
+            .select("*")
+            .order(
+                "id",
+                {
+                    ascending: true
+                }
+            );
 
 
     if (error) {
 
-        console.error("LOAD FARMS ERROR:", error);
+        console.error(
+            "LOAD FARMS ERROR:",
+            error
+        );
 
         farmList.innerHTML =
             "<p>Unable to load farms.</p>";
@@ -78,7 +110,16 @@ async function loadFarms() {
     }
 
 
-    if (!data || data.length === 0) {
+    allFarms =
+        data || [];
+
+
+    populateFarmDropdown();
+
+
+    if (
+        allFarms.length === 0
+    ) {
 
         farmList.innerHTML =
             "<p>No farms have been registered.</p>";
@@ -87,337 +128,487 @@ async function loadFarms() {
     }
 
 
-    farmList.innerHTML = "";
+    farmList.innerHTML =
+        "";
 
 
-    data.forEach(farm => {
+    allFarms.forEach(
+        farm => {
 
-        const card =
-            document.createElement("div");
-
-        card.className = "farm-card";
-
-
-        // =====================================
-        // SUBSCRIPTION CALCULATION
-        // =====================================
-
-        let subscriptionText =
-            "No subscription date";
-
-        let subscriptionClass =
-            "subscription-warning";
-
-        let daysRemainingText =
-            "Not available";
-
-
-        if (farm.subscription_end) {
-
-            const now =
-                new Date();
-
-            const endDate =
-                new Date(farm.subscription_end);
-
-            const startDate =
-                farm.subscription_start
-                    ? new Date(farm.subscription_start)
-                    : null;
-
-
-            const difference =
-                endDate.getTime() -
-                now.getTime();
-
-
-            const daysRemaining =
-                Math.ceil(
-                    difference /
-                    (1000 * 60 * 60 * 24)
+            const card =
+                document.createElement(
+                    "div"
                 );
 
 
-            if (daysRemaining > 0) {
-
-                subscriptionText =
-                    "Active subscription";
-
-                subscriptionClass =
-                    "subscription-active";
-
-                daysRemainingText =
-                    daysRemaining +
-                    (daysRemaining === 1
-                        ? " day remaining"
-                        : " days remaining");
-
-            } else {
-
-                subscriptionText =
-                    "Expired";
-
-                subscriptionClass =
-                    "subscription-expired";
-
-                daysRemainingText =
-                    "Subscription expired";
-            }
+            card.className =
+                "farm-card";
 
 
-            const formattedStart =
-                startDate
-                    ? startDate.toLocaleDateString(
+            const farmStatus =
+                farm.status === "Active"
+                    ? "active"
+                    : "inactive";
+
+
+            const statusText =
+                farm.status ||
+                "N/A";
+
+
+            // =================================
+            // SUBSCRIPTION
+            // =================================
+
+            let subscriptionText =
+                "No subscription date";
+
+            let subscriptionClass =
+                "subscription-warning";
+
+            let daysRemainingText =
+                "Not available";
+
+            let formattedStart =
+                "N/A";
+
+            let formattedEnd =
+                "N/A";
+
+
+            if (
+                farm.subscription_end
+            ) {
+
+                const now =
+                    new Date();
+
+
+                const endDate =
+                    new Date(
+                        farm.subscription_end
+                    );
+
+
+                const startDate =
+                    farm.subscription_start
+                        ? new Date(
+                            farm.subscription_start
+                        )
+                        : null;
+
+
+                const difference =
+                    endDate.getTime() -
+                    now.getTime();
+
+
+                const daysRemaining =
+                    Math.ceil(
+                        difference /
+                        (
+                            1000 *
+                            60 *
+                            60 *
+                            24
+                        )
+                    );
+
+
+                if (
+                    daysRemaining > 0
+                ) {
+
+                    subscriptionText =
+                        "Active subscription";
+
+                    subscriptionClass =
+                        "subscription-active";
+
+                    daysRemainingText =
+                        daysRemaining +
+                        (
+                            daysRemaining === 1
+                                ? " day remaining"
+                                : " days remaining"
+                        );
+
+                }
+
+                else {
+
+                    subscriptionText =
+                        "Expired";
+
+                    subscriptionClass =
+                        "subscription-expired";
+
+                    daysRemainingText =
+                        "Subscription expired";
+
+                }
+
+
+                formattedStart =
+                    startDate
+                        ? startDate.toLocaleDateString(
+                            "en-ZM",
+                            {
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric"
+                            }
+                        )
+                        : "N/A";
+
+
+                formattedEnd =
+                    endDate.toLocaleDateString(
                         "en-ZM",
                         {
                             day: "2-digit",
                             month: "long",
                             year: "numeric"
                         }
-                    )
-                    : "N/A";
+                    );
+
+            }
 
 
-            const formattedEnd =
-                endDate.toLocaleDateString(
-                    "en-ZM",
-                    {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric"
-                    }
+            // =================================
+            // CARD
+            // =================================
+
+            card.innerHTML = `
+
+                <h2>
+
+                    ${escapeHTML(
+                        farm.farm_name ||
+                        "Unnamed Farm"
+                    )}
+
+                </h2>
+
+
+                <p>
+                    <strong>Farm ID:</strong>
+                    ${farm.id}
+                </p>
+
+
+                <p>
+                    <strong>Owner:</strong>
+                    ${escapeHTML(
+                        farm.owner_name ||
+                        "N/A"
+                    )}
+                </p>
+
+
+                <p>
+                    <strong>Phone:</strong>
+                    ${escapeHTML(
+                        farm.phone ||
+                        "N/A"
+                    )}
+                </p>
+
+
+                <p>
+                    <strong>Email:</strong>
+                    ${escapeHTML(
+                        farm.email ||
+                        "N/A"
+                    )}
+                </p>
+
+
+                <p>
+                    <strong>Location:</strong>
+                    ${escapeHTML(
+                        farm.location ||
+                        "N/A"
+                    )}
+                </p>
+
+
+                <p>
+
+                    <strong>
+                        Farm Status:
+                    </strong>
+
+                    <span class="farm-status ${farmStatus}">
+
+                        ${escapeHTML(
+                            statusText
+                        )}
+
+                    </span>
+
+                </p>
+
+
+                <div class="subscription-box">
+
+                    <h3>
+                        Subscription
+                    </h3>
+
+
+                    <p>
+
+                        <strong>
+                            Status:
+                        </strong>
+
+                        <span class="${subscriptionClass}">
+
+                            ${subscriptionText}
+
+                        </span>
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Start Date:
+                        </strong>
+
+                        ${formattedStart}
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Expiry Date:
+                        </strong>
+
+                        ${formattedEnd}
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Time Remaining:
+                        </strong>
+
+                        ${daysRemainingText}
+
+                    </p>
+
+                </div>
+
+
+                <div class="farm-actions">
+
+
+                    <button
+                        class="edit-btn"
+                        onclick="editFarm(${farm.id})">
+
+                        Edit
+
+                    </button>
+
+
+                    <button
+                        class="status-btn"
+                        onclick="toggleFarmStatus(
+                            ${farm.id},
+                            '${escapeJS(farm.status)}'
+                        )">
+
+                        ${
+                            farm.status === "Active"
+                                ? "Deactivate"
+                                : "Activate"
+                        }
+
+                    </button>
+
+
+                    <button
+                        class="renew-btn"
+                        onclick="renewSubscription(${farm.id})">
+
+                        ${
+                            farm.status === "Active"
+                                ? "Renew Subscription"
+                                : "Start Subscription"
+                        }
+
+                    </button>
+
+
+                </div>
+
+            `;
+
+
+            farmList.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================
+// POPULATE FARM DROPDOWN
+// =====================================
+
+function populateFarmDropdown() {
+
+    const dropdown =
+        document.getElementById(
+            "existingFarm"
+        );
+
+
+    if (!dropdown) return;
+
+
+    dropdown.innerHTML = `
+
+        <option value="">
+
+            -- Select a registered farm --
+
+        </option>
+
+    `;
+
+
+    allFarms.forEach(
+        farm => {
+
+            const option =
+                document.createElement(
+                    "option"
                 );
 
 
-            card.innerHTML = `
-
-                <h2>
-                    ${escapeHTML(
-                        farm.farm_name ||
-                        "Unnamed Farm"
-                    )}
-                </h2>
-
-                <p>
-                    <strong>Farm ID:</strong>
-                    ${farm.id}
-                </p>
-
-                <p>
-                    <strong>Owner:</strong>
-                    ${escapeHTML(
-                        farm.owner_name || "N/A"
-                    )}
-                </p>
-
-                <p>
-                    <strong>Phone:</strong>
-                    ${escapeHTML(
-                        farm.phone || "N/A"
-                    )}
-                </p>
-
-                <p>
-                    <strong>Email:</strong>
-                    ${escapeHTML(
-                        farm.email || "N/A"
-                    )}
-                </p>
-
-                <p>
-                    <strong>Location:</strong>
-                    ${escapeHTML(
-                        farm.location || "N/A"
-                    )}
-                </p>
-
-                <p>
-                    <strong>Farm Status:</strong>
-                    ${escapeHTML(
-                        farm.status || "N/A"
-                    )}
-                </p>
-
-                <div class="subscription-box">
-
-                    <h3>
-                        Subscription
-                    </h3>
-
-                    <p>
-                        <strong>Status:</strong>
-                        <span class="${subscriptionClass}">
-                            ${subscriptionText}
-                        </span>
-                    </p>
-
-                    <p>
-                        <strong>Start Date:</strong>
-                        ${formattedStart}
-                    </p>
-
-                    <p>
-                        <strong>Expiry Date:</strong>
-                        ${formattedEnd}
-                    </p>
-
-                    <p>
-                        <strong>Time Remaining:</strong>
-                        ${daysRemainingText}
-                    </p>
-
-                </div>
+            option.value =
+                farm.id;
 
 
-                <div class="farm-actions">
-
-                    <button
-                        class="edit-btn"
-                        onclick="editFarm(${farm.id})">
-
-                        Edit
-
-                    </button>
+            option.textContent =
+                farm.farm_name ||
+                "Unnamed Farm";
 
 
-                    <button
-                        class="status-btn"
-                        onclick="toggleFarmStatus(
-                            ${farm.id},
-                            '${escapeHTML(farm.status)}'
-                        )">
+            dropdown.appendChild(
+                option
+            );
 
-                        ${farm.status === "Active"
-                            ? "Deactivate"
-                            : "Activate"}
-
-                    </button>
-
-
-                    <button
-                        class="renew-btn"
-                        onclick="renewSubscription(${farm.id})">
-
-                        Renew Subscription
-
-                    </button>
-
-                </div>
-
-            `;
-
-        } else {
-
-            // =====================================
-            // NO SUBSCRIPTION DATE
-            // =====================================
-
-            card.innerHTML = `
-
-                <h2>
-                    ${escapeHTML(
-                        farm.farm_name ||
-                        "Unnamed Farm"
-                    )}
-                </h2>
-
-                <p>
-                    <strong>Farm ID:</strong>
-                    ${farm.id}
-                </p>
-
-                <p>
-                    <strong>Owner:</strong>
-                    ${escapeHTML(
-                        farm.owner_name || "N/A"
-                    )}
-                </p>
-
-                <p>
-                    <strong>Phone:</strong>
-                    ${escapeHTML(
-                        farm.phone || "N/A"
-                    )}
-                </p>
-
-                <p>
-                    <strong>Email:</strong>
-                    ${escapeHTML(
-                        farm.email || "N/A"
-                    )}
-                </p>
-
-                <p>
-                    <strong>Location:</strong>
-                    ${escapeHTML(
-                        farm.location || "N/A"
-                    )}
-                </p>
-
-                <p>
-                    <strong>Farm Status:</strong>
-                    ${escapeHTML(
-                        farm.status || "N/A"
-                    )}
-                </p>
-
-                <div class="subscription-box">
-
-                    <h3>
-                        Subscription
-                    </h3>
-
-                    <p>
-                        <strong>Status:</strong>
-                        <span class="subscription-warning">
-                            No subscription date
-                        </span>
-                    </p>
-
-                </div>
-
-
-                <div class="farm-actions">
-
-                    <button
-                        class="edit-btn"
-                        onclick="editFarm(${farm.id})">
-
-                        Edit
-
-                    </button>
-
-
-                    <button
-                        class="status-btn"
-                        onclick="toggleFarmStatus(
-                            ${farm.id},
-                            '${escapeHTML(farm.status)}'
-                        )">
-
-                        ${farm.status === "Active"
-                            ? "Deactivate"
-                            : "Activate"}
-
-                    </button>
-
-
-                    <button
-                        class="renew-btn"
-                        onclick="renewSubscription(${farm.id})">
-
-                        Start Subscription
-
-                    </button>
-
-                </div>
-
-            `;
         }
+    );
+
+}
 
 
-        farmList.appendChild(card);
+// =====================================
+// SELECT EXISTING FARM
+// =====================================
 
+function selectExistingFarm() {
+
+    const dropdown =
+        document.getElementById(
+            "existingFarm"
+        );
+
+
+    const selectedID =
+        Number(
+            dropdown.value
+        );
+
+
+    if (!selectedID) {
+
+        clearFarmForm();
+
+        return;
+    }
+
+
+    const farm =
+        allFarms.find(
+            item =>
+                Number(item.id) ===
+                selectedID
+        );
+
+
+    if (!farm) return;
+
+
+    document.getElementById(
+        "farmName"
+    ).value =
+        farm.farm_name ||
+        "";
+
+
+    document.getElementById(
+        "ownerName"
+    ).value =
+        farm.owner_name ||
+        "";
+
+
+    document.getElementById(
+        "farmPhone"
+    ).value =
+        farm.phone ||
+        "";
+
+
+    document.getElementById(
+        "farmEmail"
+    ).value =
+        farm.email ||
+        "";
+
+
+    document.getElementById(
+        "farmLocation"
+    ).value =
+        farm.location ||
+        "";
+
+
+    document.getElementById(
+        "farmStatus"
+    ).value =
+        farm.status ||
+        "Active";
+
+
+    editingFarmID =
+        farm.id;
+
+
+    document.getElementById(
+        "saveFarmButton"
+    ).textContent =
+        "Update Farm";
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
     });
 
 }
@@ -430,78 +621,156 @@ async function loadFarms() {
 async function addFarm() {
 
     const farmName =
-        document.getElementById("farmName").value.trim();
+        document
+            .getElementById("farmName")
+            .value
+            .trim();
+
 
     const ownerName =
-        document.getElementById("ownerName").value.trim();
+        document
+            .getElementById("ownerName")
+            .value
+            .trim();
+
 
     const phone =
-        document.getElementById("farmPhone").value.trim();
+        document
+            .getElementById("farmPhone")
+            .value
+            .trim();
+
 
     const email =
-        document.getElementById("farmEmail").value.trim();
+        document
+            .getElementById("farmEmail")
+            .value
+            .trim();
+
 
     const location =
-        document.getElementById("farmLocation").value.trim();
+        document
+            .getElementById("farmLocation")
+            .value
+            .trim();
+
 
     const status =
-        document.getElementById("farmStatus").value;
+        document
+            .getElementById("farmStatus")
+            .value;
 
 
     if (!farmName) {
 
-        alert("Please enter the farm name.");
+        alert(
+            "Please enter the farm name."
+        );
 
         return;
     }
 
 
-    // =====================================
-    // NEW FARM GETS 30-DAY SUBSCRIPTION
-    // =====================================
+    // =================================
+    // CHECK DUPLICATE FARM NAME
+    // =================================
+
+    const {
+        data: existingFarm,
+        error: duplicateError
+    } =
+        await supabaseClient
+            .from("farms")
+            .select("id, farm_name")
+            .ilike(
+                "farm_name",
+                farmName
+            )
+            .limit(1);
+
+
+    if (duplicateError) {
+
+        console.error(
+            "DUPLICATE CHECK ERROR:",
+            duplicateError
+        );
+
+    }
+
+
+    if (
+        existingFarm &&
+        existingFarm.length > 0
+    ) {
+
+        alert(
+            "A farm with this name already exists."
+        );
+
+        return;
+    }
+
+
+    // =================================
+    // NEW FARM = 30 DAYS
+    // =================================
 
     const subscriptionStart =
         new Date();
 
 
     const subscriptionEnd =
-        new Date(subscriptionStart);
+        new Date(
+            subscriptionStart
+        );
+
 
     subscriptionEnd.setDate(
-        subscriptionEnd.getDate() + 30
+        subscriptionEnd.getDate() +
+        30
     );
 
 
     const {
+        data: newFarm,
         error
-    } = await supabaseClient
-        .from("farms")
-        .insert({
+    } =
+        await supabaseClient
+            .from("farms")
+            .insert({
 
-            farm_name: farmName,
+                farm_name:
+                    farmName,
 
-            owner_name:
-                ownerName || null,
+                owner_name:
+                    ownerName ||
+                    null,
 
-            phone:
-                phone || null,
+                phone:
+                    phone ||
+                    null,
 
-            email:
-                email || null,
+                email:
+                    email ||
+                    null,
 
-            location:
-                location || null,
+                location:
+                    location ||
+                    null,
 
-            status:
-                status,
+                status:
+                    status,
 
-            subscription_start:
-                subscriptionStart.toISOString(),
+                subscription_start:
+                    subscriptionStart.toISOString(),
 
-            subscription_end:
-                subscriptionEnd.toISOString()
+                subscription_end:
+                    subscriptionEnd.toISOString()
 
-        });
+            })
+            .select()
+            .single();
 
 
     if (error) {
@@ -539,47 +808,79 @@ async function addFarm() {
 
 async function editFarm(id) {
 
-    const {
-        data: farm,
-        error
-    } = await supabaseClient
-        .from("farms")
-        .select("*")
-        .eq("id", id)
-        .single();
+    const farm =
+        allFarms.find(
+            item =>
+                Number(item.id) ===
+                Number(id)
+        );
 
 
-    if (error || !farm) {
+    if (!farm) {
 
-        alert("Unable to load farm.");
+        alert(
+            "Unable to load farm."
+        );
 
         return;
     }
 
 
-    document.getElementById("farmName").value =
-        farm.farm_name || "";
-
-    document.getElementById("ownerName").value =
-        farm.owner_name || "";
-
-    document.getElementById("farmPhone").value =
-        farm.phone || "";
-
-    document.getElementById("farmEmail").value =
-        farm.email || "";
-
-    document.getElementById("farmLocation").value =
-        farm.location || "";
-
-    document.getElementById("farmStatus").value =
-        farm.status || "Active";
+    document.getElementById(
+        "existingFarm"
+    ).value =
+        farm.id;
 
 
-    editingFarmID = id;
+    document.getElementById(
+        "farmName"
+    ).value =
+        farm.farm_name ||
+        "";
 
 
-    document.getElementById("saveFarmButton").textContent =
+    document.getElementById(
+        "ownerName"
+    ).value =
+        farm.owner_name ||
+        "";
+
+
+    document.getElementById(
+        "farmPhone"
+    ).value =
+        farm.phone ||
+        "";
+
+
+    document.getElementById(
+        "farmEmail"
+    ).value =
+        farm.email ||
+        "";
+
+
+    document.getElementById(
+        "farmLocation"
+    ).value =
+        farm.location ||
+        "";
+
+
+    document.getElementById(
+        "farmStatus"
+    ).value =
+        farm.status ||
+        "Active";
+
+
+    editingFarmID =
+        farm.id;
+
+
+    document.getElementById(
+        "saveFarmButton"
+    ).textContent =
         "Update Farm";
 
 
@@ -598,27 +899,51 @@ async function editFarm(id) {
 async function updateFarm() {
 
     const farmName =
-        document.getElementById("farmName").value.trim();
+        document
+            .getElementById("farmName")
+            .value
+            .trim();
+
 
     const ownerName =
-        document.getElementById("ownerName").value.trim();
+        document
+            .getElementById("ownerName")
+            .value
+            .trim();
+
 
     const phone =
-        document.getElementById("farmPhone").value.trim();
+        document
+            .getElementById("farmPhone")
+            .value
+            .trim();
+
 
     const email =
-        document.getElementById("farmEmail").value.trim();
+        document
+            .getElementById("farmEmail")
+            .value
+            .trim();
+
 
     const location =
-        document.getElementById("farmLocation").value.trim();
+        document
+            .getElementById("farmLocation")
+            .value
+            .trim();
+
 
     const status =
-        document.getElementById("farmStatus").value;
+        document
+            .getElementById("farmStatus")
+            .value;
 
 
     if (!farmName) {
 
-        alert("Please enter the farm name.");
+        alert(
+            "Please enter the farm name."
+        );
 
         return;
     }
@@ -626,29 +951,38 @@ async function updateFarm() {
 
     const {
         error
-    } = await supabaseClient
-        .from("farms")
-        .update({
+    } =
+        await supabaseClient
+            .from("farms")
+            .update({
 
-            farm_name: farmName,
+                farm_name:
+                    farmName,
 
-            owner_name:
-                ownerName || null,
+                owner_name:
+                    ownerName ||
+                    null,
 
-            phone:
-                phone || null,
+                phone:
+                    phone ||
+                    null,
 
-            email:
-                email || null,
+                email:
+                    email ||
+                    null,
 
-            location:
-                location || null,
+                location:
+                    location ||
+                    null,
 
-            status:
-                status
+                status:
+                    status
 
-        })
-        .eq("id", editingFarmID);
+            })
+            .eq(
+                "id",
+                editingFarmID
+            );
 
 
     if (error) {
@@ -667,7 +1001,9 @@ async function updateFarm() {
     }
 
 
-    alert("Farm updated successfully.");
+    alert(
+        "Farm updated successfully."
+    );
 
 
     clearFarmForm();
@@ -678,7 +1014,7 @@ async function updateFarm() {
 
 
 // =====================================
-// ACTIVATE / DEACTIVATE FARM
+// ACTIVATE / DEACTIVATE
 // =====================================
 
 async function toggleFarmStatus(
@@ -705,15 +1041,19 @@ async function toggleFarmStatus(
 
     const {
         error
-    } = await supabaseClient
-        .from("farms")
-        .update({
+    } =
+        await supabaseClient
+            .from("farms")
+            .update({
 
-            status:
-                newStatus
+                status:
+                    newStatus
 
-        })
-        .eq("id", id);
+            })
+            .eq(
+                "id",
+                id
+            );
 
 
     if (error) {
@@ -743,23 +1083,26 @@ async function toggleFarmStatus(
 
 async function renewSubscription(id) {
 
-    // =====================================
-    // GET FARM
-    // =====================================
-
     const {
         data: farm,
         error: farmError
-    } = await supabaseClient
-        .from("farms")
-        .select(
-            "id, farm_name, status, subscription_start, subscription_end"
-        )
-        .eq("id", id)
-        .single();
+    } =
+        await supabaseClient
+            .from("farms")
+            .select(
+                "id, farm_name, status, subscription_start, subscription_end"
+            )
+            .eq(
+                "id",
+                id
+            )
+            .single();
 
 
-    if (farmError || !farm) {
+    if (
+        farmError ||
+        !farm
+    ) {
 
         console.error(
             "LOAD FARM FOR RENEWAL ERROR:",
@@ -774,16 +1117,14 @@ async function renewSubscription(id) {
     }
 
 
-    // =====================================
-    // ASK FOR RENEWAL PERIOD
-    // =====================================
-
     const choice =
         prompt(
             "Renew subscription for " +
             farm.farm_name +
             ".\n\n" +
+
             "Enter number of days:\n\n" +
+
             "30 = 1 month\n" +
             "90 = 3 months\n" +
             "180 = 6 months\n" +
@@ -791,7 +1132,9 @@ async function renewSubscription(id) {
         );
 
 
-    if (choice === null) return;
+    if (
+        choice === null
+    ) return;
 
 
     const days =
@@ -800,7 +1143,12 @@ async function renewSubscription(id) {
 
     if (
         !Number.isInteger(days) ||
-        ![30, 90, 180, 365].includes(days)
+        ![
+            30,
+            90,
+            180,
+            365
+        ].includes(days)
     ) {
 
         alert(
@@ -812,67 +1160,73 @@ async function renewSubscription(id) {
     }
 
 
-    // =====================================
-    // DETERMINE NEW START DATE
-    // =====================================
-
     const now =
         new Date();
 
+
     let newStart =
         now;
+
 
     let newEnd;
 
 
     if (
         farm.subscription_end &&
-        new Date(farm.subscription_end) > now
+        new Date(
+            farm.subscription_end
+        ) > now
     ) {
-
-        // Existing subscription is still active.
-        // Extend from its current expiry date.
 
         newEnd =
             new Date(
                 farm.subscription_end
             );
 
+
         newEnd.setDate(
-            newEnd.getDate() + days
+            newEnd.getDate() +
+            days
         );
 
-    } else {
+    }
 
-        // Subscription has expired.
-        // Start a new subscription today.
+    else {
 
         newStart =
             now;
 
+
         newEnd =
-            new Date(now);
+            new Date(
+                now
+            );
+
 
         newEnd.setDate(
-            newEnd.getDate() + days
+            newEnd.getDate() +
+            days
         );
 
     }
 
 
-    // =====================================
-    // CONFIRM RENEWAL
-    // =====================================
-
     const confirmed =
         confirm(
+
             "Farm: " +
             farm.farm_name +
+
             "\n\n" +
+
             "Subscription period: " +
             days +
-            " days\n\n" +
+            " days" +
+
+            "\n\n" +
+
             "New expiry date:\n" +
+
             newEnd.toLocaleDateString(
                 "en-ZM",
                 {
@@ -881,35 +1235,38 @@ async function renewSubscription(id) {
                     year: "numeric"
                 }
             ) +
+
             "\n\n" +
+
             "Continue?"
+
         );
 
 
     if (!confirmed) return;
 
 
-    // =====================================
-    // UPDATE SUBSCRIPTION
-    // =====================================
-
     const {
         error
-    } = await supabaseClient
-        .from("farms")
-        .update({
+    } =
+        await supabaseClient
+            .from("farms")
+            .update({
 
-            subscription_start:
-                newStart.toISOString(),
+                subscription_start:
+                    newStart.toISOString(),
 
-            subscription_end:
-                newEnd.toISOString(),
+                subscription_end:
+                    newEnd.toISOString(),
 
-            status:
-                "Active"
+                status:
+                    "Active"
 
-        })
-        .eq("id", id);
+            })
+            .eq(
+                "id",
+                id
+            );
 
 
     if (error) {
@@ -944,45 +1301,75 @@ async function renewSubscription(id) {
 
 function clearFarmForm() {
 
-    document.getElementById("farmName").value =
-        "";
+    const fields = [
 
-    document.getElementById("ownerName").value =
-        "";
+        "farmName",
+        "ownerName",
+        "farmPhone",
+        "farmEmail",
+        "farmLocation"
 
-    document.getElementById("farmPhone").value =
-        "";
+    ];
 
-    document.getElementById("farmEmail").value =
-        "";
 
-    document.getElementById("farmLocation").value =
-        "";
+    fields.forEach(
+        id => {
 
-    document.getElementById("farmStatus").value =
+            const element =
+                document.getElementById(
+                    id
+                );
+
+            if (element) {
+
+                element.value =
+                    "";
+
+            }
+
+        }
+    );
+
+
+    document.getElementById(
+        "farmStatus"
+    ).value =
         "Active";
 
 
-    editingFarmID = null;
+    document.getElementById(
+        "existingFarm"
+    ).value =
+        "";
 
 
-    document.getElementById("saveFarmButton").textContent =
+    editingFarmID =
+        null;
+
+
+    document.getElementById(
+        "saveFarmButton"
+    ).textContent =
         "Add Farm";
 
 }
 
 
 // =====================================
-// SAVE FARM BUTTON
+// SAVE FARM
 // =====================================
 
 async function saveFarm() {
 
-    if (editingFarmID === null) {
+    if (
+        editingFarmID === null
+    ) {
 
         await addFarm();
 
-    } else {
+    }
+
+    else {
 
         await updateFarm();
 
@@ -997,12 +1384,67 @@ async function saveFarm() {
 
 function escapeHTML(value) {
 
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(
+        value ?? ""
+    )
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+// =====================================
+// ESCAPE JAVASCRIPT
+// =====================================
+
+function escapeJS(value) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /\\/g,
+            "\\\\"
+        )
+        .replace(
+            /'/g,
+            "\\'"
+        )
+        .replace(
+            /"/g,
+            '\\"'
+        )
+        .replace(
+            /\n/g,
+            "\\n"
+        )
+        .replace(
+            /\r/g,
+            "\\r"
+        );
 
 }
 
@@ -1018,7 +1460,9 @@ document.addEventListener(
         const allowed =
             await checkSuperAdmin();
 
+
         if (!allowed) return;
+
 
         await loadFarms();
 

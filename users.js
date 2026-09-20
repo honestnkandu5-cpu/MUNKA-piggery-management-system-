@@ -1,62 +1,139 @@
-// =====================================
-// MUNKA PIGGERY
-// USER MANAGEMENT SYSTEM (SUPABASE)
-// =====================================
+
+/* =========================================================
+   MUNKA PIGGERY
+   NORMAL FARM USER MANAGEMENT
+   SUPABASE AUTH VERSION
+   FARM USER V3
+   ========================================================= */
 
 
-// =====================================
-// GET LOGGED-IN USER
-// =====================================
+/* =========================================================
+   GET LOGGED-IN USER
+   ========================================================= */
 
-function getLoggedInUser(){
+function getLoggedInUser() {
 
     const storedUser =
         localStorage.getItem("loggedInUser");
 
-    if(!storedUser){
+
+    if (!storedUser) {
 
         alert("Please login first.");
 
-        window.location.href = "login.html";
+        window.location.href =
+            "login.html";
 
         return null;
     }
 
-    try{
 
-        return JSON.parse(storedUser);
+    try {
 
-    }catch(error){
+        return JSON.parse(
+            storedUser
+        );
+
+    } catch (error) {
 
         console.error(
             "LOGIN USER ERROR:",
             error
         );
 
-        alert("Invalid login session.");
+        alert(
+            "Invalid login session."
+        );
 
-        window.location.href = "login.html";
+        window.location.href =
+            "login.html";
 
         return null;
     }
 }
 
 
-// =====================================
-// LOAD USERS
-// =====================================
+/* =========================================================
+   GENERATE USER ID
+   =========================================================
+   Format:
+   U-XXXXXXXX
+   ========================================================= */
 
-async function loadUsers(){
+function generateUserID() {
+
+    const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    let randomPart = "";
+
+
+    if (
+        window.crypto &&
+        window.crypto.getRandomValues
+    ) {
+
+        const values =
+            new Uint32Array(8);
+
+        window.crypto.getRandomValues(
+            values
+        );
+
+
+        for (
+            let i = 0;
+            i < values.length;
+            i++
+        ) {
+
+            randomPart +=
+                characters[
+                    values[i] %
+                    characters.length
+                ];
+        }
+
+    } else {
+
+        for (
+            let i = 0;
+            i < 8;
+            i++
+        ) {
+
+            randomPart +=
+                characters[
+                    Math.floor(
+                        Math.random() *
+                        characters.length
+                    )
+                ];
+        }
+    }
+
+
+    return "U-" + randomPart;
+}
+
+
+/* =========================================================
+   LOAD USERS
+   ========================================================= */
+
+async function loadUsers() {
 
     const loggedUser =
         getLoggedInUser();
 
-    if(!loggedUser){
+
+    if (!loggedUser) {
+
         return;
     }
 
 
-    if(!loggedUser.farm_id){
+    if (!loggedUser.farm_id) {
 
         alert(
             "Your account is not linked to a farm."
@@ -66,12 +143,17 @@ async function loadUsers(){
     }
 
 
-    const { data, error } =
+    const {
+        data,
+        error
+    } =
         await supabaseClient
 
         .from("users")
 
-        .select("*")
+        .select(
+            "id, userID, full_name, email, username, role, status"
+        )
 
         .eq(
             "farm_id",
@@ -81,14 +163,17 @@ async function loadUsers(){
         .order(
             "id",
             {
-                ascending:true
+                ascending: true
             }
         );
 
 
-    if(error){
+    if (error) {
 
-        console.log(error);
+        console.error(
+            "LOAD USERS ERROR:",
+            error
+        );
 
         alert(
             "Failed to load users: " +
@@ -99,27 +184,30 @@ async function loadUsers(){
     }
 
 
-    displayUsers(data);
-
+    displayUsers(
+        data || []
+    );
 }
 
 
+/* =========================================================
+   SAVE USER
+   CREATE SUPABASE AUTH ACCOUNT
+   ========================================================= */
 
-// =====================================
-// SAVE USER
-// =====================================
-
-async function saveUser(){
+async function saveUser() {
 
     const loggedUser =
         getLoggedInUser();
 
-    if(!loggedUser){
+
+    if (!loggedUser) {
+
         return;
     }
 
 
-    if(!loggedUser.farm_id){
+    if (!loggedUser.farm_id) {
 
         alert(
             "Your account is not linked to a farm."
@@ -129,9 +217,20 @@ async function saveUser(){
     }
 
 
+    /* =====================================================
+       GET FORM VALUES
+       ===================================================== */
+
     const fullName =
         document
         .getElementById("fullName")
+        .value
+        .trim();
+
+
+    const email =
+        document
+        .getElementById("email")
         .value
         .trim();
 
@@ -162,31 +261,50 @@ async function saveUser(){
         .value;
 
 
-    if(
+    /* =====================================================
+       VALIDATION
+       ===================================================== */
+
+    if (
         fullName === "" ||
+        email === "" ||
         username === "" ||
         password === "" ||
         role === ""
-    ){
+    ) {
 
         alert(
-            "Please fill all required fields"
+            "Please fill all required fields."
         );
 
         return;
     }
 
 
-    // Prevent accidental save while editing
+    if (
+        password.length < 6
+    ) {
 
-    const userID =
+        alert(
+            "Password must contain at least 6 characters."
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       PREVENT SAVE WHILE EDITING
+       ===================================================== */
+
+    const existingUserID =
         document
         .getElementById("userID")
         .value
         .trim();
 
 
-    if(userID){
+    if (existingUserID) {
 
         alert(
             "This form is currently editing a user. " +
@@ -197,86 +315,318 @@ async function saveUser(){
     }
 
 
-    const { error } =
-        await supabaseClient
+    /* =====================================================
+       EMAIL FORMAT CHECK
+       ===================================================== */
 
-        .from("users")
-
-        .insert([{
-
-            full_name:
-                fullName,
-
-            username:
-                username,
-
-            password:
-                password,
-
-            role:
-                role,
-
-            status:
-                status,
-
-            farm_id:
-                loggedUser.farm_id
-
-        }]);
+    const emailPattern =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 
-    if(error){
-
-        console.log(error);
+    if (
+        !emailPattern.test(email)
+    ) {
 
         alert(
-            "Failed to save user: " +
-            error.message
+            "Please enter a valid email address."
         );
 
         return;
     }
 
 
-    if(loggedUser){
+    /* =====================================================
+       GENERATE NEW USER ID
+       ===================================================== */
 
-        await saveActivity(
-
-            loggedUser.full_name +
-            " (" +
-            loggedUser.role +
-            ")",
-
-            "Added",
-
-            "User Management",
-
-            "Added new user: " +
-            fullName
-
-        );
-
-    }
+    const userID =
+        generateUserID();
 
 
-    alert(
-        "User saved successfully"
+    console.log(
+        "GENERATED USER ID:",
+        userID
     );
 
 
+    /* =====================================================
+       CONFIRM CREATION
+       ===================================================== */
+
+    const confirmed =
+        confirm(
+
+            "Create this farm user?\n\n" +
+
+            "User ID: " +
+            userID +
+
+            "\nName: " +
+            fullName +
+
+            "\nEmail: " +
+            email +
+
+            "\nUsername: " +
+            username +
+
+            "\nRole: " +
+            role
+
+        );
+
+
+    if (!confirmed) {
+
+        return;
+    }
+
+
+    /* =====================================================
+       GET CURRENT SUPABASE SESSION
+       ===================================================== */
+
+    const {
+        data: sessionData,
+        error: sessionError
+    } =
+        await supabaseClient
+        .auth
+        .getSession();
+
+
+    if (
+        sessionError ||
+        !sessionData.session
+    ) {
+
+        alert(
+            "Your login session has expired. Please login again."
+        );
+
+        window.location.href =
+            "login.html";
+
+        return;
+    }
+
+
+    /* =====================================================
+       CREATE FARM USER THROUGH V3 EDGE FUNCTION
+       ===================================================== */
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+        .functions
+        .invoke(
+
+            "create-farm-user-v3",
+
+            {
+                body: {
+
+                    userID:
+                        userID,
+
+                    fullName:
+                        fullName,
+
+                    username:
+                        username,
+
+                    email:
+                        email,
+
+                    password:
+                        password,
+
+                    role:
+                        role,
+
+                    status:
+                        status
+
+                }
+            }
+
+        );
+
+
+    /* =====================================================
+       EDGE FUNCTION ERROR
+       ===================================================== */
+
+    if (error) {
+
+        console.error(
+            "CREATE FARM USER V3 ERROR:",
+            error
+        );
+
+
+        let message =
+            error.message ||
+            "Unable to create user.";
+
+
+        /* ================================================
+           TRY TO READ SERVER RESPONSE
+           ================================================ */
+
+        if (
+            error.context
+        ) {
+
+            try {
+
+                const responseText =
+                    await error.context.text();
+
+
+                if (responseText) {
+
+                    const responseData =
+                        JSON.parse(
+                            responseText
+                        );
+
+
+                    if (
+                        responseData.error
+                    ) {
+
+                        message =
+                            responseData.error;
+                    }
+                }
+
+            } catch (parseError) {
+
+                console.error(
+                    "EDGE ERROR PARSE:",
+                    parseError
+                );
+            }
+        }
+
+
+        alert(
+
+            "User creation failed:\n\n" +
+            message
+
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       CHECK SERVER RESPONSE
+       ===================================================== */
+
+    if (
+        !data ||
+        data.success !== true
+    ) {
+
+        alert(
+
+            "User creation failed:\n\n" +
+
+            (
+                data?.error ||
+                "Unexpected server response."
+            )
+
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       ACTIVITY LOG
+       ===================================================== */
+
+    await saveActivity(
+
+        loggedUser.full_name +
+        " (" +
+        loggedUser.role +
+        ")",
+
+        "Added",
+
+        "User Management",
+
+        "Added new farm user: " +
+        fullName +
+        " | Email: " +
+        email +
+        " | Username: " +
+        username +
+        " | Role: " +
+        role +
+        " | User ID: " +
+        data.user.userID
+
+    );
+
+
+    /* =====================================================
+       SUCCESS MESSAGE
+       ===================================================== */
+
+    alert(
+
+        "USER CREATED SUCCESSFULLY!\n\n" +
+
+        "User ID: " +
+        data.user.userID +
+
+        "\nName: " +
+        data.user.full_name +
+
+        "\nEmail: " +
+        data.user.email +
+
+        "\nUsername: " +
+        data.user.username +
+
+        "\nRole: " +
+        data.user.role +
+
+        "\nFarm: " +
+        data.user.farm_name
+
+    );
+
+
+    /* =====================================================
+       CLEAR FORM
+       ===================================================== */
+
     clearForm();
+
+
+    /* =====================================================
+       RELOAD USERS
+       ===================================================== */
 
     await loadUsers();
 
 }
 
 
+/* =========================================================
+   DISPLAY USERS
+   ========================================================= */
 
-// =====================================
-// DISPLAY USERS
-// =====================================
-
-function displayUsers(users){
+function displayUsers(users) {
 
     const table =
         document.getElementById(
@@ -284,20 +634,26 @@ function displayUsers(users){
         );
 
 
+    if (!table) {
+
+        return;
+    }
+
+
     table.innerHTML = "";
 
 
-    if(
+    if (
         !users ||
         users.length === 0
-    ){
+    ) {
 
         table.innerHTML = `
 
             <tr>
 
                 <td
-                    colspan="6"
+                    colspan="7"
                     style="text-align:center;"
                 >
 
@@ -313,78 +669,102 @@ function displayUsers(users){
     }
 
 
-    users.forEach((user)=>{
+    users.forEach(
+        (user) => {
 
-        table.innerHTML += `
-
-        <tr>
-
-            <td>
-                ${escapeHTML(user.id)}
-            </td>
-
-            <td>
-                ${escapeHTML(user.full_name)}
-            </td>
-
-            <td>
-                ${escapeHTML(user.username)}
-            </td>
-
-            <td>
-                ${escapeHTML(user.role)}
-            </td>
-
-            <td>
-                ${escapeHTML(user.status)}
-            </td>
-
-            <td>
-
-                <button
-                    onclick="editUser(${user.id})"
-                    style="
-                        background:#1565c0;
-                        margin-right:5px;
-                    "
-                >
-                    Edit
-                </button>
+            const displayUserID =
+                user.userID ||
+                user.id ||
+                "";
 
 
-                <button
-                    onclick="deleteUser(${user.id})"
-                >
-                    Delete
-                </button>
+            table.innerHTML += `
 
-            </td>
+                <tr>
 
-        </tr>
+                    <td>
+                        ${escapeHTML(
+                            displayUserID
+                        )}
+                    </td>
 
-        `;
+                    <td>
+                        ${escapeHTML(
+                            user.full_name
+                        )}
+                    </td>
 
-    });
+                    <td>
+                        ${escapeHTML(
+                            user.email
+                        )}
+                    </td>
 
+                    <td>
+                        ${escapeHTML(
+                            user.username
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(
+                            user.role
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(
+                            user.status
+                        )}
+                    </td>
+
+                    <td>
+
+                        <button
+                            onclick="editUser(${user.id})"
+                            style="
+                                background:#1565c0;
+                                margin-right:5px;
+                            "
+                        >
+                            Edit
+                        </button>
+
+
+                        <button
+                            onclick="deleteUser(${user.id})"
+                        >
+                            Delete
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
 }
 
 
+/* =========================================================
+   EDIT USER
+   ========================================================= */
 
-// =====================================
-// EDIT USER
-// =====================================
-
-async function editUser(id){
+async function editUser(id) {
 
     const loggedUser =
         getLoggedInUser();
 
-    if(!loggedUser){
+
+    if (!loggedUser) {
+
         return;
     }
 
 
-    if(!loggedUser.farm_id){
+    if (!loggedUser.farm_id) {
 
         alert(
             "Your account is not linked to a farm."
@@ -394,12 +774,17 @@ async function editUser(id){
     }
 
 
-    const { data, error } =
+    const {
+        data,
+        error
+    } =
         await supabaseClient
 
         .from("users")
 
-        .select("*")
+        .select(
+            "id, userID, full_name, email, username, role, status"
+        )
 
         .eq(
             "id",
@@ -414,9 +799,12 @@ async function editUser(id){
         .single();
 
 
-    if(error){
+    if (error) {
 
-        console.log(error);
+        console.error(
+            "EDIT USER LOAD ERROR:",
+            error
+        );
 
         alert(
             "Unable to load user: " +
@@ -427,77 +815,121 @@ async function editUser(id){
     }
 
 
-    // =====================================
-    // PUT USER DATA INTO FORM
-    // =====================================
+    /* =====================================================
+       PUT USER DATA INTO FORM
+       ===================================================== */
 
     document
         .getElementById("userID")
-        .value = data.id;
+        .value =
+            data.userID ||
+            data.id ||
+            "";
 
 
     document
         .getElementById("fullName")
         .value =
-            data.full_name || "";
+            data.full_name ||
+            "";
+
+
+    document
+        .getElementById("email")
+        .value =
+            data.email ||
+            "";
 
 
     document
         .getElementById("username")
         .value =
-            data.username || "";
+            data.username ||
+            "";
+
+
+    /* =====================================================
+       PASSWORD NEVER LOADED
+       ===================================================== */
+
+    document
+        .getElementById("password")
+        .value = "";
 
 
     document
         .getElementById("password")
-        .value =
-            data.password || "";
+        .required = false;
+
+
+    document
+        .getElementById("password")
+        .placeholder =
+            "Password is managed separately";
 
 
     document
         .getElementById("role")
         .value =
-            data.role || "";
+            data.role ||
+            "";
 
 
     document
         .getElementById("status")
         .value =
-            data.status || "";
+            data.status ||
+            "Active";
 
 
-    // Scroll to form
+    /* =====================================================
+       EMAIL CANNOT BE CHANGED HERE
+       ===================================================== */
+
+    document
+        .getElementById("email")
+        .readOnly = true;
+
+
+    /* =====================================================
+       SCROLL TO FORM
+       ===================================================== */
 
     document
         .getElementById("userForm")
         .scrollIntoView({
-            behavior:"smooth"
+
+            behavior:
+                "smooth"
+
         });
 
 
     alert(
-        "User loaded. Make your changes and click Update User."
-    );
 
+        "User loaded. Password is not displayed because passwords are securely managed by Supabase Auth."
+
+    );
 }
 
 
+/* =========================================================
+   UPDATE USER
+   ========================================================= */
 
-// =====================================
-// UPDATE USER
-// =====================================
-
-async function updateUser(){
+async function updateUser() {
 
     const loggedUser =
         getLoggedInUser();
 
-    if(!loggedUser){
+
+    if (!loggedUser) {
+
         return;
     }
 
 
-    if(!loggedUser.farm_id){
+    if (!loggedUser.farm_id) {
 
         alert(
             "Your account is not linked to a farm."
@@ -514,7 +946,7 @@ async function updateUser(){
         .trim();
 
 
-    if(!userID){
+    if (!userID) {
 
         alert(
             "Please select a user using the Edit button first."
@@ -538,13 +970,6 @@ async function updateUser(){
         .trim();
 
 
-    const password =
-        document
-        .getElementById("password")
-        .value
-        .trim();
-
-
     const role =
         document
         .getElementById("role")
@@ -557,12 +982,11 @@ async function updateUser(){
         .value;
 
 
-    if(
+    if (
         fullName === "" ||
         username === "" ||
-        password === "" ||
         role === ""
-    ){
+    ) {
 
         alert(
             "Please fill all required fields."
@@ -572,14 +996,26 @@ async function updateUser(){
     }
 
 
-    // =====================================
-    // PREVENT CHANGING OWN ACCOUNT
-    // =====================================
+    /* =====================================================
+       PREVENT CHANGING OWN ACCOUNT
+       ===================================================== */
 
-    if(
-        Number(userID) ===
-        Number(loggedUser.id)
-    ){
+    const numericUserID =
+        Number(
+            userID.replace(
+                "U-",
+                ""
+            )
+        );
+
+
+    if (
+        Number.isNaN(
+            numericUserID
+        ) === false &&
+        numericUserID ===
+            Number(loggedUser.id)
+    ) {
 
         alert(
             "You cannot update your own account from User Management."
@@ -589,107 +1025,31 @@ async function updateUser(){
     }
 
 
-    const { error } =
-        await supabaseClient
-
-        .from("users")
-
-        .update({
-
-            full_name:
-                fullName,
-
-            username:
-                username,
-
-            password:
-                password,
-
-            role:
-                role,
-
-            status:
-                status
-
-        })
-
-        .eq(
-            "id",
-            userID
-        )
-
-        .eq(
-            "farm_id",
-            loggedUser.farm_id
-        );
-
-
-    if(error){
-
-        console.log(error);
-
-        alert(
-            "Update failed: " +
-            error.message
-        );
-
-        return;
-    }
-
-
-    // =====================================
-    // ACTIVITY LOG
-    // =====================================
-
-    await saveActivity(
-
-        loggedUser.full_name +
-        " (" +
-        loggedUser.role +
-        ")",
-
-        "Updated",
-
-        "User Management",
-
-        "Updated user: " +
-        fullName +
-        " | Role: " +
-        role +
-        " | Status: " +
-        status
-
-    );
-
-
     alert(
-        "User updated successfully."
+
+        "User updating will be enabled after the secure farm-user update function is added. For now, use this page to create new users."
+
     );
-
-
-    clearForm();
-
-    await loadUsers();
-
 }
 
 
+/* =========================================================
+   DELETE USER
+   ========================================================= */
 
-// =====================================
-// DELETE USER
-// =====================================
-
-async function deleteUser(id){
+async function deleteUser(id) {
 
     const loggedUser =
         getLoggedInUser();
 
-    if(!loggedUser){
+
+    if (!loggedUser) {
+
         return;
     }
 
 
-    if(!loggedUser.farm_id){
+    if (!loggedUser.farm_id) {
 
         alert(
             "Your account is not linked to a farm."
@@ -699,10 +1059,10 @@ async function deleteUser(id){
     }
 
 
-    if(
+    if (
         Number(id) ===
         Number(loggedUser.id)
-    ){
+    ) {
 
         alert(
             "You cannot delete your own account."
@@ -712,80 +1072,25 @@ async function deleteUser(id){
     }
 
 
-    if(
-        !confirm(
-            "Delete this user?"
-        )
-    ){
-
-        return;
-    }
-
-
-    const { error } =
-        await supabaseClient
-
-        .from("users")
-
-        .delete()
-
-        .eq(
-            "id",
-            id
-        )
-
-        .eq(
-            "farm_id",
-            loggedUser.farm_id
-        );
-
-
-    if(error){
-
-        console.log(error);
-
-        alert(
-            "Delete failed: " +
-            error.message
-        );
-
-        return;
-    }
-
-
-    await saveActivity(
-
-        loggedUser.full_name +
-        " (" +
-        loggedUser.role +
-        ")",
-
-        "Deleted",
-
-        "User Management",
-
-        "Deleted user ID: " +
-        id
-
-    );
-
-
     alert(
-        "User deleted successfully"
+
+        "User deletion is temporarily disabled.\n\n" +
+
+        "This is because the user now has a Supabase Auth account. " +
+
+        "Deleting only the database record would leave the Auth account behind.\n\n" +
+
+        "A secure farm-user deletion function will be added separately."
+
     );
-
-
-    await loadUsers();
-
 }
 
 
+/* =========================================================
+   CLEAR FORM
+   ========================================================= */
 
-// =====================================
-// CLEAR FORM
-// =====================================
-
-function clearForm(){
+function clearForm() {
 
     document
         .getElementById("userForm")
@@ -796,23 +1101,36 @@ function clearForm(){
         .getElementById("userID")
         .value = "";
 
+
+    document
+        .getElementById("email")
+        .readOnly = false;
+
+
+    document
+        .getElementById("password")
+        .required = true;
+
+
+    document
+        .getElementById("password")
+        .placeholder =
+            "Create Initial Password";
 }
 
 
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
 
-// =====================================
-// ESCAPE HTML
-// =====================================
+function escapeHTML(value) {
 
-function escapeHTML(value){
-
-    if(
+    if (
         value === null ||
         value === undefined
-    ){
+    ) {
 
         return "";
-
     }
 
 
@@ -842,26 +1160,26 @@ function escapeHTML(value){
             /'/g,
             "&#039;"
         );
-
 }
 
 
+/* =========================================================
+   DOWNLOAD USERS PDF
+   ========================================================= */
 
-// =====================================
-// DOWNLOAD USERS PDF
-// =====================================
-
-async function downloadUsersPDF(){
+async function downloadUsersPDF() {
 
     const loggedUser =
         getLoggedInUser();
 
-    if(!loggedUser){
+
+    if (!loggedUser) {
+
         return;
     }
 
 
-    if(!loggedUser.farm_id){
+    if (!loggedUser.farm_id) {
 
         alert(
             "Your account is not linked to a farm."
@@ -871,13 +1189,16 @@ async function downloadUsersPDF(){
     }
 
 
-    const { data: users, error } =
+    const {
+        data: users,
+        error
+    } =
         await supabaseClient
 
         .from("users")
 
         .select(
-            "id, full_name, username, role, status"
+            "id, userID, full_name, email, username, role, status"
         )
 
         .eq(
@@ -888,12 +1209,12 @@ async function downloadUsersPDF(){
         .order(
             "id",
             {
-                ascending:true
+                ascending: true
             }
         );
 
 
-    if(error){
+    if (error) {
 
         console.error(
             "PDF USER LOAD ERROR:",
@@ -909,10 +1230,10 @@ async function downloadUsersPDF(){
     }
 
 
-    if(
+    if (
         !users ||
         users.length === 0
-    ){
+    ) {
 
         alert(
             "There are no registered users to download."
@@ -922,10 +1243,10 @@ async function downloadUsersPDF(){
     }
 
 
-    if(
+    if (
         !window.jspdf ||
         !window.jspdf.jsPDF
-    ){
+    ) {
 
         alert(
             "PDF library has not loaded. Please refresh the page."
@@ -948,35 +1269,44 @@ async function downloadUsersPDF(){
         );
 
 
-    // =====================================
-    // PDF HEADER
-    // =====================================
+    /* =====================================================
+       PDF HEADER
+       ===================================================== */
 
     doc.setFont(
         "helvetica",
         "bold"
     );
 
-    doc.setFontSize(20);
+
+    doc.setFontSize(
+        20
+    );
+
 
     doc.text(
         "MUNKA PIGGERY",
         148,
         15,
         {
-            align:"center"
+            align:
+                "center"
         }
     );
 
 
-    doc.setFontSize(14);
+    doc.setFontSize(
+        14
+    );
+
 
     doc.text(
         "REGISTERED USERS REPORT",
         148,
         23,
         {
-            align:"center"
+            align:
+                "center"
         }
     );
 
@@ -986,7 +1316,10 @@ async function downloadUsersPDF(){
         "normal"
     );
 
-    doc.setFontSize(9);
+
+    doc.setFontSize(
+        9
+    );
 
 
     doc.text(
@@ -1005,25 +1338,34 @@ async function downloadUsersPDF(){
     );
 
 
-    // =====================================
-    // TABLE
-    // =====================================
+    /* =====================================================
+       PDF TABLE
+       ===================================================== */
 
     const tableData =
         users.map(
-            (user,index)=>[
+            (user, index) => [
 
                 index + 1,
 
-                user.id ?? "",
+                user.userID ||
+                user.id ||
+                "",
 
-                user.full_name ?? "",
+                user.full_name ||
+                "",
 
-                user.username ?? "",
+                user.email ||
+                "",
 
-                user.role ?? "",
+                user.username ||
+                "",
 
-                user.status ?? ""
+                user.role ||
+                "",
+
+                user.status ||
+                ""
 
             ]
         );
@@ -1031,64 +1373,91 @@ async function downloadUsersPDF(){
 
     doc.autoTable({
 
-        startY:44,
+        startY:
+            44,
 
-        head:[[
+        head: [[
 
             "#",
+
             "User ID",
+
             "Full Name",
+
+            "Email",
+
             "Username",
+
             "Role",
+
             "Status"
 
         ]],
 
-        body:tableData,
+        body:
+            tableData,
 
-        theme:"grid",
+        theme:
+            "grid",
 
-        headStyles:{
+        headStyles: {
 
-            fontStyle:"bold",
+            fontStyle:
+                "bold",
 
-            halign:"center"
-
-        },
-
-        bodyStyles:{
-
-            fontSize:9
+            halign:
+                "center"
 
         },
 
-        columnStyles:{
+        bodyStyles: {
 
-            0:{
-                halign:"center",
-                cellWidth:12
+            fontSize:
+                8
+
+        },
+
+        columnStyles: {
+
+            0: {
+                halign:
+                    "center",
+                cellWidth:
+                    10
             },
 
-            1:{
-                halign:"center",
-                cellWidth:25
+            1: {
+                halign:
+                    "center",
+                cellWidth:
+                    28
             },
 
-            2:{
-                cellWidth:55
+            2: {
+                cellWidth:
+                    45
             },
 
-            3:{
-                cellWidth:45
+            3: {
+                cellWidth:
+                    55
             },
 
-            4:{
-                cellWidth:45
+            4: {
+                cellWidth:
+                    38
             },
 
-            5:{
-                halign:"center",
-                cellWidth:30
+            5: {
+                cellWidth:
+                    48
+            },
+
+            6: {
+                halign:
+                    "center",
+                cellWidth:
+                    25
             }
 
         }
@@ -1096,24 +1465,30 @@ async function downloadUsersPDF(){
     });
 
 
-    // =====================================
-    // FOOTER
-    // =====================================
+    /* =====================================================
+       PDF FOOTER
+       ===================================================== */
 
     const pageCount =
         doc.internal
         .getNumberOfPages();
 
 
-    for(
+    for (
         let page = 1;
         page <= pageCount;
         page++
-    ){
+    ) {
 
-        doc.setPage(page);
+        doc.setPage(
+            page
+        );
 
-        doc.setFontSize(8);
+
+        doc.setFontSize(
+            8
+        );
+
 
         doc.setFont(
             "helvetica",
@@ -1126,10 +1501,12 @@ async function downloadUsersPDF(){
             "MUNKA PIGGERY Management System",
 
             148,
+
             200,
 
             {
-                align:"center"
+                align:
+                    "center"
             }
 
         );
@@ -1143,10 +1520,12 @@ async function downloadUsersPDF(){
             pageCount,
 
             280,
+
             200,
 
             {
-                align:"right"
+                align:
+                    "right"
             }
 
         );
@@ -1154,9 +1533,9 @@ async function downloadUsersPDF(){
     }
 
 
-    // =====================================
-    // SAVE
-    // =====================================
+    /* =====================================================
+       SAVE PDF
+       ===================================================== */
 
     const date =
         new Date()
@@ -1174,20 +1553,18 @@ async function downloadUsersPDF(){
         ".pdf"
 
     );
-
 }
 
 
-
-// =====================================
-// LOAD AUTOMATICALLY
-// =====================================
+/* =========================================================
+   LOAD AUTOMATICALLY
+   ========================================================= */
 
 document.addEventListener(
 
     "DOMContentLoaded",
 
-    function(){
+    function () {
 
         loadUsers();
 

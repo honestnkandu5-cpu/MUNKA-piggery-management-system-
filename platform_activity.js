@@ -1,246 +1,873 @@
-/* ==========================================================
+/* =========================================================
    MUNKA PIGGERY
    SUPER ADMIN - PLATFORM ACTIVITY LOGS
-   ========================================================== */
+   platform_activity.js
+========================================================= */
 
-let currentUser = null;
+let allActivities = [];
+let allFarms = [];
 
 
-/* ==========================================================
-   CHECK SUPER ADMIN
-   ========================================================== */
+/* =========================================================
+   GET LOGGED-IN SUPER ADMIN
+========================================================= */
 
-async function checkSuperAdmin() {
+async function getSuperAdmin() {
 
     const {
         data: { session },
-        error
+        error: sessionError
     } = await supabaseClient.auth.getSession();
 
-    if (error || !session) {
-
-        window.location.href = "login.html";
-
-        return false;
+    if (sessionError) {
+        throw new Error(
+            "Session error: " + sessionError.message
+        );
     }
 
+    if (!session) {
+        window.location.href = "login.html";
+        return null;
+    }
 
-    const {
-        data: user,
-        error: userError
-    } = await supabaseClient
-        .from("users")
-        .select("*")
-        .eq("auth_user_id", session.user.id)
-        .single();
+    const { data: user, error: userError } =
+        await supabaseClient
+            .from("users")
+            .select("*")
+            .eq("auth_user_id", session.user.id)
+            .maybeSingle();
 
+    if (userError) {
+        throw new Error(
+            "User profile error: " +
+            userError.message
+        );
+    }
+
+    if (!user) {
+        throw new Error(
+            "Super Admin profile was not found."
+        );
+    }
 
     if (
-        userError ||
-        !user ||
         user.role !== "Super Admin" ||
         user.status !== "Active"
     ) {
-
-        alert("Access denied.");
+        alert(
+            "Access denied. Super Admin access is required."
+        );
 
         window.location.href = "login.html";
-
-        return false;
+        return null;
     }
 
-
-    currentUser = user;
-
-    return true;
+    return user;
 }
 
 
-/* ==========================================================
-   LOAD ACTIVITY LOGS
-   ========================================================== */
+/* =========================================================
+   DISPLAY SUPER ADMIN INFORMATION
+========================================================= */
 
-async function loadActivityLogs() {
+function displayAdminInfo(user) {
 
-    const container =
-        document.getElementById("activityList");
+    const welcomeUser =
+        document.getElementById("welcomeUser");
+
+    const userDetails =
+        document.getElementById("userDetails");
+
+    const lastLogin =
+        document.getElementById("lastLogin");
 
 
-    if (!container) return;
+    if (welcomeUser) {
+
+        welcomeUser.textContent =
+            `Welcome, ${user.full_name || "Super Admin"}`;
+    }
 
 
-    container.innerHTML =
-        "<p>Loading activity logs...</p>";
+    if (userDetails) {
 
+        userDetails.textContent =
+            `${user.role} • Platform Administration`;
+    }
+
+
+    if (lastLogin) {
+
+        if (user.last_login) {
+
+            lastLogin.textContent =
+                "Last login: " +
+                formatZambiaDateTime(
+                    user.last_login
+                );
+
+        } else {
+
+            lastLogin.textContent =
+                "Last login: Not available";
+        }
+    }
+}
+
+
+/* =========================================================
+   ZAMBIA DATE / TIME
+========================================================= */
+
+function formatZambiaDateTime(dateValue) {
+
+    if (!dateValue) {
+        return "—";
+    }
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return "—";
+    }
+
+    return date.toLocaleString("en-ZM", {
+
+        timeZone: "Africa/Lusaka",
+
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+
+        hour12: false
+    });
+}
+
+
+/* =========================================================
+   LOAD FARMS
+========================================================= */
+
+async function loadFarms() {
+
+    console.log("Loading farms...");
 
     const {
         data,
         error
     } = await supabaseClient
-        .from("activity_logs")
-        .select("*")
-        .order("created_at", {
-            ascending: false
-        })
-        .limit(100);
+        .from("farms")
+        .select("id, farm_name")
+        .order("farm_name", {
+            ascending: true
+        });
 
 
     if (error) {
 
         console.error(
-            "ACTIVITY LOG ERROR:",
+            "Farm loading error:",
+            error
+        );
+
+        throw new Error(
+            "Could not load farms: " +
+            error.message
+        );
+    }
+
+
+    allFarms = data || [];
+
+
+    console.log(
+        "Farms loaded:",
+        allFarms.length,
+        allFarms
+    );
+
+
+    populateFarmFilter();
+}
+
+
+/* =========================================================
+   FARM NAME LOOKUP
+========================================================= */
+
+function getFarmName(farmID) {
+
+    if (
+        farmID === null ||
+        farmID === undefined ||
+        farmID === ""
+    ) {
+        return "Unassigned";
+    }
+
+
+    const farm = allFarms.find(
+        farm =>
+            String(farm.id) ===
+            String(farmID)
+    );
+
+
+    if (farm) {
+
+        return farm.farm_name;
+    }
+
+
+    return `Farm #${farmID}`;
+}
+
+
+/* =========================================================
+   FARM FILTER
+========================================================= */
+
+function populateFarmFilter() {
+
+    const filter =
+        document.getElementById("farmFilter");
+
+
+    if (!filter) {
+        return;
+    }
+
+
+    filter.innerHTML =
+        `<option value="">All Farms</option>`;
+
+
+    allFarms.forEach(farm => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = farm.id;
+        option.textContent = farm.farm_name;
+
+        filter.appendChild(option);
+    });
+}
+
+
+/* =========================================================
+   LOAD ACTIVITY LOGS
+========================================================= */
+
+async function loadActivityLogs() {
+
+    const table =
+        document.getElementById(
+            "activityTable"
+        );
+
+    const emptyState =
+        document.getElementById(
+            "emptyState"
+        );
+
+    const summary =
+        document.getElementById(
+            "activitySummary"
+        );
+
+
+    try {
+
+        if (summary) {
+
+            summary.textContent =
+                "Loading platform activity...";
+        }
+
+
+        console.log(
+            "Starting platform activity loading..."
+        );
+
+
+        const admin =
+            await getSuperAdmin();
+
+
+        if (!admin) {
+            return;
+        }
+
+
+        displayAdminInfo(admin);
+
+
+        await loadFarms();
+
+
+        console.log(
+            "Requesting activity logs..."
+        );
+
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("activity_logs")
+            .select(`
+                id,
+                farm_id,
+                actor_name,
+                actor_role,
+                action,
+                module,
+                description,
+                created_at
+            `)
+            .order("created_at", {
+                ascending: false
+            })
+            .limit(500);
+
+
+        if (error) {
+
+            console.error(
+                "ACTIVITY LOG ERROR:",
+                error
+            );
+
+            throw new Error(
+                "Could not load activity logs: " +
+                error.message
+            );
+        }
+
+
+        allActivities =
+            data || [];
+
+
+        console.log(
+            "Activity logs successfully loaded:",
+            allActivities.length
+        );
+
+
+        console.table(
+            allActivities
+        );
+
+
+        updateStatistics();
+
+
+        renderActivityLogs(
+            allActivities
+        );
+
+
+        if (summary) {
+
+            summary.textContent =
+                `${allActivities.length} activity record(s) found`;
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "PLATFORM ACTIVITY ERROR:",
             error
         );
 
 
-        container.innerHTML = `
-            <p>
-                Unable to load activity logs.
-            </p>
-        `;
+        if (summary) {
 
-        return;
+            summary.textContent =
+                "Error loading activity logs";
+        }
+
+
+        if (table) {
+
+            table.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="8"
+                        style="
+                            text-align:center;
+                            padding:30px;
+                            color:#b42318;
+                        "
+                    >
+
+                        ${escapeHTML(
+                            error.message
+                        )}
+
+                    </td>
+
+                </tr>
+
+            `;
+        }
+
+
+        if (emptyState) {
+
+            emptyState.style.display =
+                "none";
+        }
+
+
+        alert(
+            "Platform Activity Error:\n\n" +
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   UPDATE STATISTICS
+========================================================= */
+
+function updateStatistics() {
+
+    const totalActivities =
+        document.getElementById(
+            "totalActivities"
+        );
+
+    const totalFarms =
+        document.getElementById(
+            "totalFarms"
+        );
+
+    const totalUsers =
+        document.getElementById(
+            "totalUsers"
+        );
+
+    const latestActivity =
+        document.getElementById(
+            "latestActivity"
+        );
+
+
+    /* TOTAL ACTIVITIES */
+
+    if (totalActivities) {
+
+        totalActivities.textContent =
+            allActivities.length;
     }
 
 
-    const activities = data || [];
+    /* UNIQUE FARMS */
+
+    const farmIDs =
+        new Set();
 
 
-    if (activities.length === 0) {
-
-        container.innerHTML =
-            "<p>No activity logs found.</p>";
-
-        return;
-    }
-
-
-    container.innerHTML = "";
-
-
-    activities.forEach(
+    allActivities.forEach(
         activity => {
 
-            const item =
-                document.createElement("div");
+            if (
+                activity.farm_id !== null &&
+                activity.farm_id !== undefined
+            ) {
+
+                farmIDs.add(
+                    String(
+                        activity.farm_id
+                    )
+                );
+            }
+        }
+    );
 
 
-            item.className =
-                "activity-item";
+    if (totalFarms) {
+
+        totalFarms.textContent =
+            farmIDs.size;
+    }
 
 
-            const user =
-                activity.user_name ||
+    /* UNIQUE USERS */
+
+    const users =
+        new Set();
+
+
+    allActivities.forEach(
+        activity => {
+
+            const name =
+                activity.actor_name ||
                 activity.username ||
-                activity.performed_by ||
-                "System";
+                activity.user_name ||
+                activity.performed_by;
 
 
-            const action =
-                activity.action ||
-                "Activity";
+            if (name) {
+
+                users.add(
+                    String(name).trim()
+                );
+            }
+        }
+    );
 
 
-            const module =
-                activity.module ||
-                "System";
+    if (totalUsers) {
+
+        totalUsers.textContent =
+            users.size;
+    }
 
 
-            const description =
-                activity.description ||
-                "";
+    /* LATEST ACTIVITY */
+
+    if (latestActivity) {
+
+        if (
+            allActivities.length > 0
+        ) {
+
+            latestActivity.textContent =
+                formatZambiaDateTime(
+                    allActivities[0]
+                        .created_at
+                );
+
+        } else {
+
+            latestActivity.textContent =
+                "—";
+        }
+    }
+}
 
 
-            const date =
-                activity.created_at
-                    ? new Date(
-                        activity.created_at
-                    ).toLocaleString("en-ZM")
-                    : "N/A";
+/* =========================================================
+   RENDER ACTIVITY TABLE
+========================================================= */
+
+function renderActivityLogs(logs) {
+
+    const table =
+        document.getElementById(
+            "activityTable"
+        );
+
+    const emptyState =
+        document.getElementById(
+            "emptyState"
+        );
 
 
-            item.innerHTML = `
+    if (!table) {
+        return;
+    }
 
-                <div>
 
+    table.innerHTML = "";
+
+
+    if (
+        !logs ||
+        logs.length === 0
+    ) {
+
+        if (emptyState) {
+
+            emptyState.style.display =
+                "block";
+        }
+
+        return;
+    }
+
+
+    if (emptyState) {
+
+        emptyState.style.display =
+            "none";
+    }
+
+
+    logs.forEach(
+        (activity, index) => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            const farmName =
+                getFarmName(
+                    activity.farm_id
+                );
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        formatZambiaDateTime(
+                            activity.created_at
+                        )
+                    )}
+                </td>
+
+                <td>
+                    <span class="farm-badge">
+                        ${escapeHTML(
+                            farmName
+                        )}
+                    </span>
+                </td>
+
+                <td>
                     <strong>
-                        ${escapeHTML(action)}
+                        ${escapeHTML(
+                            activity.actor_name ||
+                            "Unknown"
+                        )}
                     </strong>
+                </td>
 
-                    <p>
-                        ${escapeHTML(description)}
-                    </p>
+                <td>
+                    ${escapeHTML(
+                        activity.actor_role ||
+                        "—"
+                    )}
+                </td>
 
-                </div>
-
-
-                <div class="activity-details">
-
-                    <span class="activity-module">
-                        ${escapeHTML(module)}
+                <td>
+                    <span class="action-badge">
+                        ${escapeHTML(
+                            activity.action ||
+                            "—"
+                        )}
                     </span>
+                </td>
 
-                    <span class="activity-user">
-                        ${escapeHTML(user)}
-                    </span>
+                <td>
+                    ${escapeHTML(
+                        activity.module ||
+                        "—"
+                    )}
+                </td>
 
-                    <span class="activity-date">
-                        ${escapeHTML(date)}
-                    </span>
-
-                </div>
+                <td>
+                    ${escapeHTML(
+                        activity.description ||
+                        "—"
+                    )}
+                </td>
 
             `;
 
 
-            container.appendChild(item);
-
+            table.appendChild(row);
         }
     );
 }
 
 
-/* ==========================================================
-   ESCAPE HTML
-   ========================================================== */
+/* =========================================================
+   FILTER ACTIVITY LOGS
+========================================================= */
 
-function escapeHTML(value) {
+function filterActivityLogs() {
 
-    return String(value)
+    const farmFilter =
+        document.getElementById(
+            "farmFilter"
+        );
 
-        .replace(/&/g, "&amp;")
+    const searchInput =
+        document.getElementById(
+            "activitySearch"
+        );
 
-        .replace(/</g, "&lt;")
 
-        .replace(/>/g, "&gt;")
+    const selectedFarm =
+        farmFilter
+            ? farmFilter.value
+            : "";
 
-        .replace(/"/g, "&quot;")
 
-        .replace(/'/g, "&#039;");
+    const searchText =
+        searchInput
+            ? searchInput.value
+                .trim()
+                .toLowerCase()
+            : "";
+
+
+    const filtered =
+        allActivities.filter(
+            activity => {
+
+                /* FARM FILTER */
+
+                if (
+                    selectedFarm &&
+                    String(
+                        activity.farm_id
+                    ) !==
+                    String(
+                        selectedFarm
+                    )
+                ) {
+
+                    return false;
+                }
+
+
+                /* SEARCH */
+
+                if (searchText) {
+
+                    const farmName =
+                        getFarmName(
+                            activity.farm_id
+                        );
+
+
+                    const searchableText = [
+
+                        activity.actor_name,
+                        activity.actor_role,
+                        activity.action,
+                        activity.module,
+                        activity.description,
+                        farmName
+
+                    ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+
+
+                    if (
+                        !searchableText.includes(
+                            searchText
+                        )
+                    ) {
+
+                        return false;
+                    }
+                }
+
+
+                return true;
+            }
+        );
+
+
+    renderActivityLogs(
+        filtered
+    );
+
+
+    const summary =
+        document.getElementById(
+            "activitySummary"
+        );
+
+
+    if (summary) {
+
+        summary.textContent =
+            `${filtered.length} of ${allActivities.length} activity record(s)`;
+    }
 }
 
 
-/* ==========================================================
+/* =========================================================
+   HTML SECURITY
+========================================================= */
+
+function escapeHTML(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function goToDashboard() {
+
+    window.location.href =
+        "platform_dashboard.html";
+}
+
+
+/* =========================================================
    LOGOUT
-   ========================================================== */
+========================================================= */
 
 async function logout() {
 
     try {
 
-        await supabaseClient
-            .auth
-            .signOut();
+        await supabaseClient.auth.signOut();
 
-    }
-
-    catch(error) {
+    } catch (error) {
 
         console.error(
-            "LOGOUT ERROR:",
+            "Logout error:",
             error
         );
-
     }
 
 
@@ -254,23 +881,19 @@ async function logout() {
 }
 
 
-/* ==========================================================
-   INITIALIZE
-   ========================================================== */
+/* =========================================================
+   PAGE INITIALIZATION
+========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
-    async function() {
+    function () {
 
-        const allowed =
-            await checkSuperAdmin();
+        console.log(
+            "Platform Activity page initialized."
+        );
 
-
-        if (!allowed) return;
-
-
-        await loadActivityLogs();
+        loadActivityLogs();
 
     }
 );
-

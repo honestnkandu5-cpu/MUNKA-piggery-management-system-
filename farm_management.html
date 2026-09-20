@@ -4,21 +4,26 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
 <title>MUNKA PIGGERY - Farm Management</title>
 
-<link rel="stylesheet" href="farm_management.css">
+<link
+    rel="stylesheet"
+    href="farm_management.css">
 
 </head>
 
-
 <body>
-
 
 <header class="super-admin-header">
 
-    <h1>Farm Management</h1>
+    <h1>
+        Farm Management
+    </h1>
 
     <p>
         MUNKA PIGGERY Management System -
@@ -31,111 +36,167 @@
 <main class="super-admin-container">
 
 
-    <!-- =====================================
-         ADD / EDIT FARM FORM
-         ===================================== -->
+    <!-- =================================================
+         FARM MANAGEMENT FORM
+         ================================================= -->
 
     <div class="farm-form">
 
-        <h2>Add / Edit Farm</h2>
+        <h2>
+            Farm Management
+        </h2>
 
+
+        <!-- EXISTING FARM DROPDOWN -->
+
+        <div class="form-group">
+
+            <label for="existingFarm">
+
+                Select Existing Farm
+
+            </label>
+
+            <select
+                id="existingFarm"
+                onchange="selectExistingFarm()">
+
+                <option value="">
+
+                    -- Select a registered farm --
+
+                </option>
+
+            </select>
+
+            <small class="form-help">
+
+                Select a farm to view or edit its details.
+
+            </small>
+
+        </div>
+
+
+        <!-- NEW FARM NAME -->
 
         <div class="form-group">
 
             <label for="farmName">
+
                 Farm Name *
+
             </label>
 
             <input
                 type="text"
                 id="farmName"
-                placeholder="Enter farm name"
-                required
-            >
+                placeholder="Enter new farm name">
+
+            <small class="form-help">
+
+                Enter a new name when registering a new farm.
+
+            </small>
 
         </div>
 
 
-        <div class="form-group">
+        <!-- FARM DETAILS -->
 
-            <label for="ownerName">
-                Owner Name
-            </label>
+        <div class="farm-form-grid">
 
-            <input
-                type="text"
-                id="ownerName"
-                placeholder="Enter owner name"
-            >
+
+            <div class="form-group">
+
+                <label for="ownerName">
+
+                    Owner Name
+
+                </label>
+
+                <input
+                    type="text"
+                    id="ownerName"
+                    placeholder="Enter owner name">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="farmPhone">
+
+                    Phone Number
+
+                </label>
+
+                <input
+                    type="tel"
+                    id="farmPhone"
+                    placeholder="Enter phone number">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="farmEmail">
+
+                    Email Address
+
+                </label>
+
+                <input
+                    type="email"
+                    id="farmEmail"
+                    placeholder="Enter farm email">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="farmLocation">
+
+                    Farm Location
+
+                </label>
+
+                <input
+                    type="text"
+                    id="farmLocation"
+                    placeholder="Enter farm location">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="farmStatus">
+
+                    Farm Status
+
+                </label>
+
+                <select id="farmStatus">
+
+                    <option value="Active">
+                        Active
+                    </option>
+
+                    <option value="Inactive">
+                        Inactive
+                    </option>
+
+                </select>
+
+            </div>
 
         </div>
 
 
-        <div class="form-group">
-
-            <label for="farmPhone">
-                Phone Number
-            </label>
-
-            <input
-                type="tel"
-                id="farmPhone"
-                placeholder="Enter phone number"
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label for="farmEmail">
-                Email Address
-            </label>
-
-            <input
-                type="email"
-                id="farmEmail"
-                placeholder="Enter farm email"
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label for="farmLocation">
-                Farm Location
-            </label>
-
-            <input
-                type="text"
-                id="farmLocation"
-                placeholder="Enter farm location"
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label for="farmStatus">
-                Status
-            </label>
-
-            <select id="farmStatus">
-
-                <option value="Active">
-                    Active
-                </option>
-
-                <option value="Inactive">
-                    Inactive
-                </option>
-
-            </select>
-
-        </div>
-
+        <!-- BUTTONS -->
 
         <div class="form-buttons">
 
@@ -164,13 +225,16 @@
     </div>
 
 
-    <!-- =====================================
+
+    <!-- =================================================
          REGISTERED FARMS
-         ===================================== -->
+         ================================================= -->
 
     <div class="farm-form">
 
-        <h2>Registered Farms</h2>
+        <h2>
+            Registered Farms
+        </h2>
 
         <div id="farmList">
 
@@ -183,9 +247,10 @@
     </div>
 
 
-    <!-- =====================================
+
+    <!-- =================================================
          BACK BUTTON
-         ===================================== -->
+         ================================================= -->
 
     <div class="logout-section">
 
@@ -193,35 +258,32 @@
             class="logout-btn"
             onclick="window.location.href='superadmin.html'">
 
-            Back to Super Admin
+            ← Back to Super Admin
 
         </button>
 
     </div>
 
-
 </main>
+
 
 
 <footer class="super-admin-footer">
 
-    MUNKA PIGGERY Management System<br>
+    MUNKA PIGGERY Management System
+    <br>
 
     Super Admin Platform
 
 </footer>
 
 
-<!-- =====================================
-     SUPABASE
-     ===================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase.js"></script>
 
 <script src="farm_management.js"></script>
-
 
 </body>
 

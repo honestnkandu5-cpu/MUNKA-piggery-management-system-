@@ -87,7 +87,7 @@ body {
    ===================================================== */
 
 .form-group {
-    margin-bottom: 5px;
+    margin-bottom: 15px;
 }
 
 .form-group.full-width {
@@ -118,6 +118,13 @@ body {
     outline: none;
     border-color: #198754;
     box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.1);
+}
+
+.form-help {
+    display: block;
+    margin-top: 6px;
+    color: #68756d;
+    font-size: 12px;
 }
 
 
@@ -228,6 +235,40 @@ body {
 
 
 /* =====================================================
+   SUBSCRIPTION
+   ===================================================== */
+
+.subscription-box {
+    margin-top: 18px;
+    padding: 15px;
+    border-radius: 9px;
+    background: #f5f8f6;
+    border: 1px solid #dce5df;
+}
+
+.subscription-box h3 {
+    color: #123d2a;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.subscription-active {
+    color: #198754;
+    font-weight: bold;
+}
+
+.subscription-expired {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.subscription-warning {
+    color: #b58105;
+    font-weight: bold;
+}
+
+
+/* =====================================================
    FARM ACTIONS
    ===================================================== */
 
@@ -264,6 +305,20 @@ body {
 
 .status-btn:hover {
     background: #e0a800;
+}
+
+.renew-btn {
+    background: #198754;
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.renew-btn:hover {
+    background: #146c43;
 }
 
 
@@ -358,8 +413,8 @@ body {
     }
 
     .edit-btn,
-    .status-btn {
+    .status-btn,
+    .renew-btn {
         width: 100%;
     }
 }
-

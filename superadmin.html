@@ -1,595 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
 
-<meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    <title>MUNKA PIGGERY - Super Admin</title>
 
-<title>
-    MUNKA PIGGERY - Super Admin
-</title>
-
-<link
-    rel="stylesheet"
-    href="dashboard.css">
-
+    <link rel="stylesheet" href="superadmin.css">
 </head>
 
 <body>
 
-<!-- ======================================================
-     TOP NAVIGATION BAR
-====================================================== -->
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+    <header class="topbar">
 
-<header class="topbar">
-
-    <div class="brand">
-
-        <div class="brand-icon">
-            🐖
+        <div class="brand">
+            <h1>MUNKA PIGGERY</h1>
+            <span>Management System</span>
         </div>
 
-        <div class="brand-text">
+        <div class="topbar-actions">
 
-            <h1>
-                MUNKA PIGGERY
-            </h1>
-
-            <span>
-                Platform Administration
-            </span>
-
-        </div>
-
-    </div>
-
-
-    <div class="top-actions">
-
-        <button
-            type="button"
-            class="top-action"
-            onclick="window.location.href='change_password.html'">
-
-            🔐
-            <span>
+            <button
+                type="button"
+                class="header-btn"
+                onclick="changePassword()">
                 Change Password
-            </span>
+            </button>
 
-        </button>
-
-
-        <button
-            type="button"
-            class="top-action logout-btn"
-            onclick="logout()">
-
-            🚪
-            <span>
+            <button
+                type="button"
+                class="logout-btn"
+                onclick="logout()">
                 Logout
-            </span>
+            </button>
 
-        </button>
+        </div>
 
-    </div>
-
-</header>
+    </header>
 
 
-<!-- ======================================================
-     SUPER ADMIN MAIN AREA
-====================================================== -->
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+    <main class="container">
 
-<main class="dashboard-container">
-
-
-    <!-- ==================================================
-         WELCOME SECTION
-    ================================================== -->
-
-    <section class="welcome-section">
-
-        <div class="welcome-content">
+        <!-- =================================================
+             WELCOME SECTION
+        ================================================== -->
+        <section class="welcome-card">
 
             <div class="welcome-icon">
                 🛡️
             </div>
 
-            <div>
-
-                <p class="welcome-label">
-                    PLATFORM ADMINISTRATOR
-                </p>
+            <div class="welcome-text">
 
                 <h2 id="welcomeUser">
-                    Welcome Super Admin
+                    Welcome, Super Admin
                 </h2>
 
-                <p class="welcome-description">
+                <p id="userDetails">
+                    Loading administrator details...
+                </p>
 
-                    Welcome to the MUNKA PIGGERY Platform
-                    Administration Centre. Manage farms,
-                    users, permissions, platform activity
-                    and system-wide reports from one secure
-                    control centre.
-
+                <p id="lastLogin">
+                    Last login: Loading...
                 </p>
 
             </div>
 
-        </div>
+        </section>
 
 
-        <!-- USER INFORMATION -->
+        <!-- =================================================
+             ADMINISTRATION MODULES
+        ================================================== -->
+        <section class="modules-section">
 
-        <div class="user-information">
-
-            <div class="user-info-item">
-
-                <span class="info-icon">
-                    👤
-                </span>
+            <div class="section-heading">
 
                 <div>
+                    <h2>Platform Administration</h2>
 
-                    <small>
-                        Account
-                    </small>
-
-                    <p id="userDetails">
-                        Super Administrator
+                    <p>
+                        Manage farms, users, subscriptions,
+                        permissions, reports and platform activity.
                     </p>
-
                 </div>
 
             </div>
 
 
-            <div class="user-info-item">
+            <!-- =================================================
+                 MODULE BUTTONS
+            ================================================== -->
+            <div
+                id="superAdminButtons"
+                class="module-grid">
 
-                <span class="info-icon">
-                    🕐
-                </span>
 
-                <div>
+                <!-- PLATFORM DASHBOARD -->
+                <button
+                    id="platformDashboardButton"
+                    class="module-card"
+                    type="button"
+                    data-platform-module="Platform Dashboard"
+                    data-platform-permission-type="can_view"
+                    onclick="openSuperAdminDashboard()">
 
-                    <small>
-                        Last Login
-                    </small>
+                    <div class="module-icon">
+                        📊
+                    </div>
 
-                    <p id="lastLogin">
-                        Loading...
-                    </p>
+                    <div class="module-content">
 
-                </div>
+                        <h3>Platform Dashboard</h3>
+
+                        <p>
+                            View overall platform statistics,
+                            farms, subscriptions and system activity.
+                        </p>
+
+                    </div>
+
+                    <span class="module-arrow">
+                        →
+                    </span>
+
+                </button>
+
+
+                <!-- FARM MANAGEMENT -->
+                <button
+                    id="farmManagementButton"
+                    class="module-card"
+                    type="button"
+                    data-platform-module="Farm Management"
+                    data-platform-permission-type="can_view"
+                    onclick="openFarmManagement()">
+
+                    <div class="module-icon">
+                        🏠
+                    </div>
+
+                    <div class="module-content">
+
+                        <h3>Farm Management</h3>
+
+                        <p>
+                            Register farms, manage farm details,
+                            subscriptions and farm status.
+                        </p>
+
+                    </div>
+
+                    <span class="module-arrow">
+                        →
+                    </span>
+
+                </button>
+
+
+                <!-- PLATFORM USER MANAGEMENT -->
+                <button
+                    id="platformUserManagementButton"
+                    class="module-card"
+                    type="button"
+                    data-platform-module="User Management"
+                    data-platform-permission-type="can_view"
+                    onclick="openPlatformUsers()">
+
+                    <div class="module-icon">
+                        👥
+                    </div>
+
+                    <div class="module-content">
+
+                        <h3>User Management</h3>
+
+                        <p>
+                            Create and manage users across
+                            registered farms on the platform.
+                        </p>
+
+                    </div>
+
+                    <span class="module-arrow">
+                        →
+                    </span>
+
+                </button>
+
+
+                <!-- ACTIVITY LOGS -->
+                <button
+                    id="platformActivityButton"
+                    class="module-card"
+                    type="button"
+                    data-platform-module="Activity Logs"
+                    data-platform-permission-type="can_view"
+                    onclick="openPlatformActivity()">
+
+                    <div class="module-icon">
+                        📋
+                    </div>
+
+                    <div class="module-content">
+
+                        <h3>Activity Logs</h3>
+
+                        <p>
+                            Monitor activities performed across
+                            all farms on the platform.
+                        </p>
+
+                    </div>
+
+                    <span class="module-arrow">
+                        →
+                    </span>
+
+                </button>
+
+
+                <!-- PLATFORM REPORTS -->
+                <button
+                    id="platformReportsButton"
+                    class="module-card"
+                    type="button"
+                    data-platform-module="Platform Reports"
+                    data-platform-permission-type="can_view"
+                    onclick="openPlatformReports()">
+
+                    <div class="module-icon">
+                        📈
+                    </div>
+
+                    <div class="module-content">
+
+                        <h3>Platform Reports</h3>
+
+                        <p>
+                            View platform-wide reports,
+                            statistics and business information.
+                        </p>
+
+                    </div>
+
+                    <span class="module-arrow">
+                        →
+                    </span>
+
+                </button>
+
+
+                <!-- PLATFORM PERMISSIONS -->
+                <button
+                    id="platformPermissionsButton"
+                    class="module-card"
+                    type="button"
+                    data-platform-module="Platform Permissions"
+                    data-platform-permission-type="can_view"
+                    onclick="openPlatformPermissions()">
+
+                    <div class="module-icon">
+                        🔐
+                    </div>
+
+                    <div class="module-content">
+
+                        <h3>Platform Permissions</h3>
+
+                        <p>
+                            Control what platform roles can
+                            view, add, edit, delete and report.
+                        </p>
+
+                    </div>
+
+                    <span class="module-arrow">
+                        →
+                    </span>
+
+                </button>
+
+
+                <!-- RECORD SUBSCRIPTION PAYMENT -->
+                <button
+                    id="recordSubscriptionPaymentButton"
+                    class="module-card"
+                    type="button"
+                    data-platform-module="Record Subscription Payment"
+                    data-platform-permission-type="can_view"
+                    onclick="openSubscriptionPayment()">
+
+                    <div class="module-icon">
+                        💳
+                    </div>
+
+                    <div class="module-content">
+
+                        <h3>Record Subscription Payment</h3>
+
+                        <p>
+                            Record manual subscription payments
+                            made by farms and update their subscriptions.
+                        </p>
+
+                    </div>
+
+                    <span class="module-arrow">
+                        →
+                    </span>
+
+                </button>
+
 
             </div>
 
-        </div>
-
-    </section>
+        </section>
 
 
+        <!-- =================================================
+             SECURITY INFORMATION
+        ================================================== -->
+        <section class="security-card">
 
-    <!-- ==================================================
-         PLATFORM OVERVIEW
-    ================================================== -->
-
-    <section class="overview-section">
-
-        <div class="section-heading">
+            <div class="security-icon">
+                🔒
+            </div>
 
             <div>
 
-                <p class="section-label">
-                    PLATFORM OVERVIEW
+                <h3>Super Admin Security</h3>
+
+                <p>
+                    You are accessing the MUNKA PIGGERY
+                    platform administration area. Platform-level
+                    information and controls are restricted to
+                    authorised Super Administrators.
                 </p>
 
-                <h2>
-                    Administration Centre
-                </h2>
-
             </div>
 
-            <span class="section-badge">
-                SUPER ADMIN
-            </span>
+        </section>
 
-        </div>
+    </main>
 
 
-        <div class="overview-grid">
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+    <footer class="footer">
 
+        <p>
+            © <span id="currentYear"></span>
+            MUNKA PIGGERY Management System
+        </p>
 
-            <div class="overview-card">
+        <p>
+            Super Admin Platform
+        </p>
 
-                <div class="overview-icon">
-                    🏢
-                </div>
+    </footer>
 
-                <div>
 
-                    <h3>
-                        Farm Management
-                    </h3>
+    <!-- =====================================================
+         SUPABASE
+    ====================================================== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-                    <p>
-                        Manage registered farms
-                        and platform subscriptions.
-                    </p>
+    <script src="supabase.js"></script>
 
-                </div>
+    <script src="security.js"></script>
 
-            </div>
+    <script src="superadmin.js"></script>
 
 
-            <div class="overview-card">
+    <!-- =====================================================
+         BASIC PAGE INITIALISATION
+    ====================================================== -->
+    <script>
 
-                <div class="overview-icon">
-                    👥
-                </div>
+        document.getElementById("currentYear").textContent =
+            new Date().getFullYear();
 
-                <div>
-
-                    <h3>
-                        Platform Users
-                    </h3>
-
-                    <p>
-                        Manage platform-level
-                        user accounts and access.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="overview-card">
-
-                <div class="overview-icon">
-                    📊
-                </div>
-
-                <div>
-
-                    <h3>
-                        System Reports
-                    </h3>
-
-                    <p>
-                        Monitor platform-wide
-                        reports and information.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="overview-card">
-
-                <div class="overview-icon">
-                    🛡️
-                </div>
-
-                <div>
-
-                    <h3>
-                        Security & Access
-                    </h3>
-
-                    <p>
-                        Control platform permissions
-                        and administrative access.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-
-    <!-- ==================================================
-         PLATFORM ADMINISTRATION MODULES
-    ================================================== -->
-
-    <section class="modules-section">
-
-        <div class="section-heading">
-
-            <div>
-
-                <p class="section-label">
-                    PLATFORM CONTROL
-                </p>
-
-                <h2>
-                    Administration Modules
-                </h2>
-
-            </div>
-
-            <p class="section-description">
-                Select an administration function below.
-            </p>
-
-        </div>
-
-
-        <div
-            class="buttons"
-            id="superAdminButtons">
-
-
-            <!-- ==================================================
-                 PLATFORM DASHBOARD
-            ================================================== -->
-
-            <button
-                type="button"
-                class="module-card"
-                data-platform-module="Dashboard"
-                data-platform-permission-type="can_view"
-                onclick="openSuperAdminDashboard()">
-
-                <span class="module-icon">
-                    🏠
-                </span>
-
-                <span class="module-content">
-
-                    <strong>
-                        Platform Dashboard
-                    </strong>
-
-                    <small>
-                        View platform-wide administration
-                        information and statistics.
-                    </small>
-
-                </span>
-
-                <span class="module-arrow">
-                    →
-                </span>
-
-            </button>
-
-
-
-            <!-- ==================================================
-                 FARM MANAGEMENT
-            ================================================== -->
-
-            <button
-                type="button"
-                class="module-card"
-                data-platform-module="Farm Management"
-                data-platform-permission-type="can_view"
-                onclick="openFarmManagement()">
-
-                <span class="module-icon">
-                    🏢
-                </span>
-
-                <span class="module-content">
-
-                    <strong>
-                        Farm Management
-                    </strong>
-
-                    <small>
-                        Register, manage and monitor
-                        farms on the platform.
-                    </small>
-
-                </span>
-
-                <span class="module-arrow">
-                    →
-                </span>
-
-            </button>
-
-
-
-            <!-- ==================================================
-                 USER MANAGEMENT
-            ================================================== -->
-
-            <button
-                type="button"
-                class="module-card"
-                data-platform-module="User Management"
-                data-platform-permission-type="can_view"
-                onclick="openPlatformUsers()">
-
-                <span class="module-icon">
-                    👥
-                </span>
-
-                <span class="module-content">
-
-                    <strong>
-                        User Management
-                    </strong>
-
-                    <small>
-                        Manage platform administrators
-                        and authorised users.
-                    </small>
-
-                </span>
-
-                <span class="module-arrow">
-                    →
-                </span>
-
-            </button>
-
-
-
-            <!-- ==================================================
-                 ACTIVITY LOGS
-            ================================================== -->
-
-            <button
-                type="button"
-                class="module-card"
-                data-platform-module="Activity Logs"
-                data-platform-permission-type="can_view"
-                onclick="openPlatformActivity()">
-
-                <span class="module-icon">
-                    📋
-                </span>
-
-                <span class="module-content">
-
-                    <strong>
-                        Activity Logs
-                    </strong>
-
-                    <small>
-                        Monitor important platform
-                        activities and events.
-                    </small>
-
-                </span>
-
-                <span class="module-arrow">
-                    →
-                </span>
-
-            </button>
-
-
-
-            <!-- ==================================================
-                 PLATFORM REPORTS
-            ================================================== -->
-
-            <button
-                type="button"
-                class="module-card"
-                data-platform-module="Platform Reports"
-                data-platform-permission-type="can_view"
-                onclick="openPlatformReports()">
-
-                <span class="module-icon">
-                    📊
-                </span>
-
-                <span class="module-content">
-
-                    <strong>
-                        Platform Reports
-                    </strong>
-
-                    <small>
-                        Generate and review system-wide
-                        platform reports.
-                    </small>
-
-                </span>
-
-                <span class="module-arrow">
-                    →
-                </span>
-
-            </button>
-
-
-
-            <!-- ==================================================
-                 PLATFORM PERMISSIONS
-            ================================================== -->
-
-            <button
-                type="button"
-                class="module-card"
-                data-platform-module="Platform Permissions"
-                data-platform-permission-type="can_view"
-                onclick="openPlatformPermissions()">
-
-                <span class="module-icon">
-                    🔐
-                </span>
-
-                <span class="module-content">
-
-                    <strong>
-                        Platform Permissions
-                    </strong>
-
-                    <small>
-                        Configure and manage platform-level
-                        access permissions.
-                    </small>
-
-                </span>
-
-                <span class="module-arrow">
-                    →
-                </span>
-
-            </button>
-
-
-        </div>
-
-    </section>
-
-
-</main>
-
-
-<!-- ======================================================
-     FOOTER
-====================================================== -->
-
-<footer class="dashboard-footer">
-
-    <div>
-
-        <strong>
-            MUNKA PIGGERY
-        </strong>
-
-        <span>
-            Platform Administration System
-        </span>
-
-    </div>
-
-    <p>
-        Secure Platform Control Centre
-    </p>
-
-</footer>
-
-
-<!-- ======================================================
-     SUPABASE & SECURITY
-====================================================== -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="supabase.js"></script>
-
-<script src="security.js"></script>
-
-<script src="superadmin.js"></script>
+    </script>
 
 </body>
-
 </html>

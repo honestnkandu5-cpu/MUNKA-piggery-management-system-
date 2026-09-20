@@ -29,16 +29,11 @@
 
     <div class="header-title">
 
-        <h1>
-            MUNKA PIGGERY
-        </h1>
+        <h1>MUNKA PIGGERY</h1>
 
-        <p>
-            Platform User Management
-        </p>
+        <p>Platform User Management</p>
 
     </div>
-
 
     <div class="header-actions">
 
@@ -49,7 +44,6 @@
             ← Platform Dashboard
 
         </button>
-
 
         <button
             type="button"
@@ -64,23 +58,15 @@
 </header>
 
 
-
 <!-- ======================================================
      MAIN
 ====================================================== -->
 
 <main class="user-management-container">
 
-
-    <!-- ==================================================
-         PAGE INTRODUCTION
-    ================================================== -->
-
     <section class="page-heading">
 
-        <h2>
-            Platform Users
-        </h2>
+        <h2>Platform Users</h2>
 
         <p>
             Create and manage users across the
@@ -90,16 +76,12 @@
     </section>
 
 
-
-    <!-- ==================================================
-         MESSAGE
-    ================================================== -->
+    <!-- MESSAGE -->
 
     <div
         id="message"
         class="message">
     </div>
-
 
 
     <!-- ==================================================
@@ -117,7 +99,8 @@
                 </h2>
 
                 <p>
-                    Add or update a platform user account.
+                    Create a user and assign the user
+                    to a farm.
                 </p>
 
             </div>
@@ -152,7 +135,6 @@
                 </div>
 
 
-
                 <!-- FULL NAME -->
 
                 <div class="form-group">
@@ -169,6 +151,27 @@
 
                 </div>
 
+
+                <!-- EMAIL -->
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="user@example.com"
+                        required>
+
+                    <small>
+                        This email will be used for Supabase login
+                        and password recovery.
+                    </small>
+
+                </div>
 
 
                 <!-- USERNAME -->
@@ -188,27 +191,51 @@
                 </div>
 
 
-
-                <!-- PASSWORD -->
+                <!-- INITIAL PASSWORD -->
 
                 <div class="form-group">
 
                     <label for="password">
-                        Password
+                        Initial Password
                     </label>
 
                     <input
                         type="password"
                         id="password"
-                        placeholder="Enter password">
+                        placeholder="Enter initial password"
+                        minlength="6">
 
-                    <small>
-                        Leave blank when editing to keep
-                        the existing password.
+                    <small id="passwordHelp">
+                        Required when creating a new user.
                     </small>
 
                 </div>
 
+
+                <!-- FARM -->
+
+                <div class="form-group">
+
+                    <label for="farmId">
+                        Farm
+                    </label>
+
+                    <select
+                        id="farmId"
+                        required>
+
+                        <option value="">
+                            Loading farms...
+                        </option>
+
+                    </select>
+
+                    <small>
+                        The user will only belong to the
+                        selected farm.
+                    </small>
+
+                </div>
 
 
                 <!-- ROLE -->
@@ -219,48 +246,45 @@
                         Role
                     </label>
 
-                    <select id="role" required>
+                    <select
+                        id="role"
+                        required>
 
                         <option value="">
                             Select Role
                         </option>
 
-                        <option value="Super Admin">
-                            Super Admin
+                        <option value="Owner/Admin">
+                            Owner/Admin
                         </option>
 
-                        <option value="Admin">
-                            Admin
+                        <option value="Farm Manager">
+                            Farm Manager
                         </option>
 
-                        <option value="Manager">
-                            Manager
+                        <option value="Serviceman (Gestation Pen)">
+                            Serviceman (Gestation Pen)
                         </option>
 
-                        <option value="Vet">
-                            Vet
-                        </option>
-
-                        <option value="Worker">
-                            Worker
-                        </option>
-
-                        <option value="Service Man">
-                            Service Man
-                        </option>
-
-                        <option value="Farrow Man">
-                            Farrow Man
+                        <option value="Farrowman (Farrowing Pen)">
+                            Farrowman (Farrowing Pen)
                         </option>
 
                         <option value="Sales Officer">
                             Sales Officer
                         </option>
 
+                        <option value="Veterinary Officer">
+                            Veterinary Officer
+                        </option>
+
+                        <option value="Farm Worker">
+                            Farm Worker
+                        </option>
+
                     </select>
 
                 </div>
-
 
 
                 <!-- STATUS -->
@@ -271,7 +295,9 @@
                         Status
                     </label>
 
-                    <select id="status" required>
+                    <select
+                        id="status"
+                        required>
 
                         <option value="Active">
                             Active
@@ -287,7 +313,6 @@
 
 
             </div>
-
 
 
             <!-- FORM BUTTONS -->
@@ -330,103 +355,72 @@
     </section>
 
 
-
     <!-- ==================================================
-         USER STATISTICS
+         STATISTICS
     ================================================== -->
 
     <section class="user-statistics">
 
-
         <div class="user-stat-card">
 
-            <span>
-                👥
-            </span>
+            <span>👥</span>
 
             <div>
 
-                <h3>
-                    Total Users
-                </h3>
+                <h3>Total Users</h3>
 
-                <p id="totalUsers">
-                    0
-                </p>
+                <p id="totalUsers">0</p>
 
             </div>
 
         </div>
 
 
-
         <div class="user-stat-card">
 
-            <span>
-                ✅
-            </span>
+            <span>✅</span>
 
             <div>
 
-                <h3>
-                    Active Users
-                </h3>
+                <h3>Active Users</h3>
 
-                <p id="activeUsers">
-                    0
-                </p>
+                <p id="activeUsers">0</p>
 
             </div>
 
         </div>
 
 
-
         <div class="user-stat-card">
 
-            <span>
-                ⛔
-            </span>
+            <span>⛔</span>
 
             <div>
 
-                <h3>
-                    Inactive Users
-                </h3>
+                <h3>Inactive Users</h3>
 
-                <p id="inactiveUsers">
-                    0
-                </p>
+                <p id="inactiveUsers">0</p>
 
             </div>
 
         </div>
 
 
-
         <div class="user-stat-card">
 
-            <span>
-                🛡️
-            </span>
+            <span>🛡️</span>
 
             <div>
 
-                <h3>
-                    Super Admins
-                </h3>
+                <h3>Super Admins</h3>
 
-                <p id="superAdmins">
-                    0
-                </p>
+                <p id="superAdmins">0</p>
 
             </div>
 
         </div>
-
 
     </section>
-
 
 
     <!-- ==================================================
@@ -444,8 +438,8 @@
                 </h2>
 
                 <p>
-                    Search, edit, activate, deactivate or
-                    delete platform users.
+                    Search, edit, activate or deactivate
+                    platform users.
                 </p>
 
             </div>
@@ -463,7 +457,6 @@
         </div>
 
 
-
         <!-- SEARCH -->
 
         <div class="search-container">
@@ -471,10 +464,9 @@
             <input
                 type="search"
                 id="userSearch"
-                placeholder="Search by ID, name, username or role...">
+                placeholder="Search by ID, name, username, email, farm or role...">
 
         </div>
-
 
 
         <!-- TABLE -->
@@ -487,29 +479,21 @@
 
                     <tr>
 
-                        <th>
-                            User ID
-                        </th>
+                        <th>User ID</th>
 
-                        <th>
-                            Full Name
-                        </th>
+                        <th>Full Name</th>
 
-                        <th>
-                            Username
-                        </th>
+                        <th>Email</th>
 
-                        <th>
-                            Role
-                        </th>
+                        <th>Username</th>
 
-                        <th>
-                            Status
-                        </th>
+                        <th>Farm</th>
 
-                        <th>
-                            Actions
-                        </th>
+                        <th>Role</th>
+
+                        <th>Status</th>
+
+                        <th>Actions</th>
 
                     </tr>
 
@@ -521,7 +505,7 @@
                     <tr>
 
                         <td
-                            colspan="6"
+                            colspan="8"
                             class="loading">
 
                             Loading users...
@@ -538,9 +522,7 @@
 
     </section>
 
-
 </main>
-
 
 
 <!-- ======================================================
@@ -556,7 +538,6 @@
     Platform User Management
 
 </footer>
-
 
 
 <!-- ======================================================

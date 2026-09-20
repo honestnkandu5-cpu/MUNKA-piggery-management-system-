@@ -2,11 +2,14 @@
    MUNKA PIGGERY
    PLATFORM USER MANAGEMENT
    SUPER ADMIN ONLY
+
+   V3 VERSION
+   Username uniqueness is PER FARM
 ========================================================== */
 
 let currentUser = null;
 let allUsers = [];
-
+let allFarms = [];
 
 
 /* ==========================================================
@@ -15,78 +18,225 @@ let allUsers = [];
 
 async function checkSuperAdmin() {
 
-    const {
-        data: {
-            session
-        },
-        error
-    } = await supabaseClient.auth.getSession();
+    try {
+
+        const {
+            data: { session },
+            error
+        } = await supabaseClient.auth.getSession();
+
+        if (error || !session) {
+
+            console.error("SESSION ERROR:", error);
+
+            showMessage(
+                "Session error: " +
+                (error?.message || "Please log in again."),
+                "error"
+            );
+
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 2000);
+
+            return false;
+        }
 
 
-    if (error || !session) {
+        const {
+            data: user,
+            error: userError
+        } = await supabaseClient
+            .from("users")
+            .select("*")
+            .eq("auth_user_id", session.user.id)
+            .single();
+
+
+        if (userError || !user) {
+
+            console.error(
+                "USER PROFILE ERROR:",
+                userError
+            );
+
+            showMessage(
+                "Unable to load Super Admin profile: " +
+                (userError?.message || "Profile not found."),
+                "error"
+            );
+
+            return false;
+        }
+
+
+        if (
+            user.role !== "Super Admin" ||
+            user.status !== "Active"
+        ) {
+
+            showMessage(
+                "Access denied. Super Admin privileges required.",
+                "error"
+            );
+
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 2000);
+
+            return false;
+        }
+
+
+        currentUser = user;
+
+        return true;
+
+    } catch (error) {
 
         console.error(
-            "SESSION ERROR:",
+            "CHECK SUPER ADMIN ERROR:",
             error
         );
 
-        window.location.href =
-            "login.html";
-
-        return false;
-    }
-
-
-    const {
-        data: user,
-        error: userError
-    } = await supabaseClient
-        .from("users")
-        .select("*")
-        .eq(
-            "auth_user_id",
-            session.user.id
-        )
-        .single();
-
-
-    if (userError) {
-
-        console.error(
-            "USER PROFILE ERROR:",
-            userError
-        );
-
-        alert(
-            "Unable to load Super Admin profile."
+        showMessage(
+            "Super Admin check failed: " +
+            error.message,
+            "error"
         );
 
         return false;
     }
-
-
-    if (
-        !user ||
-        user.role !== "Super Admin" ||
-        user.status !== "Active"
-    ) {
-
-        alert(
-            "Access denied."
-        );
-
-        window.location.href =
-            "login.html";
-
-        return false;
-    }
-
-
-    currentUser = user;
-
-    return true;
 }
 
+
+/* ==========================================================
+   LOAD FARMS
+========================================================== */
+
+async function loadFarms() {
+
+    const farmSelect =
+        document.getElementById("farmId");
+
+    if (!farmSelect) return;
+
+
+    farmSelect.innerHTML = `
+        <option value="">
+            Loading farms...
+        </option>
+    `;
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("farms")
+            .select("id, farm_name")
+            .order("farm_name", {
+                ascending: true
+            });
+
+
+        if (error) {
+
+            console.error(
+                "LOAD FARMS ERROR:",
+                error
+            );
+
+            farmSelect.innerHTML = `
+                <option value="">
+                    Unable to load farms
+                </option>
+            `;
+
+            showMessage(
+                "Unable to load farms: " +
+                error.message,
+                "error"
+            );
+
+            return;
+        }
+
+
+        allFarms = data || [];
+
+
+        farmSelect.innerHTML = `
+            <option value="">
+                Select Farm
+            </option>
+        `;
+
+
+        allFarms.forEach(farm => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = farm.id;
+
+            option.textContent =
+                farm.farm_name;
+
+            farmSelect.appendChild(option);
+
+        });
+
+
+        if (!allFarms.length) {
+
+            farmSelect.innerHTML = `
+                <option value="">
+                    No farms available
+                </option>
+            `;
+
+            showMessage(
+                "No farms were found in the farms table.",
+                "error"
+            );
+        }
+
+    } catch (error) {
+
+        console.error(
+            "LOAD FARMS EXCEPTION:",
+            error
+        );
+
+        showMessage(
+            "Farm loading error: " +
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+/* ==========================================================
+   GET FARM NAME
+========================================================== */
+
+function getFarmName(farmId) {
+
+    const farm =
+        allFarms.find(
+            item =>
+                String(item.id) ===
+                String(farmId)
+        );
+
+    return farm
+        ? farm.farm_name
+        : "—";
+}
 
 
 /* ==========================================================
@@ -105,7 +255,7 @@ async function loadUsers() {
 
         tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="loading">
+                <td colspan="8" class="loading">
                     Loading users...
                 </td>
             </tr>
@@ -113,47 +263,56 @@ async function loadUsers() {
     }
 
 
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("users")
-        .select("*")
-        .order(
-            "full_name",
-            {
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("users")
+            .select("*")
+            .order("full_name", {
                 ascending: true
-            }
-        );
+            });
 
 
-    if (error) {
+        if (error) {
+
+            console.error(
+                "LOAD USERS ERROR:",
+                error
+            );
+
+            showMessage(
+                "Unable to load users: " +
+                error.message,
+                "error"
+            );
+
+            return;
+        }
+
+
+        allUsers = data || [];
+
+        updateStatistics();
+
+        displayUsers(allUsers);
+
+    } catch (error) {
 
         console.error(
-            "LOAD USERS ERROR:",
+            "LOAD USERS EXCEPTION:",
             error
         );
 
         showMessage(
-            "Unable to load platform users.",
+            "User loading error: " +
+            error.message,
             "error"
         );
-
-        return;
     }
-
-
-    allUsers =
-        data || [];
-
-
-    updateStatistics();
-
-    displayUsers(
-        allUsers
-    );
 }
-
 
 
 /* ==========================================================
@@ -167,7 +326,6 @@ function displayUsers(users) {
             "usersTableBody"
         );
 
-
     if (!tableBody) return;
 
 
@@ -178,12 +336,8 @@ function displayUsers(users) {
 
         tableBody.innerHTML = `
             <tr>
-                <td
-                    colspan="6"
-                    class="loading">
-
+                <td colspan="8" class="loading">
                     No platform users found.
-
                 </td>
             </tr>
         `;
@@ -192,133 +346,102 @@ function displayUsers(users) {
     }
 
 
-    users.forEach(
-        user => {
+    users.forEach(user => {
 
-            const row =
-                document.createElement(
-                    "tr"
-                );
+        const row =
+            document.createElement("tr");
 
 
-            const statusClass =
-                user.status === "Active"
-                    ? "status-active"
-                    : "status-inactive";
+        const statusClass =
+            user.status === "Active"
+                ? "status-active"
+                : "status-inactive";
 
 
-            const toggleText =
-                user.status === "Active"
-                    ? "Deactivate"
-                    : "Activate";
+        const toggleText =
+            user.status === "Active"
+                ? "Deactivate"
+                : "Activate";
 
 
-            row.innerHTML = `
-
-                <td>
-                    ${escapeHTML(
-                        user.userID ||
-                        user.userid ||
-                        user.user_id ||
-                        "—"
-                    )}
-                </td>
+        const userID =
+            user.userID ||
+            user.userid ||
+            user.user_id ||
+            "—";
 
 
-                <td>
-                    ${escapeHTML(
-                        user.full_name ||
-                        user.fullName ||
-                        "—"
-                    )}
-                </td>
+        const fullName =
+            user.full_name ||
+            user.fullName ||
+            "—";
 
 
-                <td>
-                    ${escapeHTML(
-                        user.username ||
-                        "—"
-                    )}
-                </td>
+        const email =
+            user.email ||
+            "—";
 
 
-                <td>
-                    ${escapeHTML(
-                        user.role ||
-                        "—"
-                    )}
-                </td>
+        const username =
+            user.username ||
+            "—";
 
 
-                <td>
-
-                    <span
-                        class="status-badge ${statusClass}">
-
-                        ${escapeHTML(
-                            user.status ||
-                            "—"
-                        )}
-
-                    </span>
-
-                </td>
+        const farmName =
+            getFarmName(user.farm_id);
 
 
-                <td>
+        row.innerHTML = `
+            <td>${escapeHTML(userID)}</td>
 
-                    <div class="action-buttons">
+            <td>${escapeHTML(fullName)}</td>
+
+            <td>${escapeHTML(email)}</td>
+
+            <td>${escapeHTML(username)}</td>
+
+            <td>${escapeHTML(farmName)}</td>
+
+            <td>${escapeHTML(user.role || "—")}</td>
+
+            <td>
+                <span class="status-badge ${statusClass}">
+                    ${escapeHTML(user.status || "—")}
+                </span>
+            </td>
+
+            <td>
+
+                <div class="action-buttons">
+
+                    <button
+                        type="button"
+                        class="edit-button"
+                        onclick="editUser('${user.id}')">
+                        Edit
+                    </button>
+
+                    <button
+                        type="button"
+                        class="toggle-button"
+                        onclick="toggleUserStatus('${user.id}')">
+                        ${toggleText}
+                    </button>
+
+                </div>
+
+            </td>
+        `;
 
 
-                        <button
-                            type="button"
-                            class="edit-button"
-                            onclick="editUser('${user.id}')">
+        tableBody.appendChild(row);
 
-                            Edit
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="toggle-button"
-                            onclick="toggleUserStatus('${user.id}')">
-
-                            ${toggleText}
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="delete-button"
-                            onclick="deleteUser('${user.id}')">
-
-                            Delete
-
-                        </button>
-
-
-                    </div>
-
-                </td>
-
-            `;
-
-
-            tableBody.appendChild(
-                row
-            );
-
-        }
-    );
+    });
 }
 
 
-
 /* ==========================================================
-   UPDATE STATISTICS
+   STATISTICS
 ========================================================== */
 
 function updateStatistics() {
@@ -330,55 +453,47 @@ function updateStatistics() {
     const active =
         allUsers.filter(
             user =>
-                user.status ===
-                "Active"
+                user.status === "Active"
         ).length;
 
 
     const inactive =
         allUsers.filter(
             user =>
-                user.status ===
-                "Inactive"
+                user.status === "Inactive"
         ).length;
 
 
     const superAdmins =
         allUsers.filter(
             user =>
-                user.role ===
-                "Super Admin"
+                user.role === "Super Admin"
         ).length;
 
 
     document.getElementById(
         "totalUsers"
-    ).textContent =
-        total;
+    ).textContent = total;
 
 
     document.getElementById(
         "activeUsers"
-    ).textContent =
-        active;
+    ).textContent = active;
 
 
     document.getElementById(
         "inactiveUsers"
-    ).textContent =
-        inactive;
+    ).textContent = inactive;
 
 
     document.getElementById(
         "superAdmins"
-    ).textContent =
-        superAdmins;
+    ).textContent = superAdmins;
 }
 
 
-
 /* ==========================================================
-   CREATE / UPDATE USER
+   SAVE / CREATE USER
 ========================================================== */
 
 async function saveUser(event) {
@@ -410,6 +525,12 @@ async function saveUser(event) {
         ).value.trim();
 
 
+    const email =
+        document.getElementById(
+            "email"
+        ).value.trim();
+
+
     const username =
         document.getElementById(
             "username"
@@ -419,6 +540,12 @@ async function saveUser(event) {
     const password =
         document.getElementById(
             "password"
+        ).value;
+
+
+    const farmId =
+        document.getElementById(
+            "farmId"
         ).value;
 
 
@@ -434,7 +561,6 @@ async function saveUser(event) {
         ).value;
 
 
-
     /* ======================================================
        VALIDATION
     ====================================================== */
@@ -442,9 +568,11 @@ async function saveUser(event) {
     if (
         !userID ||
         !fullName ||
+        !email ||
         !username ||
         !role ||
-        !status
+        !status ||
+        !farmId
     ) {
 
         showMessage(
@@ -462,13 +590,26 @@ async function saveUser(event) {
     ) {
 
         showMessage(
-            "Please enter a password for the new user.",
+            "Please enter an initial password for the new user.",
             "error"
         );
 
         return;
     }
 
+
+    if (
+        !editingUserId &&
+        password.length < 6
+    ) {
+
+        showMessage(
+            "Password must contain at least 6 characters.",
+            "error"
+        );
+
+        return;
+    }
 
 
     /* ======================================================
@@ -477,8 +618,7 @@ async function saveUser(event) {
 
     if (saveButton) {
 
-        saveButton.disabled =
-            true;
+        saveButton.disabled = true;
 
         saveButton.textContent =
             editingUserId
@@ -489,87 +629,186 @@ async function saveUser(event) {
 
     try {
 
-
         /* ==================================================
-           CREATE USER
+           CREATE NEW USER
         ================================================== */
 
         if (!editingUserId) {
 
-            const {
-                data: existingUser,
-                error: checkError
-            } = await supabaseClient
-                .from("users")
-                .select("id")
-                .eq(
-                    "username",
-                    username
-                )
-                .maybeSingle();
+            console.log(
+                "STARTING USER CREATION V3..."
+            );
 
 
-            if (checkError) {
+            console.log(
+                "USER DATA:",
+                {
+                    userID,
+                    fullName,
+                    username,
+                    email,
+                    role,
+                    status,
+                    farmId
+                }
+            );
 
-                throw checkError;
-            }
 
+            /*
+               IMPORTANT:
+               V3 allows the same username
+               in different farms.
+            */
 
-            if (existingUser) {
+            const result =
+                await supabaseClient.functions.invoke(
+                    "create-platform-user-v3",
+                    {
+                        body: {
 
-                showMessage(
-                    "That username already exists.",
-                    "error"
+                            userID:
+                                userID,
+
+                            fullName:
+                                fullName,
+
+                            username:
+                                username,
+
+                            email:
+                                email,
+
+                            password:
+                                password,
+
+                            role:
+                                role,
+
+                            status:
+                                status,
+
+                            farmId:
+                                Number(farmId)
+                        }
+                    }
                 );
 
-                return;
-            }
+
+            console.log(
+                "EDGE FUNCTION V3 RESULT:",
+                result
+            );
 
 
             const {
+                data,
                 error
-            } = await supabaseClient
-                .from("users")
-                .insert([{
+            } = result;
 
-                    userID:
-                        userID,
 
-                    full_name:
-                        fullName,
-
-                    username:
-                        username,
-
-                    password:
-                        password,
-
-                    role:
-                        role,
-
-                    status:
-                        status
-
-                }]);
-
+            /* ==============================================
+               EDGE FUNCTION ERROR
+            ============================================== */
 
             if (error) {
 
-                throw error;
+                console.error(
+                    "EDGE FUNCTION V3 ERROR:",
+                    error
+                );
+
+
+                let detailedError =
+                    error.message ||
+                    "Edge Function returned an error.";
+
+
+                try {
+
+                    if (
+                        error.context &&
+                        typeof error.context.json ===
+                        "function"
+                    ) {
+
+                        const serverResponse =
+                            await error.context.json();
+
+                        console.error(
+                            "SERVER RESPONSE:",
+                            serverResponse
+                        );
+
+
+                        if (
+                            serverResponse &&
+                            serverResponse.error
+                        ) {
+
+                            detailedError =
+                                serverResponse.error;
+                        }
+                    }
+
+                } catch (
+                    responseReadError
+                ) {
+
+                    console.error(
+                        "RESPONSE READ ERROR:",
+                        responseReadError
+                    );
+                }
+
+
+                throw new Error(
+                    detailedError
+                );
             }
 
+
+            /* ==============================================
+               CHECK FUNCTION RESPONSE
+            ============================================== */
+
+            console.log(
+                "EDGE FUNCTION V3 DATA:",
+                data
+            );
+
+
+            if (
+                !data ||
+                data.success !== true
+            ) {
+
+                throw new Error(
+                    data?.error ||
+                    "The server did not confirm user creation."
+                );
+            }
+
+
+            /* ==============================================
+               SUCCESS
+            ============================================== */
 
             showMessage(
                 "Platform user created successfully.",
                 "success"
             );
 
+
+            alert(
+                "SUCCESS!\n\n" +
+                "Platform user created successfully."
+            );
+
         }
 
 
-
         /* ==================================================
-           UPDATE USER
+           EDIT EXISTING USER
         ================================================== */
 
         else {
@@ -589,24 +828,24 @@ async function saveUser(event) {
                     role,
 
                 status:
-                    status
+                    status,
+
+                farm_id:
+                    Number(farmId)
             };
 
 
-            if (password) {
-
-                updateData.password =
-                    password;
-            }
+            console.log(
+                "UPDATING USER:",
+                updateData
+            );
 
 
             const {
                 error
             } = await supabaseClient
                 .from("users")
-                .update(
-                    updateData
-                )
+                .update(updateData)
                 .eq(
                     "id",
                     editingUserId
@@ -615,7 +854,9 @@ async function saveUser(event) {
 
             if (error) {
 
-                throw error;
+                throw new Error(
+                    error.message
+                );
             }
 
 
@@ -624,16 +865,24 @@ async function saveUser(event) {
                 "success"
             );
 
+
+            alert(
+                "SUCCESS!\n\n" +
+                "Platform user updated successfully."
+            );
         }
 
+
+        /* ==================================================
+           RESET + REFRESH
+        ================================================== */
 
         resetUserForm();
 
         await loadUsers();
 
 
-    }
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "SAVE USER ERROR:",
@@ -641,14 +890,25 @@ async function saveUser(event) {
         );
 
 
+        const errorMessage =
+            error?.message ||
+            String(error) ||
+            "Unknown error occurred.";
+
+
         showMessage(
-            error.message ||
-            "Unable to save user.",
+            "ERROR: " + errorMessage,
             "error"
         );
 
-    }
-    finally {
+
+        alert(
+            "USER CREATION ERROR\n\n" +
+            errorMessage
+        );
+
+
+    } finally {
 
         if (saveButton) {
 
@@ -656,11 +916,12 @@ async function saveUser(event) {
                 false;
 
             saveButton.textContent =
-                "➕ Create User";
+                editingUserId
+                    ? "💾 Update User"
+                    : "➕ Create User";
         }
     }
 }
-
 
 
 /* ==========================================================
@@ -672,9 +933,7 @@ function editUser(id) {
     const user =
         allUsers.find(
             item =>
-                String(
-                    item.id
-                ) ===
+                String(item.id) ===
                 String(id)
         );
 
@@ -692,8 +951,7 @@ function editUser(id) {
 
     document.getElementById(
         "editingUserId"
-    ).value =
-        user.id;
+    ).value = user.id;
 
 
     document.getElementById(
@@ -714,6 +972,18 @@ function editUser(id) {
 
 
     document.getElementById(
+        "email"
+    ).value =
+        user.email ||
+        "";
+
+
+    document.getElementById(
+        "email"
+    ).readOnly = true;
+
+
+    document.getElementById(
         "username"
     ).value =
         user.username ||
@@ -722,7 +992,13 @@ function editUser(id) {
 
     document.getElementById(
         "password"
+    ).value = "";
+
+
+    document.getElementById(
+        "farmId"
     ).value =
+        user.farm_id ||
         "";
 
 
@@ -758,12 +1034,17 @@ function editUser(id) {
         "inline-block";
 
 
+    document.getElementById(
+        "passwordHelp"
+    ).textContent =
+        "Password changes are handled through Change Password.";
+
+
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
 }
-
 
 
 /* ==========================================================
@@ -779,15 +1060,18 @@ function resetUserForm() {
 
 
     if (form) {
-
         form.reset();
     }
 
 
     document.getElementById(
         "editingUserId"
-    ).value =
-        "";
+    ).value = "";
+
+
+    document.getElementById(
+        "email"
+    ).readOnly = false;
 
 
     document.getElementById(
@@ -806,12 +1090,17 @@ function resetUserForm() {
         "cancelEditButton"
     ).style.display =
         "none";
+
+
+    document.getElementById(
+        "passwordHelp"
+    ).textContent =
+        "Required when creating a new user.";
 }
 
 
-
 /* ==========================================================
-   TOGGLE USER STATUS
+   ACTIVATE / DEACTIVATE
 ========================================================== */
 
 async function toggleUserStatus(id) {
@@ -819,9 +1108,7 @@ async function toggleUserStatus(id) {
     const user =
         allUsers.find(
             item =>
-                String(
-                    item.id
-                ) ===
+                String(item.id) ===
                 String(id)
         );
 
@@ -829,16 +1116,10 @@ async function toggleUserStatus(id) {
     if (!user) return;
 
 
-    /* Prevent deactivating yourself */
-
     if (
         currentUser &&
-        String(
-            currentUser.id
-        ) ===
-        String(
-            user.id
-        )
+        String(currentUser.id) ===
+        String(user.id)
     ) {
 
         showMessage(
@@ -865,136 +1146,57 @@ async function toggleUserStatus(id) {
     if (!confirmed) return;
 
 
-    const {
-        error
-    } = await supabaseClient
-        .from("users")
-        .update({
-            status:
-                newStatus
-        })
-        .eq(
-            "id",
-            user.id
+    try {
+
+        const {
+            error
+        } = await supabaseClient
+            .from("users")
+            .update({
+                status:
+                    newStatus
+            })
+            .eq(
+                "id",
+                user.id
+            );
+
+
+        if (error) {
+
+            throw new Error(
+                error.message
+            );
+        }
+
+
+        showMessage(
+            `User ${newStatus.toLowerCase()} successfully.`,
+            "success"
         );
 
 
-    if (error) {
+        await loadUsers();
+
+    } catch (error) {
 
         console.error(
             "STATUS UPDATE ERROR:",
             error
         );
 
+
         showMessage(
-            "Unable to change user status.",
+            "Unable to change user status: " +
+            error.message,
             "error"
         );
-
-        return;
     }
-
-
-    showMessage(
-        `User ${newStatus.toLowerCase()} successfully.`,
-        "success"
-    );
-
-
-    await loadUsers();
 }
 
 
-
 /* ==========================================================
-   DELETE USER
-========================================================== */
-
-async function deleteUser(id) {
-
-    const user =
-        allUsers.find(
-            item =>
-                String(
-                    item.id
-                ) ===
-                String(id)
-        );
-
-
-    if (!user) return;
-
-
-    /* Prevent deleting yourself */
-
-    if (
-        currentUser &&
-        String(
-            currentUser.id
-        ) ===
-        String(
-            user.id
-        )
-    ) {
-
-        showMessage(
-            "You cannot delete your own Super Admin account.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    const confirmed =
-        confirm(
-            `Delete user "${user.username}" permanently?\n\nThis action cannot be undone.`
-        );
-
-
-    if (!confirmed) return;
-
-
-    const {
-        error
-    } = await supabaseClient
-        .from("users")
-        .delete()
-        .eq(
-            "id",
-            user.id
-        );
-
-
-    if (error) {
-
-        console.error(
-            "DELETE USER ERROR:",
-            error
-        );
-
-        showMessage(
-            "Unable to delete user.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    showMessage(
-        "User deleted successfully.",
-        "success"
-    );
-
-
-    await loadUsers();
-}
-
-
-
-/* ==========================================================
-   SEARCH USERS
+   SEARCH
 ========================================================== */
 
 function searchUsers() {
@@ -1033,7 +1235,13 @@ function searchUsers() {
 
                     user.fullName,
 
+                    user.email,
+
                     user.username,
+
+                    getFarmName(
+                        user.farm_id
+                    ),
 
                     user.role,
 
@@ -1052,7 +1260,6 @@ function searchUsers() {
                             search
                         )
                 );
-
             }
         );
 
@@ -1063,9 +1270,8 @@ function searchUsers() {
 }
 
 
-
 /* ==========================================================
-   HTML SECURITY
+   ESCAPE HTML
 ========================================================== */
 
 function escapeHTML(value) {
@@ -1094,7 +1300,6 @@ function escapeHTML(value) {
         "&#039;"
     );
 }
-
 
 
 /* ==========================================================
@@ -1130,10 +1335,11 @@ function showMessage(
                 "message";
 
         },
-        5000
+        type === "error"
+            ? 15000
+            : 5000
     );
 }
-
 
 
 /* ==========================================================
@@ -1148,8 +1354,7 @@ async function logout() {
             .auth
             .signOut();
 
-    }
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "LOGOUT ERROR:",
@@ -1166,7 +1371,6 @@ async function logout() {
     window.location.href =
         "login.html";
 }
-
 
 
 /* ==========================================================
@@ -1201,7 +1405,6 @@ document.addEventListener(
                 "submit",
                 saveUser
             );
-
         }
 
 
@@ -1217,9 +1420,10 @@ document.addEventListener(
                 "input",
                 searchUsers
             );
-
         }
 
+
+        await loadFarms();
 
         await loadUsers();
 
@@ -1227,7 +1431,5 @@ document.addEventListener(
         console.log(
             "PLATFORM USER MANAGEMENT: Ready."
         );
-
     }
 );
-
