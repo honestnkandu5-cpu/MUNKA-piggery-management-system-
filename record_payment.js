@@ -581,7 +581,7 @@ async function recordPayment(
     try {
 
         /* ==================================================
-           CALCULATE SUBSCRIPTION DATES
+           SUBSCRIPTION DATE CALCULATION
         ================================================== */
 
         const now =
@@ -593,51 +593,130 @@ async function recordPayment(
 
 
         /*
-           If the farm already has an active subscription,
-           continue from its existing expiry date.
+           IMPORTANT:
 
-           This prevents losing unused subscription days.
+           We only extend an existing subscription when
+           that subscription has ALREADY STARTED and is
+           currently active.
+
+           A future subscription must NOT be treated as
+           an active subscription.
         */
 
-        if (
-            farm.status === "Active" &&
+        const existingStart =
+            farm.subscription_start
+                ? new Date(
+                    farm.subscription_start
+                )
+                : null;
+
+
+        const existingEnd =
             farm.subscription_end
+                ? new Date(
+                    farm.subscription_end
+                )
+                : null;
+
+
+        const hasCurrentlyActiveSubscription =
+            farm.status === "Active" &&
+            existingStart &&
+            existingEnd &&
+            !isNaN(
+                existingStart.getTime()
+            ) &&
+            !isNaN(
+                existingEnd.getTime()
+            ) &&
+            existingStart <= now &&
+            existingEnd > now;
+
+
+        if (
+            hasCurrentlyActiveSubscription
         ) {
 
-            const existingEnd =
-                new Date(
-                    farm.subscription_end
-                );
+            /*
+               Existing subscription is currently active.
 
+               Continue from the existing expiry date so
+               unused subscription time is not lost.
+            */
 
-            if (
-                existingEnd > now
-            ) {
+            subscriptionStart =
+                existingEnd;
 
-                subscriptionStart =
-                    existingEnd;
-            }
+        } else {
+
+            /*
+               No currently active subscription.
+
+               This includes:
+
+               - No previous subscription
+               - Expired subscription
+               - Future subscription
+
+               Therefore the new payment starts NOW.
+            */
+
+            subscriptionStart =
+                now;
         }
+
+
+        /* ==================================================
+           CALCULATE END DATE
+        ================================================== */
+
+        const durationMilliseconds =
+            Number(
+                plan.duration_days
+            )
+            *
+            24
+            *
+            60
+            *
+            60
+            *
+            1000;
 
 
         const subscriptionEnd =
             new Date(
                 subscriptionStart.getTime()
                 +
-                (
-                    Number(
-                        plan.duration_days
-                    )
-                    *
-                    24
-                    *
-                    60
-                    *
-                    60
-                    *
-                    1000
-                )
+                durationMilliseconds
             );
+
+
+        console.log(
+            "SUBSCRIPTION CALCULATION:",
+            {
+                farm:
+                    farm.farm_name,
+
+                existingStart:
+                    farm.subscription_start,
+
+                existingEnd:
+                    farm.subscription_end,
+
+                currentTime:
+                    now.toISOString(),
+
+                subscriptionStart:
+                    subscriptionStart.toISOString(),
+
+                subscriptionEnd:
+                    subscriptionEnd.toISOString(),
+
+                currentlyActive:
+                    hasCurrentlyActiveSubscription
+            }
+        );
 
 
         /* ==================================================
@@ -691,7 +770,10 @@ async function recordPayment(
             paid_at:
                 new Date(
                     `${paymentDate}T12:00:00`
-                ).toISOString()
+                ).toISOString(),
+
+            notes:
+                notes || null
 
         };
 
@@ -753,13 +835,6 @@ async function recordPayment(
             );
 
 
-            /*
-               The payment was already saved.
-
-               Do not create another payment record.
-               Report the farm update problem clearly.
-            */
-
             showMessage(
                 "Payment was recorded, but the farm subscription could not be updated. Please check the farm record.",
                 "error"
@@ -793,10 +868,9 @@ async function recordPayment(
         );
 
 
-        /*
-           Refresh the selected farm data so that
-           the next payment uses the new expiry date.
-        */
+        /* ==================================================
+           REFRESH FARM DATA
+        ================================================== */
 
         await loadFarms();
 
@@ -804,7 +878,6 @@ async function recordPayment(
         resetPaymentForm(
             false
         );
-
 
     }
 
@@ -1085,4 +1158,3 @@ document.addEventListener(
 
     }
 );
-

@@ -1,402 +1,872 @@
-/* =====================================================
+/* =========================================================
    MUNKA PIGGERY MANAGEMENT SYSTEM
-   FARM MANAGEMENT CSS
-   SUPER ADMIN MODULE
-   ===================================================== */
+   FARM MANAGEMENT - PROFESSIONAL SUPER ADMIN STYLE
+   ========================================================= */
+
+
+/* =========================================================
+   GLOBAL RESET
+   ========================================================= */
 
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: #f4f7f5;
+    font-family:
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    background:
+        #f3f6f4;
+
     color: #26352c;
+
     min-height: 100vh;
+
+    line-height: 1.5;
 }
 
 
-/* =====================================================
+/* =========================================================
    HEADER
-   ===================================================== */
+   ========================================================= */
 
 .super-admin-header {
-    background: #123d2a;
-    color: white;
-    padding: 25px 20px;
+    background:
+        linear-gradient(
+            135deg,
+            #123d2b 0%,
+            #17613f 55%,
+            #208052 100%
+        );
+
+    color: #ffffff;
+
+    padding: 28px 25px;
+
     text-align: center;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.12);
+
+    position: relative;
+}
+
+.super-admin-header::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 4px;
+
+    background: #b8d63c;
 }
 
 .super-admin-header h1 {
-    font-size: 28px;
-    margin-bottom: 8px;
+    font-size: 30px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.4px;
+
+    margin-bottom: 6px;
 }
 
 .super-admin-header p {
     font-size: 14px;
-    opacity: 0.9;
+
+    opacity: 0.92;
+
+    letter-spacing: 0.2px;
 }
 
 
-/* =====================================================
+/* =========================================================
    MAIN CONTAINER
-   ===================================================== */
+   ========================================================= */
 
 .super-admin-container {
-    width: 94%;
-    max-width: 1200px;
-    margin: 25px auto;
+    width: 100%;
+
+    max-width: 1250px;
+
+    margin: 0 auto;
+
+    padding: 35px 22px 45px;
 }
 
 
-/* =====================================================
-   FARM FORM
-   ===================================================== */
+/* =========================================================
+   MAIN CARDS
+   ========================================================= */
 
 .farm-form {
-    background: white;
-    padding: 25px;
-    border-radius: 14px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    padding: 28px;
+
+    margin-bottom: 28px;
+
+    border: 1px solid #e1e9e4;
+
+    box-shadow:
+        0 8px 25px rgba(20, 65, 45, 0.08);
 }
 
 .farm-form h2 {
-    color: #123d2a;
-    margin-bottom: 20px;
+    color: #145c3b;
+
     font-size: 21px;
+
+    font-weight: 700;
+
+    margin-bottom: 24px;
+
+    padding-bottom: 14px;
+
+    border-bottom:
+        1px solid #e5ece8;
+
+    position: relative;
+}
+
+.farm-form h2::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    bottom: -1px;
+
+    width: 65px;
+
+    height: 3px;
+
+    background: #2f8f5b;
+
+    border-radius: 5px;
 }
 
 
-/* =====================================================
-   FORM GRID
-   ===================================================== */
-
-.farm-form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-}
-
-
-/* =====================================================
+/* =========================================================
    FORM GROUP
-   ===================================================== */
+   ========================================================= */
 
 .form-group {
-    margin-bottom: 15px;
-}
-
-.form-group.full-width {
-    grid-column: 1 / -1;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    font-weight: bold;
+
     margin-bottom: 7px;
-    color: #34423a;
+
+    color: #34483c;
+
     font-size: 14px;
-}
 
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccd5cf;
-    border-radius: 7px;
-    font-size: 15px;
-    background: white;
-    color: #26352c;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: #198754;
-    box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.1);
+    font-weight: 650;
 }
 
 .form-help {
     display: block;
+
     margin-top: 6px;
-    color: #68756d;
+
+    color: #77857d;
+
     font-size: 12px;
+
+    line-height: 1.5;
 }
 
 
-/* =====================================================
-   FORM BUTTONS
-   ===================================================== */
+/* =========================================================
+   INPUTS AND SELECTS
+   ========================================================= */
 
-.form-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 22px;
-    flex-wrap: wrap;
-}
+input,
+select {
+    width: 100%;
 
-.save-farm-btn {
-    background: #198754;
-    color: white;
-    border: none;
-    padding: 12px 26px;
-    border-radius: 7px;
-    font-weight: bold;
-    font-size: 15px;
-    cursor: pointer;
-}
+    min-height: 46px;
 
-.save-farm-btn:hover {
-    background: #146c43;
-}
+    padding: 11px 13px;
 
-.clear-farm-btn {
-    background: #6c757d;
-    color: white;
-    border: none;
-    padding: 12px 26px;
-    border-radius: 7px;
-    font-weight: bold;
-    font-size: 15px;
-    cursor: pointer;
-}
+    border: 1px solid #cfdad4;
 
-.clear-farm-btn:hover {
-    background: #565e64;
-}
+    border-radius: 9px;
 
+    background: #ffffff;
 
-/* =====================================================
-   REGISTERED FARM SECTION
-   ===================================================== */
+    color: #26352c;
 
-#farmList {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-}
+    font-family: inherit;
 
-
-/* =====================================================
-   FARM CARD
-   ===================================================== */
-
-.farm-card {
-    background: white;
-    padding: 22px;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    border-left: 5px solid #198754;
-}
-
-.farm-card h2 {
-    color: #123d2a;
-    margin-bottom: 15px;
-    font-size: 20px;
-}
-
-.farm-card p {
-    margin: 8px 0;
     font-size: 14px;
-    line-height: 1.4;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
 }
 
-.farm-card strong {
-    color: #34423a;
+input::placeholder {
+    color: #9aa69f;
+}
+
+input:hover,
+select:hover {
+    border-color: #9bb8a7;
+}
+
+input:focus,
+select:focus {
+    border-color: #2f8f5b;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 0 3px rgba(47, 143, 91, 0.12);
+}
+
+select {
+    cursor: pointer;
 }
 
 
-/* =====================================================
-   FARM STATUS
-   ===================================================== */
+/* =========================================================
+   FARM DETAILS GRID
+   ========================================================= */
 
-.farm-status {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-top: 5px;
-}
+.farm-form-grid {
+    display: grid;
 
-.farm-status.active {
-    background: #d1e7dd;
-    color: #0f5132;
-}
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
-.farm-status.inactive {
-    background: #f8d7da;
-    color: #842029;
+    gap: 0 20px;
 }
 
 
-/* =====================================================
-   SUBSCRIPTION
-   ===================================================== */
+/* =========================================================
+   EXISTING FARM DROPDOWN
+   ========================================================= */
+
+#existingFarm {
+    background:
+        #f7faf8;
+
+    border-color:
+        #b9cfc2;
+
+    font-weight: 500;
+}
+
+#existingFarm:focus {
+    background: #ffffff;
+}
+
+
+/* =========================================================
+   OWNER / ADMIN DROPDOWN
+   ========================================================= */
+
+#farmOwnerUser {
+    background:
+        #f8fbf9;
+
+    border-color:
+        #aac8b7;
+}
+
+#farmOwnerUser option {
+    padding: 10px;
+}
+
+
+/* =========================================================
+   FARM ACCESS / SUBSCRIPTION INFORMATION
+   ========================================================= */
 
 .subscription-box {
-    margin-top: 18px;
-    padding: 15px;
-    border-radius: 9px;
-    background: #f5f8f6;
-    border: 1px solid #dce5df;
+    background:
+        linear-gradient(
+            135deg,
+            #f1f8f4,
+            #f8fbf9
+        );
+
+    border: 1px solid #cfe2d6;
+
+    border-left:
+        5px solid #2f8f5b;
+
+    border-radius: 10px;
+
+    padding: 18px 20px;
+
+    margin: 24px 0;
 }
 
 .subscription-box h3 {
-    color: #123d2a;
+    color: #145c3b;
+
+    font-size: 17px;
+
     margin-bottom: 10px;
-    font-size: 16px;
 }
 
-.subscription-active {
-    color: #198754;
-    font-weight: bold;
+.subscription-box p {
+    color: #53635a;
+
+    font-size: 13px;
+
+    margin-bottom: 8px;
 }
 
-.subscription-expired {
-    color: #dc3545;
-    font-weight: bold;
+.subscription-box p:last-child {
+    margin-bottom: 0;
 }
 
-.subscription-warning {
-    color: #b58105;
-    font-weight: bold;
+.subscription-box strong {
+    color: #284536;
 }
 
 
-/* =====================================================
-   FARM ACTIONS
-   ===================================================== */
+/* =========================================================
+   BUTTON AREA
+   ========================================================= */
 
-.farm-actions {
-    margin-top: 18px;
+.form-buttons {
     display: flex;
-    gap: 10px;
+
+    gap: 12px;
+
     flex-wrap: wrap;
+
+    margin-top: 25px;
 }
 
-.edit-btn {
-    background: #0d6efd;
-    color: white;
+
+/* =========================================================
+   SAVE / ADD FARM BUTTON
+   ========================================================= */
+
+.save-farm-btn {
     border: none;
-    padding: 9px 18px;
-    border-radius: 6px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #17613f,
+            #238451
+        );
+
+    color: #ffffff;
+
+    min-height: 46px;
+
+    padding: 11px 24px;
+
+    border-radius: 9px;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    font-weight: 650;
+
     cursor: pointer;
-    font-weight: bold;
+
+    box-shadow:
+        0 4px 10px rgba(23, 97, 63, 0.18);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
 }
 
-.edit-btn:hover {
-    background: #0b5ed7;
+.save-farm-btn:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 7px 15px rgba(23, 97, 63, 0.25);
 }
 
-.status-btn {
-    background: #ffc107;
-    color: #212529;
+.save-farm-btn:active {
+    transform: translateY(0);
+}
+
+.save-farm-btn:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   CLEAR BUTTON
+   ========================================================= */
+
+.clear-farm-btn {
+    min-height: 46px;
+
+    padding: 11px 22px;
+
+    border-radius: 9px;
+
+    border: 1px solid #cbd7d0;
+
+    background: #ffffff;
+
+    color: #53635a;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.clear-farm-btn:hover {
+    background: #f3f6f4;
+
+    border-color: #9eb2a6;
+
+    color: #26352c;
+}
+
+
+/* =========================================================
+   REGISTERED FARMS AREA
+   ========================================================= */
+
+#farmList {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 20px;
+
+    min-height: 100px;
+}
+
+#farmList > p {
+    grid-column: 1 / -1;
+
+    text-align: center;
+
+    color: #7b8881;
+
+    padding: 35px 10px;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   FARM CARD
+   ========================================================= */
+
+.farm-card {
+    background: #ffffff;
+
+    border: 1px solid #e0e8e3;
+
+    border-radius: 14px;
+
+    padding: 20px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 5px 16px rgba(20, 65, 45, 0.06);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.farm-card:hover {
+    transform: translateY(-3px);
+
+    border-color: #bdd2c4;
+
+    box-shadow:
+        0 10px 25px rgba(20, 65, 45, 0.11);
+}
+
+.farm-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 4px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #17613f,
+            #69a85e
+        );
+}
+
+
+/* =========================================================
+   FARM CARD CONTENT
+   ========================================================= */
+
+.farm-card h3 {
+    color: #145c3b;
+
+    font-size: 18px;
+
+    margin-bottom: 12px;
+
+    padding-top: 3px;
+}
+
+.farm-card p {
+    color: #5e6d64;
+
+    font-size: 13px;
+
+    margin-bottom: 7px;
+
+    word-break: break-word;
+}
+
+.farm-card p strong {
+    color: #34483c;
+}
+
+
+/* =========================================================
+   FARM STATUS
+   ========================================================= */
+
+.farm-status {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    margin: 5px 0 12px;
+}
+
+.farm-status::before {
+    content: "";
+
+    width: 7px;
+
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+}
+
+.farm-status.active {
+    color: #247047;
+
+    background: #eaf6ef;
+}
+
+.farm-status.inactive {
+    color: #a34d4d;
+
+    background: #faeeee;
+}
+
+
+/* =========================================================
+   SUBSCRIPTION CARD AREA
+   ========================================================= */
+
+.subscription-info {
+    margin-top: 15px;
+
+    padding: 12px 14px;
+
+    border-radius: 9px;
+
+    background: #f6f9f7;
+
+    border: 1px solid #e2eae5;
+}
+
+.subscription-info p {
+    margin-bottom: 5px;
+
+    font-size: 12px;
+}
+
+.subscription-info p:last-child {
+    margin-bottom: 0;
+}
+
+
+/* =========================================================
+   FARM ACTION BUTTONS
+   ========================================================= */
+
+.farm-card button {
     border: none;
-    padding: 9px 18px;
-    border-radius: 6px;
+
+    border-radius: 7px;
+
+    min-height: 36px;
+
+    padding: 7px 13px;
+
+    margin-top: 12px;
+
+    margin-right: 6px;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
     cursor: pointer;
-    font-weight: bold;
+
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
-.status-btn:hover {
-    background: #e0a800;
-}
+.farm-card button:hover {
+    transform: translateY(-1px);
 
-.renew-btn {
-    background: #198754;
-    color: white;
-    border: none;
-    padding: 9px 18px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.renew-btn:hover {
-    background: #146c43;
+    opacity: 0.92;
 }
 
 
-/* =====================================================
-   BACK BUTTON
-   ===================================================== */
+/* =========================================================
+   COMMON ACTION BUTTON COLORS
+   ========================================================= */
+
+.farm-card .edit-btn {
+    background: #e8f1ec;
+
+    color: #17613f;
+}
+
+.farm-card .status-btn {
+    background: #f4efe2;
+
+    color: #7d6428;
+}
+
+.farm-card .renew-btn {
+    background: #e9f1f8;
+
+    color: #28618a;
+}
+
+
+/* =========================================================
+   BACK / LOGOUT SECTION
+   ========================================================= */
 
 .logout-section {
-    text-align: center;
-    margin: 30px 0;
+    display: flex;
+
+    justify-content: center;
+
+    margin: 8px 0 25px;
 }
 
 .logout-btn {
-    background: #123d2a;
-    color: white;
-    border: none;
-    padding: 12px 28px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: bold;
+    min-height: 45px;
+
+    padding: 10px 24px;
+
+    border-radius: 9px;
+
+    border: 1px solid #cdd8d2;
+
+    background: #ffffff;
+
+    color: #385447;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
     cursor: pointer;
+
+    box-shadow:
+        0 3px 10px rgba(20, 65, 45, 0.05);
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .logout-btn:hover {
-    background: #0d2f20;
+    background: #17613f;
+
+    color: #ffffff;
+
+    border-color: #17613f;
+
+    transform: translateY(-1px);
 }
 
 
-/* =====================================================
+/* =========================================================
    FOOTER
-   ===================================================== */
+   ========================================================= */
 
 .super-admin-footer {
+    background: #123d2b;
+
+    color: #d9e8df;
+
     text-align: center;
+
     padding: 20px;
-    color: #68756d;
-    font-size: 13px;
+
+    font-size: 12px;
+
+    line-height: 1.7;
+
+    border-top:
+        3px solid #b8d63c;
 }
 
 
-/* =====================================================
-   MOBILE RESPONSIVE
-   ===================================================== */
+/* =========================================================
+   RESPONSIVE - TABLET
+   ========================================================= */
 
-@media (max-width: 700px) {
+@media (max-width: 850px) {
+
+    .super-admin-container {
+        padding:
+            25px 16px 35px;
+    }
+
+    .farm-form {
+        padding: 22px;
+    }
+
+    #farmList {
+        grid-template-columns:
+            1fr;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
 
     .super-admin-header {
-        padding: 20px 15px;
+        padding: 23px 16px;
     }
 
     .super-admin-header h1 {
-        font-size: 23px;
+        font-size: 24px;
+    }
+
+    .super-admin-header p {
+        font-size: 12px;
     }
 
     .super-admin-container {
-        width: 92%;
-        margin-top: 18px;
+        padding:
+            18px 12px 30px;
     }
 
     .farm-form {
         padding: 18px;
+
+        border-radius: 13px;
+
+        margin-bottom: 20px;
+    }
+
+    .farm-form h2 {
+        font-size: 19px;
+
+        margin-bottom: 20px;
     }
 
     .farm-form-grid {
         grid-template-columns: 1fr;
-        gap: 15px;
+
+        gap: 0;
     }
 
-    .form-group.full-width {
-        grid-column: auto;
+    .form-group {
+        margin-bottom: 17px;
     }
 
-    #farmList {
-        grid-template-columns: 1fr;
+    input,
+    select {
+        min-height: 45px;
+
+        font-size: 14px;
     }
 
-    .farm-card {
-        padding: 18px;
+    .subscription-box {
+        padding: 15px;
+
+        margin: 20px 0;
     }
 
     .form-buttons {
@@ -408,13 +878,48 @@ body {
         width: 100%;
     }
 
-    .farm-actions {
-        flex-direction: column;
+    .farm-card {
+        padding: 17px;
     }
 
-    .edit-btn,
-    .status-btn,
-    .renew-btn {
+    .logout-btn {
         width: 100%;
     }
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .super-admin-header h1 {
+        font-size: 21px;
+    }
+
+    .farm-form {
+        padding: 15px;
+    }
+
+    .farm-form h2 {
+        font-size: 17px;
+    }
+
+    .farm-card h3 {
+        font-size: 16px;
+    }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid rgba(47, 143, 91, 0.25);
+
+    outline-offset: 2px;
 }

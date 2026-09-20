@@ -445,7 +445,37 @@ async function loadFarms() {
 
     });
 }
+// =====================================
+// POPULATE FARM DROPDOWN
+// =====================================
 
+function populateFarmDropdown() {
+
+    const dropdown =
+        document.getElementById("existingFarm");
+
+    if (!dropdown) return;
+
+    dropdown.innerHTML = `
+        <option value="">
+            -- Select Existing Farm --
+        </option>
+    `;
+
+    allFarms.forEach(farm => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = farm.id;
+
+        option.textContent =
+            farm.farm_name ||
+            `Farm ID ${farm.id}`;
+
+        dropdown.appendChild(option);
+    });
+}
 
 // =====================================
 // LOAD OWNER / ADMIN USERS
