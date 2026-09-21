@@ -1,0 +1,113 @@
+/* =========================================================
+   MUNKA PIGGERY TECHNOLOGY
+   SHARED FARM BRANDING STYLES
+========================================================= */
+
+
+/* =========================================================
+   SOFTWARE OWNER BRAND
+   Small and subtle
+========================================================= */
+
+.software-brand {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+
+/* =========================================================
+   REGISTERED FARM
+   Main visual identity
+========================================================= */
+
+.farm-branding {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.farm-label {
+    display: block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    opacity: 0.70;
+    margin-bottom: 3px;
+}
+
+.farm-branding strong {
+    display: block;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px;
+    line-height: 1.15;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .software-brand {
+        font-size: 13px !important;
+        letter-spacing: 0.7px;
+    }
+
+    .farm-branding {
+        margin-top: 6px;
+        padding-top: 5px;
+    }
+
+    .farm-label {
+        font-size: 8px;
+        letter-spacing: 1.5px;
+    }
+
+    .farm-branding strong {
+        font-size: 21px !important;
+    }
+
+}
+
+
+/* =========================================================
+   PRINT
+   Registered farm becomes the main printed identity
+========================================================= */
+
+@media print {
+
+    /* Hide software-owner branding */
+    .software-brand {
+        display: none !important;
+    }
+
+    /* Hide the small REGISTERED FARM label */
+    .farm-label {
+        display: none !important;
+    }
+
+    /* Remove decorative line */
+    .farm-branding {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    /* Make registered farm name dominant */
+    .farm-branding strong {
+        display: block !important;
+        font-size: 26px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.5px;
+        text-align: center;
+        line-height: 1.2;
+        margin: 0 0 12px 0 !important;
+    }
+
+}
+
