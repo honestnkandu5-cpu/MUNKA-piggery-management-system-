@@ -1,8 +1,8 @@
 // ==========================================================
-// MUNKA PIGGERY FARM
+// MUNKA PIGGERY TECHNOLOGY
 // PIG REGISTRATION MODULE
 // MULTI-FARM + PERMISSION-CONTROLLED VERSION
-// WITH PDF DOWNLOAD
+// FARM NAME FIRST PRINT & PDF VERSION
 // ==========================================================
 
 let editID = null;
@@ -55,6 +55,70 @@ function getFarmID(){
     }
 
     return user.farm_id;
+}
+
+
+// ==========================================================
+// GET REGISTERED FARM NAME
+// ==========================================================
+
+async function getRegisteredFarmName(){
+
+    const farmID =
+        getFarmID();
+
+    if(!farmID){
+        return "REGISTERED FARM";
+    }
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+
+                .from("farms")
+
+                .select("farm_name")
+
+                .eq(
+                    "id",
+                    farmID
+                )
+
+                .maybeSingle();
+
+
+        if(error){
+            throw error;
+        }
+
+
+        if(
+            data &&
+            data.farm_name
+        ){
+
+            return data.farm_name;
+
+        }
+
+
+    }
+    catch(error){
+
+        console.error(
+            "GET FARM NAME ERROR:",
+            error
+        );
+
+    }
+
+
+    return "REGISTERED FARM";
+
 }
 
 
@@ -990,9 +1054,10 @@ async function generateReport(){
 
 // ==========================================================
 // PRINT REPORT
+// FARM NAME ONLY IN THE PRINTED HEADER
 // ==========================================================
 
-function printReport(){
+async function printReport(){
 
     if(
         typeof canReport !== "function" ||
@@ -1008,13 +1073,322 @@ function printReport(){
     }
 
 
-    window.print();
+    try{
+
+        // ==================================================
+        // GET REGISTERED FARM NAME
+        // ==================================================
+
+        const farmName =
+            await getRegisteredFarmName();
+
+
+        // ==================================================
+        // FIND HEADER ELEMENTS
+        // ==================================================
+
+        const pageHeader =
+            document.querySelector(
+                ".page-header"
+            );
+
+
+        if(!pageHeader){
+
+            window.print();
+
+            return;
+        }
+
+
+        const softwareBrand =
+            pageHeader.querySelector(
+                ".software-brand"
+            );
+
+
+        const subtitle =
+            pageHeader.querySelector(
+                "p"
+            );
+
+
+        const farmLabel =
+            pageHeader.querySelector(
+                ".farm-label"
+            );
+
+
+        const farmNameElement =
+            pageHeader.querySelector(
+                "[data-farm-name]"
+            );
+
+
+        const pigIcon =
+            pageHeader.querySelector(
+                ".pig-icon"
+            );
+
+
+        // ==================================================
+        // SAVE ORIGINAL VALUES
+        // ==================================================
+
+        const originalFarmName =
+            farmNameElement
+                ? farmNameElement.textContent
+                : "";
+
+
+        // ==================================================
+        // PREPARE PRINT HEADER
+        // ==================================================
+
+        if(farmNameElement){
+
+            farmNameElement.textContent =
+                farmName;
+
+            farmNameElement.classList.add(
+                "print-farm-name"
+            );
+
+        }
+
+
+        if(softwareBrand){
+
+            softwareBrand.style.display =
+                "none";
+
+        }
+
+
+        if(subtitle){
+
+            subtitle.style.display =
+                "none";
+
+        }
+
+
+        if(farmLabel){
+
+            farmLabel.style.display =
+                "none";
+
+        }
+
+
+        if(pigIcon){
+
+            pigIcon.style.display =
+                "none";
+
+        }
+
+
+        pageHeader.classList.add(
+            "printing-farm-header"
+        );
+
+
+        // ==================================================
+        // CREATE TEMPORARY PRINT STYLE
+        // ==================================================
+
+        const printStyle =
+            document.createElement(
+                "style"
+            );
+
+
+        printStyle.id =
+            "temporary-farm-print-style";
+
+
+        printStyle.textContent = `
+
+            @media print {
+
+                .printing-farm-header {
+
+                    display: block !important;
+
+                    width: 100% !important;
+
+                    text-align: center !important;
+
+                    margin-bottom: 18px !important;
+
+                    padding: 0 !important;
+
+                    background: transparent !important;
+
+                    box-shadow: none !important;
+
+                }
+
+
+                .printing-farm-header
+                [data-farm-name] {
+
+                    display: block !important;
+
+                    visibility: visible !important;
+
+                    font-size: 30px !important;
+
+                    font-weight: 800 !important;
+
+                    text-align: center !important;
+
+                    color: #000 !important;
+
+                    margin: 0 0 12px 0 !important;
+
+                    padding: 0 !important;
+
+                    border: none !important;
+
+                }
+
+
+                .printing-farm-header
+                .software-brand,
+
+                .printing-farm-header
+                p,
+
+                .printing-farm-header
+                .farm-label,
+
+                .printing-farm-header
+                .pig-icon {
+
+                    display: none !important;
+
+                }
+
+            }
+
+        `;
+
+
+        document.head.appendChild(
+            printStyle
+        );
+
+
+        // ==================================================
+        // PRINT
+        // ==================================================
+
+        window.print();
+
+
+        // ==================================================
+        // RESTORE PAGE AFTER PRINT
+        // ==================================================
+
+        window.addEventListener(
+            "afterprint",
+            function restorePrintPage(){
+
+                if(farmNameElement){
+
+                    farmNameElement.textContent =
+                        originalFarmName;
+
+                    farmNameElement.classList.remove(
+                        "print-farm-name"
+                    );
+
+                }
+
+
+                if(softwareBrand){
+
+                    softwareBrand.style.display =
+                        "";
+
+                }
+
+
+                if(subtitle){
+
+                    subtitle.style.display =
+                        "";
+
+                }
+
+
+                if(farmLabel){
+
+                    farmLabel.style.display =
+                        "";
+
+                }
+
+
+                if(pigIcon){
+
+                    pigIcon.style.display =
+                        "";
+
+                }
+
+
+                pageHeader.classList.remove(
+                    "printing-farm-header"
+                );
+
+
+                const temporaryStyle =
+                    document.getElementById(
+                        "temporary-farm-print-style"
+                    );
+
+
+                if(temporaryStyle){
+
+                    temporaryStyle.remove();
+
+                }
+
+
+                window.removeEventListener(
+                    "afterprint",
+                    restorePrintPage
+                );
+
+            }
+        );
+
+    }
+
+
+    catch(error){
+
+        console.error(
+            "PRINT REPORT ERROR:",
+            error
+        );
+
+        alert(
+            "Unable to prepare the print report.\n\n" +
+            error.message
+        );
+
+    }
 
 }
 
 
 // ==========================================================
 // DOWNLOAD PDF REPORT
+// FARM NAME IS THE MAIN PDF HEADING
 // ==========================================================
 
 async function downloadPDF(){
@@ -1080,36 +1454,8 @@ async function downloadPDF(){
         // GET FARM NAME
         // ==================================================
 
-        let farmName =
-            "MUNKA PIGGERY FARM";
-
-
-        const {
-            data: farmData
-        } =
-            await supabaseClient
-
-                .from("farms")
-
-                .select("farm_name")
-
-                .eq(
-                    "id",
-                    farmID
-                )
-
-                .maybeSingle();
-
-
-        if(
-            farmData &&
-            farmData.farm_name
-        ){
-
-            farmName =
-                farmData.farm_name;
-
-        }
+        const farmName =
+            await getRegisteredFarmName();
 
 
         // ==================================================
@@ -1167,10 +1513,11 @@ async function downloadPDF(){
 
 
         // ==================================================
-        // TITLE
+        // REGISTERED FARM NAME
+        // MAIN PDF HEADING
         // ==================================================
 
-        doc.setFontSize(20);
+        doc.setFontSize(22);
 
         doc.setFont(
             "helvetica",
@@ -1178,30 +1525,9 @@ async function downloadPDF(){
         );
 
         doc.text(
-            "MUNKA PIGGERY",
-            148,
-            16,
-            {
-                align: "center"
-            }
-        );
-
-
-        // ==================================================
-        // FARM NAME
-        // ==================================================
-
-        doc.setFontSize(13);
-
-        doc.setFont(
-            "helvetica",
-            "normal"
-        );
-
-        doc.text(
             farmName,
             148,
-            24,
+            18,
             {
                 align: "center"
             }
@@ -1222,7 +1548,7 @@ async function downloadPDF(){
         doc.text(
             "PIG REGISTRATION REPORT",
             148,
-            34,
+            30,
             {
                 align: "center"
             }
@@ -1256,7 +1582,7 @@ async function downloadPDF(){
             "Generated: " +
             generatedDate,
             14,
-            43
+            40
         );
 
 
@@ -1267,7 +1593,7 @@ async function downloadPDF(){
                 "System User"
             ),
             14,
-            49
+            46
         );
 
 
@@ -1275,7 +1601,7 @@ async function downloadPDF(){
             "Total Registered Pigs: " +
             records.length,
             14,
-            55
+            52
         );
 
 
@@ -1317,7 +1643,7 @@ async function downloadPDF(){
 
         doc.autoTable({
 
-            startY: 62,
+            startY: 59,
 
             head: [[
 
@@ -1403,6 +1729,7 @@ async function downloadPDF(){
 
         // ==================================================
         // FOOTER ON EVERY PAGE
+        // NO MUNKA PIGGERY TEXT
         // ==================================================
 
         const pageCount =
@@ -1430,7 +1757,7 @@ async function downloadPDF(){
 
 
             doc.text(
-                "MUNKA PIGGERY Management System",
+                farmName,
                 10,
                 pageHeight - 8
             );
@@ -1462,7 +1789,12 @@ async function downloadPDF(){
 
 
         const fileName =
-            "MUNKA_PIGGERY_Pig_Registration_" +
+            farmName
+                .replace(
+                    /[^a-z0-9]/gi,
+                    "_"
+                ) +
+            "_Pig_Registration_" +
             datePart +
             ".pdf";
 
