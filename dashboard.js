@@ -1,13 +1,14 @@
 // ==========================================================
-// MUNKA PIGGERY FARM LIMITED
+// MUNKA PIGGERY TECHNOLOGY
 // DASHBOARD.JS
 // ==========================================================
 //
 // RESPONSIBILITIES:
 //
 // 1. Display logged-in user
-// 2. Navigation
-// 3. Logout
+// 2. Display registered farm name
+// 3. Navigation
+// 4. Logout
 //
 // PERMISSIONS ARE HANDLED BY:
 // security.js + role_permissions.js
@@ -141,6 +142,215 @@ function displayLoggedInUser(){
             "DASHBOARD USER ERROR:",
             error
         );
+
+    }
+
+}
+
+
+// ==========================================================
+// DISPLAY REGISTERED FARM NAME
+// ==========================================================
+
+async function displayFarmName(){
+
+    const farmNameElement =
+        document.getElementById(
+            "farmName"
+        );
+
+
+    if(!farmNameElement){
+
+        return;
+
+    }
+
+
+    farmNameElement.textContent =
+        "Loading farm...";
+
+
+    try{
+
+        // ======================================
+        // MAKE SURE SUPABASE EXISTS
+        // ======================================
+
+        if(
+            typeof supabaseClient ===
+            "undefined"
+        ){
+
+            throw new Error(
+                "supabaseClient is not available."
+            );
+
+        }
+
+
+        // ======================================
+        // GET CURRENT AUTH USER
+        // ======================================
+
+        const {
+            data: sessionData,
+            error: sessionError
+        } =
+            await supabaseClient
+                .auth
+                .getSession();
+
+
+        if(sessionError){
+
+            throw sessionError;
+
+        }
+
+
+        const session =
+            sessionData.session;
+
+
+        if(
+            !session ||
+            !session.user
+        ){
+
+            farmNameElement.textContent =
+                "Farm";
+
+            return;
+
+        }
+
+
+        const authUserId =
+            session.user.id;
+
+
+        // ======================================
+        // GET USER PROFILE
+        // ======================================
+
+        const {
+            data: userProfile,
+            error: userError
+        } =
+            await supabaseClient
+
+                .from("users")
+
+                .select(
+                    "farm_id"
+                )
+
+                .eq(
+                    "auth_user_id",
+                    authUserId
+                )
+
+                .maybeSingle();
+
+
+        if(userError){
+
+            throw userError;
+
+        }
+
+
+        if(
+            !userProfile ||
+            !userProfile.farm_id
+        ){
+
+            farmNameElement.textContent =
+                "Farm";
+
+            console.warn(
+                "No farm_id found for authenticated user."
+            );
+
+            return;
+
+        }
+
+
+        const farmId =
+            userProfile.farm_id;
+
+
+        // ======================================
+        // GET REGISTERED FARM
+        // ======================================
+
+        const {
+            data: farm,
+            error: farmError
+        } =
+            await supabaseClient
+
+                .from("farms")
+
+                .select(
+                    "id, farm_name"
+                )
+
+                .eq(
+                    "id",
+                    farmId
+                )
+
+                .maybeSingle();
+
+
+        if(farmError){
+
+            throw farmError;
+
+        }
+
+
+        if(
+            !farm ||
+            !farm.farm_name
+        ){
+
+            farmNameElement.textContent =
+                "Farm";
+
+            console.warn(
+                "Registered farm not found for farm_id:",
+                farmId
+            );
+
+            return;
+
+        }
+
+
+        // ======================================
+        // DISPLAY FARM NAME
+        // ======================================
+
+        farmNameElement.textContent =
+            farm.farm_name;
+
+    }
+
+    catch(error){
+
+        console.error(
+            "FARM NAME ERROR:",
+            error
+        );
+
+
+        farmNameElement.textContent =
+            "Farm";
+
 
     }
 
@@ -287,9 +497,13 @@ async function logout(){
 
 document.addEventListener(
     "DOMContentLoaded",
-    function(){
+    async function(){
 
+        // Display logged-in user
         displayLoggedInUser();
+
+        // Display registered farm
+        await displayFarmName();
 
     }
 );

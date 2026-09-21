@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0">
 
     <title>
-        MUNKA PIGGERY Dashboard
+        MUNKA PIGGERY TECHNOLOGY
     </title>
 
     <link
@@ -38,11 +38,11 @@
         <div>
 
             <h1>
-                MUNKA PIGGERY
+                MUNKA PIGGERY TECHNOLOGY
             </h1>
 
             <span>
-                Management System
+                Piggery Management System
             </span>
 
         </div>
@@ -91,15 +91,34 @@
 
     <section class="welcome-section">
 
+
         <div class="welcome-content">
 
             <span class="welcome-label">
                 FARM MANAGEMENT DASHBOARD
             </span>
 
+
+            <!-- REGISTERED FARM NAME -->
+
+            <div class="farm-name-label">
+                REGISTERED FARM
+            </div>
+
+
+            <h1
+                id="farmName"
+                class="farm-name">
+
+                Loading farm...
+
+            </h1>
+
+
             <h2 id="welcomeUser">
                 Welcome
             </h2>
+
 
             <p>
                 Manage your piggery operations,
@@ -115,10 +134,12 @@
                 👤
             </div>
 
+
             <div>
 
                 <p id="userDetails">
                 </p>
+
 
                 <p
                     id="lastLogin"
@@ -390,7 +411,7 @@
                 class="module-card"
                 data-permission-module="Weaning"
                 data-permission-type="can_view"
-                onclick="window.location.href='weaning.html'">
+                onclick="openWeaning()">
 
                 <span class="module-icon">
                     🐷
@@ -424,7 +445,7 @@
                 class="module-card"
                 data-permission-module="Vaccination & Treatment"
                 data-permission-type="can_view"
-                onclick="window.location.href='vaccination.html'">
+                onclick="openVaccination()">
 
                 <span class="module-icon">
                     💉
@@ -458,7 +479,7 @@
                 class="module-card"
                 data-permission-module="Feeding"
                 data-permission-type="can_view"
-                onclick="window.location.href='feeding.html'">
+                onclick="openFeeding()">
 
                 <span class="module-icon">
                     🌾
@@ -492,7 +513,7 @@
                 class="module-card"
                 data-permission-module="Sales"
                 data-permission-type="can_view"
-                onclick="window.location.href='sales.html'">
+                onclick="openSales()">
 
                 <span class="module-icon">
                     💰
@@ -526,7 +547,7 @@
                 class="module-card"
                 data-permission-module="Expenses"
                 data-permission-type="can_view"
-                onclick="window.location.href='expenses.html'">
+                onclick="openExpenses()">
 
                 <span class="module-icon">
                     💳
@@ -560,7 +581,7 @@
                 class="module-card"
                 data-permission-module="Reports & Analytics"
                 data-permission-type="can_view"
-                onclick="window.location.href='reports.html'">
+                onclick="openReports()">
 
                 <span class="module-icon">
                     📈
@@ -594,7 +615,7 @@
                 class="module-card"
                 data-permission-module="Users"
                 data-permission-type="can_view"
-                onclick="window.location.href='users.html'">
+                onclick="openUsers()">
 
                 <span class="module-icon">
                     👥
@@ -628,7 +649,7 @@
                 class="module-card"
                 data-permission-module="Activity Logs"
                 data-permission-type="can_view"
-                onclick="window.location.href='activity.html'">
+                onclick="openActivity()">
 
                 <span class="module-icon">
                     📋
@@ -667,7 +688,7 @@
     <footer>
 
         <strong>
-            MUNKA PIGGERY
+            MUNKA PIGGERY TECHNOLOGY
         </strong>
 
         <span>

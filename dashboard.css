@@ -1,6 +1,6 @@
 /* =========================================================
-   MUNKA PIGGERY
-   PROFESSIONAL DASHBOARD
+   MUNKA PIGGERY TECHNOLOGY
+   PROFESSIONAL MULTI-FARM DASHBOARD
    ========================================================= */
 
 
@@ -15,7 +15,11 @@
 
 body {
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
     background: #f4f7f5;
 
@@ -149,17 +153,21 @@ body {
 
 .change-password-btn {
 
-    background: rgba(255, 255, 255, 0.12);
+    background:
+        rgba(255, 255, 255, 0.12);
 
     color: white;
 
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.3) !important;
 }
 
 
 .change-password-btn:hover {
 
-    background: rgba(255, 255, 255, 0.22);
+    background:
+        rgba(255, 255, 255, 0.22);
 }
 
 
@@ -199,11 +207,12 @@ body {
 
 .welcome-section {
 
-    background: linear-gradient(
-        135deg,
-        #14532d,
-        #198754
-    );
+    background:
+        linear-gradient(
+            135deg,
+            #14532d,
+            #198754
+        );
 
     color: white;
 
@@ -220,7 +229,8 @@ body {
     gap: 30px;
 
     box-shadow:
-        0 8px 25px rgba(20, 83, 45, 0.2);
+        0 8px 25px
+        rgba(20, 83, 45, 0.2);
 
     margin-bottom: 30px;
 }
@@ -238,11 +248,43 @@ body {
 }
 
 
+/* =========================================================
+   FARM IDENTITY
+   ========================================================= */
+
+.farm-name-label {
+
+    margin-top: 12px;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    opacity: 0.75;
+}
+
+
+.farm-name {
+
+    margin: 4px 0 8px;
+
+    font-size: 26px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.5px;
+
+    line-height: 1.2;
+}
+
+
 .welcome-content h2 {
 
     margin: 8px 0;
 
-    font-size: 30px;
+    font-size: 22px;
 }
 
 
@@ -270,7 +312,8 @@ body {
 
     gap: 12px;
 
-    background: rgba(255, 255, 255, 0.12);
+    background:
+        rgba(255, 255, 255, 0.12);
 
     padding: 15px 20px;
 
@@ -404,7 +447,8 @@ body {
     border: 1px solid #e5e7eb;
 
     box-shadow:
-        0 3px 12px rgba(0, 0, 0, 0.05);
+        0 3px 12px
+        rgba(0, 0, 0, 0.05);
 
     transition: 0.2s ease;
 }
@@ -412,10 +456,12 @@ body {
 
 .overview-card:hover {
 
-    transform: translateY(-3px);
+    transform:
+        translateY(-3px);
 
     box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.08);
+        0 8px 20px
+        rgba(0, 0, 0, 0.08);
 }
 
 
@@ -515,7 +561,8 @@ body {
     gap: 15px;
 
     box-shadow:
-        0 3px 12px rgba(0, 0, 0, 0.05);
+        0 3px 12px
+        rgba(0, 0, 0, 0.05);
 
     transition:
         transform 0.2s ease,
@@ -526,18 +573,21 @@ body {
 
 .module-card:hover {
 
-    transform: translateY(-4px);
+    transform:
+        translateY(-4px);
 
     border-color: #198754;
 
     box-shadow:
-        0 10px 25px rgba(25, 135, 84, 0.12);
+        0 10px 25px
+        rgba(25, 135, 84, 0.12);
 }
 
 
 .module-card:active {
 
-    transform: translateY(-1px);
+    transform:
+        translateY(-1px);
 }
 
 
@@ -619,7 +669,8 @@ body {
 
 .module-card:hover .module-arrow {
 
-    transform: translateX(4px);
+    transform:
+        translateX(4px);
 }
 
 
@@ -709,7 +760,7 @@ footer strong {
 
     .brand h1 {
 
-        font-size: 17px;
+        font-size: 16px;
     }
 
 
@@ -749,9 +800,11 @@ footer strong {
 
     .logout-btn {
 
-        padding: 9px 10px !important;
+        padding:
+            9px 10px !important;
 
-        font-size: 12px !important;
+        font-size:
+            12px !important;
     }
 
 
@@ -771,9 +824,17 @@ footer strong {
     }
 
 
+    .farm-name {
+
+        font-size: 22px;
+
+        word-break: break-word;
+    }
+
+
     .welcome-content h2 {
 
-        font-size: 24px;
+        font-size: 21px;
     }
 
 
@@ -794,7 +855,6 @@ footer strong {
     .overview-cards {
 
         grid-template-columns: 1fr;
-
     }
 
 
@@ -854,13 +914,19 @@ footer strong {
 
     .brand h1 {
 
-        font-size: 15px;
+        font-size: 14px;
+    }
+
+
+    .farm-name {
+
+        font-size: 19px;
     }
 
 
     .welcome-content h2 {
 
-        font-size: 21px;
+        font-size: 20px;
     }
 
 
