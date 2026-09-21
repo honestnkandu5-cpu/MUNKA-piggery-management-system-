@@ -5,9 +5,10 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-<title>MUNKA PIGGERY - User Management</title>
+<title>MUNKA PIGGERY TECHNOLOGY - User Management</title>
 
 <link rel="stylesheet" href="users.css">
 
@@ -20,7 +21,42 @@
 <div class="container">
 
 
-<h1>MUNKA PIGGERY</h1>
+<!-- =========================================================
+     MUNKA PIGGERY TECHNOLOGY BRANDING
+========================================================= -->
+
+<header class="users-header">
+
+    <div class="brand-icon">
+        🐖
+    </div>
+
+    <div class="brand-content">
+
+        <h1>
+            MUNKA PIGGERY TECHNOLOGY
+        </h1>
+
+        <p>
+            Piggery Management System
+        </p>
+
+        <div class="farm-branding">
+
+            <span class="farm-label">
+                REGISTERED FARM
+            </span>
+
+            <strong data-farm-name>
+                Loading farm...
+            </strong>
+
+        </div>
+
+    </div>
+
+</header>
+
 
 <h2>User Management</h2>
 
@@ -104,7 +140,9 @@ required
 
 <select id="role" required>
 
-<option value="">Select Role</option>
+<option value="">
+Select Role
+</option>
 
 <option value="Owner/Admin">
 Owner/Admin
@@ -258,40 +296,59 @@ border="1"
 
 
 
-<!-- jsPDF -->
+<!-- =========================================================
+     jsPDF
+========================================================= -->
 
 <script
-src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-></script>
+src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+</script>
 
 
-<!-- jsPDF AutoTable -->
-
-<script
-src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"
-></script>
-
-
-<!-- Supabase -->
+<!-- =========================================================
+     jsPDF AutoTable
+========================================================= -->
 
 <script
-src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"
-></script>
+src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js">
+</script>
+
+
+<!-- =========================================================
+     Supabase
+========================================================= -->
+
+<script
+src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js">
+</script>
 
 <script src="supabase.js"></script>
 
 
-<!-- Activity Log -->
+<!-- =========================================================
+     FARM BRANDING
+========================================================= -->
+
+<script src="farm_branding.js"></script>
+
+
+<!-- =========================================================
+     Activity Log
+========================================================= -->
 
 <script src="activity.js"></script>
 
 
-<!-- Security -->
+<!-- =========================================================
+     Security
+========================================================= -->
 
 <script src="security.js"></script>
 
 
-<!-- User Management -->
+<!-- =========================================================
+     User Management
+========================================================= -->
 
 <script src="users.js"></script>
 

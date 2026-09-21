@@ -9,7 +9,7 @@
       content="width=device-width, initial-scale=1.0">
 
 <title>
-    MUNKA PIGGERY FARM - Activity Logs
+    MUNKA PIGGERY TECHNOLOGY - Activity Logs
 </title>
 
 <link rel="stylesheet" href="activity.css">
@@ -29,19 +29,40 @@
 
 <header class="activity-header">
 
-    <div>
+    <div class="activity-brand">
 
-        <h1>
-            🐷 MUNKA PIGGERY FARM
-        </h1>
+        <div class="brand-icon">
+            🐷
+        </div>
 
-        <h2>
-            Activity Logs
-        </h2>
+        <div>
 
-        <p>
-            System User Activity & Audit Trail
-        </p>
+            <h1>
+                MUNKA PIGGERY TECHNOLOGY
+            </h1>
+
+            <h2>
+                Activity Logs
+            </h2>
+
+            <p>
+                System User Activity & Audit Trail
+            </p>
+
+
+            <div class="farm-branding">
+
+                <span class="farm-label">
+                    REGISTERED FARM
+                </span>
+
+                <strong data-farm-name>
+                    Loading farm...
+                </strong>
+
+            </div>
+
+        </div>
 
     </div>
 
@@ -75,12 +96,17 @@
             📄 Download PDF
 
         </button>
-<button
-    type="button"
-    class="delete-all-button"
-    onclick="clearAllActivityLogs()">
-    🗑️ Clear All Logs
-</button>
+
+
+        <button
+            type="button"
+            class="delete-all-button"
+            onclick="clearAllActivityLogs()">
+
+            🗑️ Clear All Logs
+
+        </button>
+
 
         <button
             type="button"
@@ -112,7 +138,7 @@
         <p>
             This page records important activities
             performed by users in the MUNKA PIGGERY
-            FARM management system.
+            TECHNOLOGY management system.
         </p>
 
     </div>
@@ -277,6 +303,13 @@ src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 ========================================== -->
 
 <script src="supabase.js"></script>
+
+
+<!-- ==========================================
+     FARM BRANDING
+========================================== -->
+
+<script src="farm_branding.js"></script>
 
 
 <!-- ==========================================

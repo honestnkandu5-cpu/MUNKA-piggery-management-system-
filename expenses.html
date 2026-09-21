@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>MUNKA PIGGERY - Expenses Records</title>
+    <title>MUNKA PIGGERY TECHNOLOGY - Expenses Records</title>
 
     <link rel="stylesheet" href="expenses.css">
 
@@ -25,17 +25,33 @@
 <div class="container">
 
 
-    <!-- HEADER -->
+    <!-- ==================================================
+         HEADER
+    ================================================== -->
 
     <div class="page-header">
 
         <div>
 
-            <h1>MUNKA PIGGERY FARM</h1>
+            <h1>
+                MUNKA PIGGERY TECHNOLOGY
+            </h1>
 
             <p class="subtitle">
-                Farm Expenses Management System
+                Piggery Management System
             </p>
+
+            <div class="farm-branding">
+
+                <span class="farm-label">
+                    REGISTERED FARM
+                </span>
+
+                <strong data-farm-name>
+                    Loading farm...
+                </strong>
+
+            </div>
 
         </div>
 
@@ -47,7 +63,9 @@
 
 
 
-    <!-- EXPENSE FORM -->
+    <!-- ==================================================
+         EXPENSE FORM
+    ================================================== -->
 
     <form id="expensesForm">
 
@@ -326,8 +344,6 @@
                     Supplier / Payee Name
                 </label>
 
-                <!-- Type is UI-only and does NOT go to Supabase -->
-
                 <select id="supplierType">
 
                     <option value="">
@@ -365,8 +381,6 @@
                 <label for="supplierContact">
                     Supplier / Payee Contact
                 </label>
-
-                <!-- Type is UI-only and does NOT go to Supabase -->
 
                 <select id="supplierContactType">
 
@@ -441,7 +455,9 @@
 
 
 
-        <!-- BUTTONS -->
+        <!-- ==================================================
+             BUTTONS
+        ================================================== -->
 
         <div class="buttons">
 
@@ -538,7 +554,9 @@
 
 
 
-    <!-- HISTORY -->
+    <!-- ==================================================
+         HISTORY
+    ================================================== -->
 
     <div class="history-header">
 
@@ -590,27 +608,39 @@
 
 
 
-<!-- ACTIVITY -->
-
-<script src="activity.js"></script>
-
-
-
-<!-- SUPABASE -->
+<!-- ======================================================
+     SUPABASE
+====================================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase.js"></script>
 
 
+<!-- ======================================================
+     FARM BRANDING
+====================================================== -->
 
-<!-- SECURITY -->
+<script src="farm_branding.js"></script>
+
+
+<!-- ======================================================
+     ACTIVITY
+====================================================== -->
+
+<script src="activity.js"></script>
+
+
+<!-- ======================================================
+     SECURITY
+====================================================== -->
 
 <script src="security.js"></script>
 
 
-
-<!-- EXPENSES -->
+<!-- ======================================================
+     EXPENSES
+====================================================== -->
 
 <script src="expenses.js"></script>
 

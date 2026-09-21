@@ -7,7 +7,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>MUNKA PIGGERY - Farrowing Records</title>
+<title>MUNKA PIGGERY TECHNOLOGY - Farrowing Records</title>
 
 <link rel="stylesheet" href="farrowing.css">
 
@@ -17,13 +17,38 @@
 
 <div class="container">
 
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+
     <div class="page-header">
 
-        <div class="header-icon">🐷</div>
+        <div class="header-icon">
+            🐷
+        </div>
 
         <div>
-            <h1>MUNKA PIGGERY</h1>
-            <p>Farrowing &amp; Litter Management Records</p>
+
+            <h1>
+                MUNKA PIGGERY TECHNOLOGY
+            </h1>
+
+            <p>
+                Piggery Management System
+            </p>
+
+            <div class="farm-branding">
+
+                <span class="farm-label">
+                    REGISTERED FARM
+                </span>
+
+                <strong data-farm-name>
+                    Loading farm...
+                </strong>
+
+            </div>
+
         </div>
 
     </div>
@@ -576,7 +601,9 @@
 
                 <div class="form-group">
 
-                    <label for="sowCondition">Sow Condition</label>
+                    <label for="sowCondition">
+                        Sow Condition
+                    </label>
 
                     <select id="sowCondition">
 
@@ -938,32 +965,49 @@
     </div>
 
 
+    <!-- ============================= -->
+    <!-- FOOTER -->
+    <!-- ============================= -->
+
     <footer>
 
-        <strong>MUNKA PIGGERY</strong>
+        <strong>
+            MUNKA PIGGERY TECHNOLOGY
+        </strong>
 
-        <span>Farrowing &amp; Litter Management System</span>
+        <span>
+            Farrowing &amp; Litter Management System
+        </span>
 
     </footer>
 
 </div>
 
 
-<!-- SUPABASE -->
+<!-- =====================================================
+     SUPABASE
+====================================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
-<!-- PDF LIBRARIES -->
+<!-- =====================================================
+     PDF LIBRARIES
+====================================================== -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 
-<!-- PROJECT SCRIPTS -->
+<!-- =====================================================
+     PROJECT SCRIPTS
+====================================================== -->
 
 <script src="supabase.js"></script>
+
+<!-- Dynamic registered farm branding -->
+<script src="farm_branding.js"></script>
 
 <script src="activity.js"></script>
 

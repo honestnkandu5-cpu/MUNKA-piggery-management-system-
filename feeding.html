@@ -1,34 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>MUNKA PIGGERY - Feeding Records</title>
+    <title>MUNKA PIGGERY TECHNOLOGY - Feeding Records</title>
 
     <link rel="stylesheet" href="feeding.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 
 <body>
 
 <div class="page-wrapper">
 
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
     <header class="page-header">
+
         <div>
-            <div class="brand">🐖 MUNKA PIGGERY FARM LIMITED</div>
-            <div class="subtitle">Feeding Records Management</div>
+
+            <div class="brand">
+                🐖 MUNKA PIGGERY TECHNOLOGY
+            </div>
+
+            <div class="subtitle">
+                Piggery Management System
+            </div>
+
+            <div class="farm-branding">
+
+                <span class="farm-label">
+                    REGISTERED FARM
+                </span>
+
+                <strong data-farm-name>
+                    Loading farm...
+                </strong>
+
+            </div>
+
         </div>
 
-        <button type="button" class="back-btn"
-                onclick="window.location.href='dashboard.html'">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="window.location.href='dashboard.html'">
+
             ← Back to Dashboard
+
         </button>
+
     </header>
 
 
+
     <main class="container">
+
 
         <!-- =====================================
              FORM HEADER
@@ -36,44 +72,89 @@
 
         <section class="card">
 
+
             <div class="section-title">
+
                 <div>
-                    <h2>Feeding Record</h2>
-                    <p>Record daily feeding, feed usage and feeding performance.</p>
+
+                    <h2>
+                        Feeding Record
+                    </h2>
+
+                    <p>
+                        Record daily feeding, feed usage and feeding performance.
+                    </p>
+
                 </div>
 
-                <span class="status-badge">Farm Secured</span>
+
+                <span class="status-badge">
+                    Farm Secured
+                </span>
+
             </div>
 
 
+
             <form id="feedingForm">
+
 
                 <!-- RECORD INFORMATION -->
 
                 <div class="form-section">
 
-                    <h3>📋 Record Information</h3>
+                    <h3>
+                        📋 Record Information
+                    </h3>
+
 
                     <div class="form-grid">
 
+
                         <div class="form-group">
-                            <label for="recordID">Record ID</label>
-                            <input type="text" id="recordID" readonly>
+
+                            <label for="recordID">
+                                Record ID
+                            </label>
+
+                            <input
+                                type="text"
+                                id="recordID"
+                                readonly>
+
                         </div>
 
 
+
                         <div class="form-group">
-                            <label for="feedingDate">Feeding Date</label>
-                            <input type="date" id="feedingDate" required>
+
+                            <label for="feedingDate">
+                                Feeding Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="feedingDate"
+                                required>
+
                         </div>
 
 
+
                         <div class="form-group">
-                            <label for="penNumber">Pen Number</label>
 
-                            <select id="penNumber" required>
+                            <label for="penNumber">
+                                Pen Number
+                            </label>
 
-                                <option value="">Select Pen</option>
+
+                            <select
+                                id="penNumber"
+                                required>
+
+                                <option value="">
+                                    Select Pen
+                                </option>
 
                                 <option>Pen 1</option>
                                 <option>Pen 2</option>
@@ -97,16 +178,25 @@
                                 <option>Pen 20</option>
 
                             </select>
+
                         </div>
+
 
 
                         <div class="form-group">
 
-                            <label for="pigCategory">Pig Category</label>
+                            <label for="pigCategory">
+                                Pig Category
+                            </label>
 
-                            <select id="pigCategory" required>
 
-                                <option value="">Select Category</option>
+                            <select
+                                id="pigCategory"
+                                required>
+
+                                <option value="">
+                                    Select Category
+                                </option>
 
                                 <option>Boar</option>
                                 <option>Dry Sow</option>
@@ -121,13 +211,19 @@
                         </div>
 
 
+
                         <div class="form-group">
 
-                            <label for="breed">Breed</label>
+                            <label for="breed">
+                                Breed
+                            </label>
+
 
                             <select id="breed">
 
-                                <option value="">Select Breed</option>
+                                <option value="">
+                                    Select Breed
+                                </option>
 
                                 <option>Large White</option>
                                 <option>Landrace</option>
@@ -149,13 +245,21 @@
                         </div>
 
 
+
                         <div class="form-group">
 
-                            <label for="feedType">Feed Type</label>
+                            <label for="feedType">
+                                Feed Type
+                            </label>
 
-                            <select id="feedType" required>
 
-                                <option value="">Select Feed</option>
+                            <select
+                                id="feedType"
+                                required>
+
+                                <option value="">
+                                    Select Feed
+                                </option>
 
                                 <option>Creep Feed</option>
                                 <option>Weaner Feed</option>
@@ -170,27 +274,39 @@
 
                         </div>
 
+
                     </div>
 
                 </div>
+
 
 
                 <!-- FEED INFORMATION -->
 
                 <div class="form-section">
 
-                    <h3>🌾 Feed Information</h3>
+                    <h3>
+                        🌾 Feed Information
+                    </h3>
+
 
                     <div class="form-grid">
 
 
                         <div class="form-group">
 
-                            <label for="feedBrand">Feed Brand</label>
+                            <label for="feedBrand">
+                                Feed Brand
+                            </label>
 
-                            <select id="feedBrand" required>
 
-                                <option value="">Select Feed Brand</option>
+                            <select
+                                id="feedBrand"
+                                required>
+
+                                <option value="">
+                                    Select Feed Brand
+                                </option>
 
                                 <option>Tiger Animal Feeds</option>
                                 <option>Olympic Milling</option>
@@ -206,13 +322,21 @@
                         </div>
 
 
+
                         <div class="form-group">
 
-                            <label for="quantity">Quantity (Kg)</label>
+                            <label for="quantity">
+                                Quantity (Kg)
+                            </label>
 
-                            <select id="quantity" required>
 
-                                <option value="">Select Quantity</option>
+                            <select
+                                id="quantity"
+                                required>
+
+                                <option value="">
+                                    Select Quantity
+                                </option>
 
                                 <option value="1">1 Kg</option>
                                 <option value="2">2 Kg</option>
@@ -244,15 +368,21 @@
                         </div>
 
 
+
                         <div class="form-group">
 
                             <label for="feedPrice">
                                 Feed Price per Kg (ZMW)
                             </label>
 
-                            <select id="feedPrice" required>
 
-                                <option value="">Select Price</option>
+                            <select
+                                id="feedPrice"
+                                required>
+
+                                <option value="">
+                                    Select Price
+                                </option>
 
                                 <option value="5">ZMW 5.00</option>
                                 <option value="6">ZMW 6.00</option>
@@ -279,24 +409,37 @@
                         </div>
 
 
+
                         <div class="form-group">
 
                             <label for="feedCost">
                                 Total Feed Cost (ZMW)
                             </label>
 
-                            <input type="number" id="feedCost" readonly>
+
+                            <input
+                                type="number"
+                                id="feedCost"
+                                readonly>
 
                         </div>
 
 
+
                         <div class="form-group">
 
-                            <label for="feedSupplier">Feed Supplier</label>
+                            <label for="feedSupplier">
+                                Feed Supplier
+                            </label>
 
-                            <select id="feedSupplier" required>
 
-                                <option value="">Select Supplier</option>
+                            <select
+                                id="feedSupplier"
+                                required>
+
+                                <option value="">
+                                    Select Supplier
+                                </option>
 
                                 <option>Farm Supply Store</option>
                                 <option>Local Feed Supplier</option>
@@ -311,16 +454,21 @@
 
                         </div>
 
+
                     </div>
 
                 </div>
+
 
 
                 <!-- FEEDING MANAGEMENT -->
 
                 <div class="form-section">
 
-                    <h3>⏰ Feeding Management</h3>
+                    <h3>
+                        ⏰ Feeding Management
+                    </h3>
+
 
                     <div class="form-grid">
 
@@ -330,6 +478,7 @@
                             <label for="morningFeeding">
                                 Morning Feeding Time
                             </label>
+
 
                             <select id="morningFeeding">
 
@@ -344,11 +493,13 @@
                         </div>
 
 
+
                         <div class="form-group">
 
                             <label for="eveningFeeding">
                                 Evening Feeding Time
                             </label>
+
 
                             <select id="eveningFeeding">
 
@@ -363,15 +514,20 @@
                         </div>
 
 
+
                         <div class="form-group">
 
                             <label for="waterAvailable">
                                 Water Available
                             </label>
 
+
                             <select id="waterAvailable">
 
-                                <option value="">Select</option>
+                                <option value="">
+                                    Select
+                                </option>
+
                                 <option>Yes</option>
                                 <option>No</option>
 
@@ -380,15 +536,19 @@
                         </div>
 
 
+
                         <div class="form-group">
 
                             <label for="responsiblePerson">
                                 Person Responsible
                             </label>
 
+
                             <select id="responsiblePerson">
 
-                                <option value="">Select Person</option>
+                                <option value="">
+                                    Select Person
+                                </option>
 
                                 <option>Farm Manager</option>
                                 <option>Veterinary Officer</option>
@@ -400,70 +560,152 @@
 
                         </div>
 
+
                     </div>
 
                 </div>
+
 
 
                 <!-- FEEDING PERFORMANCE -->
 
                 <div class="form-section">
 
-                    <h3>📝 Feeding Performance</h3>
+                    <h3>
+                        📝 Feeding Performance
+                    </h3>
+
 
                     <div class="form-grid single">
 
+
                         <div class="form-group">
 
-                            <label for="remarks">Remarks</label>
+                            <label for="remarks">
+                                Remarks
+                            </label>
 
-                            <select id="remarks" required>
 
-                                <option value="">Select Feeding Status</option>
+                            <select
+                                id="remarks"
+                                required>
+
+                                <option value="">
+                                    Select Feeding Status
+                                </option>
+
 
                                 <optgroup label="Proper Feeding">
 
-                                    <option>Properly Fed</option>
-                                    <option>Properly Fed - Feed Fully Consumed</option>
-                                    <option>Properly Fed - Water Available</option>
-                                    <option>Properly Fed - Good Appetite</option>
+                                    <option>
+                                        Properly Fed
+                                    </option>
+
+                                    <option>
+                                        Properly Fed - Feed Fully Consumed
+                                    </option>
+
+                                    <option>
+                                        Properly Fed - Water Available
+                                    </option>
+
+                                    <option>
+                                        Properly Fed - Good Appetite
+                                    </option>
 
                                 </optgroup>
+
 
 
                                 <optgroup label="Improper Feeding">
 
-                                    <option>Not Properly Fed</option>
-                                    <option>Feed Partially Consumed</option>
-                                    <option>Feed Refused</option>
-                                    <option>Feeding Time Missed</option>
+                                    <option>
+                                        Not Properly Fed
+                                    </option>
+
+                                    <option>
+                                        Feed Partially Consumed
+                                    </option>
+
+                                    <option>
+                                        Feed Refused
+                                    </option>
+
+                                    <option>
+                                        Feeding Time Missed
+                                    </option>
 
                                 </optgroup>
+
 
 
                                 <optgroup label="Possible Reasons">
 
-                                    <option>Insufficient Feed</option>
-                                    <option>Feed Quality Problem</option>
-                                    <option>Water Not Available</option>
-                                    <option>Pigs Showing Poor Appetite</option>
-                                    <option>Illness or Health Problem</option>
-                                    <option>Feeding Equipment Problem</option>
-                                    <option>Worker Did Not Feed on Time</option>
-                                    <option>Other Feeding Problem</option>
+                                    <option>
+                                        Insufficient Feed
+                                    </option>
+
+                                    <option>
+                                        Feed Quality Problem
+                                    </option>
+
+                                    <option>
+                                        Water Not Available
+                                    </option>
+
+                                    <option>
+                                        Pigs Showing Poor Appetite
+                                    </option>
+
+                                    <option>
+                                        Illness or Health Problem
+                                    </option>
+
+                                    <option>
+                                        Feeding Equipment Problem
+                                    </option>
+
+                                    <option>
+                                        Worker Did Not Feed on Time
+                                    </option>
+
+                                    <option>
+                                        Other Feeding Problem
+                                    </option>
 
                                 </optgroup>
 
 
+
                                 <optgroup label="Corrective Action">
 
-                                    <option>Feed Quantity Adjusted</option>
-                                    <option>Feed Replaced</option>
-                                    <option>Water Supplied</option>
-                                    <option>Feeding Time Corrected</option>
-                                    <option>Health Check Recommended</option>
-                                    <option>Feeding Equipment Checked</option>
-                                    <option>Farm Manager Notified</option>
+                                    <option>
+                                        Feed Quantity Adjusted
+                                    </option>
+
+                                    <option>
+                                        Feed Replaced
+                                    </option>
+
+                                    <option>
+                                        Water Supplied
+                                    </option>
+
+                                    <option>
+                                        Feeding Time Corrected
+                                    </option>
+
+                                    <option>
+                                        Health Check Recommended
+                                    </option>
+
+                                    <option>
+                                        Feeding Equipment Checked
+                                    </option>
+
+                                    <option>
+                                        Farm Manager Notified
+                                    </option>
 
                                 </optgroup>
 
@@ -476,54 +718,87 @@
                 </div>
 
 
+
                 <!-- BUTTONS -->
 
                 <div class="buttons">
 
-                    <button type="button"
-                            class="primary-btn"
-                            onclick="saveFeedingRecord()">
+
+                    <button
+                        type="button"
+                        class="primary-btn"
+                        onclick="saveFeedingRecord()">
+
                         💾 Save Record
+
                     </button>
 
 
-                    <button type="button"
-                            class="update-btn"
-                            onclick="updateFeedingRecord()">
+
+                    <button
+                        type="button"
+                        class="update-btn"
+                        onclick="updateFeedingRecord()">
+
                         ✏️ Update Record
+
                     </button>
 
 
-                    <button type="button"
-                            class="search-btn"
-                            onclick="searchFeedingRecord()">
+
+                    <button
+                        type="button"
+                        class="search-btn"
+                        onclick="searchFeedingRecord()">
+
                         🔍 Search
+
                     </button>
 
 
-                    <button type="button"
-                            class="report-btn"
-                            onclick="generateReport()">
+
+                    <button
+                        type="button"
+                        class="report-btn"
+                        onclick="generateReport()">
+
                         📊 Report
-                    </button>
-<button type="button"
-        class="pdf-btn"
-        onclick="downloadFeedingPDF()">
-    📄 Download PDF
-</button>
 
-                    <button type="reset"
-                            class="clear-btn"
-                            onclick="setTimeout(generateRecordID, 0)">
+                    </button>
+
+
+
+                    <button
+                        type="button"
+                        class="pdf-btn"
+                        onclick="downloadFeedingPDF()">
+
+                        📄 Download PDF
+
+                    </button>
+
+
+
+                    <button
+                        type="reset"
+                        class="clear-btn"
+                        onclick="setTimeout(generateRecordID, 0)">
+
                         ↻ Clear
+
                     </button>
 
 
-                    <button type="button"
-                            class="back-btn bottom-back"
-                            onclick="window.location.href='dashboard.html'">
+
+                    <button
+                        type="button"
+                        class="back-btn bottom-back"
+                        onclick="window.location.href='dashboard.html'">
+
                         ← Back
+
                     </button>
+
 
                 </div>
 
@@ -532,29 +807,41 @@
         </section>
 
 
+
         <!-- =====================================
              HISTORY
         ====================================== -->
 
         <section class="card history-card">
 
+
             <div class="section-title">
 
                 <div>
-                    <h2>Feeding History</h2>
-                    <p>Records belonging to the current farm are displayed below.</p>
+
+                    <h2>
+                        Feeding History
+                    </h2>
+
+                    <p>
+                        Records belonging to the current farm are displayed below.
+                    </p>
+
                 </div>
 
             </div>
+
 
 
             <div class="table-container">
 
                 <table>
 
+
                     <thead>
 
                         <tr>
+
                             <th>Date</th>
                             <th>Pen</th>
                             <th>Category</th>
@@ -566,12 +853,14 @@
                             <th>Feeding Status</th>
                             <th>Responsible</th>
                             <th>Action</th>
+
                         </tr>
 
                     </thead>
 
 
                     <tbody id="feedingTable"></tbody>
+
 
                 </table>
 
@@ -584,12 +873,40 @@
 </div>
 
 
+
+<!-- =====================================================
+     SUPABASE
+====================================================== -->
+
 <script src="supabase.js"></script>
+
+
+<!-- =====================================================
+     FARM BRANDING
+====================================================== -->
+
+<script src="farm_branding.js"></script>
+
+
+<!-- =====================================================
+     PDF LIBRARIES
+====================================================== -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>    
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+
+<!-- =====================================================
+     MUNKA SYSTEM SCRIPTS
+====================================================== -->
+
 <script src="activity.js"></script>
+
 <script src="security.js"></script>
+
 <script src="feeding.js"></script>
+
 
 </body>
 </html>

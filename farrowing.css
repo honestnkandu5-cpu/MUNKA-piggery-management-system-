@@ -873,4 +873,41 @@ footer span {
 
     }
 
+}/* =========================================================
+   MUNKA PIGGERY TECHNOLOGY
+   DYNAMIC FARM BRANDING
+========================================================= */
+
+.farm-branding {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.farm-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    opacity: 0.75;
+    margin-bottom: 3px;
+}
+
+.farm-branding strong {
+    display: block;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+}
+
+@media (max-width: 600px) {
+
+    .farm-branding strong {
+        font-size: 16px;
+    }
+
+    .farm-label {
+        font-size: 9px;
+    }
+
 }

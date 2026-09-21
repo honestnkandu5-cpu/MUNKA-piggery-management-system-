@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>MUNKA Piggery - Weaning Records</title>
+<title>MUNKA PIGGERY TECHNOLOGY - Weaning Records</title>
 
 <link rel="stylesheet" href="weaning.css">
 
@@ -15,10 +16,41 @@
 
 <div class="container">
 
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+
     <div class="page-header">
-        <div class="pig-icon">🐖</div>
-        <h1>MUNKA PIGGERY FARM</h1>
-        <p>Weaning Records Management</p>
+
+        <div class="pig-icon">
+            🐖
+        </div>
+
+        <div>
+
+            <h1>
+                MUNKA PIGGERY TECHNOLOGY
+            </h1>
+
+            <p>
+                Piggery Management System
+            </p>
+
+            <div class="farm-branding">
+
+                <span class="farm-label">
+                    REGISTERED FARM
+                </span>
+
+                <strong data-farm-name>
+                    Loading farm...
+                </strong>
+
+            </div>
+
+        </div>
+
     </div>
 
 
@@ -54,7 +86,7 @@
         <div class="form-section full-width">
 
             <div class="section-title">
-                🐷 Sow & Weaning Information
+                🐷 Sow &amp; Weaning Information
             </div>
 
             <div class="form-grid">
@@ -400,7 +432,7 @@
         <div class="form-section full-width">
 
             <div class="section-title">
-                📝 Weaning Assessment & Recommendations
+                📝 Weaning Assessment &amp; Recommendations
             </div>
 
             <div class="form-grid">
@@ -634,6 +666,7 @@
                 💾 Save Record
             </button>
 
+
             <button
                 type="button"
                 class="btn-secondary"
@@ -641,6 +674,7 @@
             >
                 🧹 Clear
             </button>
+
 
             <button
                 type="button"
@@ -652,6 +686,7 @@
                 📊 Report
             </button>
 
+
             <button
                 type="button"
                 class="btn-pdf"
@@ -662,6 +697,7 @@
                 📄 Download PDF
             </button>
 
+
             <button
                 type="button"
                 class="btn-print"
@@ -671,6 +707,7 @@
             >
                 🖨 Print
             </button>
+
 
             <button
                 type="button"
@@ -694,7 +731,9 @@
 
     <section class="records-section">
 
-        <h2>Registered Weaning Records</h2>
+        <h2>
+            Registered Weaning Records
+        </h2>
 
         <div class="table-wrapper">
 
@@ -748,11 +787,16 @@
 
 <script src="supabase.js"></script>
 
+<!-- Dynamic registered farm branding -->
+<script src="farm_branding.js"></script>
+
 <script src="activity.js"></script>
 
 <script src="security.js"></script>
 
 <script src="weaning.js"></script>
 
+
 </body>
+
 </html>

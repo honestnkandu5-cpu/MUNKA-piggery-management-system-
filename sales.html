@@ -9,7 +9,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-    <title>MUNKA PIGGERY - Sales Records</title>
+    <title>MUNKA PIGGERY TECHNOLOGY - Sales Records</title>
 
     <link rel="stylesheet" href="sales.css">
 
@@ -29,11 +29,34 @@
 
 <div class="container">
 
+    <!-- ==================================================
+         PAGE HEADER
+    ================================================== -->
+
     <div class="page-header">
 
         <div>
-            <h1>MUNKA PIGGERY FARM</h1>
-            <p class="subtitle">Sales Management System</p>
+
+            <h1>
+                MUNKA PIGGERY TECHNOLOGY
+            </h1>
+
+            <p class="subtitle">
+                Piggery Management System
+            </p>
+
+            <div class="farm-branding">
+
+                <span class="farm-label">
+                    REGISTERED FARM
+                </span>
+
+                <strong data-farm-name>
+                    Loading farm...
+                </strong>
+
+            </div>
+
         </div>
 
         <div class="module-badge">
@@ -272,71 +295,70 @@
 
             <!-- PRICE PER KG -->
 
-<div class="form-group">
+            <div class="form-group">
 
-    <label for="pricePerKg">
-        Price Per Kg (ZMW)
-    </label>
+                <label for="pricePerKg">
+                    Price Per Kg (ZMW)
+                </label>
 
-    <select id="pricePerKg" required>
+                <select id="pricePerKg" required>
 
-        <option value="">
-            Select Price
-        </option>
+                    <option value="">
+                        Select Price
+                    </option>
 
-        <option value="5">ZMW 5</option>
-        <option value="10">ZMW 10</option>
-        <option value="15">ZMW 15</option>
-        <option value="20">ZMW 20</option>
-        <option value="25">ZMW 25</option>
-        <option value="30">ZMW 30</option>
-        <option value="35">ZMW 35</option>
-        <option value="40">ZMW 40</option>
-        <option value="45">ZMW 45</option>
-        <option value="50">ZMW 50</option>
-        <option value="55">ZMW 55</option>
-        <option value="60">ZMW 60</option>
-        <option value="65">ZMW 65</option>
-        <option value="70">ZMW 70</option>
-        <option value="75">ZMW 75</option>
-        <option value="80">ZMW 80</option>
-        <option value="90">ZMW 90</option>
-        <option value="100">ZMW 100</option>
-        <option value="110">ZMW 110</option>
-        <option value="120">ZMW 120</option>
-        <option value="130">ZMW 130</option>
-        <option value="140">ZMW 140</option>
-        <option value="150">ZMW 150</option>
-        <option value="160">ZMW 160</option>
-        <option value="170">ZMW 170</option>
-        <option value="180">ZMW 180</option>
-        <option value="190">ZMW 190</option>
-        <option value="200">ZMW 200</option>
-        <option value="210">ZMW 210</option>
-        <option value="220">ZMW 220</option>
-        <option value="230">ZMW 230</option>
-        <option value="240">ZMW 240</option>
-        <option value="250">ZMW 250</option>
-        <option value="260">ZMW 260</option>
-        <option value="270">ZMW 270</option>
-        <option value="280">ZMW 280</option>
-        <option value="290">ZMW 290</option>
-        <option value="300">ZMW 300</option>
-        <option value="310">ZMW 310</option>
-        <option value="320">ZMW 320</option>
-        <option value="330">ZMW 330</option>
-        <option value="340">ZMW 340</option>
-        <option value="350">ZMW 350</option>
-        <option value="360">ZMW 360</option>
-        <option value="370">ZMW 370</option>
-        <option value="380">ZMW 380</option>
-        <option value="390">ZMW 390</option>
-        <option value="400">ZMW 400</option>
+                    <option value="5">ZMW 5</option>
+                    <option value="10">ZMW 10</option>
+                    <option value="15">ZMW 15</option>
+                    <option value="20">ZMW 20</option>
+                    <option value="25">ZMW 25</option>
+                    <option value="30">ZMW 30</option>
+                    <option value="35">ZMW 35</option>
+                    <option value="40">ZMW 40</option>
+                    <option value="45">ZMW 45</option>
+                    <option value="50">ZMW 50</option>
+                    <option value="55">ZMW 55</option>
+                    <option value="60">ZMW 60</option>
+                    <option value="65">ZMW 65</option>
+                    <option value="70">ZMW 70</option>
+                    <option value="75">ZMW 75</option>
+                    <option value="80">ZMW 80</option>
+                    <option value="90">ZMW 90</option>
+                    <option value="100">ZMW 100</option>
+                    <option value="110">ZMW 110</option>
+                    <option value="120">ZMW 120</option>
+                    <option value="130">ZMW 130</option>
+                    <option value="140">ZMW 140</option>
+                    <option value="150">ZMW 150</option>
+                    <option value="160">ZMW 160</option>
+                    <option value="170">ZMW 170</option>
+                    <option value="180">ZMW 180</option>
+                    <option value="190">ZMW 190</option>
+                    <option value="200">ZMW 200</option>
+                    <option value="210">ZMW 210</option>
+                    <option value="220">ZMW 220</option>
+                    <option value="230">ZMW 230</option>
+                    <option value="240">ZMW 240</option>
+                    <option value="250">ZMW 250</option>
+                    <option value="260">ZMW 260</option>
+                    <option value="270">ZMW 270</option>
+                    <option value="280">ZMW 280</option>
+                    <option value="290">ZMW 290</option>
+                    <option value="300">ZMW 300</option>
+                    <option value="310">ZMW 310</option>
+                    <option value="320">ZMW 320</option>
+                    <option value="330">ZMW 330</option>
+                    <option value="340">ZMW 340</option>
+                    <option value="350">ZMW 350</option>
+                    <option value="360">ZMW 360</option>
+                    <option value="370">ZMW 370</option>
+                    <option value="380">ZMW 380</option>
+                    <option value="390">ZMW 390</option>
+                    <option value="400">ZMW 400</option>
 
-    </select>
+                </select>
 
-</div>
-           
+            </div>
 
 
             <!-- TOTAL -->
@@ -358,71 +380,71 @@
 
             <!-- BUYER NAME -->
 
-<div class="form-group">
+            <div class="form-group">
 
-    <label for="buyerName">
-        Buyer Name / Company
-    </label>
+                <label for="buyerName">
+                    Buyer Name / Company
+                </label>
 
-    <select id="buyerCategory">
+                <select id="buyerCategory">
 
-        <option value="">
-            Select Buyer Type
-        </option>
+                    <option value="">
+                        Select Buyer Type
+                    </option>
 
-        <option>Local Farmer</option>
-        <option>Butcher</option>
-        <option>Meat Trader</option>
-        <option>Pork Processor</option>
-        <option>Restaurant</option>
-        <option>Hotel</option>
-        <option>Individual Buyer</option>
-        <option>Wholesaler</option>
-        <option>Retailer</option>
-        <option>Supermarket</option>
-        <option>Farm Business</option>
-        <option>Other</option>
+                    <option>Local Farmer</option>
+                    <option>Butcher</option>
+                    <option>Meat Trader</option>
+                    <option>Pork Processor</option>
+                    <option>Restaurant</option>
+                    <option>Hotel</option>
+                    <option>Individual Buyer</option>
+                    <option>Wholesaler</option>
+                    <option>Retailer</option>
+                    <option>Supermarket</option>
+                    <option>Farm Business</option>
+                    <option>Other</option>
 
-    </select>
+                </select>
 
-    <input
-        type="text"
-        id="buyerName"
-        placeholder="Enter actual person's name or company name"
-        style="margin-top: 8px;">
+                <input
+                    type="text"
+                    id="buyerName"
+                    placeholder="Enter actual person's name or company name"
+                    style="margin-top: 8px;">
 
-</div>
+            </div>
 
 
             <!-- BUYER CONTACT -->
 
-<div class="form-group">
+            <div class="form-group">
 
-    <label for="buyerContact">
-        Buyer Contact
-    </label>
+                <label for="buyerContact">
+                    Buyer Contact
+                </label>
 
-    <select id="buyerContactType">
+                <select id="buyerContactType">
 
-        <option value="">
-            Select Contact Type
-        </option>
+                    <option value="">
+                        Select Contact Type
+                    </option>
 
-        <option>WhatsApp Number</option>
-        <option>Phone Number</option>
-        <option>Business Contact</option>
-        <option>Email Address</option>
-        <option>Not Provided</option>
+                    <option>WhatsApp Number</option>
+                    <option>Phone Number</option>
+                    <option>Business Contact</option>
+                    <option>Email Address</option>
+                    <option>Not Provided</option>
 
-    </select>
+                </select>
 
-    <input
-        type="text"
-        id="buyerContact"
-        placeholder="Enter actual phone / WhatsApp number"
-        style="margin-top: 8px;">
+                <input
+                    type="text"
+                    id="buyerContact"
+                    placeholder="Enter actual phone / WhatsApp number"
+                    style="margin-top: 8px;">
 
-</div>
+            </div>
 
 
             <!-- PAYMENT METHOD -->
@@ -758,19 +780,26 @@
 
 
 <!-- ======================================================
-     ACTIVITY
-====================================================== -->
-
-<script src="activity.js"></script>
-
-
-<!-- ======================================================
      SUPABASE
 ====================================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase.js"></script>
+
+
+<!-- ======================================================
+     FARM BRANDING
+====================================================== -->
+
+<script src="farm_branding.js"></script>
+
+
+<!-- ======================================================
+     ACTIVITY
+====================================================== -->
+
+<script src="activity.js"></script>
 
 
 <!-- ======================================================
@@ -785,6 +814,24 @@
 ====================================================== -->
 
 <script src="sales.js"></script>
+
+
+<!-- ======================================================
+     FARM BRANDING INITIALIZATION
+====================================================== -->
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            if (typeof loadFarmBranding === "function") {
+                loadFarmBranding();
+            }
+
+        }
+    );
+</script>
 
 
 </body>

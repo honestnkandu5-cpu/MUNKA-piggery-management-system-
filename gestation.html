@@ -9,7 +9,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0">
 
-<title>MUNKA PIGGERY - Gestation Records</title>
+<title>MUNKA PIGGERY TECHNOLOGY - Gestation Records</title>
 
 <link rel="stylesheet" href="gestation.css">
 
@@ -19,6 +19,10 @@
 
 <div class="container">
 
+    <!-- ==================================================
+         PAGE HEADER
+    ================================================== -->
+
     <div class="page-header">
 
         <div class="pig-icon">
@@ -26,8 +30,27 @@
         </div>
 
         <div>
-            <h1>MUNKA PIGGERY FARM</h1>
-            <p>Gestation Records Management</p>
+
+            <h1>
+                MUNKA PIGGERY TECHNOLOGY
+            </h1>
+
+            <p>
+                Piggery Management System
+            </p>
+
+            <div class="farm-branding">
+
+                <span class="farm-label">
+                    REGISTERED FARM
+                </span>
+
+                <strong data-farm-name>
+                    Loading farm...
+                </strong>
+
+            </div>
+
         </div>
 
     </div>
@@ -89,7 +112,7 @@
 
 
         <!-- ==================================================
-             NUMBER OF TEATS - DROPDOWN
+             NUMBER OF TEATS
         ================================================== -->
 
         <label for="teats">
@@ -104,33 +127,13 @@
                 Select Number of Teats
             </option>
 
-            <option value="8">
-                8 Teats
-            </option>
-
-            <option value="10">
-                10 Teats
-            </option>
-
-            <option value="12">
-                12 Teats
-            </option>
-
-            <option value="14">
-                14 Teats
-            </option>
-
-            <option value="16">
-                16 Teats
-            </option>
-
-            <option value="18">
-                18 Teats
-            </option>
-
-            <option value="20">
-                20 Teats
-            </option>
+            <option value="8">8 Teats</option>
+            <option value="10">10 Teats</option>
+            <option value="12">12 Teats</option>
+            <option value="14">14 Teats</option>
+            <option value="16">16 Teats</option>
+            <option value="18">18 Teats</option>
+            <option value="20">20 Teats</option>
 
         </select>
 
@@ -411,15 +414,10 @@
                 <tr>
 
                     <th>Sow ID</th>
-
                     <th>Breed</th>
-
                     <th>Service Date</th>
-
                     <th>Expected Delivery</th>
-
                     <th>Status</th>
-
                     <th>Action</th>
 
                 </tr>
@@ -460,6 +458,9 @@
 ================================================== -->
 
 <script src="supabase.js"></script>
+
+<!-- FARM BRANDING -->
+<script src="farm_branding.js"></script>
 
 <script src="activity.js"></script>
 
