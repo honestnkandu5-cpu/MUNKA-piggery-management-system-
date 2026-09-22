@@ -6,9 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>MUNKA PIGGERY TECHNOLOGY - Feeding Records</title>
+    <title>Registered Farm - Feeding Records</title>
 
     <link rel="stylesheet" href="feeding.css">
+    <link rel="stylesheet" href="farm_branding.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -18,16 +19,11 @@
 
 <div class="page-wrapper">
 
-
-    <!-- =====================================================
-         HEADER
-    ====================================================== -->
-
     <header class="page-header">
 
         <div>
 
-            <div class="brand">
+            <div class="software-brand">
                 🐖 MUNKA PIGGERY TECHNOLOGY
             </div>
 
@@ -49,7 +45,6 @@
 
         </div>
 
-
         <button
             type="button"
             class="back-btn"
@@ -61,17 +56,9 @@
 
     </header>
 
-
-
     <main class="container">
 
-
-        <!-- =====================================
-             FORM HEADER
-        ====================================== -->
-
         <section class="card">
-
 
             <div class="section-title">
 
@@ -87,19 +74,13 @@
 
                 </div>
 
-
                 <span class="status-badge">
                     Farm Secured
                 </span>
 
             </div>
 
-
-
             <form id="feedingForm">
-
-
-                <!-- RECORD INFORMATION -->
 
                 <div class="form-section">
 
@@ -107,9 +88,7 @@
                         📋 Record Information
                     </h3>
 
-
                     <div class="form-grid">
-
 
                         <div class="form-group">
 
@@ -124,8 +103,6 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="feedingDate">
@@ -139,18 +116,13 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="penNumber">
                                 Pen Number
                             </label>
 
-
-                            <select
-                                id="penNumber"
-                                required>
+                            <select id="penNumber" required>
 
                                 <option value="">
                                     Select Pen
@@ -181,18 +153,13 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="pigCategory">
                                 Pig Category
                             </label>
 
-
-                            <select
-                                id="pigCategory"
-                                required>
+                            <select id="pigCategory" required>
 
                                 <option value="">
                                     Select Category
@@ -210,14 +177,11 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="breed">
                                 Breed
                             </label>
-
 
                             <select id="breed">
 
@@ -244,18 +208,13 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="feedType">
                                 Feed Type
                             </label>
 
-
-                            <select
-                                id="feedType"
-                                required>
+                            <select id="feedType" required>
 
                                 <option value="">
                                     Select Feed
@@ -274,14 +233,9 @@
 
                         </div>
 
-
                     </div>
 
                 </div>
-
-
-
-                <!-- FEED INFORMATION -->
 
                 <div class="form-section">
 
@@ -289,9 +243,7 @@
                         🌾 Feed Information
                     </h3>
 
-
                     <div class="form-grid">
-
 
                         <div class="form-group">
 
@@ -299,10 +251,7 @@
                                 Feed Brand
                             </label>
 
-
-                            <select
-                                id="feedBrand"
-                                required>
+                            <select id="feedBrand" required>
 
                                 <option value="">
                                     Select Feed Brand
@@ -321,18 +270,13 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="quantity">
                                 Quantity (Kg)
                             </label>
 
-
-                            <select
-                                id="quantity"
-                                required>
+                            <select id="quantity" required>
 
                                 <option value="">
                                     Select Quantity
@@ -367,18 +311,13 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="feedPrice">
                                 Feed Price per Kg (ZMW)
                             </label>
 
-
-                            <select
-                                id="feedPrice"
-                                required>
+                            <select id="feedPrice" required>
 
                                 <option value="">
                                     Select Price
@@ -408,14 +347,11 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="feedCost">
                                 Total Feed Cost (ZMW)
                             </label>
-
 
                             <input
                                 type="number"
@@ -424,18 +360,13 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="feedSupplier">
                                 Feed Supplier
                             </label>
 
-
-                            <select
-                                id="feedSupplier"
-                                required>
+                            <select id="feedSupplier" required>
 
                                 <option value="">
                                     Select Supplier
@@ -454,14 +385,9 @@
 
                         </div>
 
-
                     </div>
 
                 </div>
-
-
-
-                <!-- FEEDING MANAGEMENT -->
 
                 <div class="form-section">
 
@@ -469,16 +395,13 @@
                         ⏰ Feeding Management
                     </h3>
 
-
                     <div class="form-grid">
-
 
                         <div class="form-group">
 
                             <label for="morningFeeding">
                                 Morning Feeding Time
                             </label>
-
 
                             <select id="morningFeeding">
 
@@ -492,14 +415,11 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="eveningFeeding">
                                 Evening Feeding Time
                             </label>
-
 
                             <select id="eveningFeeding">
 
@@ -513,14 +433,11 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="waterAvailable">
                                 Water Available
                             </label>
-
 
                             <select id="waterAvailable">
 
@@ -535,14 +452,11 @@
 
                         </div>
 
-
-
                         <div class="form-group">
 
                             <label for="responsiblePerson">
                                 Person Responsible
                             </label>
-
 
                             <select id="responsiblePerson">
 
@@ -560,14 +474,9 @@
 
                         </div>
 
-
                     </div>
 
                 </div>
-
-
-
-                <!-- FEEDING PERFORMANCE -->
 
                 <div class="form-section">
 
@@ -575,9 +484,7 @@
                         📝 Feeding Performance
                     </h3>
 
-
                     <div class="form-grid single">
-
 
                         <div class="form-group">
 
@@ -585,15 +492,11 @@
                                 Remarks
                             </label>
 
-
-                            <select
-                                id="remarks"
-                                required>
+                            <select id="remarks" required>
 
                                 <option value="">
                                     Select Feeding Status
                                 </option>
-
 
                                 <optgroup label="Proper Feeding">
 
@@ -615,8 +518,6 @@
 
                                 </optgroup>
 
-
-
                                 <optgroup label="Improper Feeding">
 
                                     <option>
@@ -636,8 +537,6 @@
                                     </option>
 
                                 </optgroup>
-
-
 
                                 <optgroup label="Possible Reasons">
 
@@ -674,8 +573,6 @@
                                     </option>
 
                                 </optgroup>
-
-
 
                                 <optgroup label="Corrective Action">
 
@@ -717,12 +614,7 @@
 
                 </div>
 
-
-
-                <!-- BUTTONS -->
-
                 <div class="buttons">
-
 
                     <button
                         type="button"
@@ -733,8 +625,6 @@
 
                     </button>
 
-
-
                     <button
                         type="button"
                         class="update-btn"
@@ -743,8 +633,6 @@
                         ✏️ Update Record
 
                     </button>
-
-
 
                     <button
                         type="button"
@@ -755,8 +643,6 @@
 
                     </button>
 
-
-
                     <button
                         type="button"
                         class="report-btn"
@@ -765,8 +651,6 @@
                         📊 Report
 
                     </button>
-
-
 
                     <button
                         type="button"
@@ -777,8 +661,6 @@
 
                     </button>
 
-
-
                     <button
                         type="reset"
                         class="clear-btn"
@@ -787,8 +669,6 @@
                         ↻ Clear
 
                     </button>
-
-
 
                     <button
                         type="button"
@@ -799,21 +679,13 @@
 
                     </button>
 
-
                 </div>
 
             </form>
 
         </section>
 
-
-
-        <!-- =====================================
-             HISTORY
-        ====================================== -->
-
         <section class="card history-card">
-
 
             <div class="section-title">
 
@@ -831,12 +703,9 @@
 
             </div>
 
-
-
             <div class="table-container">
 
                 <table>
-
 
                     <thead>
 
@@ -858,9 +727,7 @@
 
                     </thead>
 
-
                     <tbody id="feedingTable"></tbody>
-
 
                 </table>
 
@@ -872,41 +739,19 @@
 
 </div>
 
-
-
-<!-- =====================================================
-     SUPABASE
-====================================================== -->
-
 <script src="supabase.js"></script>
 
-
-<!-- =====================================================
-     FARM BRANDING
-====================================================== -->
-
 <script src="farm_branding.js"></script>
-
-
-<!-- =====================================================
-     PDF LIBRARIES
-====================================================== -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-
-
-<!-- =====================================================
-     MUNKA SYSTEM SCRIPTS
-====================================================== -->
 
 <script src="activity.js"></script>
 
 <script src="security.js"></script>
 
 <script src="feeding.js"></script>
-
 
 </body>
 </html>

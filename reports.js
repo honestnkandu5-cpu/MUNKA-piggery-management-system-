@@ -1,5 +1,5 @@
 // ============================================================
-// MUNKA PIGGERY MANAGEMENT SYSTEM
+// MUNKA PIGGERY TECHNOLOGY
 // REPORTS & ANALYTICS
 // AUTOMATIC FARM-SECURED REPORTING
 //
@@ -80,6 +80,124 @@ function getLoggedUser() {
 
 
 // ============================================================
+// REGISTERED FARM NAME
+// ============================================================
+
+async function getRegisteredFarmName() {
+
+    try {
+
+        if (
+            typeof supabaseClient === "undefined"
+        ) {
+
+            return "Registered Farm";
+        }
+
+
+        const {
+            data: sessionData,
+            error: sessionError
+        } = await supabaseClient.auth.getSession();
+
+
+        if (sessionError) {
+
+            throw sessionError;
+
+        }
+
+
+        const session =
+            sessionData?.session;
+
+
+        if (
+            !session ||
+            !session.user
+        ) {
+
+            return "Registered Farm";
+        }
+
+
+        const {
+            data: userProfile,
+            error: userError
+        } = await supabaseClient
+            .from("users")
+            .select("farm_id")
+            .eq(
+                "auth_user_id",
+                session.user.id
+            )
+            .maybeSingle();
+
+
+        if (userError) {
+
+            throw userError;
+
+        }
+
+
+        if (
+            !userProfile ||
+            !userProfile.farm_id
+        ) {
+
+            return "Registered Farm";
+        }
+
+
+        const {
+            data: farm,
+            error: farmError
+        } = await supabaseClient
+            .from("farms")
+            .select("farm_name")
+            .eq(
+                "id",
+                userProfile.farm_id
+            )
+            .maybeSingle();
+
+
+        if (farmError) {
+
+            throw farmError;
+
+        }
+
+
+        if (
+            !farm ||
+            !farm.farm_name
+        ) {
+
+            return "Registered Farm";
+        }
+
+
+        return farm.farm_name;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Unable to get registered farm name:",
+            error
+        );
+
+        return "Registered Farm";
+
+    }
+
+}
+
+
+// ============================================================
 // FARM ID
 // ============================================================
 
@@ -89,7 +207,10 @@ function getFarmID() {
         getLoggedUser();
 
 
-    if (!user || !user.farm_id) {
+    if (
+        !user ||
+        !user.farm_id
+    ) {
 
         console.error(
             "No farm ID found."
@@ -178,6 +299,20 @@ function escapeHTML(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+
+}
+
+
+// ============================================================
+// SAFE FILE NAME
+// ============================================================
+
+function getSafeFarmName(farmName) {
+
+    return String(farmName || "Registered_Farm")
+        .replace(/[^a-z0-9]/gi, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_|_$/g, "");
 
 }
 
@@ -365,10 +500,6 @@ function applyFinancialState(
         );
 
 
-    // --------------------------------------------------------
-    // SUMMARY CARD
-    // --------------------------------------------------------
-
     clearFinancialClasses(
         summaryCard
     );
@@ -382,10 +513,6 @@ function applyFinancialState(
 
     }
 
-
-    // --------------------------------------------------------
-    // FINANCIAL BOX
-    // --------------------------------------------------------
 
     clearFinancialClasses(
         financialBox
@@ -401,10 +528,6 @@ function applyFinancialState(
     }
 
 
-    // --------------------------------------------------------
-    // SUMMARY VALUE
-    // --------------------------------------------------------
-
     clearFinancialClasses(
         summaryValue
     );
@@ -419,10 +542,6 @@ function applyFinancialState(
     }
 
 
-    // --------------------------------------------------------
-    // FINANCIAL VALUE
-    // --------------------------------------------------------
-
     clearFinancialClasses(
         financialValue
     );
@@ -436,10 +555,6 @@ function applyFinancialState(
 
     }
 
-
-    // --------------------------------------------------------
-    // UPDATE PROFIT/LOSS LABEL
-    // --------------------------------------------------------
 
     const summaryHeading =
         summaryCard
@@ -472,7 +587,6 @@ function applyFinancialState(
 
     }
 
-
     else if (state === "loss") {
 
         if (summaryHeading) {
@@ -491,7 +605,6 @@ function applyFinancialState(
         }
 
     }
-
 
     else {
 
@@ -623,6 +736,7 @@ async function loadReportData() {
             );
 
             throw errors[0];
+
         }
 
 
@@ -671,7 +785,13 @@ async function loadReportData() {
         setElementText(
             "reportLastUpdated",
             "Updated " +
-            now.toLocaleString()
+            now.toLocaleString(
+                "en-ZM",
+                {
+                    timeZone:
+                        "Africa/Lusaka"
+                }
+            )
         );
 
 
@@ -1006,8 +1126,6 @@ function generateDashboardSummary() {
     );
 
 
-    // APPLY PROFIT / LOSS / BALANCE COLOUR
-
     applyFinancialState(
         profit
     );
@@ -1135,8 +1253,6 @@ function generateFinancialReport() {
         )
     );
 
-
-    // APPLY PROFIT / LOSS / BALANCE COLOUR
 
     applyFinancialState(
         totals.profit
@@ -1816,15 +1932,33 @@ function generateMonthlyFinancialTable() {
                     ${escapeHTML(month)}
                 </td>
 
-                <td class="sales-value">
+                <td
+                    class="sales-value"
+                    style="
+                        color:${FINANCIAL_COLORS.sales};
+                        font-weight:700;
+                    "
+                >
                     ZMW ${formatMoney(data.sales)}
                 </td>
 
-                <td class="expense-value">
+                <td
+                    class="expense-value"
+                    style="
+                        color:${FINANCIAL_COLORS.expenses};
+                        font-weight:700;
+                    "
+                >
                     ZMW ${formatMoney(data.expenses)}
                 </td>
 
-                <td class="${state}-value">
+                <td
+                    class="${state}-value"
+                    style="
+                        color:${FINANCIAL_COLORS[state]};
+                        font-weight:700;
+                    "
+                >
                     ZMW ${formatMoney(profit)}
                 </td>
 
@@ -1926,7 +2060,6 @@ function generateManagementInsights() {
         });
 
     }
-
 
     else {
 
@@ -2918,7 +3051,7 @@ function printReports() {
 // PDF DOWNLOAD
 // ============================================================
 
-function downloadReportsPDF() {
+async function downloadReportsPDF() {
 
     if (!checkUserAccess()) {
 
@@ -2943,6 +3076,10 @@ function downloadReportsPDF() {
     const {
         jsPDF
     } = window.jspdf;
+
+
+    const farmName =
+        await getRegisteredFarmName();
 
 
     const doc =
@@ -3048,7 +3185,7 @@ function downloadReportsPDF() {
 
 
     doc.text(
-        "MUNKA PIGGERY FARM",
+        farmName,
         148,
         y,
         {
@@ -3102,7 +3239,13 @@ function downloadReportsPDF() {
 
     doc.text(
         "Generated: " +
-        new Date().toLocaleString(),
+        new Date().toLocaleString(
+            "en-ZM",
+            {
+                timeZone:
+                    "Africa/Lusaka"
+            }
+        ),
         14,
         y + 10
     );
@@ -3474,7 +3617,8 @@ function downloadReportsPDF() {
 
 
         doc.text(
-            "MUNKA PIGGERY Management System",
+            farmName +
+            " - Reports & Analytics",
             14,
             200
         );
@@ -3502,8 +3646,15 @@ function downloadReportsPDF() {
             .substring(0, 10);
 
 
+    const safeFarmName =
+        getSafeFarmName(
+            farmName
+        );
+
+
     doc.save(
-        "MUNKA_PIGGERY_Full_Report_" +
+        safeFarmName +
+        "_Reports_Analytics_" +
         date +
         ".pdf"
     );
@@ -3515,12 +3666,18 @@ function downloadReportsPDF() {
 // FULL REPORT
 // ============================================================
 
-function generateFullReport() {
+async function generateFullReport() {
 
     generateReports();
 
 
+    const farmName =
+        await getRegisteredFarmName();
+
+
     alert(
+        farmName +
+        "\n\n" +
         "Full farm report has been generated successfully.\n\n" +
         "Use 'Download PDF' to save a PDF copy."
     );

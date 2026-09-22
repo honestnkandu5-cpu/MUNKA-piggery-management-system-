@@ -6,20 +6,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>MUNKA PIGGERY TECHNOLOGY - Weaning Records</title>
+<title>Registered Farm - Weaning Records</title>
 
 <link rel="stylesheet" href="weaning.css">
+<link rel="stylesheet" href="farm_branding.css">
 
 </head>
 
 <body>
 
 <div class="container">
-
-
-    <!-- =====================================================
-         PAGE HEADER
-    ====================================================== -->
 
     <div class="page-header">
 
@@ -29,7 +25,7 @@
 
         <div>
 
-            <h1>
+            <h1 class="software-brand">
                 MUNKA PIGGERY TECHNOLOGY
             </h1>
 
@@ -53,38 +49,20 @@
 
     </div>
 
-
-    <!-- =========================
-         SEARCH
-    ========================== -->
-
     <section class="search-section">
-
         <h2>Search Weaning Records</h2>
-
         <div class="searchBox">
-
             <input
                 type="text"
                 id="searchWeaning"
                 placeholder="Search by Sow ID..."
             >
-
         </div>
-
     </section>
-
-
-    <!-- =========================
-         WEANING FORM
-    ========================== -->
 
     <form id="weaningForm">
 
-        <!-- SOW INFORMATION -->
-
         <div class="form-section full-width">
-
             <div class="section-title">
                 🐷 Sow &amp; Weaning Information
             </div>
@@ -92,7 +70,6 @@
             <div class="form-grid">
 
                 <div class="form-group">
-
                     <label for="sowID">Sow ID</label>
 
                     <div class="input-button-group">
@@ -113,24 +90,17 @@
                         </button>
 
                     </div>
-
                 </div>
 
-
                 <div class="form-group">
-
-                    <label for="farrowDate">
-                        Farrow Date
-                    </label>
+                    <label for="farrowDate">Farrow Date</label>
 
                     <input
                         type="date"
                         id="farrowDate"
                         required
                     >
-
                 </div>
-
 
                 <div class="form-group">
 
@@ -150,7 +120,6 @@
 
                 </div>
 
-
                 <div class="form-group">
 
                     <label for="totalBorn">
@@ -167,11 +136,7 @@
                 </div>
 
             </div>
-
         </div>
-
-
-        <!-- WEANED PIGLETS -->
 
         <div class="form-section full-width">
 
@@ -205,7 +170,6 @@
 
                 </div>
 
-
                 <div class="form-group">
 
                     <label for="femaleWeaned">
@@ -230,7 +194,6 @@
 
                 </div>
 
-
                 <div class="form-group">
 
                     <label for="totalWeaned">
@@ -248,7 +211,6 @@
                     </small>
 
                 </div>
-
 
                 <div class="form-group">
 
@@ -276,7 +238,6 @@
                     </select>
 
                 </div>
-
 
                 <div class="form-group">
 
@@ -313,9 +274,6 @@
 
         </div>
 
-
-        <!-- MORTALITY INFORMATION -->
-
         <div class="form-section full-width">
 
             <div class="section-title">
@@ -338,41 +296,91 @@
 
                         <optgroup label="Sow-Related Causes">
 
-                            <option>Crushing by Sow</option>
-                            <option>Poor Maternal Behaviour</option>
-                            <option>Insufficient Milk Production</option>
-                            <option>Sow Illness</option>
+                            <option>
+                                Crushing by Sow
+                            </option>
+
+                            <option>
+                                Poor Maternal Behaviour
+                            </option>
+
+                            <option>
+                                Insufficient Milk Production
+                            </option>
+
+                            <option>
+                                Sow Illness
+                            </option>
 
                         </optgroup>
 
                         <optgroup label="Piglet Health Causes">
 
-                            <option>Starvation</option>
-                            <option>Failure to Suckle</option>
-                            <option>Scours (Diarrhoea)</option>
-                            <option>Pneumonia</option>
-                            <option>Respiratory Infection</option>
-                            <option>Weak Piglet</option>
-                            <option>Dehydration</option>
-                            <option>Infection</option>
-                            <option>Hypothermia / Chilling</option>
+                            <option>
+                                Starvation
+                            </option>
+
+                            <option>
+                                Failure to Suckle
+                            </option>
+
+                            <option>
+                                Scours (Diarrhoea)
+                            </option>
+
+                            <option>
+                                Pneumonia
+                            </option>
+
+                            <option>
+                                Respiratory Infection
+                            </option>
+
+                            <option>
+                                Weak Piglet
+                            </option>
+
+                            <option>
+                                Dehydration
+                            </option>
+
+                            <option>
+                                Infection
+                            </option>
+
+                            <option>
+                                Hypothermia / Chilling
+                            </option>
 
                         </optgroup>
 
                         <optgroup label="Other Causes">
 
-                            <option>Injury / Trauma</option>
-                            <option>Congenital Defect</option>
-                            <option>Poor Hygiene</option>
-                            <option>Unknown Cause</option>
-                            <option>Other</option>
+                            <option>
+                                Injury / Trauma
+                            </option>
+
+                            <option>
+                                Congenital Defect
+                            </option>
+
+                            <option>
+                                Poor Hygiene
+                            </option>
+
+                            <option>
+                                Unknown Cause
+                            </option>
+
+                            <option>
+                                Other
+                            </option>
 
                         </optgroup>
 
                     </select>
 
                 </div>
-
 
                 <div
                     class="form-group"
@@ -392,7 +400,6 @@
 
                 </div>
 
-
                 <div class="form-group">
 
                     <label for="destinationPen">
@@ -405,18 +412,41 @@
                             Select Pen
                         </option>
 
-                        <option>Nursery Pen 1</option>
-                        <option>Nursery Pen 2</option>
-                        <option>Nursery Pen 3</option>
-                        <option>Nursery Pen 4</option>
+                        <option>
+                            Nursery Pen 1
+                        </option>
 
-                        <option>Grower Pen 1</option>
-                        <option>Grower Pen 2</option>
-                        <option>Grower Pen 3</option>
+                        <option>
+                            Nursery Pen 2
+                        </option>
 
-                        <option>Isolation Pen</option>
+                        <option>
+                            Nursery Pen 3
+                        </option>
 
-                        <option>Other</option>
+                        <option>
+                            Nursery Pen 4
+                        </option>
+
+                        <option>
+                            Grower Pen 1
+                        </option>
+
+                        <option>
+                            Grower Pen 2
+                        </option>
+
+                        <option>
+                            Grower Pen 3
+                        </option>
+
+                        <option>
+                            Isolation Pen
+                        </option>
+
+                        <option>
+                            Other
+                        </option>
 
                     </select>
 
@@ -425,9 +455,6 @@
             </div>
 
         </div>
-
-
-        <!-- REMARKS -->
 
         <div class="form-section full-width">
 
@@ -497,7 +524,6 @@
 
                         </optgroup>
 
-
                         <optgroup label="⚠️ Negative - Poor Weaning">
 
                             <option>
@@ -554,7 +580,6 @@
 
                         </optgroup>
 
-
                         <optgroup label="🔍 Reasons for Poor Weaning">
 
                             <option>
@@ -598,7 +623,6 @@
                             </option>
 
                         </optgroup>
-
 
                         <optgroup label="💡 Recommended Corrective Actions">
 
@@ -652,9 +676,6 @@
 
         </div>
 
-
-        <!-- BUTTONS -->
-
         <div class="buttons full-width">
 
             <button
@@ -666,7 +687,6 @@
                 💾 Save Record
             </button>
 
-
             <button
                 type="button"
                 class="btn-secondary"
@@ -674,7 +694,6 @@
             >
                 🧹 Clear
             </button>
-
 
             <button
                 type="button"
@@ -686,7 +705,6 @@
                 📊 Report
             </button>
 
-
             <button
                 type="button"
                 class="btn-pdf"
@@ -697,7 +715,6 @@
                 📄 Download PDF
             </button>
 
-
             <button
                 type="button"
                 class="btn-print"
@@ -707,7 +724,6 @@
             >
                 🖨 Print
             </button>
-
 
             <button
                 type="button"
@@ -721,13 +737,7 @@
 
     </form>
 
-
     <hr>
-
-
-    <!-- =========================
-         REGISTERED RECORDS
-    ========================== -->
 
     <section class="records-section">
 
@@ -769,25 +779,14 @@
 
 </div>
 
-
-<!-- =========================
-     PDF LIBRARIES
-========================== -->
-
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
-
-
-<!-- =========================
-     SUPABASE / SYSTEM SCRIPTS
-========================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase.js"></script>
 
-<!-- Dynamic registered farm branding -->
 <script src="farm_branding.js"></script>
 
 <script src="activity.js"></script>
@@ -795,7 +794,6 @@
 <script src="security.js"></script>
 
 <script src="weaning.js"></script>
-
 
 </body>
 

@@ -6,9 +6,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>MUNKA PIGGERY TECHNOLOGY - Vaccination & Treatment</title>
+<title>Registered Farm - Vaccination & Treatment</title>
 
 <link rel="stylesheet" href="vaccination.css">
+<link rel="stylesheet" href="farm_branding.css">
 
 </head>
 
@@ -16,12 +17,11 @@
 
 <div class="container">
 
-    <!-- HEADER -->
     <div class="page-header">
 
         <div>
 
-            <div class="brand-title">
+            <div class="software-brand">
                 🐖 MUNKA PIGGERY TECHNOLOGY
             </div>
 
@@ -69,13 +69,7 @@
     </div>
 
 
-
-    <!-- TREATMENT FORM -->
-
     <form id="treatmentForm">
-
-
-        <!-- PIG INFORMATION -->
 
         <div class="form-section">
 
@@ -84,7 +78,6 @@
             </div>
 
             <div class="form-grid">
-
 
                 <div class="form-group">
 
@@ -99,8 +92,6 @@
                         required>
 
                 </div>
-
-
 
                 <div class="form-group">
 
@@ -129,8 +120,6 @@
 
                 </div>
 
-
-
                 <div class="form-group">
 
                     <label for="sex">
@@ -150,8 +139,6 @@
 
                 </div>
 
-
-
                 <div class="form-group">
 
                     <label for="age">
@@ -165,8 +152,6 @@
                         placeholder="Enter Age">
 
                 </div>
-
-
 
                 <div class="form-group">
 
@@ -185,14 +170,10 @@
 
                 </div>
 
-
             </div>
 
         </div>
 
-
-
-        <!-- TREATMENT INFORMATION -->
 
         <div class="form-section">
 
@@ -201,7 +182,6 @@
             </div>
 
             <div class="form-grid">
-
 
                 <div class="form-group">
 
@@ -215,8 +195,6 @@
                         required>
 
                 </div>
-
-
 
                 <div class="form-group">
 
@@ -274,8 +252,6 @@
 
                 </div>
 
-
-
                 <div
                     class="form-group"
                     id="otherDiseaseGroup"
@@ -292,8 +268,6 @@
 
                 </div>
 
-
-
                 <div class="form-group full-width">
 
                     <label for="possibleCause">
@@ -305,8 +279,6 @@
                         readonly></textarea>
 
                 </div>
-
-
 
                 <div class="form-group full-width">
 
@@ -320,8 +292,6 @@
 
                 </div>
 
-
-
                 <div class="form-group full-width">
 
                     <label for="medicine">
@@ -333,8 +303,6 @@
                         placeholder="Enter medicine used or recommended"></textarea>
 
                 </div>
-
-
 
                 <div class="form-group">
 
@@ -357,10 +325,6 @@
                     </select>
 
                 </div>
-
-
-
-                <!-- DOSAGE DROPDOWN -->
 
                 <div class="form-group">
 
@@ -409,8 +373,6 @@
 
                 </div>
 
-
-
                 <div class="form-group">
 
                     <label for="interval">
@@ -430,8 +392,6 @@
 
                 </div>
 
-
-
                 <div class="form-group">
 
                     <label for="nextDate">
@@ -449,14 +409,10 @@
 
                 </div>
 
-
             </div>
 
         </div>
 
-
-
-        <!-- ADMINISTRATION -->
 
         <div class="form-section">
 
@@ -465,7 +421,6 @@
             </div>
 
             <div class="form-grid">
-
 
                 <div class="form-group">
 
@@ -489,10 +444,6 @@
                     </select>
 
                 </div>
-
-
-
-                <!-- REMARKS / RECOMMENDATIONS -->
 
                 <div class="form-group full-width">
 
@@ -534,7 +485,6 @@
 
                         </optgroup>
 
-
                         <optgroup label="Not Properly Administered">
 
                             <option>
@@ -562,7 +512,6 @@
                             </option>
 
                         </optgroup>
-
 
                         <optgroup label="Possible Reasons for Improper Administration">
 
@@ -604,7 +553,6 @@
 
                         </optgroup>
 
-
                         <optgroup label="Corrective Recommendations">
 
                             <option>
@@ -645,14 +593,10 @@
 
                 </div>
 
-
             </div>
 
         </div>
 
-
-
-        <!-- FORM BUTTONS -->
 
         <div class="buttons">
 
@@ -679,16 +623,11 @@
 
         </div>
 
-
     </form>
-
 
 
     <hr>
 
-
-
-    <!-- SEARCH -->
 
     <div class="records-section">
 
@@ -720,9 +659,6 @@
         </div>
 
 
-
-        <!-- REPORT BUTTONS -->
-
         <div class="report-buttons">
 
             <button
@@ -748,9 +684,6 @@
 
         </div>
 
-
-
-        <!-- TABLE -->
 
         <div class="table-wrapper">
 
@@ -784,7 +717,6 @@
     </div>
 
 
-
     <footer>
 
         <strong>MUNKA PIGGERY TECHNOLOGY</strong><br>
@@ -793,28 +725,25 @@
 
     </footer>
 
-
 </div>
 
 
-
-<!-- SUPABASE -->
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- PDF LIBRARIES -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-<!-- MUNKA PIGGERY SYSTEM -->
-
 <script src="supabase.js"></script>
+
 <script src="farm_branding.js"></script>
+
 <script src="activity.js"></script>
+
 <script src="security.js"></script>
+
 <script src="vaccination.js"></script>
 
 </body>
+
 </html>

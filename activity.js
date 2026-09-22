@@ -1,10 +1,9 @@
 // ==========================================
-// MUNKA PIGGERY MANAGEMENT SYSTEM
+// MUNKA PIGGERY TECHNOLOGY
 // ACTIVITY LOGS MODULE
 // FARM-SECURED VERSION
 // ZAMBIAN TIME + USER ROLE + PDF
 // ==========================================
-
 
 
 // ==========================================
@@ -16,13 +15,9 @@ function getLoggedUser(){
     const storedUser =
         localStorage.getItem("loggedInUser");
 
-
     if(!storedUser){
-
         return null;
-
     }
-
 
     try{
 
@@ -36,11 +31,8 @@ function getLoggedUser(){
         );
 
         return null;
-
     }
-
 }
-
 
 
 // ==========================================
@@ -52,7 +44,6 @@ function getFarmID(){
     const loggedUser =
         getLoggedUser();
 
-
     if(
         !loggedUser ||
         !loggedUser.farm_id
@@ -63,53 +54,157 @@ function getFarmID(){
         );
 
         return null;
-
     }
 
-
     return loggedUser.farm_id;
-
 }
 
+
+// ==========================================
+// GET REGISTERED FARM NAME
+// ==========================================
+
+async function getRegisteredFarmName(){
+
+    try{
+
+        const {
+            data: sessionData,
+            error: sessionError
+        } = await supabaseClient.auth.getSession();
+
+        if(
+            sessionError ||
+            !sessionData ||
+            !sessionData.session
+        ){
+
+            return "Registered Farm";
+        }
+
+        const authUserId =
+            sessionData.session.user.id;
+
+        const {
+            data: userProfile,
+            error: userError
+        } = await supabaseClient
+            .from("users")
+            .select("farm_id")
+            .eq(
+                "auth_user_id",
+                authUserId
+            )
+            .maybeSingle();
+
+        if(
+            userError ||
+            !userProfile ||
+            !userProfile.farm_id
+        ){
+
+            return "Registered Farm";
+        }
+
+        const {
+            data: farm,
+            error: farmError
+        } = await supabaseClient
+            .from("farms")
+            .select("farm_name")
+            .eq(
+                "id",
+                userProfile.farm_id
+            )
+            .maybeSingle();
+
+        if(
+            farmError ||
+            !farm ||
+            !farm.farm_name
+        ){
+
+            return "Registered Farm";
+        }
+
+        return farm.farm_name;
+
+    }catch(error){
+
+        console.error(
+            "FARM NAME ERROR:",
+            error
+        );
+
+        return "Registered Farm";
+    }
+}
+
+
+// ==========================================
+// SAFE FARM NAME FOR FILE NAME
+// ==========================================
+
+function getSafeFarmName(farmName){
+
+    return String(farmName)
+
+        .replace(
+            /[^a-z0-9]/gi,
+            "_"
+        )
+
+        .replace(
+            /_+/g,
+            "_"
+        )
+
+        .replace(
+            /^_|_$/g,
+            ""
+        );
+}
 
 
 // ==========================================
 // ZAMBIAN DATE & TIME
 // ==========================================
 
-function formatZambianDateTime(dateValue) {
+function formatZambianDateTime(dateValue){
 
-    if (!dateValue) {
+    if(!dateValue){
         return "";
     }
 
-    try {
+    try{
 
-        const utcDate = new Date(dateValue);
+        const utcDate =
+            new Date(dateValue);
 
-        // UTC + 2 hours (Zambia time)
-        const zambiaDate = new Date(
-            utcDate.getTime() + (2 * 60 * 60 * 1000)
-        );
+        const zambiaDate =
+            new Date(
+                utcDate.getTime() +
+                (2 * 60 * 60 * 1000)
+            );
 
         return zambiaDate.toLocaleString(
             "en-GB",
             {
-                timeZone: "UTC",
+                timeZone:"UTC",
 
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
+                year:"numeric",
+                month:"2-digit",
+                day:"2-digit",
 
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
+                hour:"2-digit",
+                minute:"2-digit",
+                second:"2-digit",
 
-                hour12: false
+                hour12:false
             }
         );
 
-    } catch (error) {
+    }catch(error){
 
         console.error(
             "Date formatting error:",
@@ -117,11 +212,8 @@ function formatZambianDateTime(dateValue) {
         );
 
         return "";
-
     }
-
 }
-
 
 
 // ==========================================
@@ -136,9 +228,7 @@ function escapeHTML(value){
     ){
 
         return "";
-
     }
-
 
     return String(value)
 
@@ -166,13 +256,11 @@ function escapeHTML(value){
             /'/g,
             "&#039;"
         );
-
 }
 
 
-
 // ==========================================
-// LOAD ACTIVITY LOGS
+// LOAD ACTIVITY LOGS ON PAGE LOAD
 // ==========================================
 
 document.addEventListener(
@@ -185,7 +273,6 @@ document.addEventListener(
 );
 
 
-
 // ==========================================
 // LOAD ACTIVITY LOGS
 // CURRENT FARM ONLY
@@ -196,7 +283,6 @@ async function loadActivityLogs(){
     const farmID =
         getFarmID();
 
-
     if(!farmID){
 
         console.error(
@@ -204,9 +290,7 @@ async function loadActivityLogs(){
         );
 
         return;
-
     }
-
 
     try{
 
@@ -239,27 +323,32 @@ async function loadActivityLogs(){
                 error
             );
 
-            document.getElementById(
-                "activityTable"
-            ).innerHTML = `
+            const table =
+                document.getElementById(
+                    "activityTable"
+                );
 
-                <tr>
+            if(table){
 
-                    <td
-                        colspan="6"
-                        style="text-align:center;"
-                    >
+                table.innerHTML = `
 
-                        Failed to load activity logs.
+                    <tr>
 
-                    </td>
+                        <td
+                            colspan="6"
+                            style="text-align:center;"
+                        >
 
-                </tr>
+                            Failed to load activity logs.
 
-            `;
+                        </td>
+
+                    </tr>
+
+                `;
+            }
 
             return;
-
         }
 
 
@@ -267,6 +356,11 @@ async function loadActivityLogs(){
             document.getElementById(
                 "activityTable"
             );
+
+
+        if(!table){
+            return;
+        }
 
 
         table.innerHTML = "";
@@ -285,8 +379,7 @@ async function loadActivityLogs(){
         if(count){
 
             count.textContent =
-                data.length;
-
+                data ? data.length : 0;
         }
 
 
@@ -313,9 +406,7 @@ async function loadActivityLogs(){
             `;
 
             return;
-
         }
-
 
 
         // ==========================================
@@ -325,15 +416,18 @@ async function loadActivityLogs(){
         data.forEach(
             log => {
 
-
                 const actorName =
                     log.actor_name ||
-                    extractName(log.username);
+                    extractName(
+                        log.username
+                    );
 
 
                 const actorRole =
                     log.actor_role ||
-                    extractRole(log.username);
+                    extractRole(
+                        log.username
+                    );
 
 
                 table.innerHTML += `
@@ -348,20 +442,17 @@ async function loadActivityLogs(){
                             )}
                         </td>
 
-
                         <td>
                             ${escapeHTML(
                                 actorName
                             )}
                         </td>
 
-
                         <td>
                             ${escapeHTML(
                                 actorRole
                             )}
                         </td>
-
 
                         <td>
                             ${escapeHTML(
@@ -370,14 +461,12 @@ async function loadActivityLogs(){
                             )}
                         </td>
 
-
                         <td>
                             ${escapeHTML(
                                 log.module ||
                                 ""
                             )}
                         </td>
-
 
                         <td>
                             ${escapeHTML(
@@ -389,7 +478,6 @@ async function loadActivityLogs(){
                     </tr>
 
                 `;
-
             }
         );
 
@@ -400,11 +488,8 @@ async function loadActivityLogs(){
             "Activity Log Load Error:",
             error
         );
-
     }
-
 }
-
 
 
 // ==========================================
@@ -416,22 +501,15 @@ async function loadActivityLogs(){
 function extractName(username){
 
     if(!username){
-
         return "System";
-
     }
-
 
     const position =
         username.lastIndexOf("(");
 
-
     if(position === -1){
-
         return username;
-
     }
-
 
     return username
         .substring(
@@ -439,9 +517,7 @@ function extractName(username){
             position
         )
         .trim();
-
 }
-
 
 
 // ==========================================
@@ -451,19 +527,14 @@ function extractName(username){
 function extractRole(username){
 
     if(!username){
-
         return "System";
-
     }
-
 
     const start =
         username.lastIndexOf("(");
 
-
     const end =
         username.lastIndexOf(")");
-
 
     if(
         start === -1 ||
@@ -472,17 +543,13 @@ function extractRole(username){
     ){
 
         return "";
-
     }
-
 
     return username.substring(
         start + 1,
         end
     );
-
 }
-
 
 
 // ==========================================
@@ -502,10 +569,8 @@ async function saveActivity(
     const loggedUser =
         getLoggedUser();
 
-
     const farmID =
         getFarmID();
-
 
     if(!farmID){
 
@@ -514,7 +579,6 @@ async function saveActivity(
         );
 
         return;
-
     }
 
 
@@ -522,7 +586,7 @@ async function saveActivity(
     // GET USER NAME
     // ==========================================
 
-    let actorName =
+    const actorName =
         loggedUser?.full_name ||
         extractName(username) ||
         "System";
@@ -532,7 +596,7 @@ async function saveActivity(
     // GET USER ROLE
     // ==========================================
 
-    let actorRole =
+    const actorRole =
         loggedUser?.role ||
         extractRole(username) ||
         "System";
@@ -580,11 +644,8 @@ async function saveActivity(
             "Activity Error:",
             error
         );
-
     }
-
 }
-
 
 
 // ==========================================
@@ -596,7 +657,6 @@ async function downloadActivityPDF(){
     const farmID =
         getFarmID();
 
-
     if(!farmID){
 
         alert(
@@ -604,7 +664,6 @@ async function downloadActivityPDF(){
         );
 
         return;
-
     }
 
 
@@ -618,8 +677,15 @@ async function downloadActivityPDF(){
         );
 
         return;
-
     }
+
+
+    // ==========================================
+    // GET REGISTERED FARM NAME
+    // ==========================================
+
+    const farmName =
+        await getRegisteredFarmName();
 
 
     // ==========================================
@@ -660,7 +726,6 @@ async function downloadActivityPDF(){
         );
 
         return;
-
     }
 
 
@@ -670,11 +735,11 @@ async function downloadActivityPDF(){
     ){
 
         alert(
-            "There are no activity records to download."
+            farmName +
+            "\n\nThere are no activity records to download."
         );
 
         return;
-
     }
 
 
@@ -691,7 +756,6 @@ async function downloadActivityPDF(){
         );
 
 
-
     // ==========================================
     // PDF HEADER
     // ==========================================
@@ -706,7 +770,7 @@ async function downloadActivityPDF(){
 
 
     doc.text(
-        "MUNKA PIGGERY FARM",
+        farmName,
         148,
         15,
         {
@@ -738,12 +802,20 @@ async function downloadActivityPDF(){
 
 
     doc.text(
+        "Farm: " +
+        farmName,
+        14,
+        32
+    );
+
+
+    doc.text(
         "Generated: " +
         formatZambianDateTime(
             new Date()
         ),
         14,
-        32
+        38
     );
 
 
@@ -751,9 +823,8 @@ async function downloadActivityPDF(){
         "Total Activities: " +
         data.length,
         14,
-        38
+        44
     );
-
 
 
     // ==========================================
@@ -797,10 +868,8 @@ async function downloadActivityPDF(){
                     log.description || ""
 
                 ];
-
             }
         );
-
 
 
     // ==========================================
@@ -809,7 +878,7 @@ async function downloadActivityPDF(){
 
     doc.autoTable({
 
-        startY:44,
+        startY:50,
 
         head:[[
 
@@ -842,14 +911,12 @@ async function downloadActivityPDF(){
 
             halign:
                 "center"
-
         },
 
         bodyStyles:{
 
             fontSize:
                 8
-
         },
 
         columnStyles:{
@@ -882,11 +949,8 @@ async function downloadActivityPDF(){
             6:{
                 cellWidth:85
             }
-
         }
-
     });
-
 
 
     // ==========================================
@@ -918,7 +982,8 @@ async function downloadActivityPDF(){
 
         doc.text(
 
-            "MUNKA PIGGERY Management System",
+            farmName +
+            " - Activity Logs",
 
             148,
 
@@ -927,7 +992,16 @@ async function downloadActivityPDF(){
             {
                 align:"center"
             }
+        );
 
+
+        doc.text(
+
+            "MUNKA PIGGERY TECHNOLOGY",
+
+            14,
+
+            200
         );
 
 
@@ -945,11 +1019,8 @@ async function downloadActivityPDF(){
             {
                 align:"right"
             }
-
         );
-
     }
-
 
 
     // ==========================================
@@ -965,83 +1036,164 @@ async function downloadActivityPDF(){
         );
 
 
+    const safeFarmName =
+        getSafeFarmName(
+            farmName
+        );
+
+
     doc.save(
 
-        "MUNKA_PIGGERY_Activity_Log_" +
+        safeFarmName +
+        "_Activity_Log_" +
         date +
         ".pdf"
 
     );
+}
 
-}// ==========================================
+
+// ==========================================
 // CLEAR ALL ACTIVITY LOGS
-// ADMIN ONLY
+// OWNER/ADMIN ONLY
 // CURRENT FARM ONLY
+// ==========================================
+
 async function clearAllActivityLogs(){
 
-    const loggedUser = getLoggedUser();
+    const loggedUser =
+        getLoggedUser();
+
 
     if(!loggedUser){
-        alert("You must be logged in.");
+
+        alert(
+            "You must be logged in."
+        );
+
         return;
     }
 
-    // Normalize the role
-    const userRole = String(
-        loggedUser.role || ""
-    )
-    .trim()
-    .toLowerCase();
 
-    console.log("Logged-in user:", loggedUser);
-    console.log("Detected role:", userRole);
+    // ==========================================
+    // NORMALIZE ROLE
+    // ==========================================
 
+    const userRole =
+        String(
+            loggedUser.role || ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    console.log(
+        "Logged-in user:",
+        loggedUser
+    );
+
+
+    console.log(
+        "Detected role:",
+        userRole
+    );
+
+
+    // ==========================================
     // OWNER/ADMIN ONLY
+    // ==========================================
+
     if(
         userRole !== "admin" &&
         userRole !== "owner/admin"
     ){
 
         alert(
+
             "Only the Owner/Admin can clear activity logs.\n\n" +
+
             "Current role: " +
-            (loggedUser.role || "Not found")
+
+            (
+                loggedUser.role ||
+                "Not found"
+            )
+
         );
 
         return;
     }
 
+
+    // ==========================================
+    // CURRENT FARM
+    // ==========================================
+
     const farmID =
         loggedUser.farm_id;
 
+
     if(!farmID){
-        alert("Farm information is missing.");
+
+        alert(
+            "Farm information is missing."
+        );
+
         return;
     }
 
-    const confirmed = confirm(
-        "WARNING!\n\n" +
-        "This will permanently delete ALL activity " +
-        "logs belonging to this farm.\n\n" +
-        "This action cannot be undone.\n\n" +
-        "Do you want to continue?"
-    );
+
+    // ==========================================
+    // GET FARM NAME
+    // ==========================================
+
+    const farmName =
+        await getRegisteredFarmName();
+
+
+    // ==========================================
+    // CONFIRM DELETE
+    // ==========================================
+
+    const confirmed =
+        confirm(
+
+            "WARNING!\n\n" +
+
+            "Farm: " +
+            farmName +
+            "\n\n" +
+
+            "This will permanently delete ALL activity " +
+            "logs belonging to this farm.\n\n" +
+
+            "This action cannot be undone.\n\n" +
+
+            "Do you want to continue?"
+
+        );
+
 
     if(!confirmed){
         return;
     }
+
 
     try{
 
         const {
             error
         } = await supabaseClient
+
             .from("activity_logs")
+
             .delete()
+
             .eq(
                 "farm_id",
                 farmID
             );
+
 
         if(error){
 
@@ -1051,18 +1203,30 @@ async function clearAllActivityLogs(){
             );
 
             alert(
+
                 "Failed to clear activity logs:\n\n" +
+
                 error.message
+
             );
 
             return;
         }
 
+
         alert(
+
+            farmName +
+
+            "\n\n" +
+
             "All activity logs have been cleared successfully."
+
         );
 
+
         await loadActivityLogs();
+
 
     }catch(error){
 
@@ -1072,10 +1236,11 @@ async function clearAllActivityLogs(){
         );
 
         alert(
+
             "An unexpected error occurred:\n\n" +
+
             error.message
+
         );
-
     }
-
-}// ==========================================
+}

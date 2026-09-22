@@ -1,5 +1,5 @@
 // ==========================================================
-// MUNKA PIGGERY FARM
+// MUNKA PIGGERY TECHNOLOGY
 // GESTATION RECORDS MODULE
 // FARM-SECURED + PERMISSION-CONTROLLED VERSION
 // ==========================================================
@@ -83,6 +83,112 @@ function getFarmID(){
     }
 
     return farmID;
+
+}
+
+
+// ==========================================================
+// GET REGISTERED FARM NAME
+// ==========================================================
+// Used by PRINT and PDF reports.
+// This does NOT change farm security.
+// ==========================================================
+
+async function getRegisteredFarmName(){
+
+    try{
+
+        if(
+            typeof supabaseClient === "undefined"
+        ){
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        const loggedUser =
+            getLoggedUser();
+
+
+        if(!loggedUser){
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        const farmID =
+            loggedUser.farm_id;
+
+
+        if(
+            farmID === null ||
+            farmID === undefined ||
+            farmID === ""
+        ){
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        const {
+            data: farm,
+            error
+        } =
+            await supabaseClient
+
+                .from("farms")
+
+                .select("farm_name")
+
+                .eq(
+                    "id",
+                    farmID
+                )
+
+                .maybeSingle();
+
+
+        if(error){
+
+            console.error(
+                "GET FARM NAME ERROR:",
+                error
+            );
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        if(
+            farm &&
+            farm.farm_name
+        ){
+
+            return String(
+                farm.farm_name
+            ).trim();
+
+        }
+
+
+        return "REGISTERED FARM";
+
+    }
+
+    catch(error){
+
+        console.error(
+            "FARM NAME ERROR:",
+            error
+        );
+
+        return "REGISTERED FARM";
+
+    }
 
 }
 
@@ -1208,7 +1314,7 @@ function generateReport(){
 // DOWNLOAD PDF REPORT
 // ==========================================================
 
-function downloadPDF(){
+async function downloadPDF(){
 
     if(
         typeof canReport === "function" &&
@@ -1262,6 +1368,14 @@ function downloadPDF(){
             window.jspdf;
 
 
+        // --------------------------------------------------
+        // GET REGISTERED FARM NAME
+        // --------------------------------------------------
+
+        const farmName =
+            await getRegisteredFarmName();
+
+
         const doc =
             new jsPDF({
                 orientation:"landscape",
@@ -1282,7 +1396,7 @@ function downloadPDF(){
         );
 
         doc.text(
-            "MUNKA PIGGERY FARM",
+            farmName,
             148,
             15,
             {
@@ -1551,8 +1665,13 @@ function downloadPDF(){
                 );
 
 
+                // ------------------------------------------------
+                // REGISTERED FARM NAME IN FOOTER
+                // ------------------------------------------------
+
                 doc.text(
-                    "MUNKA PIGGERY FARM - Gestation Records",
+                    farmName +
+                    " - Gestation Records",
                     8,
                     pageHeight - 7
                 );
@@ -1577,8 +1696,21 @@ function downloadPDF(){
         // SAVE PDF
         // --------------------------------------------------
 
+        const safeFarmName =
+            farmName
+                .replace(
+                    /[^a-z0-9]+/gi,
+                    "-"
+                )
+                .replace(
+                    /^-+|-+$/g,
+                    ""
+                );
+
+
         const fileName =
-            "MUNKA-PIGGERY-Gestation-Records-" +
+            safeFarmName +
+            "-Gestation-Records-" +
             new Date()
                 .toISOString()
                 .slice(0,10) +
@@ -1612,8 +1744,11 @@ function downloadPDF(){
 // ==========================================================
 // PRINT REPORT
 // ==========================================================
+// Registered farm becomes the main heading.
+// MUNKA software branding is temporarily hidden.
+// ==========================================================
 
-function printReport(){
+async function printReport(){
 
     if(
         typeof canReport === "function" &&
@@ -1630,7 +1765,356 @@ function printReport(){
     }
 
 
-    window.print();
+    try{
+
+        // --------------------------------------------------
+        // GET REGISTERED FARM NAME
+        // --------------------------------------------------
+
+        const farmName =
+            await getRegisteredFarmName();
+
+
+        // --------------------------------------------------
+        // PAGE HEADER ELEMENTS
+        // --------------------------------------------------
+
+        const softwareBrand =
+            document.querySelector(
+                ".software-brand"
+            );
+
+
+        const systemDescription =
+            document.querySelector(
+                ".page-header p"
+            );
+
+
+        const farmLabel =
+            document.querySelector(
+                ".farm-label"
+            );
+
+
+        const farmNameElement =
+            document.querySelector(
+                "[data-farm-name]"
+            );
+
+
+        const pigIcon =
+            document.querySelector(
+                ".pig-icon"
+            );
+
+
+        // --------------------------------------------------
+        // STORE ORIGINAL VALUES/STYLES
+        // --------------------------------------------------
+
+        const originalFarmName =
+            farmNameElement
+            ?
+            farmNameElement.textContent
+            :
+            "";
+
+
+        const originalSoftwareDisplay =
+            softwareBrand
+            ?
+            softwareBrand.style.display
+            :
+            "";
+
+
+        const originalDescriptionDisplay =
+            systemDescription
+            ?
+            systemDescription.style.display
+            :
+            "";
+
+
+        const originalLabelDisplay =
+            farmLabel
+            ?
+            farmLabel.style.display
+            :
+            "";
+
+
+        const originalPigIconDisplay =
+            pigIcon
+            ?
+            pigIcon.style.display
+            :
+            "";
+
+
+        // --------------------------------------------------
+        // APPLY PRINT BRANDING
+        // --------------------------------------------------
+
+        if(softwareBrand){
+
+            softwareBrand.style.display =
+                "none";
+
+        }
+
+
+        if(systemDescription){
+
+            systemDescription.style.display =
+                "none";
+
+        }
+
+
+        if(farmLabel){
+
+            farmLabel.style.display =
+                "none";
+
+        }
+
+
+        if(pigIcon){
+
+            pigIcon.style.display =
+                "none";
+
+        }
+
+
+        if(farmNameElement){
+
+            farmNameElement.textContent =
+                farmName;
+
+            farmNameElement.style.display =
+                "block";
+
+            farmNameElement.style.fontSize =
+                "30px";
+
+            farmNameElement.style.fontWeight =
+                "800";
+
+            farmNameElement.style.textAlign =
+                "center";
+
+            farmNameElement.style.letterSpacing =
+                "0.5px";
+
+            farmNameElement.style.lineHeight =
+                "1.2";
+
+            farmNameElement.style.margin =
+                "0 0 12px 0";
+
+        }
+
+
+        // --------------------------------------------------
+        // ADD TEMPORARY PRINT CSS
+        // --------------------------------------------------
+
+        const printStyle =
+            document.createElement(
+                "style"
+            );
+
+
+        printStyle.id =
+            "temporary-gestation-print-style";
+
+
+        printStyle.textContent = `
+
+            @media print {
+
+                .software-brand,
+                .page-header p,
+                .farm-label,
+                .pig-icon {
+
+                    display: none !important;
+
+                }
+
+                [data-farm-name] {
+
+                    display: block !important;
+
+                    font-size: 30px !important;
+
+                    font-weight: 800 !important;
+
+                    text-align: center !important;
+
+                    letter-spacing: 0.5px !important;
+
+                    line-height: 1.2 !important;
+
+                    margin: 0 0 12px 0 !important;
+
+                }
+
+            }
+
+        `;
+
+
+        document.head.appendChild(
+            printStyle
+        );
+
+
+        // --------------------------------------------------
+        // PRINT
+        // --------------------------------------------------
+
+        window.print();
+
+
+        // --------------------------------------------------
+        // RESTORE SCREEN AFTER PRINT
+        // --------------------------------------------------
+
+        function restoreAfterPrint(){
+
+            if(
+                printStyle &&
+                printStyle.parentNode
+            ){
+
+                printStyle.parentNode.removeChild(
+                    printStyle
+                );
+
+            }
+
+
+            if(softwareBrand){
+
+                softwareBrand.style.display =
+                    originalSoftwareDisplay;
+
+            }
+
+
+            if(systemDescription){
+
+                systemDescription.style.display =
+                    originalDescriptionDisplay;
+
+            }
+
+
+            if(farmLabel){
+
+                farmLabel.style.display =
+                    originalLabelDisplay;
+
+            }
+
+
+            if(pigIcon){
+
+                pigIcon.style.display =
+                    originalPigIconDisplay;
+
+            }
+
+
+            if(farmNameElement){
+
+                farmNameElement.textContent =
+                    originalFarmName;
+
+
+                farmNameElement.style.fontSize =
+                    "";
+
+
+                farmNameElement.style.fontWeight =
+                    "";
+
+
+                farmNameElement.style.textAlign =
+                    "";
+
+
+                farmNameElement.style.letterSpacing =
+                    "";
+
+
+                farmNameElement.style.lineHeight =
+                    "";
+
+
+                farmNameElement.style.margin =
+                    "";
+
+            }
+
+
+            window.removeEventListener(
+                "afterprint",
+                restoreAfterPrint
+            );
+
+        }
+
+
+        window.addEventListener(
+            "afterprint",
+            restoreAfterPrint
+        );
+
+
+        // --------------------------------------------------
+        // SAFETY RESTORE
+        // --------------------------------------------------
+        // Some mobile browsers may not fire afterprint
+        // consistently. Give the page a backup restoration.
+        // --------------------------------------------------
+
+        setTimeout(
+            function(){
+
+                if(
+                    printStyle &&
+                    printStyle.parentNode
+                ){
+
+                    restoreAfterPrint();
+
+                }
+
+            },
+            3000
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "GESTATION PRINT ERROR:",
+            error
+        );
+
+
+        alert(
+            "Unable to prepare the print report.\n\n" +
+            error.message
+        );
+
+    }
 
 }
 

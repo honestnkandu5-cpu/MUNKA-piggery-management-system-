@@ -1,8 +1,8 @@
 // =====================================
-// MUNKA PIGGERY
+// MUNKA PIGGERY TECHNOLOGY
 // FARROWING RECORDS - SUPABASE
 // FARM-SECURED VERSION
-// PDF REPORT VERSION
+// REGISTERED FARM PDF / PRINT VERSION
 // =====================================
 
 let farrowingRecords = [];
@@ -55,6 +55,104 @@ function getFarmID() {
     }
 
     return loggedUser.farm_id;
+}
+
+
+// =====================================
+// GET REGISTERED FARM NAME
+// =====================================
+
+async function getRegisteredFarmName() {
+
+    try {
+
+        if (
+            typeof supabaseClient === "undefined"
+        ) {
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        const loggedUser =
+            getLoggedUser();
+
+
+        if (!loggedUser) {
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        const farmID =
+            loggedUser.farm_id;
+
+
+        if (
+            farmID === null ||
+            farmID === undefined ||
+            farmID === ""
+        ) {
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        const {
+            data: farm,
+            error
+        } = await supabaseClient
+
+            .from("farms")
+
+            .select("farm_name")
+
+            .eq("id", farmID)
+
+            .maybeSingle();
+
+
+        if (error) {
+
+            console.error(
+                "GET FARM NAME ERROR:",
+                error
+            );
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        if (
+            farm &&
+            farm.farm_name
+        ) {
+
+            return String(
+                farm.farm_name
+            ).trim();
+
+        }
+
+
+        return "REGISTERED FARM";
+
+
+    } catch (error) {
+
+        console.error(
+            "FARM NAME ERROR:",
+            error
+        );
+
+        return "REGISTERED FARM";
+
+    }
+
 }
 
 
@@ -1033,9 +1131,14 @@ async function generateReport() {
             );
 
 
+        const farmName =
+            await getRegisteredFarmName();
+
+
         alert(
 
-            "MUNKA PIGGERY - FARROWING REPORT\n\n" +
+            farmName +
+            " - FARROWING REPORT\n\n" +
 
             "Total Farrowing Records: " +
             totalRecords +
@@ -1133,6 +1236,10 @@ async function downloadPDF() {
         }
 
 
+        const farmName =
+            await getRegisteredFarmName();
+
+
         const {
             jsPDF
         } = window.jspdf;
@@ -1155,7 +1262,7 @@ async function downloadPDF() {
         doc.setFont(undefined, "bold");
 
         doc.text(
-            "MUNKA PIGGERY",
+            farmName,
             148,
             15,
             {
@@ -1481,7 +1588,8 @@ async function downloadPDF() {
 
             doc.text(
 
-                "MUNKA PIGGERY - Farrowing Records",
+                farmName +
+                " - Farrowing Records",
 
                 14,
 
@@ -1520,10 +1628,25 @@ async function downloadPDF() {
                 .split("T")[0];
 
 
+        const safeFarmName =
+            farmName
+                .replace(
+                    /[^a-z0-9]+/gi,
+                    "-"
+                )
+                .replace(
+                    /^-+|-+$/g,
+                    ""
+                );
+
+
         doc.save(
-            "MUNKA-PIGGERY-Farrowing-Records-" +
+
+            safeFarmName +
+            "-Farrowing-Records-" +
             today +
             ".pdf"
+
         );
 
 
@@ -1545,9 +1668,318 @@ async function downloadPDF() {
 // PRINT REPORT
 // =====================================
 
-function printReport() {
+async function printReport() {
 
-    window.print();
+    try {
+
+        const farmName =
+            await getRegisteredFarmName();
+
+
+        const softwareBrand =
+            document.querySelector(
+                ".software-brand"
+            );
+
+
+        const systemDescription =
+            document.querySelector(
+                ".page-header p"
+            );
+
+
+        const farmLabel =
+            document.querySelector(
+                ".farm-label"
+            );
+
+
+        const farmNameElement =
+            document.querySelector(
+                "[data-farm-name]"
+            );
+
+
+        const headerIcon =
+            document.querySelector(
+                ".header-icon"
+            );
+
+
+        // =================================
+        // STORE ORIGINAL VALUES
+        // =================================
+
+        const originalSoftwareDisplay =
+            softwareBrand
+                ? softwareBrand.style.display
+                : "";
+
+
+        const originalDescriptionDisplay =
+            systemDescription
+                ? systemDescription.style.display
+                : "";
+
+
+        const originalFarmLabelDisplay =
+            farmLabel
+                ? farmLabel.style.display
+                : "";
+
+
+        const originalIconDisplay =
+            headerIcon
+                ? headerIcon.style.display
+                : "";
+
+
+        const originalFarmNameText =
+            farmNameElement
+                ? farmNameElement.textContent
+                : "";
+
+
+        const originalFarmNameStyle =
+            farmNameElement
+                ? farmNameElement.getAttribute("style")
+                : null;
+
+
+        // =================================
+        // HIDE SOFTWARE BRANDING
+        // =================================
+
+        if (softwareBrand) {
+
+            softwareBrand.style.display =
+                "none";
+
+        }
+
+
+        if (systemDescription) {
+
+            systemDescription.style.display =
+                "none";
+
+        }
+
+
+        if (farmLabel) {
+
+            farmLabel.style.display =
+                "none";
+
+        }
+
+
+        if (headerIcon) {
+
+            headerIcon.style.display =
+                "none";
+
+        }
+
+
+        // =================================
+        // MAKE FARM NAME MAIN PRINT HEADING
+        // =================================
+
+        if (farmNameElement) {
+
+            farmNameElement.textContent =
+                farmName;
+
+
+            farmNameElement.style.display =
+                "block";
+
+            farmNameElement.style.fontSize =
+                "30px";
+
+            farmNameElement.style.fontWeight =
+                "800";
+
+            farmNameElement.style.textAlign =
+                "center";
+
+            farmNameElement.style.lineHeight =
+                "1.2";
+
+            farmNameElement.style.margin =
+                "0 0 12px 0";
+
+            farmNameElement.style.letterSpacing =
+                "0.5px";
+
+        }
+
+
+        // =================================
+        // TEMPORARY PRINT CSS
+        // =================================
+
+        const printStyle =
+            document.createElement("style");
+
+
+        printStyle.id =
+            "farrowing-print-branding";
+
+
+        printStyle.textContent = `
+
+            @media print {
+
+                .software-brand,
+                .page-header p,
+                .farm-label,
+                .header-icon {
+
+                    display: none !important;
+
+                }
+
+
+                [data-farm-name] {
+
+                    display: block !important;
+
+                    font-size: 30px !important;
+
+                    font-weight: 800 !important;
+
+                    text-align: center !important;
+
+                    line-height: 1.2 !important;
+
+                    margin: 0 0 12px 0 !important;
+
+                    letter-spacing: 0.5px !important;
+
+                }
+
+            }
+
+        `;
+
+
+        document.head.appendChild(
+            printStyle
+        );
+
+
+        // =================================
+        // PRINT
+        // =================================
+
+        window.print();
+
+
+        // =================================
+        // RESTORE SCREEN AFTER PRINT
+        // =================================
+
+        const restoreScreen =
+            function () {
+
+                if (softwareBrand) {
+
+                    softwareBrand.style.display =
+                        originalSoftwareDisplay;
+
+                }
+
+
+                if (systemDescription) {
+
+                    systemDescription.style.display =
+                        originalDescriptionDisplay;
+
+                }
+
+
+                if (farmLabel) {
+
+                    farmLabel.style.display =
+                        originalFarmLabelDisplay;
+
+                }
+
+
+                if (headerIcon) {
+
+                    headerIcon.style.display =
+                        originalIconDisplay;
+
+                }
+
+
+                if (farmNameElement) {
+
+                    farmNameElement.textContent =
+                        originalFarmNameText;
+
+
+                    if (
+                        originalFarmNameStyle === null
+                    ) {
+
+                        farmNameElement.removeAttribute(
+                            "style"
+                        );
+
+                    } else {
+
+                        farmNameElement.setAttribute(
+                            "style",
+                            originalFarmNameStyle
+                        );
+
+                    }
+
+                }
+
+
+                if (printStyle) {
+
+                    printStyle.remove();
+
+                }
+
+            };
+
+
+        window.addEventListener(
+            "afterprint",
+            restoreScreen,
+            {
+                once: true
+            }
+        );
+
+
+        // Backup restoration
+        setTimeout(
+            restoreScreen,
+            3000
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "PRINT REPORT ERROR:",
+            error
+        );
+
+        alert(
+            "Unable to prepare the print report: " +
+            error.message
+        );
+
+    }
 
 }
 

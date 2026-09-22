@@ -1,5 +1,5 @@
 // ==========================================
-// MUNKA PIGGERY FARM LIMITED
+// MUNKA PIGGERY TECHNOLOGY
 // VACCINATION & TREATMENT MODULE
 // FARM-SECURED VERSION
 // ==========================================
@@ -56,16 +56,97 @@ function getFarmID(){
 
 
 // ==========================================
+// GET REGISTERED FARM NAME
+// ==========================================
+
+async function getRegisteredFarmName(){
+
+    try{
+
+        if(typeof supabaseClient === "undefined"){
+            return "REGISTERED FARM";
+        }
+
+        const loggedUser =
+            getLoggedUser();
+
+        if(!loggedUser){
+            return "REGISTERED FARM";
+        }
+
+        const farmID =
+            loggedUser.farm_id;
+
+        if(
+            farmID === null ||
+            farmID === undefined ||
+            farmID === ""
+        ){
+            return "REGISTERED FARM";
+        }
+
+        const { data: farm, error } =
+            await supabaseClient
+
+            .from("farms")
+
+            .select("farm_name")
+
+            .eq("id", farmID)
+
+            .maybeSingle();
+
+        if(error){
+
+            console.error(
+                "GET FARM NAME ERROR:",
+                error
+            );
+
+            return "REGISTERED FARM";
+        }
+
+        if(
+            farm &&
+            farm.farm_name
+        ){
+
+            return String(
+                farm.farm_name
+            ).trim();
+
+        }
+
+        return "REGISTERED FARM";
+
+    }catch(error){
+
+        console.error(
+            "FARM NAME ERROR:",
+            error
+        );
+
+        return "REGISTERED FARM";
+    }
+
+}
+
+
+// ==========================================
 // HTML ESCAPE
 // ==========================================
 
 function escapeHTML(value){
 
-    if(value === null || value === undefined){
+    if(
+        value === null ||
+        value === undefined
+    ){
         return "";
     }
 
     return String(value)
+
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -81,73 +162,163 @@ function escapeHTML(value){
 const healthDatabase = {
 
     diarrhoea: {
-        cause: "Contaminated feed or water, bacteria, parasites or sudden feed changes",
-        prevention: "Clean water, proper hygiene, quality feed and regular pen cleaning",
-        medicine: "Electrolytes and veterinary diarrhoea treatment",
-        route: "Oral"
+
+        cause:
+            "Contaminated feed or water, bacteria, parasites or sudden feed changes",
+
+        prevention:
+            "Clean water, proper hygiene, quality feed and regular pen cleaning",
+
+        medicine:
+            "Electrolytes and veterinary diarrhoea treatment",
+
+        route:
+            "Oral"
+
     },
 
     coughing: {
-        cause: "Respiratory infection, dust, poor ventilation or overcrowding",
-        prevention: "Improve ventilation and reduce dust",
-        medicine: "Veterinary respiratory treatment",
-        route: "Injection"
+
+        cause:
+            "Respiratory infection, dust, poor ventilation or overcrowding",
+
+        prevention:
+            "Improve ventilation and reduce dust",
+
+        medicine:
+            "Veterinary respiratory treatment",
+
+        route:
+            "Injection"
+
     },
 
     fever: {
-        cause: "Viral infection, bacterial infection or disease condition",
-        prevention: "Vaccination, hygiene and isolation of sick pigs",
-        medicine: "Veterinary fever treatment",
-        route: "Injection"
+
+        cause:
+            "Viral infection, bacterial infection or disease condition",
+
+        prevention:
+            "Vaccination, hygiene and isolation of sick pigs",
+
+        medicine:
+            "Veterinary fever treatment",
+
+        route:
+            "Injection"
+
     },
 
     mange: {
-        cause: "External parasites such as mites",
-        prevention: "Regular cleaning and parasite control",
-        medicine: "Anti-parasitic treatment",
-        route: "Topical"
+
+        cause:
+            "External parasites such as mites",
+
+        prevention:
+            "Regular cleaning and parasite control",
+
+        medicine:
+            "Anti-parasitic treatment",
+
+        route:
+            "Topical"
+
     },
 
     worms: {
-        cause: "Internal parasite infestation",
-        prevention: "Routine deworming and sanitation",
-        medicine: "Deworming medicine",
-        route: "Oral"
+
+        cause:
+            "Internal parasite infestation",
+
+        prevention:
+            "Routine deworming and sanitation",
+
+        medicine:
+            "Deworming medicine",
+
+        route:
+            "Oral"
+
     },
 
     lameness: {
-        cause: "Injury, joint problem or mineral deficiency",
-        prevention: "Good flooring and proper nutrition",
-        medicine: "Anti-inflammatory treatment",
-        route: "Injection"
+
+        cause:
+            "Injury, joint problem or mineral deficiency",
+
+        prevention:
+            "Good flooring and proper nutrition",
+
+        medicine:
+            "Anti-inflammatory treatment",
+
+        route:
+            "Injection"
+
     },
 
     loss_appetite: {
-        cause: "Disease, stress or poor feed quality",
-        prevention: "Good feeding programme and clean water",
-        medicine: "Treatment according to veterinary diagnosis",
-        route: "Oral"
+
+        cause:
+            "Disease, stress or poor feed quality",
+
+        prevention:
+            "Good feeding programme and clean water",
+
+        medicine:
+            "Treatment according to veterinary diagnosis",
+
+        route:
+            "Oral"
+
     },
 
     african_swine_fever: {
-        cause: "African Swine Fever virus",
-        prevention: "Strict biosecurity and quarantine",
-        medicine: "No specific cure; veterinary support required",
-        route: "Other"
+
+        cause:
+            "African Swine Fever virus",
+
+        prevention:
+            "Strict biosecurity and quarantine",
+
+        medicine:
+            "No specific cure; veterinary support required",
+
+        route:
+            "Other"
+
     },
 
     foot_mouth: {
-        cause: "Foot and Mouth Disease virus",
-        prevention: "Vaccination and farm hygiene",
-        medicine: "Supportive treatment",
-        route: "Injection"
+
+        cause:
+            "Foot and Mouth Disease virus",
+
+        prevention:
+            "Vaccination and farm hygiene",
+
+        medicine:
+            "Supportive treatment",
+
+        route:
+            "Injection"
+
     },
 
     other: {
-        cause: "Requires veterinary assessment",
-        prevention: "Monitor pig and maintain hygiene",
-        medicine: "According to diagnosis",
-        route: "Other"
+
+        cause:
+            "Requires veterinary assessment",
+
+        prevention:
+            "Monitor pig and maintain hygiene",
+
+        medicine:
+            "According to diagnosis",
+
+        route:
+            "Other"
+
     }
 
 };
@@ -169,10 +340,10 @@ function loadDiseaseInformation(){
     const info =
         healthDatabase[symptom.value];
 
-
     const otherDiseaseGroup =
-        document.getElementById("otherDiseaseGroup");
-
+        document.getElementById(
+            "otherDiseaseGroup"
+        );
 
     if(otherDiseaseGroup){
 
@@ -183,23 +354,19 @@ function loadDiseaseInformation(){
 
     }
 
-
     if(info){
 
         document.getElementById(
             "possibleCause"
         ).value = info.cause;
 
-
         document.getElementById(
             "prevention"
         ).value = info.prevention;
 
-
         document.getElementById(
             "medicine"
         ).value = info.medicine;
-
 
         document.getElementById(
             "route"
@@ -215,7 +382,9 @@ document.addEventListener(
     function(){
 
         const symptom =
-            document.getElementById("symptom");
+            document.getElementById(
+                "symptom"
+            );
 
         if(symptom){
 
@@ -241,7 +410,6 @@ function calculateNextDate(){
             "treatmentDate"
         ).value;
 
-
     let interval =
         Number(
             document.getElementById(
@@ -249,17 +417,21 @@ function calculateNextDate(){
             ).value
         );
 
-
-    if(treatmentDate && interval){
+    if(
+        treatmentDate &&
+        interval
+    ){
 
         let date =
-            new Date(treatmentDate + "T00:00:00");
-
+            new Date(
+                treatmentDate +
+                "T00:00:00"
+            );
 
         date.setDate(
-            date.getDate() + interval
+            date.getDate() +
+            interval
         );
-
 
         document.getElementById(
             "nextDate"
@@ -286,7 +458,6 @@ document.addEventListener(
                 "interval"
             );
 
-
         if(treatmentDate){
 
             treatmentDate.addEventListener(
@@ -295,7 +466,6 @@ document.addEventListener(
             );
 
         }
-
 
         if(interval){
 
@@ -319,8 +489,9 @@ document.addEventListener(
     function(){
 
         const saveButton =
-            document.getElementById("saveBtn");
-
+            document.getElementById(
+                "saveBtn"
+            );
 
         if(saveButton){
 
@@ -344,20 +515,17 @@ async function saveRecord(){
     let loggedUser =
         getLoggedUser();
 
-
     if(!loggedUser) return;
-
 
     const farmID =
         getFarmID();
 
-
     if(!farmID) return;
-
 
     let data = {
 
-        farm_id: farmID,
+        farm_id:
+            farmID,
 
         pig_id:
             document.getElementById(
@@ -457,14 +625,14 @@ async function saveRecord(){
 
     };
 
-
     if(!data.pig_id){
 
-        alert("Please enter Pig ID.");
+        alert(
+            "Please enter Pig ID."
+        );
+
         return;
-
     }
-
 
     if(!data.treatment_date){
 
@@ -473,9 +641,7 @@ async function saveRecord(){
         );
 
         return;
-
     }
-
 
     if(!data.next_administration_date){
 
@@ -484,9 +650,7 @@ async function saveRecord(){
         );
 
         return;
-
     }
-
 
     try{
 
@@ -497,9 +661,7 @@ async function saveRecord(){
 
             .insert([data]);
 
-
         if(error) throw error;
-
 
         await saveActivity(
 
@@ -517,27 +679,23 @@ async function saveRecord(){
 
         );
 
-
         alert(
             "Treatment record saved successfully."
         );
 
-
         document
-            .getElementById("treatmentForm")
+            .getElementById(
+                "treatmentForm"
+            )
             .reset();
-
 
         document.getElementById(
             "otherDiseaseGroup"
         ).style.display = "none";
 
-
         editID = null;
 
-
         loadRecords();
-
 
     }catch(error){
 
@@ -546,7 +704,9 @@ async function saveRecord(){
             error
         );
 
-        alert(error.message);
+        alert(
+            error.message
+        );
 
     }
 
@@ -615,9 +775,7 @@ async function loadRecords(){
     const farmID =
         getFarmID();
 
-
     if(!farmID) return;
-
 
     try{
 
@@ -628,30 +786,33 @@ async function loadRecords(){
 
             .select("*")
 
-            .eq("farm_id", farmID)
+            .eq(
+                "farm_id",
+                farmID
+            )
 
             .order(
                 "id",
-                {ascending:false}
+                {
+                    ascending:false
+                }
             );
 
-
         if(error) throw error;
-
 
         let table =
             document.getElementById(
                 "treatmentTable"
             );
 
-
         if(!table) return;
-
 
         table.innerHTML = "";
 
-
-        if(!data || data.length === 0){
+        if(
+            !data ||
+            data.length === 0
+        ){
 
             table.innerHTML = `
 
@@ -670,17 +831,16 @@ async function loadRecords(){
             `;
 
             return;
-
         }
 
+        data.forEach(
+            function(row){
 
-        data.forEach(function(row){
+                table.innerHTML +=
+                    createTreatmentRow(row);
 
-            table.innerHTML +=
-                createTreatmentRow(row);
-
-        });
-
+            }
+        );
 
     }catch(error){
 
@@ -689,7 +849,9 @@ async function loadRecords(){
             error
         );
 
-        alert(error.message);
+        alert(
+            error.message
+        );
 
     }
 
@@ -707,22 +869,17 @@ async function searchPig(){
             "searchPig"
         ).value.trim();
 
-
     if(!pigID){
 
         loadRecords();
 
         return;
-
     }
-
 
     const farmID =
         getFarmID();
 
-
     if(!farmID) return;
-
 
     try{
 
@@ -733,29 +890,36 @@ async function searchPig(){
 
             .select("*")
 
-            .eq("farm_id", farmID)
+            .eq(
+                "farm_id",
+                farmID
+            )
 
-            .eq("pig_id", pigID)
+            .eq(
+                "pig_id",
+                pigID
+            )
 
             .order(
                 "id",
-                {ascending:false}
+                {
+                    ascending:false
+                }
             );
 
-
         if(error) throw error;
-
 
         let table =
             document.getElementById(
                 "treatmentTable"
             );
 
-
         table.innerHTML = "";
 
-
-        if(!data || data.length === 0){
+        if(
+            !data ||
+            data.length === 0
+        ){
 
             table.innerHTML = `
 
@@ -775,17 +939,16 @@ async function searchPig(){
             `;
 
             return;
-
         }
 
+        data.forEach(
+            function(row){
 
-        data.forEach(function(row){
+                table.innerHTML +=
+                    createTreatmentRow(row);
 
-            table.innerHTML +=
-                createTreatmentRow(row);
-
-        });
-
+            }
+        );
 
     }catch(error){
 
@@ -794,7 +957,9 @@ async function searchPig(){
             error
         );
 
-        alert(error.message);
+        alert(
+            error.message
+        );
 
     }
 
@@ -810,9 +975,7 @@ async function editTreatment(id){
     const farmID =
         getFarmID();
 
-
     if(!farmID) return;
-
 
     try{
 
@@ -823,120 +986,106 @@ async function editTreatment(id){
 
             .select("*")
 
-            .eq("id", id)
+            .eq(
+                "id",
+                id
+            )
 
-            .eq("farm_id", farmID)
+            .eq(
+                "farm_id",
+                farmID
+            )
 
             .single();
 
-
         if(error) throw error;
 
-
         editID = id;
-
 
         document.getElementById(
             "pigID"
         ).value =
             data.pig_id || "";
 
-
         document.getElementById(
             "breed"
         ).value =
             data.breed || "";
-
 
         document.getElementById(
             "sex"
         ).value =
             data.sex || "";
 
-
         document.getElementById(
             "age"
         ).value =
             data.age || 0;
-
 
         document.getElementById(
             "ageUnit"
         ).value =
             data.age_unit || "Days";
 
-
         document.getElementById(
             "treatmentDate"
         ).value =
             data.treatment_date || "";
-
 
         document.getElementById(
             "symptom"
         ).value =
             data.symptom || "";
 
-
         document.getElementById(
             "possibleCause"
         ).value =
             data.possible_cause || "";
-
 
         document.getElementById(
             "prevention"
         ).value =
             data.prevention || "";
 
-
         document.getElementById(
             "medicine"
         ).value =
             data.medicine || "";
-
 
         document.getElementById(
             "route"
         ).value =
             data.route || "";
 
-
         document.getElementById(
             "dosage"
         ).value =
             data.dosage || "";
-
 
         document.getElementById(
             "interval"
         ).value =
             data.interval_days || 1;
 
-
         document.getElementById(
             "nextDate"
         ).value =
             data.next_administration_date || "";
-
 
         document.getElementById(
             "administeredBy"
         ).value =
             data.administered_by || "";
 
-
         document.getElementById(
             "remarks"
         ).value =
             data.remarks || "";
 
-
         const otherDiseaseGroup =
             document.getElementById(
                 "otherDiseaseGroup"
             );
-
 
         if(otherDiseaseGroup){
 
@@ -947,14 +1096,17 @@ async function editTreatment(id){
 
         }
 
-
         document
-            .getElementById("treatmentForm")
+            .getElementById(
+                "treatmentForm"
+            )
             .scrollIntoView({
-                behavior:"smooth",
-                block:"start"
-            });
 
+                behavior:"smooth",
+
+                block:"start"
+
+            });
 
     }catch(error){
 
@@ -963,7 +1115,9 @@ async function editTreatment(id){
             error
         );
 
-        alert(error.message);
+        alert(
+            error.message
+        );
 
     }
 
@@ -982,7 +1136,6 @@ document.addEventListener(
             document.getElementById(
                 "updateBtn"
             );
-
 
         if(updateBtn){
 
@@ -1010,23 +1163,17 @@ async function updateRecord(){
         );
 
         return;
-
     }
-
 
     let loggedUser =
         getLoggedUser();
 
-
     if(!loggedUser) return;
-
 
     const farmID =
         getFarmID();
 
-
     if(!farmID) return;
-
 
     let updatedData = {
 
@@ -1122,22 +1269,32 @@ async function updateRecord(){
 
     };
 
-
     if(!updatedData.pig_id){
 
-        alert("Please enter Pig ID.");
+        alert(
+            "Please enter Pig ID."
+        );
+
         return;
-
     }
-
 
     if(!updatedData.treatment_date){
 
-        alert("Please select treatment date.");
-        return;
+        alert(
+            "Please select treatment date."
+        );
 
+        return;
     }
 
+    if(!updatedData.next_administration_date){
+
+        alert(
+            "Next administration date was not calculated."
+        );
+
+        return;
+    }
 
     try{
 
@@ -1148,21 +1305,24 @@ async function updateRecord(){
 
             .update(updatedData)
 
-            .eq("id", editID)
+            .eq(
+                "id",
+                editID
+            )
 
-            .eq("farm_id", farmID)
+            .eq(
+                "farm_id",
+                farmID
+            )
 
             .select();
 
-
         if(error) throw error;
-
 
         console.log(
             "UPDATED RESULT:",
             data
         );
-
 
         await saveActivity(
 
@@ -1180,27 +1340,23 @@ async function updateRecord(){
 
         );
 
-
         alert(
             "Treatment record updated successfully."
         );
 
-
         editID = null;
 
-
         document
-            .getElementById("treatmentForm")
+            .getElementById(
+                "treatmentForm"
+            )
             .reset();
-
 
         document.getElementById(
             "otherDiseaseGroup"
         ).style.display = "none";
 
-
         loadRecords();
-
 
     }catch(error){
 
@@ -1209,7 +1365,9 @@ async function updateRecord(){
             error
         );
 
-        alert(error.message);
+        alert(
+            error.message
+        );
 
     }
 
@@ -1222,28 +1380,25 @@ async function updateRecord(){
 
 async function deleteTreatment(id){
 
-    if(!confirm(
-        "Delete this treatment record?"
-    )){
+    if(
+        !confirm(
+            "Delete this treatment record?"
+        )
+    ){
 
         return;
 
     }
 
-
     let loggedUser =
         getLoggedUser();
 
-
     if(!loggedUser) return;
-
 
     const farmID =
         getFarmID();
 
-
     if(!farmID) return;
-
 
     try{
 
@@ -1254,13 +1409,17 @@ async function deleteTreatment(id){
 
             .delete()
 
-            .eq("id", id)
+            .eq(
+                "id",
+                id
+            )
 
-            .eq("farm_id", farmID);
-
+            .eq(
+                "farm_id",
+                farmID
+            );
 
         if(error) throw error;
-
 
         await saveActivity(
 
@@ -1278,14 +1437,11 @@ async function deleteTreatment(id){
 
         );
 
-
         alert(
             "Treatment record deleted successfully."
         );
 
-
         loadRecords();
-
 
     }catch(error){
 
@@ -1294,7 +1450,9 @@ async function deleteTreatment(id){
             error
         );
 
-        alert(error.message);
+        alert(
+            error.message
+        );
 
     }
 
@@ -1310,9 +1468,7 @@ async function generateTreatmentReport(){
     const farmID =
         getFarmID();
 
-
     if(!farmID) return;
-
 
     try{
 
@@ -1323,25 +1479,35 @@ async function generateTreatmentReport(){
 
             .select("*")
 
-            .eq("farm_id", farmID);
-
+            .eq(
+                "farm_id",
+                farmID
+            );
 
         if(error) throw error;
 
+        const farmName =
+            await getRegisteredFarmName();
 
         const totalRecords =
             data.length;
 
-
         const successful =
-            data.filter(row =>
-                String(row.remarks || "")
-                .toLowerCase()
-                .includes("properly")
+            data.filter(
+                row =>
+                    String(
+                        row.remarks || ""
+                    )
+                    .toLowerCase()
+                    .includes(
+                        "properly"
+                    )
             ).length;
 
-
         alert(
+
+            farmName +
+            "\n\n" +
 
             "VACCINATION & TREATMENT REPORT\n\n" +
 
@@ -1353,7 +1519,6 @@ async function generateTreatmentReport(){
 
         );
 
-
     }catch(error){
 
         console.error(
@@ -1361,7 +1526,9 @@ async function generateTreatmentReport(){
             error
         );
 
-        alert(error.message);
+        alert(
+            error.message
+        );
 
     }
 
@@ -1377,16 +1544,12 @@ async function downloadTreatmentPDF(){
     const farmID =
         getFarmID();
 
-
     if(!farmID) return;
-
 
     const loggedUser =
         getLoggedUser();
 
-
     if(!loggedUser) return;
-
 
     if(
         !window.jspdf ||
@@ -1398,11 +1561,12 @@ async function downloadTreatmentPDF(){
         );
 
         return;
-
     }
 
-
     try{
+
+        const farmName =
+            await getRegisteredFarmName();
 
         const {data,error} =
             await supabaseClient
@@ -1411,76 +1575,98 @@ async function downloadTreatmentPDF(){
 
             .select("*")
 
-            .eq("farm_id", farmID)
+            .eq(
+                "farm_id",
+                farmID
+            )
 
             .order(
                 "id",
-                {ascending:false}
+                {
+                    ascending:false
+                }
             );
-
 
         if(error) throw error;
 
-
-        if(!data || data.length === 0){
+        if(
+            !data ||
+            data.length === 0
+        ){
 
             alert(
                 "No vaccination or treatment records are available for this farm."
             );
 
             return;
-
         }
 
-
-        const { jsPDF } =
+        const {
+            jsPDF
+        } =
             window.jspdf;
-
 
         const doc =
             new jsPDF({
-                orientation:"landscape",
-                unit:"mm",
-                format:"a4"
-            });
 
+                orientation:"landscape",
+
+                unit:"mm",
+
+                format:"a4"
+
+            });
 
         const pageWidth =
             doc.internal.pageSize.getWidth();
 
+        const pageHeight =
+            doc.internal.pageSize.getHeight();
+
 
         // =====================================
-        // PDF HEADER
+        // PDF FARM HEADER
         // =====================================
 
         doc.setFontSize(18);
 
-        doc.setFont(undefined,"bold");
+        doc.setFont(
+            undefined,
+            "bold"
+        );
 
         doc.text(
-            "MUNKA PIGGERY FARM LIMITED",
+            farmName,
             pageWidth / 2,
             15,
-            {align:"center"}
+            {
+                align:"center"
+            }
         );
 
 
         doc.setFontSize(13);
 
-        doc.setFont(undefined,"normal");
+        doc.setFont(
+            undefined,
+            "normal"
+        );
 
         doc.text(
             "Vaccination & Treatment Report",
             pageWidth / 2,
             23,
-            {align:"center"}
+            {
+                align:"center"
+            }
         );
 
 
         doc.setFontSize(9);
 
         doc.text(
-            "Farm ID: " + farmID,
+            "Farm ID: " +
+            farmID,
             14,
             32
         );
@@ -1488,7 +1674,10 @@ async function downloadTreatmentPDF(){
 
         doc.text(
             "Generated By: " +
-            (loggedUser.full_name || "Unknown User"),
+            (
+                loggedUser.full_name ||
+                "Unknown User"
+            ),
             14,
             38
         );
@@ -1496,7 +1685,10 @@ async function downloadTreatmentPDF(){
 
         doc.text(
             "Generated On: " +
-            new Date().toLocaleString("en-ZM"),
+            new Date()
+            .toLocaleString(
+                "en-ZM"
+            ),
             14,
             44
         );
@@ -1507,7 +1699,9 @@ async function downloadTreatmentPDF(){
             data.length,
             pageWidth - 14,
             32,
-            {align:"right"}
+            {
+                align:"right"
+            }
         );
 
 
@@ -1516,40 +1710,46 @@ async function downloadTreatmentPDF(){
         // =====================================
 
         const tableData =
-            data.map(row => [
+            data.map(
+                row => [
 
-                row.pig_id || "",
+                    row.pig_id || "",
 
-                row.breed || "",
+                    row.breed || "",
 
-                row.sex || "",
+                    row.sex || "",
 
-                row.symptom || "",
+                    row.symptom || "",
 
-                row.medicine || "",
+                    row.medicine || "",
 
-                row.route || "",
+                    row.route || "",
 
-                row.dosage || "",
+                    row.dosage || "",
 
-                row.treatment_date || "",
+                    row.treatment_date || "",
 
-                row.next_administration_date || "",
+                    row.next_administration_date || "",
 
-                row.administered_by || "",
+                    row.administered_by || "",
 
-                row.remarks || ""
+                    row.remarks || ""
 
-            ]);
+                ]
+            );
 
 
-        if(typeof doc.autoTable === "function"){
+        if(
+            typeof doc.autoTable ===
+            "function"
+        ){
 
             doc.autoTable({
 
                 startY:50,
 
                 head:[[
+
                     "Pig ID",
                     "Breed",
                     "Sex",
@@ -1561,6 +1761,7 @@ async function downloadTreatmentPDF(){
                     "Next Date",
                     "Administered By",
                     "Remarks"
+
                 ]],
 
                 body:tableData,
@@ -1568,56 +1769,118 @@ async function downloadTreatmentPDF(){
                 theme:"grid",
 
                 styles:{
+
                     fontSize:6,
+
                     cellPadding:2,
+
                     overflow:"linebreak",
+
                     valign:"middle"
+
                 },
 
                 headStyles:{
+
                     fontSize:6,
+
                     fontStyle:"bold"
+
                 },
 
                 columnStyles:{
 
-                    0:{cellWidth:17},
-                    1:{cellWidth:18},
-                    2:{cellWidth:10},
-                    3:{cellWidth:25},
-                    4:{cellWidth:30},
-                    5:{cellWidth:17},
-                    6:{cellWidth:15},
-                    7:{cellWidth:22},
-                    8:{cellWidth:22},
-                    9:{cellWidth:25},
-                    10:{cellWidth:55}
+                    0:{
+                        cellWidth:17
+                    },
+
+                    1:{
+                        cellWidth:18
+                    },
+
+                    2:{
+                        cellWidth:10
+                    },
+
+                    3:{
+                        cellWidth:25
+                    },
+
+                    4:{
+                        cellWidth:30
+                    },
+
+                    5:{
+                        cellWidth:17
+                    },
+
+                    6:{
+                        cellWidth:15
+                    },
+
+                    7:{
+                        cellWidth:22
+                    },
+
+                    8:{
+                        cellWidth:22
+                    },
+
+                    9:{
+                        cellWidth:25
+                    },
+
+                    10:{
+                        cellWidth:55
+                    }
 
                 },
 
                 margin:{
+
                     left:8,
+
                     right:8
+
                 },
 
                 didDrawPage:function(){
 
                     const pageNumber =
-                        doc.internal.getNumberOfPages();
+                        doc.internal
+                        .getNumberOfPages();
 
                     doc.setFontSize(7);
 
-                    doc.text(
-                        "MUNKA PIGGERY FARM LIMITED - Vaccination & Treatment",
-                        8,
-                        doc.internal.pageSize.getHeight() - 7
+                    doc.setFont(
+                        undefined,
+                        "normal"
                     );
 
                     doc.text(
-                        "Page " + pageNumber,
+
+                        farmName +
+                        " - Vaccination & Treatment",
+
+                        8,
+
+                        pageHeight - 7
+
+                    );
+
+                    doc.text(
+
+                        "Page " +
+                        pageNumber,
+
                         pageWidth - 8,
-                        doc.internal.pageSize.getHeight() - 7,
-                        {align:"right"}
+
+                        pageHeight - 7,
+
+                        {
+                            align:"right"
+                        }
+
                     );
 
                 }
@@ -1631,7 +1894,6 @@ async function downloadTreatmentPDF(){
             );
 
             return;
-
         }
 
 
@@ -1645,10 +1907,29 @@ async function downloadTreatmentPDF(){
             .split("T")[0];
 
 
+        const safeFarmName =
+            farmName
+
+            .replace(
+                /[<>:"/\\|?*]+/g,
+                ""
+            )
+
+            .replace(
+                /\s+/g,
+                "-"
+            )
+
+            .trim();
+
+
         doc.save(
-            "MUNKA-PIGGERY-Vaccination-Treatment-" +
+
+            safeFarmName +
+            "-Vaccination-Treatment-" +
             today +
             ".pdf"
+
         );
 
 
@@ -1673,9 +1954,130 @@ async function downloadTreatmentPDF(){
 // PRINT REPORT
 // ==========================================
 
-function printTreatmentReport(){
+async function printTreatmentReport(){
+
+    const farmName =
+        await getRegisteredFarmName();
+
+
+    const style =
+        document.createElement(
+            "style"
+        );
+
+
+    style.id =
+        "temporaryVaccinationPrintStyle";
+
+
+    style.innerHTML = `
+
+        @media print {
+
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .software-brand {
+                display: none !important;
+            }
+
+            .brand-title {
+                display: none !important;
+            }
+
+            .brand-subtitle {
+                display: none !important;
+            }
+
+            .farm-label {
+                display: none !important;
+            }
+
+            .page-header .header-buttons {
+                display: none !important;
+            }
+
+            .page-header {
+                padding: 0 !important;
+                margin: 0 0 15px 0 !important;
+                border: none !important;
+            }
+
+            .farm-branding {
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+            }
+
+            .farm-branding strong {
+                display: block !important;
+                font-size: 30px !important;
+                font-weight: 800 !important;
+                text-align: center !important;
+                letter-spacing: 0.5px !important;
+                line-height: 1.2 !important;
+                margin: 0 0 12px 0 !important;
+            }
+
+            .module-intro {
+                margin-top: 0 !important;
+            }
+
+            footer {
+                display: none !important;
+            }
+
+            .buttons,
+            .search-area,
+            .report-buttons {
+                display: none !important;
+            }
+
+        }
+
+    `;
+
+
+    document.head.appendChild(
+        style
+    );
+
 
     window.print();
+
+
+    const removePrintStyle =
+        function(){
+
+            const printStyle =
+                document.getElementById(
+                    "temporaryVaccinationPrintStyle"
+                );
+
+            if(printStyle){
+
+                printStyle.remove();
+
+            }
+
+        };
+
+
+    window.addEventListener(
+        "afterprint",
+        removePrintStyle,
+        {
+            once:true
+        }
+    );
+
+
+    setTimeout(
+        removePrintStyle,
+        3000
+    );
 
 }
 
@@ -1692,11 +2094,9 @@ function clearTreatmentForm(){
         )
         .reset();
 
-
     document.getElementById(
         "otherDiseaseGroup"
     ).style.display = "none";
-
 
     editID = null;
 

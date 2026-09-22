@@ -1,8 +1,9 @@
 // =====================================
-// MUNKA PIGGERY FARM
+// MUNKA PIGGERY TECHNOLOGY
 // EXPENSES RECORDS MODULE
 // FARM-SECURED VERSION
 // PROFESSIONAL UPGRADE
+// DYNAMIC FARM BRANDING
 // =====================================
 
 let editID = null;
@@ -42,6 +43,95 @@ function getFarmID(){
 
 
 // =====================================
+// GET REGISTERED FARM NAME
+// =====================================
+
+async function getRegisteredFarmName(){
+
+    try{
+
+        const {
+            data: sessionData,
+            error: sessionError
+        } =
+            await supabaseClient.auth.getSession();
+
+        if(sessionError) throw sessionError;
+
+        const session =
+            sessionData.session;
+
+        if(!session || !session.user){
+
+            return "Registered Farm";
+
+        }
+
+        const {
+            data: userProfile,
+            error: userError
+        } =
+            await supabaseClient
+
+                .from("users")
+
+                .select("farm_id")
+
+                .eq(
+                    "auth_user_id",
+                    session.user.id
+                )
+
+                .maybeSingle();
+
+        if(userError) throw userError;
+
+        if(
+            !userProfile ||
+            !userProfile.farm_id
+        ){
+
+            return "Registered Farm";
+
+        }
+
+        const {
+            data: farm,
+            error: farmError
+        } =
+            await supabaseClient
+
+                .from("farms")
+
+                .select("farm_name")
+
+                .eq(
+                    "id",
+                    userProfile.farm_id
+                )
+
+                .maybeSingle();
+
+        if(farmError) throw farmError;
+
+        return farm?.farm_name ||
+            "Registered Farm";
+
+    }catch(error){
+
+        console.error(
+            "Unable to get registered farm name:",
+            error
+        );
+
+        return "Registered Farm";
+
+    }
+
+}
+
+
+// =====================================
 // ESCAPE HTML
 // =====================================
 
@@ -66,13 +156,11 @@ function escapeHTML(value){
 
 // =====================================
 // DESCRIPTION OPTIONS
-// DEPEND ON EXPENSE CATEGORY
 // =====================================
 
 const descriptionOptions = {
 
     "Feed": [
-
         "Piglet Feed",
         "Weaner Feed",
         "Grower Feed",
@@ -84,12 +172,9 @@ const descriptionOptions = {
         "Premix",
         "Bran",
         "Other Feed"
-
     ],
 
-
     "Medicine": [
-
         "Dewormer",
         "Antibiotics",
         "Vitamins",
@@ -98,35 +183,26 @@ const descriptionOptions = {
         "Treatment Medicine",
         "Disinfectant",
         "Other Medicine"
-
     ],
 
-
     "Vaccination": [
-
         "Vaccination",
         "Vaccine Dose",
         "Vaccination Service",
         "Cold Chain / Vaccine Transport",
         "Other Vaccination Expense"
-
     ],
 
-
     "Labour": [
-
         "Farm Worker Wages",
         "Casual Labour",
         "Cleaning Labour",
         "Feeding Labour",
         "Construction Labour",
         "Other Labour"
-
     ],
 
-
     "Transport": [
-
         "Feed Transportation",
         "Pig Transportation",
         "Medicine Transportation",
@@ -134,12 +210,9 @@ const descriptionOptions = {
         "Farm Supply Delivery",
         "Fuel / Transport Charge",
         "Other Transport"
-
     ],
 
-
     "Repairs & Maintenance": [
-
         "Pig Pen Repair",
         "Fence Repair",
         "Roof Repair",
@@ -148,24 +221,18 @@ const descriptionOptions = {
         "Equipment Repair",
         "Plumbing Repair",
         "Other Repair"
-
     ],
 
-
     "Utilities": [
-
         "Electricity",
         "Water",
         "Internet",
         "Communication",
         "Waste Management",
         "Other Utility"
-
     ],
 
-
     "Equipment": [
-
         "Feeding Equipment",
         "Watering Equipment",
         "Weighing Equipment",
@@ -174,53 +241,40 @@ const descriptionOptions = {
         "Breeding Equipment",
         "Cleaning Equipment",
         "Other Equipment"
-
     ],
 
-
     "Breeding / Artificial Insemination": [
-
         "Semen",
         "Artificial Insemination Service",
         "Breeding Service",
         "Breeding Supplies",
         "Hormonal Product",
         "Other Breeding Expense"
-
     ],
 
-
     "Cleaning & Disinfection": [
-
         "Disinfectant",
         "Detergent",
         "Bleach",
         "Cleaning Equipment",
         "Protective Clothing",
         "Other Cleaning Expense"
-
     ],
 
-
     "Marketing": [
-
         "Advertising",
         "Printing",
         "Social Media Promotion",
         "Transport for Marketing",
         "Market Levy",
         "Other Marketing Expense"
-
     ],
 
-
     "Other": [
-
         "General Farm Expense",
         "Administrative Expense",
         "Bank Charges",
         "Other"
-
     ]
 
 };
@@ -228,13 +282,11 @@ const descriptionOptions = {
 
 // =====================================
 // REMARKS / RECOMMENDATIONS
-// DEPEND ON EXPENSE CATEGORY
 // =====================================
 
 const recommendationOptions = {
 
     "Feed": [
-
         "Feed Cost Reasonable - Maintain Current Supplier",
         "Feed Cost High - Compare Suppliers",
         "Consider Bulk Feed Purchasing",
@@ -243,12 +295,9 @@ const recommendationOptions = {
         "Reduce Feed Wastage",
         "Maintain Current Feeding Programme",
         "Review Feed Formulation"
-
     ],
 
-
     "Medicine": [
-
         "Medicine Cost Reasonable - Maintain Supplier",
         "Medicine Cost High - Compare Suppliers",
         "Maintain Adequate Medicine Stock",
@@ -256,120 +305,90 @@ const recommendationOptions = {
         "Use Medicine According to Veterinary Advice",
         "Monitor Medicine Consumption",
         "Consider Bulk Purchasing Where Appropriate"
-
     ],
 
-
     "Vaccination": [
-
         "Vaccination Cost Reasonable",
         "Maintain Regular Vaccination Programme",
         "Review Vaccination Schedule",
         "Maintain Adequate Vaccine Stock",
         "Plan Vaccination in Advance",
         "Monitor Vaccination Costs"
-
     ],
 
-
     "Labour": [
-
         "Labour Cost Reasonable",
         "Labour Cost High - Review Labour Planning",
         "Improve Worker Productivity",
         "Review Staff Allocation",
         "Maintain Efficient Labour Scheduling",
         "Monitor Labour Costs"
-
     ],
 
-
     "Transport": [
-
         "Transport Cost Reasonable",
         "Transport Cost High - Compare Providers",
         "Combine Deliveries Where Possible",
         "Plan Transport in Advance",
         "Consider Bulk Transportation",
         "Monitor Transport Costs"
-
     ],
 
-
     "Repairs & Maintenance": [
-
         "Repair Cost Reasonable",
         "Repair Cost High - Compare Service Providers",
         "Schedule Preventive Maintenance",
         "Inspect Equipment Regularly",
         "Prioritise Critical Repairs",
         "Monitor Maintenance Costs"
-
     ],
 
-
     "Utilities": [
-
         "Utility Cost Reasonable",
         "Utility Cost High - Review Consumption",
         "Monitor Electricity Usage",
         "Monitor Water Usage",
         "Reduce Unnecessary Utility Consumption",
         "Review Monthly Utility Costs"
-
     ],
 
-
     "Equipment": [
-
         "Equipment Cost Reasonable",
         "Compare Equipment Prices Before Purchase",
         "Prioritise Essential Equipment",
         "Maintain Equipment Properly",
         "Consider Durable Equipment",
         "Monitor Equipment Costs"
-
     ],
 
-
     "Breeding / Artificial Insemination": [
-
         "Breeding Cost Reasonable",
         "Maintain Accurate Breeding Records",
         "Plan Breeding Services in Advance",
         "Compare Breeding Service Costs",
         "Monitor Breeding Programme Costs",
         "Maintain Good Breeding Management"
-
     ],
 
-
     "Cleaning & Disinfection": [
-
         "Cleaning Cost Reasonable",
         "Maintain Regular Cleaning Programme",
         "Maintain Proper Disinfection",
         "Compare Cleaning Supply Prices",
         "Monitor Cleaning Supply Consumption",
         "Avoid Unnecessary Wastage"
-
     ],
 
-
     "Marketing": [
-
         "Marketing Cost Reasonable",
         "Monitor Marketing Results",
         "Use Cost-Effective Marketing Channels",
         "Review Marketing Expenses",
         "Increase Market Search",
         "Maintain Effective Marketing Activities"
-
     ],
 
-
     "Other": [
-
         "Expense Reasonable - Maintain Current Practice",
         "Expense High - Review Cost",
         "Compare Prices Before Purchase",
@@ -377,7 +396,6 @@ const recommendationOptions = {
         "Improve Expense Planning",
         "Monitor Farm Operating Costs",
         "Consider Cost Reduction Measures"
-
     ]
 
 };
@@ -395,7 +413,6 @@ function loadDescriptionOptions(selectedValue = ""){
     const description =
         document.getElementById("description");
 
-
     description.innerHTML = "";
 
     const firstOption =
@@ -410,16 +427,14 @@ function loadDescriptionOptions(selectedValue = ""){
 
     description.appendChild(firstOption);
 
-
     if(!category){
 
         return;
-    }
 
+    }
 
     const options =
         descriptionOptions[category] || [];
-
 
     options.forEach(function(item){
 
@@ -427,7 +442,6 @@ function loadDescriptionOptions(selectedValue = ""){
             document.createElement("option");
 
         option.value = item;
-
         option.textContent = item;
 
         if(item === selectedValue){
@@ -455,9 +469,7 @@ function loadRecommendationOptions(selectedValue = ""){
     const remarks =
         document.getElementById("remarks");
 
-
     remarks.innerHTML = "";
-
 
     const firstOption =
         document.createElement("option");
@@ -471,16 +483,14 @@ function loadRecommendationOptions(selectedValue = ""){
 
     remarks.appendChild(firstOption);
 
-
     if(!category){
 
         return;
-    }
 
+    }
 
     const options =
         recommendationOptions[category] || [];
-
 
     options.forEach(function(item){
 
@@ -488,7 +498,6 @@ function loadRecommendationOptions(selectedValue = ""){
             document.createElement("option");
 
         option.value = item;
-
         option.textContent = item;
 
         if(item === selectedValue){
@@ -509,19 +518,21 @@ function loadRecommendationOptions(selectedValue = ""){
 // =====================================
 
 document
-.getElementById("category")
-.addEventListener("change", function(){
+    .getElementById("category")
+    .addEventListener(
+        "change",
+        function(){
 
-    loadDescriptionOptions();
+            loadDescriptionOptions();
 
-    loadRecommendationOptions();
+            loadRecommendationOptions();
 
-});
+        }
+    );
 
 
 // =====================================
 // AUTOMATIC EXPENSE CALCULATION
-// Quantity × Unit Cost
 // =====================================
 
 function calculateExpenseTotal(){
@@ -531,37 +542,36 @@ function calculateExpenseTotal(){
             document.getElementById("quantity").value
         ) || 0;
 
-
     const unitCost =
         Number(
             document.getElementById("unitCost").value
         ) || 0;
 
-
     const total =
         quantity * unitCost;
 
-
-    document.getElementById("totalAmount").value =
+    document.getElementById(
+        "totalAmount"
+    ).value =
         total.toFixed(2);
 
 }
 
 
 document
-.getElementById("quantity")
-.addEventListener(
-    "change",
-    calculateExpenseTotal
-);
+    .getElementById("quantity")
+    .addEventListener(
+        "change",
+        calculateExpenseTotal
+    );
 
 
 document
-.getElementById("unitCost")
-.addEventListener(
-    "change",
-    calculateExpenseTotal
-);
+    .getElementById("unitCost")
+    .addEventListener(
+        "change",
+        calculateExpenseTotal
+    );
 
 
 // =====================================
@@ -569,188 +579,189 @@ document
 // =====================================
 
 document
-.getElementById("expensesForm")
-.addEventListener("submit", async function(e){
+    .getElementById("expensesForm")
+    .addEventListener(
+        "submit",
+        async function(e){
 
-    e.preventDefault();
+            e.preventDefault();
 
+            const loggedUser =
+                getLoggedUser();
 
-    const loggedUser =
-        getLoggedUser();
+            if(!loggedUser){
 
+                alert(
+                    "No logged-in user found. Please login again."
+                );
 
-    if(!loggedUser){
+                return;
 
-        alert(
-            "No logged-in user found. Please login again."
-        );
+            }
 
-        return;
+            const farmID =
+                getFarmID();
 
-    }
+            if(!farmID){
 
+                alert(
+                    "Your account is not linked to a farm. Please contact the administrator."
+                );
 
-    const farmID =
-        getFarmID();
+                return;
 
+            }
 
-    if(!farmID){
+            const farmName =
+                await getRegisteredFarmName();
 
-        alert(
-            "Your account is not linked to a farm. Please contact the administrator."
-        );
+            const totalAmount =
+                Number(
+                    document.getElementById(
+                        "totalAmount"
+                    ).value
+                ) || 0;
 
-        return;
+            if(totalAmount <= 0){
 
-    }
+                alert(
+                    "Please select a valid quantity and unit cost."
+                );
 
+                return;
 
-    const totalAmount =
-        Number(
-            document.getElementById("totalAmount").value
-        ) || 0;
+            }
 
+            const expense = {
 
-    if(totalAmount <= 0){
+                farm_id:
+                    farmID,
 
-        alert(
-            "Please select a valid quantity and unit cost."
-        );
+                expense_id:
+                    "EXP-" + Date.now(),
 
-        return;
+                expense_date:
+                    document.getElementById(
+                        "expenseDate"
+                    ).value,
 
-    }
+                category:
+                    document.getElementById(
+                        "category"
+                    ).value,
 
+                description:
+                    document.getElementById(
+                        "description"
+                    ).value,
 
-    const expense = {
+                quantity:
+                    Number(
+                        document.getElementById(
+                            "quantity"
+                        ).value
+                    ) || 0,
 
-        farm_id:
-            farmID,
+                unit:
+                    document.getElementById(
+                        "unit"
+                    ).value,
 
+                unit_cost:
+                    Number(
+                        document.getElementById(
+                            "unitCost"
+                        ).value
+                    ) || 0,
 
-        expense_id:
-            "EXP-" + Date.now(),
+                total_amount:
+                    totalAmount,
 
+                payment_method:
+                    document.getElementById(
+                        "paymentMethod"
+                    ).value,
 
-        expense_date:
-            document.getElementById("expenseDate").value,
+                supplier_name:
+                    document.getElementById(
+                        "supplierName"
+                    ).value.trim(),
 
+                supplier_contact:
+                    document.getElementById(
+                        "supplierContact"
+                    ).value.trim(),
 
-        category:
-            document.getElementById("category").value,
+                responsible_person:
+                    document.getElementById(
+                        "responsiblePerson"
+                    ).value,
 
+                remarks:
+                    document.getElementById(
+                        "remarks"
+                    ).value,
 
-        description:
-            document.getElementById("description").value,
+                created_by:
+                    loggedUser.full_name,
 
+                created_at:
+                    new Date().toISOString(),
 
-        quantity:
-            Number(
-                document.getElementById("quantity").value
-            ) || 0,
+                updated_by:
+                    null,
 
+                updated_at:
+                    null
 
-        unit:
-            document.getElementById("unit").value,
+            };
 
+            try{
 
-        unit_cost:
-            Number(
-                document.getElementById("unitCost").value
-            ) || 0,
+                const {error} =
+                    await supabaseClient
 
+                        .from("expenses_records")
 
-        total_amount:
-            totalAmount,
+                        .insert([expense]);
 
+                if(error) throw error;
 
-        payment_method:
-            document.getElementById("paymentMethod").value,
+                await saveActivity(
 
+                    loggedUser.full_name +
+                    " (" +
+                    loggedUser.role +
+                    ")",
 
-        supplier_name:
-            document.getElementById("supplierName").value.trim(),
+                    "Added",
 
+                    "Expenses Records",
 
-        supplier_contact:
-            document.getElementById("supplierContact").value.trim(),
+                    "Added expense record: " +
+                    expense.description
 
+                );
 
-        responsible_person:
-            document.getElementById("responsiblePerson").value,
+                alert(
+                    farmName +
+                    "\n\nExpense record saved successfully."
+                );
 
+                clearExpenseForm();
 
-        remarks:
-            document.getElementById("remarks").value,
+                loadExpensesRecords();
 
+            }catch(error){
 
-        created_by:
-            loggedUser.full_name,
+                console.error(error);
 
+                alert(error.message);
 
-        created_at:
-            new Date().toISOString(),
+            }
 
-
-        updated_by:
-            null,
-
-
-        updated_at:
-            null
-
-    };
-
-
-    try{
-
-        const {error} =
-            await supabaseClient
-
-                .from("expenses_records")
-
-                .insert([expense]);
-
-
-        if(error) throw error;
-
-
-        await saveActivity(
-
-            loggedUser.full_name +
-            " (" +
-            loggedUser.role +
-            ")",
-
-            "Added",
-
-            "Expenses Records",
-
-            "Added expense record: " +
-            expense.description
-
-        );
-
-
-        alert(
-            "Expense record saved successfully."
-        );
-
-
-        clearExpenseForm();
-
-        loadExpensesRecords();
-
-
-    }catch(error){
-
-        console.error(error);
-
-        alert(error.message);
-
-    }
-
-});
+        }
+    );
 
 
 // =====================================
@@ -762,7 +773,6 @@ async function loadExpensesRecords(){
     const farmID =
         getFarmID();
 
-
     if(!farmID){
 
         console.error(
@@ -773,7 +783,6 @@ async function loadExpensesRecords(){
 
     }
 
-
     try{
 
         const {data,error} =
@@ -783,21 +792,21 @@ async function loadExpensesRecords(){
 
                 .select("*")
 
-                .eq("farm_id", farmID)
+                .eq(
+                    "farm_id",
+                    farmID
+                )
 
                 .order(
                     "id",
                     {ascending:false}
                 );
 
-
         if(error) throw error;
-
 
         displayExpensesRecords(
             data || []
         );
-
 
     }catch(error){
 
@@ -817,15 +826,16 @@ async function loadExpensesRecords(){
 function displayExpensesRecords(records){
 
     const table =
-        document.getElementById("expensesTable");
-
+        document.getElementById(
+            "expensesTable"
+        );
 
     const recordCount =
-        document.getElementById("recordCount");
-
+        document.getElementById(
+            "recordCount"
+        );
 
     table.innerHTML = "";
-
 
     if(!records.length){
 
@@ -833,8 +843,12 @@ function displayExpensesRecords(records){
 
             <tr>
 
-                <td colspan="9" class="no-records">
+                <td
+                    colspan="9"
+                    class="no-records">
+
                     No expense records found.
+
                 </td>
 
             </tr>
@@ -848,13 +862,13 @@ function displayExpensesRecords(records){
 
     }
 
-
     recordCount.textContent =
         records.length +
-        (records.length === 1
-            ? " Record"
-            : " Records");
-
+        (
+            records.length === 1
+                ? " Record"
+                : " Records"
+        );
 
     records.forEach(function(expense){
 
@@ -863,20 +877,30 @@ function displayExpensesRecords(records){
         <tr>
 
             <td>
-                ${escapeHTML(expense.expense_date || "")}
+                ${escapeHTML(
+                    expense.expense_date || ""
+                )}
             </td>
 
             <td>
-                ${escapeHTML(expense.category || "")}
+                ${escapeHTML(
+                    expense.category || ""
+                )}
             </td>
 
             <td>
-                ${escapeHTML(expense.description || "")}
+                ${escapeHTML(
+                    expense.description || ""
+                )}
             </td>
 
             <td>
-                ${escapeHTML(expense.quantity || 0)}
-                ${escapeHTML(expense.unit || "")}
+                ${escapeHTML(
+                    expense.quantity || 0
+                )}
+                ${escapeHTML(
+                    expense.unit || ""
+                )}
             </td>
 
             <td>
@@ -913,7 +937,6 @@ function displayExpensesRecords(records){
 
                 </button>
 
-
                 <button
                     class="delete-btn"
                     onclick="deleteExpense(${expense.id})">
@@ -942,18 +965,21 @@ window.addEventListener(
     function(){
 
         const dateField =
-            document.getElementById("expenseDate");
+            document.getElementById(
+                "expenseDate"
+            );
 
-
-        if(dateField && !dateField.value){
+        if(
+            dateField &&
+            !dateField.value
+        ){
 
             dateField.value =
                 new Date()
-                .toISOString()
-                .split("T")[0];
+                    .toISOString()
+                    .split("T")[0];
 
         }
-
 
         loadExpensesRecords();
 
@@ -970,7 +996,6 @@ async function editExpense(id){
     const farmID =
         getFarmID();
 
-
     if(!farmID){
 
         alert(
@@ -980,7 +1005,6 @@ async function editExpense(id){
         return;
 
     }
-
 
     try{
 
@@ -993,76 +1017,84 @@ async function editExpense(id){
 
                 .eq("id", id)
 
-                .eq("farm_id", farmID)
+                .eq(
+                    "farm_id",
+                    farmID
+                )
 
                 .single();
 
-
         if(error) throw error;
-
 
         editID = id;
 
-
-        document.getElementById("expenseID").value =
+        document.getElementById(
+            "expenseID"
+        ).value =
             data.expense_id || "";
 
-
-        document.getElementById("expenseDate").value =
+        document.getElementById(
+            "expenseDate"
+        ).value =
             data.expense_date || "";
 
-
-        document.getElementById("category").value =
+        document.getElementById(
+            "category"
+        ).value =
             data.category || "";
-
 
         loadDescriptionOptions(
             data.description || ""
         );
 
-
         loadRecommendationOptions(
             data.remarks || ""
         );
 
-
-        document.getElementById("quantity").value =
+        document.getElementById(
+            "quantity"
+        ).value =
             data.quantity || "";
 
-
-        document.getElementById("unit").value =
+        document.getElementById(
+            "unit"
+        ).value =
             data.unit || "";
 
-
-        document.getElementById("unitCost").value =
+        document.getElementById(
+            "unitCost"
+        ).value =
             data.unit_cost || "";
 
-
-        document.getElementById("totalAmount").value =
+        document.getElementById(
+            "totalAmount"
+        ).value =
             data.total_amount || "";
 
-
-        document.getElementById("paymentMethod").value =
+        document.getElementById(
+            "paymentMethod"
+        ).value =
             data.payment_method || "";
 
-
-        document.getElementById("supplierName").value =
+        document.getElementById(
+            "supplierName"
+        ).value =
             data.supplier_name || "";
 
-
-        document.getElementById("supplierContact").value =
+        document.getElementById(
+            "supplierContact"
+        ).value =
             data.supplier_contact || "";
 
-
-        document.getElementById("responsiblePerson").value =
+        document.getElementById(
+            "responsiblePerson"
+        ).value =
             data.responsible_person || "";
-
 
         window.scrollTo({
             top: 0,
             behavior: "smooth"
         });
-
 
     }catch(error){
 
@@ -1091,10 +1123,8 @@ async function updateExpenseRecord(){
 
     }
 
-
     const loggedUser =
         getLoggedUser();
-
 
     if(!loggedUser){
 
@@ -1106,10 +1136,8 @@ async function updateExpenseRecord(){
 
     }
 
-
     const farmID =
         getFarmID();
-
 
     if(!farmID){
 
@@ -1121,75 +1149,86 @@ async function updateExpenseRecord(){
 
     }
 
+    const farmName =
+        await getRegisteredFarmName();
 
     calculateExpenseTotal();
-
 
     const updatedExpense = {
 
         expense_date:
-            document.getElementById("expenseDate").value,
-
+            document.getElementById(
+                "expenseDate"
+            ).value,
 
         category:
-            document.getElementById("category").value,
-
+            document.getElementById(
+                "category"
+            ).value,
 
         description:
-            document.getElementById("description").value,
-
+            document.getElementById(
+                "description"
+            ).value,
 
         quantity:
             Number(
-                document.getElementById("quantity").value
+                document.getElementById(
+                    "quantity"
+                ).value
             ) || 0,
 
-
         unit:
-            document.getElementById("unit").value,
-
+            document.getElementById(
+                "unit"
+            ).value,
 
         unit_cost:
             Number(
-                document.getElementById("unitCost").value
+                document.getElementById(
+                    "unitCost"
+                ).value
             ) || 0,
-
 
         total_amount:
             Number(
-                document.getElementById("totalAmount").value
+                document.getElementById(
+                    "totalAmount"
+                ).value
             ) || 0,
 
-
         payment_method:
-            document.getElementById("paymentMethod").value,
-
+            document.getElementById(
+                "paymentMethod"
+            ).value,
 
         supplier_name:
-            document.getElementById("supplierName").value.trim(),
-
+            document.getElementById(
+                "supplierName"
+            ).value.trim(),
 
         supplier_contact:
-            document.getElementById("supplierContact").value.trim(),
-
+            document.getElementById(
+                "supplierContact"
+            ).value.trim(),
 
         responsible_person:
-            document.getElementById("responsiblePerson").value,
-
+            document.getElementById(
+                "responsiblePerson"
+            ).value,
 
         remarks:
-            document.getElementById("remarks").value,
-
+            document.getElementById(
+                "remarks"
+            ).value,
 
         updated_by:
             loggedUser.full_name,
-
 
         updated_at:
             new Date().toISOString()
 
     };
-
 
     try{
 
@@ -1202,11 +1241,12 @@ async function updateExpenseRecord(){
 
                 .eq("id", editID)
 
-                .eq("farm_id", farmID);
-
+                .eq(
+                    "farm_id",
+                    farmID
+                );
 
         if(error) throw error;
-
 
         await saveActivity(
 
@@ -1224,19 +1264,16 @@ async function updateExpenseRecord(){
 
         );
 
-
         alert(
-            "Expense record updated successfully."
+            farmName +
+            "\n\nExpense record updated successfully."
         );
 
-
         editID = null;
-
 
         clearExpenseForm();
 
         loadExpensesRecords();
-
 
     }catch(error){
 
@@ -1260,13 +1297,10 @@ async function deleteExpense(id){
             "Delete this expense record?"
         );
 
-
     if(!confirmDelete) return;
-
 
     const farmID =
         getFarmID();
-
 
     if(!farmID){
 
@@ -1277,7 +1311,6 @@ async function deleteExpense(id){
         return;
 
     }
-
 
     try{
 
@@ -1290,15 +1323,15 @@ async function deleteExpense(id){
 
                 .eq("id", id)
 
-                .eq("farm_id", farmID);
-
+                .eq(
+                    "farm_id",
+                    farmID
+                );
 
         if(error) throw error;
 
-
         const loggedUser =
             getLoggedUser();
-
 
         if(loggedUser){
 
@@ -1320,14 +1353,15 @@ async function deleteExpense(id){
 
         }
 
+        const farmName =
+            await getRegisteredFarmName();
 
         alert(
-            "Expense record deleted successfully."
+            farmName +
+            "\n\nExpense record deleted successfully."
         );
 
-
         loadExpensesRecords();
-
 
     }catch(error){
 
@@ -1351,13 +1385,10 @@ async function searchExpenseRecord(){
             "Enter Supplier / Payee Name"
         );
 
-
     if(!supplier) return;
-
 
     const farmID =
         getFarmID();
-
 
     if(!farmID){
 
@@ -1369,7 +1400,6 @@ async function searchExpenseRecord(){
 
     }
 
-
     try{
 
         const {data,error} =
@@ -1379,16 +1409,19 @@ async function searchExpenseRecord(){
 
                 .select("*")
 
-                .eq("farm_id", farmID)
+                .eq(
+                    "farm_id",
+                    farmID
+                )
 
                 .ilike(
                     "supplier_name",
-                    "%" + supplier + "%"
+                    "%" +
+                    supplier +
+                    "%"
                 );
 
-
         if(error) throw error;
-
 
         if(!data || data.length === 0){
 
@@ -1400,12 +1433,11 @@ async function searchExpenseRecord(){
 
         }
 
-
         displayExpensesRecords(data);
 
-
-        editExpense(data[0].id);
-
+        editExpense(
+            data[0].id
+        );
 
     }catch(error){
 
@@ -1427,7 +1459,6 @@ async function generateExpenseReport(){
     const farmID =
         getFarmID();
 
-
     if(!farmID){
 
         alert(
@@ -1438,8 +1469,10 @@ async function generateExpenseReport(){
 
     }
 
-
     try{
+
+        const farmName =
+            await getRegisteredFarmName();
 
         const {data,error} =
             await supabaseClient
@@ -1448,23 +1481,22 @@ async function generateExpenseReport(){
 
                 .select("*")
 
-                .eq("farm_id", farmID)
+                .eq(
+                    "farm_id",
+                    farmID
+                )
 
                 .order(
                     "id",
                     {ascending:false}
                 );
 
-
         if(error) throw error;
-
 
         const records =
             data || [];
 
-
         let totalExpense = 0;
-
 
         records.forEach(function(expense){
 
@@ -1475,13 +1507,11 @@ async function generateExpenseReport(){
 
         });
 
-
         const reportWindow =
             window.open(
                 "",
                 "_blank"
             );
-
 
         if(!reportWindow){
 
@@ -1493,9 +1523,7 @@ async function generateExpenseReport(){
 
         }
 
-
         let rows = "";
-
 
         records.forEach(function(expense){
 
@@ -1503,23 +1531,32 @@ async function generateExpenseReport(){
 
             <tr>
 
-                <td>${escapeHTML(
-                    expense.expense_date || ""
-                )}</td>
+                <td>
+                    ${escapeHTML(
+                        expense.expense_date || ""
+                    )}
+                </td>
 
-                <td>${escapeHTML(
-                    expense.category || ""
-                )}</td>
+                <td>
+                    ${escapeHTML(
+                        expense.category || ""
+                    )}
+                </td>
 
-                <td>${escapeHTML(
-                    expense.description || ""
-                )}</td>
+                <td>
+                    ${escapeHTML(
+                        expense.description || ""
+                    )}
+                </td>
 
-                <td>${escapeHTML(
-                    expense.quantity || 0
-                )} ${escapeHTML(
-                    expense.unit || ""
-                )}</td>
+                <td>
+                    ${escapeHTML(
+                        expense.quantity || 0
+                    )}
+                    ${escapeHTML(
+                        expense.unit || ""
+                    )}
+                </td>
 
                 <td>
                     ZMW ${Number(
@@ -1533,16 +1570,17 @@ async function generateExpenseReport(){
                     ).toFixed(2)}
                 </td>
 
-                <td>${escapeHTML(
-                    expense.supplier_name || ""
-                )}</td>
+                <td>
+                    ${escapeHTML(
+                        expense.supplier_name || ""
+                    )}
+                </td>
 
             </tr>
 
             `;
 
         });
-
 
         reportWindow.document.write(`
 
@@ -1553,7 +1591,9 @@ async function generateExpenseReport(){
         <head>
 
             <title>
-                MUNKA PIGGERY Farm Expense Report
+                ${escapeHTML(
+                    farmName
+                )} - Expense Report
             </title>
 
             <style>
@@ -1619,9 +1659,15 @@ async function generateExpenseReport(){
 
         <body>
 
-            <h1>MUNKA PIGGERY FARM</h1>
+            <h1>
+                ${escapeHTML(
+                    farmName
+                )}
+            </h1>
 
-            <h2>EXPENSE REPORT</h2>
+            <h2>
+                EXPENSE REPORT
+            </h2>
 
             <p>
                 Generated Date:
@@ -1680,9 +1726,7 @@ async function generateExpenseReport(){
 
         `);
 
-
         reportWindow.document.close();
-
 
     }catch(error){
 
@@ -1704,7 +1748,6 @@ async function downloadExpensesPDF(){
     const farmID =
         getFarmID();
 
-
     if(!farmID){
 
         alert(
@@ -1715,8 +1758,10 @@ async function downloadExpensesPDF(){
 
     }
 
-
     try{
+
+        const farmName =
+            await getRegisteredFarmName();
 
         const {data,error} =
             await supabaseClient
@@ -1725,20 +1770,20 @@ async function downloadExpensesPDF(){
 
                 .select("*")
 
-                .eq("farm_id", farmID)
+                .eq(
+                    "farm_id",
+                    farmID
+                )
 
                 .order(
                     "id",
                     {ascending:false}
                 );
 
-
         if(error) throw error;
-
 
         const records =
             data || [];
-
 
         if(records.length === 0){
 
@@ -1750,27 +1795,24 @@ async function downloadExpensesPDF(){
 
         }
 
-
         const {
             jsPDF
         } = window.jspdf;
 
-
         const doc =
             new jsPDF({
+
                 orientation:"landscape",
                 unit:"mm",
                 format:"a4"
-            });
 
+            });
 
         const loggedUser =
             getLoggedUser();
 
-
         let totalExpense = 0;
         let totalQuantity = 0;
-
 
         records.forEach(function(expense){
 
@@ -1778,7 +1820,6 @@ async function downloadExpensesPDF(){
                 Number(
                     expense.total_amount || 0
                 );
-
 
             totalQuantity +=
                 Number(
@@ -1788,19 +1829,25 @@ async function downloadExpensesPDF(){
         });
 
 
-        // HEADER
+        // =====================================
+        // PDF HEADER
+        // =====================================
 
         doc.setFontSize(18);
 
-        doc.setFont(undefined, "bold");
-
-        doc.text(
-            "MUNKA PIGGERY FARM",
-            148,
-            15,
-            {align:"center"}
+        doc.setFont(
+            undefined,
+            "bold"
         );
 
+        doc.text(
+            farmName,
+            148,
+            15,
+            {
+                align:"center"
+            }
+        );
 
         doc.setFontSize(13);
 
@@ -1808,29 +1855,34 @@ async function downloadExpensesPDF(){
             "EXPENSE RECORDS REPORT",
             148,
             23,
-            {align:"center"}
+            {
+                align:"center"
+            }
         );
-
 
         doc.setFontSize(9);
 
-        doc.setFont(undefined, "normal");
-
+        doc.setFont(
+            undefined,
+            "normal"
+        );
 
         doc.text(
-            "Farm ID: " + farmID,
+            "Farm: " +
+            farmName,
             14,
             32
         );
 
-
         doc.text(
             "Generated By: " +
-            (loggedUser?.full_name || ""),
+            (
+                loggedUser?.full_name ||
+                ""
+            ),
             14,
             38
         );
-
 
         doc.text(
             "Generated: " +
@@ -1838,7 +1890,6 @@ async function downloadExpensesPDF(){
             200,
             32
         );
-
 
         doc.text(
             "Total Records: " +
@@ -1848,7 +1899,9 @@ async function downloadExpensesPDF(){
         );
 
 
+        // =====================================
         // SUMMARY
+        // =====================================
 
         doc.setFontSize(10);
 
@@ -1859,7 +1912,6 @@ async function downloadExpensesPDF(){
             48
         );
 
-
         doc.text(
             "TOTAL EXPENSES: ZMW " +
             totalExpense.toFixed(2),
@@ -1868,7 +1920,9 @@ async function downloadExpensesPDF(){
         );
 
 
+        // =====================================
         // TABLE
+        // =====================================
 
         const rows =
             records.map(function(expense){
@@ -1922,35 +1976,68 @@ async function downloadExpensesPDF(){
             theme:"grid",
 
             styles:{
+
                 fontSize:7,
                 cellPadding:2
+
             },
 
             headStyles:{
+
                 fontStyle:"bold"
+
             },
 
             columnStyles:{
-                0:{cellWidth:23},
-                1:{cellWidth:30},
-                2:{cellWidth:45},
-                3:{cellWidth:25},
-                4:{cellWidth:27},
-                5:{cellWidth:28},
-                6:{cellWidth:45},
-                7:{cellWidth:27}
+
+                0:{
+                    cellWidth:23
+                },
+
+                1:{
+                    cellWidth:30
+                },
+
+                2:{
+                    cellWidth:45
+                },
+
+                3:{
+                    cellWidth:25
+                },
+
+                4:{
+                    cellWidth:27
+                },
+
+                5:{
+                    cellWidth:28
+                },
+
+                6:{
+                    cellWidth:45
+                },
+
+                7:{
+                    cellWidth:27
+                }
+
             },
 
             foot:[[
+
                 "",
                 "",
                 "",
                 "",
                 "TOTAL",
+
                 "ZMW " +
                 totalExpense.toFixed(2),
+
                 "",
                 ""
+
             ]],
 
             didDrawPage:function(){
@@ -1958,19 +2045,20 @@ async function downloadExpensesPDF(){
                 const pageNumber =
                     doc.internal.getNumberOfPages();
 
-
                 doc.setFontSize(8);
 
                 doc.text(
 
-                    "MUNKA PIGGERY FARM - Expense Report | Page " +
+                    farmName +
+                    " - Expense Report | Page " +
                     pageNumber,
 
                     148,
-
                     202,
 
-                    {align:"center"}
+                    {
+                        align:"center"
+                    }
 
                 );
 
@@ -1979,16 +2067,42 @@ async function downloadExpensesPDF(){
         });
 
 
+        // =====================================
+        // SAVE PDF
+        // =====================================
+
         const today =
             new Date()
-            .toISOString()
-            .split("T")[0];
+                .toISOString()
+                .split("T")[0];
+
+
+        const safeFarmName =
+            farmName
+
+                .replace(
+                    /[^a-z0-9]/gi,
+                    "_"
+                )
+
+                .replace(
+                    /_+/g,
+                    "_"
+                )
+
+                .replace(
+                    /^_|_$/g,
+                    ""
+                );
 
 
         doc.save(
-            "MUNKA_PIGGERY_Expense_Report_" +
+
+            safeFarmName +
+            "_Expense_Report_" +
             today +
             ".pdf"
+
         );
 
 
@@ -2014,16 +2128,15 @@ function clearExpenseForm(){
 
     editID = null;
 
-
     document
-        .getElementById("expensesForm")
+        .getElementById(
+            "expensesForm"
+        )
         .reset();
-
 
     document.getElementById(
         "expenseID"
     ).value = "";
-
 
     document.getElementById(
         "description"
@@ -2035,7 +2148,6 @@ function clearExpenseForm(){
 
     `;
 
-
     document.getElementById(
         "remarks"
     ).innerHTML = `
@@ -2046,22 +2158,21 @@ function clearExpenseForm(){
 
     `;
 
-
     document.getElementById(
         "totalAmount"
     ).value = "";
 
-
     const dateField =
-        document.getElementById("expenseDate");
-
+        document.getElementById(
+            "expenseDate"
+        );
 
     if(dateField){
 
         dateField.value =
             new Date()
-            .toISOString()
-            .split("T")[0];
+                .toISOString()
+                .split("T")[0];
 
     }
 
@@ -2077,7 +2188,6 @@ async function calculateTotalExpenses(){
     const farmID =
         getFarmID();
 
-
     if(!farmID){
 
         alert(
@@ -2088,7 +2198,6 @@ async function calculateTotalExpenses(){
 
     }
 
-
     try{
 
         const {data,error} =
@@ -2098,30 +2207,36 @@ async function calculateTotalExpenses(){
 
                 .select("total_amount")
 
-                .eq("farm_id", farmID);
-
+                .eq(
+                    "farm_id",
+                    farmID
+                );
 
         if(error) throw error;
 
-
         let total = 0;
 
+        (data || []).forEach(
+            function(expense){
 
-        (data || []).forEach(function(expense){
+                total +=
+                    Number(
+                        expense.total_amount || 0
+                    );
 
-            total +=
-                Number(
-                    expense.total_amount || 0
-                );
-
-        });
-
-
-        alert(
-            "Total Expenses: ZMW " +
-            total.toFixed(2)
+            }
         );
 
+        const farmName =
+            await getRegisteredFarmName();
+
+        alert(
+
+            farmName +
+            "\n\nTotal Expenses: ZMW " +
+            total.toFixed(2)
+
+        );
 
     }catch(error){
 

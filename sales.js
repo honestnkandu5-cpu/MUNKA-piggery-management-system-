@@ -1,8 +1,9 @@
 // ==========================================================
-// MUNKA PIGGERY FARM
+// MUNKA PIGGERY TECHNOLOGY
 // SALES RECORDS MODULE
 // PROFESSIONAL VERSION
 // FARM-SECURED + PERMISSION-CONTROLLED
+// DYNAMIC FARM BRANDING
 // ==========================================================
 
 let editID = null;
@@ -44,6 +45,139 @@ function getFarmID(){
 
 
 // ==========================================================
+// GET REGISTERED FARM NAME
+// ==========================================================
+
+async function getRegisteredFarmName(){
+
+    try{
+
+        if(
+            typeof supabaseClient === "undefined"
+        ){
+
+            return "Registered Farm";
+
+        }
+
+
+        const {
+            data: sessionData,
+            error: sessionError
+        } =
+            await supabaseClient.auth.getSession();
+
+
+        if(sessionError){
+
+            throw sessionError;
+
+        }
+
+
+        const session =
+            sessionData.session;
+
+
+        if(
+            !session ||
+            !session.user
+        ){
+
+            return "Registered Farm";
+
+        }
+
+
+        const {
+            data: userProfile,
+            error: userError
+        } =
+            await supabaseClient
+
+                .from("users")
+
+                .select("farm_id")
+
+                .eq(
+                    "auth_user_id",
+                    session.user.id
+                )
+
+                .maybeSingle();
+
+
+        if(userError){
+
+            throw userError;
+
+        }
+
+
+        if(
+            !userProfile ||
+            !userProfile.farm_id
+        ){
+
+            return "Registered Farm";
+
+        }
+
+
+        const {
+            data: farm,
+            error: farmError
+        } =
+            await supabaseClient
+
+                .from("farms")
+
+                .select("farm_name")
+
+                .eq(
+                    "id",
+                    userProfile.farm_id
+                )
+
+                .maybeSingle();
+
+
+        if(farmError){
+
+            throw farmError;
+
+        }
+
+
+        if(
+            !farm ||
+            !farm.farm_name
+        ){
+
+            return "Registered Farm";
+
+        }
+
+
+        return farm.farm_name;
+
+    }
+
+    catch(error){
+
+        console.error(
+            "GET FARM NAME ERROR:",
+            error
+        );
+
+        return "Registered Farm";
+
+    }
+
+}
+
+
+// ==========================================================
 // AUTOMATIC TOTAL CALCULATION
 // ==========================================================
 
@@ -62,8 +196,6 @@ function calculateTotalAmount(){
 
 
     /*
-       Preserved from your original system:
-
        Total Amount =
        Weight × Price Per Kg
     */
@@ -114,8 +246,6 @@ document.addEventListener(
 
         }
 
-
-        // Set today's date automatically for new records
 
         const saleDate =
             document.getElementById("saleDate");
@@ -372,8 +502,13 @@ document
             );
 
 
+            const farmName =
+                await getRegisteredFarmName();
+
+
             alert(
-                "Sale record saved successfully."
+                farmName +
+                "\n\nSale record saved successfully."
             );
 
 
@@ -484,7 +619,10 @@ async function loadSalesRecords(){
 
 function escapeHTML(value){
 
-    if(value === null || value === undefined){
+    if(
+        value === null ||
+        value === undefined
+    ){
 
         return "";
 
@@ -492,22 +630,27 @@ function escapeHTML(value){
 
 
     return String(value)
+
         .replace(
             /&/g,
             "&amp;"
         )
+
         .replace(
             /</g,
             "&lt;"
         )
+
         .replace(
             />/g,
             "&gt;"
         )
+
         .replace(
             /"/g,
             "&quot;"
         )
+
         .replace(
             /'/g,
             "&#039;"
@@ -1101,8 +1244,13 @@ async function updateSaleRecord(){
         );
 
 
+        const farmName =
+            await getRegisteredFarmName();
+
+
         alert(
-            "Sale record updated successfully."
+            farmName +
+            "\n\nSale record updated successfully."
         );
 
 
@@ -1236,8 +1384,13 @@ async function deleteSale(id){
         }
 
 
+        const farmName =
+            await getRegisteredFarmName();
+
+
         alert(
-            "Sale record deleted successfully."
+            farmName +
+            "\n\nSale record deleted successfully."
         );
 
 
@@ -1341,7 +1494,10 @@ async function searchSaleRecord(){
         }
 
 
-        if(!data || data.length === 0){
+        if(
+            !data ||
+            data.length === 0
+        ){
 
             alert(
                 "No sales record found."
@@ -1455,7 +1611,10 @@ async function generateSalesReport(){
         }
 
 
-        if(!data || data.length === 0){
+        if(
+            !data ||
+            data.length === 0
+        ){
 
             alert(
                 "No sales records available."
@@ -1464,6 +1623,10 @@ async function generateSalesReport(){
             return;
 
         }
+
+
+        const farmName =
+            await getRegisteredFarmName();
 
 
         let totalSales = 0;
@@ -1497,7 +1660,7 @@ async function generateSalesReport(){
 
         const report = `
 
-MUNKA PIGGERY FARM
+${farmName}
 
 SALES REPORT
 
@@ -1549,7 +1712,7 @@ ${new Date().toLocaleDateString()}
             <head>
 
                 <title>
-                    Sales Report
+                    ${escapeHTML(farmName)} - Sales Report
                 </title>
 
                 <style>
@@ -1571,6 +1734,14 @@ ${new Date().toLocaleDateString()}
                         cursor:pointer;
                     }
 
+                    @media print{
+
+                        button{
+                            display:none;
+                        }
+
+                    }
+
                 </style>
 
             </head>
@@ -1578,7 +1749,7 @@ ${new Date().toLocaleDateString()}
             <body>
 
                 <h1>
-                    MUNKA PIGGERY FARM
+                    ${escapeHTML(farmName)}
                 </h1>
 
                 <pre>
@@ -1705,7 +1876,10 @@ async function downloadSalesPDF(){
         }
 
 
-        if(!data || data.length === 0){
+        if(
+            !data ||
+            data.length === 0
+        ){
 
             alert(
                 "No sales records available for PDF."
@@ -1714,6 +1888,10 @@ async function downloadSalesPDF(){
             return;
 
         }
+
+
+        const farmName =
+            await getRegisteredFarmName();
 
 
         const {
@@ -1742,7 +1920,7 @@ async function downloadSalesPDF(){
         );
 
         doc.text(
-            "MUNKA PIGGERY FARM",
+            farmName,
             148,
             15,
             {
@@ -1805,7 +1983,7 @@ async function downloadSalesPDF(){
 
 
         doc.text(
-            `Farm ID: ${farmID}`,
+            `Farm: ${farmName}`,
             14,
             32
         );
@@ -1981,7 +2159,7 @@ async function downloadSalesPDF(){
 
 
                 doc.text(
-                    "MUNKA PIGGERY FARM - Sales Records",
+                    `${farmName} - Sales Records`,
                     10,
                     202
                 );
@@ -2011,8 +2189,27 @@ async function downloadSalesPDF(){
                 .split("T")[0];
 
 
+        const safeFarmName =
+            farmName
+                .replace(
+                    /[^a-z0-9]/gi,
+                    "_"
+                )
+                .replace(
+                    /_+/g,
+                    "_"
+                )
+                .replace(
+                    /^_|_$/g,
+                    ""
+                );
+
+
         doc.save(
-            `MUNKA_PIGGERY_Sales_Report_${today}.pdf`
+            safeFarmName +
+            "_Sales_Report_" +
+            today +
+            ".pdf"
         );
 
     }

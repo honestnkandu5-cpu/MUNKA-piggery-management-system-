@@ -1,8 +1,13 @@
 /* =========================================================
-   MUNKA PIGGERY FARM
+   MUNKA PIGGERY TECHNOLOGY
    REPORTS & ANALYTICS
    PROFESSIONAL RESPONSIVE DESIGN
-   FINANCIAL COLOUR SYSTEM:
+
+   MATCHED EXACTLY TO:
+   reports.html
+   reports.js
+
+   FINANCIAL COLOUR SYSTEM
    SALES   = BLUE
    EXPENSE = RED
    PROFIT  = GREEN
@@ -43,11 +48,19 @@ body {
 
 
 /* =========================================================
+   PAGE WRAPPER
+========================================================= */
+
+.page-wrapper {
+    min-height: 100vh;
+}
+
+
+/* =========================================================
    HEADER
 ========================================================= */
 
-.reports-header {
-
+.page-header {
     background:
         linear-gradient(
             135deg,
@@ -55,14 +68,12 @@ body {
             #166534
         );
 
-    color:
-        white;
+    color: white;
 
     padding:
-        18px 25px;
+        20px 28px;
 
-    display:
-        flex;
+    display: flex;
 
     justify-content:
         space-between;
@@ -71,81 +82,116 @@ body {
         center;
 
     gap:
-        20px;
+        25px;
 
     box-shadow:
-        0 4px 15px
-        rgba(0,0,0,0.15);
+        0 5px 18px
+        rgba(0, 0, 0, 0.15);
+
+    position:
+        relative;
+
+    z-index:
+        10;
 }
 
-.brand-area {
 
-    display:
-        flex;
+/* =========================================================
+   HEADER BRAND
+========================================================= */
 
-    align-items:
-        center;
-
-    gap:
-        13px;
+.header-brand {
+    min-width: 0;
 }
 
-.brand-icon {
-
-    width:
-        52px;
-
-    height:
-        52px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    background:
-        rgba(255,255,255,0.15);
-
-    border-radius:
-        12px;
-
+.software-brand {
     font-size:
-        30px;
-}
+        18px;
 
-.reports-header h1 {
+    font-weight:
+        800;
 
-    font-size:
-        27px;
+    letter-spacing:
+        1px;
+
+    line-height:
+        1.2;
 
     margin-bottom:
-        2px;
+        3px;
 }
 
-.reports-header p {
-
+.subtitle {
     font-size:
-        15px;
+        13px;
 
     opacity:
-        0.9;
+        0.88;
+
+    letter-spacing:
+        0.4px;
 }
 
-.header-actions {
 
-    display:
-        flex;
+/* =========================================================
+   FARM BRANDING
+========================================================= */
 
-    gap:
+.farm-branding {
+    margin-top:
         10px;
+
+    padding-top:
+        8px;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.25);
 }
 
-.header-actions button {
+.farm-label {
+    display:
+        block;
 
+    font-size:
+        9px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        2px;
+
+    opacity:
+        0.72;
+
+    margin-bottom:
+        3px;
+}
+
+.farm-branding strong {
+    display:
+        block;
+
+    font-size:
+        23px;
+
+    font-weight:
+        800;
+
+    letter-spacing:
+        0.5px;
+
+    line-height:
+        1.2;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.back-btn {
     border:
         none;
 
@@ -156,75 +202,120 @@ body {
         #14532d;
 
     padding:
-        10px 16px;
+        11px 18px;
 
     border-radius:
-        8px;
+        9px;
+
+    font-size:
+        14px;
 
     font-weight:
-        bold;
+        700;
 
     cursor:
         pointer;
 
+    white-space:
+        nowrap;
+
+    box-shadow:
+        0 2px 8px
+        rgba(0, 0, 0, 0.12);
+
     transition:
-        0.2s;
+        all 0.2s ease;
 }
 
-.header-actions button:hover {
-
+.back-btn:hover {
     background:
         #dcfce7;
 
     transform:
-        translateY(-1px);
+        translateY(-2px);
 }
 
 
 /* =========================================================
-   MAIN
+   MAIN CONTAINER
 ========================================================= */
 
-.reports-container {
-
+.container {
     width:
-        95%;
+        94%;
 
     max-width:
         1450px;
 
     margin:
-        25px auto;
+        28px auto 45px;
 }
 
 
 /* =========================================================
-   FILTER
+   PAGE TITLE
 ========================================================= */
 
-.report-filter {
-
+.page-title-section {
     background:
         white;
 
-    padding:
-        22px;
-
-    margin-bottom:
-        25px;
+    border:
+        1px solid #e5e7eb;
 
     border-radius:
-        14px;
+        15px;
+
+    padding:
+        23px 25px;
+
+    margin-bottom:
+        22px;
 
     box-shadow:
-        0 4px 15px
-        rgba(0,0,0,0.07);
+        0 4px 16px
+        rgba(0, 0, 0, 0.06);
+}
+
+.page-title-section h1 {
+    color:
+        #14532d;
+
+    font-size:
+        27px;
+
+    margin-bottom:
+        5px;
+}
+
+.page-title-section p {
+    color:
+        #64748b;
+
+    font-size:
+        14px;
+}
+
+
+/* =========================================================
+   REPORT CONTROLS
+========================================================= */
+
+.report-controls {
+    background:
+        white;
 
     border:
         1px solid #e5e7eb;
-}
 
-.section-heading {
+    border-radius:
+        15px;
+
+    padding:
+        20px;
+
+    margin-bottom:
+        20px;
 
     display:
         flex;
@@ -233,52 +324,20 @@ body {
         space-between;
 
     align-items:
-        center;
-
-    margin-bottom:
-        18px;
-}
-
-.report-filter h2,
-.report-section h2 {
-
-    color:
-        #14532d;
-
-    margin-bottom:
-        5px;
-
-    font-size:
-        22px;
-}
-
-.section-heading p,
-.section-description {
-
-    color:
-        #6b7280;
-
-    font-size:
-        14px;
-}
-
-.filter-row {
-
-    display:
-        flex;
-
-    align-items:
-        end;
+        flex-end;
 
     gap:
-        12px;
+        20px;
 
     flex-wrap:
         wrap;
+
+    box-shadow:
+        0 4px 16px
+        rgba(0, 0, 0, 0.06);
 }
 
-.form-group {
-
+.filter-group {
     display:
         flex;
 
@@ -289,22 +348,23 @@ body {
         6px;
 }
 
-.form-group label {
+.filter-group label {
+    font-size:
+        13px;
 
     font-weight:
-        bold;
+        700;
 
-    font-size:
-        14px;
+    color:
+        #334155;
 }
 
-.form-group input {
-
+.filter-group input {
     min-width:
         220px;
 
     padding:
-        11px;
+        11px 13px;
 
     border:
         1px solid #cbd5e1;
@@ -313,30 +373,52 @@ body {
         8px;
 
     font-size:
-        15px;
+        14px;
+
+    color:
+        #1f2937;
+
+    background:
+        white;
 
     outline:
         none;
+
+    transition:
+        all 0.2s ease;
 }
 
-.form-group input:focus {
-
+.filter-group input:focus {
     border-color:
         #166534;
 
     box-shadow:
         0 0 0 3px
-        rgba(22,101,52,0.10);
+        rgba(22, 101, 52, 0.10);
 }
 
-.filter-row button,
-.report-actions button {
 
-    padding:
-        11px 18px;
+/* =========================================================
+   CONTROL BUTTONS
+========================================================= */
 
+.control-buttons {
+    display:
+        flex;
+
+    gap:
+        9px;
+
+    flex-wrap:
+        wrap;
+}
+
+.control-buttons button {
     border:
         none;
+
+    padding:
+        11px 15px;
 
     border-radius:
         8px;
@@ -347,93 +429,138 @@ body {
     color:
         white;
 
+    font-size:
+        13px;
+
     font-weight:
-        bold;
+        700;
 
     cursor:
         pointer;
 
-    font-size:
-        14px;
-
     transition:
-        0.2s;
+        all 0.2s ease;
 }
 
-.filter-row button:hover,
-.report-actions button:hover {
-
+.control-buttons button:hover {
     background:
         #14532d;
 
     transform:
         translateY(-1px);
-}
 
-.secondary-btn {
-
-    background:
-        #64748b !important;
-}
-
-.secondary-btn:hover {
-
-    background:
-        #475569 !important;
-}
-
-.report-status {
-
-    margin-top:
-        15px;
-
-    padding:
-        10px 13px;
-
-    border-radius:
-        8px;
-
-    background:
-        #f1f5f9;
-
-    color:
-        #475569;
-
-    font-size:
-        13px;
-}
-
-.report-status.success {
-
-    background:
-        #dcfce7;
-
-    color:
-        #166534;
-}
-
-.report-status.error {
-
-    background:
-        #fee2e2;
-
-    color:
-        #991b1b;
+    box-shadow:
+        0 4px 10px
+        rgba(20, 83, 45, 0.18);
 }
 
 
 /* =========================================================
-   SUMMARY
+   REPORT STATUS
 ========================================================= */
 
-.summary-section {
+.report-status {
+    background:
+        #f8fafc;
+
+    border:
+        1px solid #e2e8f0;
+
+    border-radius:
+        10px;
+
+    padding:
+        11px 15px;
 
     margin-bottom:
-        30px;
+        25px;
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    gap:
+        12px;
+
+    flex-wrap:
+        wrap;
+
+    font-size:
+        13px;
+
+    color:
+        #475569;
 }
 
-.summary-grid {
+#reportStatus {
+    font-weight:
+        600;
+}
 
+#reportLastUpdated {
+    color:
+        #64748b;
+}
+
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.section {
+    background:
+        white;
+
+    border:
+        1px solid #e5e7eb;
+
+    border-radius:
+        15px;
+
+    padding:
+        23px;
+
+    margin-bottom:
+        25px;
+
+    box-shadow:
+        0 4px 16px
+        rgba(0, 0, 0, 0.06);
+}
+
+.section-header {
+    margin-bottom:
+        18px;
+
+    border-bottom:
+        1px solid #eef2f7;
+
+    padding-bottom:
+        11px;
+}
+
+.section-header h2 {
+    color:
+        #14532d;
+
+    font-size:
+        21px;
+
+    font-weight:
+        800;
+}
+
+
+/* =========================================================
+   SUMMARY GRID
+========================================================= */
+
+.summary-grid {
     display:
         grid;
 
@@ -448,233 +575,403 @@ body {
 }
 
 .summary-card {
-
     background:
-        white;
+        #ffffff;
 
-    padding:
-        19px;
-
-    border-radius:
-        13px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        14px;
-
-    box-shadow:
-        0 3px 12px
-        rgba(0,0,0,0.07);
+    border:
+        1px solid #e5e7eb;
 
     border-left:
         5px solid #166534;
 
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
-}
+    border-radius:
+        12px;
 
-.summary-card:hover {
+    padding:
+        19px;
 
-    transform:
-        translateY(-3px);
-
-    box-shadow:
-        0 7px 18px
-        rgba(0,0,0,0.10);
-}
-
-
-/* =========================================================
-   FINANCIAL SUMMARY CARD COLOURS
-========================================================= */
-
-/* SALES = BLUE */
-
-.sales-card {
-
-    border-left-color:
-        #2563eb;
-}
-
-.sales-card .card-icon {
-
-    background:
-        #eff6ff;
-
-    color:
-        #2563eb;
-}
-
-.sales-card p {
-
-    color:
-        #2563eb;
-}
-
-
-/* EXPENSES = RED */
-
-.expense-card {
-
-    border-left-color:
-        #dc2626;
-}
-
-.expense-card .card-icon {
-
-    background:
-        #fef2f2;
-
-    color:
-        #dc2626;
-}
-
-.expense-card p {
-
-    color:
-        #dc2626;
-}
-
-
-/* PROFIT = GREEN */
-
-.profit-card {
-
-    border-left-color:
-        #16a34a;
-}
-
-.profit-card .card-icon {
-
-    background:
-        #f0fdf4;
-
-    color:
-        #16a34a;
-}
-
-.profit-card p {
-
-    color:
-        #16a34a;
-}
-
-
-/* LOSS = RED */
-
-.loss-card {
-
-    border-left-color:
-        #dc2626;
-}
-
-.loss-card .card-icon {
-
-    background:
-        #fef2f2;
-
-    color:
-        #dc2626;
-}
-
-.loss-card p {
-
-    color:
-        #dc2626;
-}
-
-
-/* BALANCE = YELLOW */
-
-.balance-card {
-
-    border-left-color:
-        #eab308;
-}
-
-.balance-card .card-icon {
-
-    background:
-        #fefce8;
-
-    color:
-        #ca8a04;
-}
-
-.balance-card p {
-
-    color:
-        #ca8a04;
-}
-
-
-/* =========================================================
-   CARD ICON
-========================================================= */
-
-.card-icon {
-
-    width:
-        48px;
-
-    height:
-        48px;
+    min-height:
+        105px;
 
     display:
         flex;
 
-    align-items:
-        center;
+    flex-direction:
+        column;
 
     justify-content:
         center;
 
-    background:
-        #f0fdf4;
+    transition:
+        all 0.2s ease;
 
-    border-radius:
-        10px;
+    box-shadow:
+        0 2px 9px
+        rgba(0, 0, 0, 0.04);
+}
 
-    font-size:
-        27px;
+.summary-card:hover {
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 8px 20px
+        rgba(0, 0, 0, 0.09);
 }
 
 .summary-card h3 {
-
-    font-size:
-        14px;
-
     color:
         #64748b;
 
-    margin-bottom:
-        4px;
-}
-
-.summary-card p {
-
     font-size:
-        21px;
+        13px;
 
     font-weight:
-        bold;
+        700;
+
+    margin-bottom:
+        7px;
+}
+
+.summary-value {
+    font-size:
+        23px;
+
+    font-weight:
+        800;
+
+    color:
+        #14532d;
+
+    word-break:
+        break-word;
 }
 
 
 /* =========================================================
-   GENERAL REPORT
+   SALES SUMMARY
 ========================================================= */
 
-.report-section {
+.sales-card {
+    border-left-color:
+        #2563eb;
+}
+
+.sales-card .summary-value,
+.sales-card p {
+    color:
+        #2563eb;
+}
+
+
+/* =========================================================
+   EXPENSE SUMMARY
+========================================================= */
+
+.expense-card {
+    border-left-color:
+        #dc2626;
+}
+
+.expense-card .summary-value,
+.expense-card p {
+    color:
+        #dc2626;
+}
+
+
+/* =========================================================
+   PROFIT SUMMARY
+========================================================= */
+
+.profit-card {
+    border-left-color:
+        #16a34a;
 
     background:
+        #f7fff9;
+}
+
+.profit-card .summary-value,
+.profit-card p {
+    color:
+        #16a34a;
+}
+
+
+/* =========================================================
+   LOSS SUMMARY
+========================================================= */
+
+.loss-card {
+    border-left-color:
+        #dc2626;
+
+    background:
+        #fffafa;
+}
+
+.loss-card .summary-value,
+.loss-card p {
+    color:
+        #dc2626;
+}
+
+
+/* =========================================================
+   BALANCE SUMMARY
+========================================================= */
+
+.balance-card {
+    border-left-color:
+        #eab308;
+
+    background:
+        #fffef5;
+}
+
+.balance-card .summary-value,
+.balance-card p {
+    color:
+        #ca8a04;
+}
+
+
+/* =========================================================
+   FINANCIAL GRID
+========================================================= */
+
+.financial-grid {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            1fr
+        );
+
+    gap:
+        17px;
+}
+
+
+/* =========================================================
+   FINANCIAL BOX
+========================================================= */
+
+.financial-box {
+    background:
+        #f8fafc;
+
+    border:
+        1px solid #e2e8f0;
+
+    border-radius:
+        12px;
+
+    padding:
+        23px;
+
+    text-align:
+        center;
+
+    transition:
+        all 0.2s ease;
+}
+
+.financial-box:hover {
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 7px 17px
+        rgba(0, 0, 0, 0.07);
+}
+
+.financial-box h3 {
+    color:
+        #64748b;
+
+    font-size:
+        14px;
+
+    margin-bottom:
+        8px;
+}
+
+.financial-value {
+    font-size:
+        25px;
+
+    font-weight:
+        800;
+
+    word-break:
+        break-word;
+}
+
+
+/* =========================================================
+   FINANCIAL COLOURS
+========================================================= */
+
+.sales-box {
+    border-top:
+        5px solid #2563eb;
+
+    background:
+        #eff6ff;
+}
+
+.sales-box .financial-value {
+    color:
+        #2563eb;
+}
+
+
+.expense-box {
+    border-top:
+        5px solid #dc2626;
+
+    background:
+        #fef2f2;
+}
+
+.expense-box .financial-value {
+    color:
+        #dc2626;
+}
+
+
+.profit-box {
+    border-top:
+        5px solid #16a34a;
+
+    background:
+        #f0fdf4;
+}
+
+.profit-box .financial-value {
+    color:
+        #16a34a;
+}
+
+
+.loss-box {
+    border-top:
+        5px solid #dc2626;
+
+    background:
+        #fef2f2;
+}
+
+.loss-box .financial-value {
+    color:
+        #dc2626;
+}
+
+
+.balance-box {
+    border-top:
+        5px solid #eab308;
+
+    background:
+        #fefce8;
+}
+
+.balance-box .financial-value {
+    color:
+        #ca8a04;
+}
+
+
+/* =========================================================
+   REPORT GRID
+========================================================= */
+
+.report-grid {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(200px, 1fr)
+        );
+
+    gap:
+        15px;
+}
+
+.report-card {
+    background:
+        #f8fafc;
+
+    border:
+        1px solid #e2e8f0;
+
+    border-radius:
+        11px;
+
+    padding:
+        19px;
+
+    text-align:
+        center;
+
+    transition:
+        all 0.2s ease;
+}
+
+.report-card:hover {
+    transform:
+        translateY(-2px);
+
+    border-color:
+        #cbd5e1;
+
+    box-shadow:
+        0 6px 15px
+        rgba(0, 0, 0, 0.06);
+}
+
+.report-card h3 {
+    color:
+        #64748b;
+
+    font-size:
+        13px;
+
+    margin-bottom:
+        7px;
+}
+
+.report-value {
+    color:
+        #14532d;
+
+    font-size:
+        23px;
+
+    font-weight:
+        800;
+}
+
+
+/* =========================================================
+   CHART SECTION
+========================================================= */
+
+.chart-section {
+    background:
         white;
+
+    border:
+        1px solid #e5e7eb;
+
+    border-radius:
+        15px;
 
     padding:
         23px;
@@ -682,469 +979,87 @@ body {
     margin-bottom:
         25px;
 
-    border-radius:
-        14px;
-
     box-shadow:
-        0 4px 15px
-        rgba(0,0,0,0.07);
-
-    border:
-        1px solid #e5e7eb;
+        0 4px 16px
+        rgba(0, 0, 0, 0.06);
 }
 
-
-/* =========================================================
-   FINANCIAL
-========================================================= */
-
-.financial-grid {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(220px, 1fr)
-        );
-
-    gap:
-        16px;
-
-    margin-bottom:
-        22px;
-}
-
-.report-box {
-
-    padding:
-        20px;
-
-    border-radius:
-        11px;
-
-    background:
-        #f8fafc;
-
-    border:
-        1px solid #e2e8f0;
-
-    text-align:
-        center;
-}
-
-
-/* SALES BOX = BLUE */
-
-.sales-box {
-
-    border-top:
-        4px solid #2563eb;
-
-    background:
-        #eff6ff;
-}
-
-.sales-box .report-box-icon,
-.sales-box strong {
-
+.chart-card h2 {
     color:
-        #2563eb;
-}
-
-
-/* EXPENSE BOX = RED */
-
-.expense-box {
-
-    border-top:
-        4px solid #dc2626;
-
-    background:
-        #fef2f2;
-}
-
-.expense-box .report-box-icon,
-.expense-box strong {
-
-    color:
-        #dc2626;
-}
-
-
-/* PROFIT BOX = GREEN */
-
-.profit-box {
-
-    border-top:
-        4px solid #16a34a;
-
-    background:
-        #f0fdf4;
-}
-
-.profit-box .report-box-icon,
-.profit-box strong {
-
-    color:
-        #16a34a;
-}
-
-
-/* LOSS BOX = RED */
-
-.loss-box {
-
-    border-top:
-        4px solid #dc2626;
-
-    background:
-        #fef2f2;
-}
-
-.loss-box .report-box-icon,
-.loss-box strong {
-
-    color:
-        #dc2626;
-}
-
-
-/* BALANCE BOX = YELLOW */
-
-.balance-box {
-
-    border-top:
-        4px solid #eab308;
-
-    background:
-        #fefce8;
-}
-
-.balance-box .report-box-icon,
-.balance-box strong {
-
-    color:
-        #ca8a04;
-}
-
-
-.report-box-icon {
-
-    display:
-        block;
+        #14532d;
 
     font-size:
-        28px;
+        21px;
+
+    font-weight:
+        800;
 
     margin-bottom:
-        7px;
-}
-
-.report-box h3 {
-
-    color:
-        #64748b;
-
-    font-size:
         15px;
-
-    margin-bottom:
-        8px;
-}
-
-.report-box strong {
-
-    font-size:
-        23px;
 }
 
 
 /* =========================================================
-   MODULE GRID
+   FINANCIAL LEGEND
 ========================================================= */
 
-.module-grid {
-
+.financial-legend {
     display:
-        grid;
+        flex;
 
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(190px, 1fr)
-        );
-
-    gap:
-        14px;
-
-    margin-top:
-        18px;
-}
-
-.module-card {
-
-    background:
-        #f8fafc;
-
-    border:
-        1px solid #e2e8f0;
-
-    border-radius:
-        11px;
-
-    padding:
-        16px;
-
-    display:
-        grid;
-
-    grid-template-columns:
-        auto 1fr;
+    justify-content:
+        flex-start;
 
     align-items:
         center;
 
-    column-gap:
-        10px;
+    flex-wrap:
+        wrap;
 
-    row-gap:
-        3px;
-}
-
-.module-card span {
-
-    grid-row:
-        span 2;
-
-    font-size:
-        28px;
-}
-
-.module-card strong {
-
-    font-size:
+    gap:
         13px;
+
+    margin-bottom:
+        12px;
+
+    font-size:
+        12px;
 
     color:
         #475569;
 }
 
-.module-card b {
-
-    font-size:
-        20px;
-
-    color:
-        #14532d;
-}
-
-
-/* =========================================================
-   STATISTICS
-========================================================= */
-
-.statistics-grid {
-
+.financial-legend span {
     display:
-        grid;
+        inline-flex;
 
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(180px, 1fr)
-        );
+    align-items:
+        center;
 
     gap:
-        16px;
-
-    margin-bottom:
-        22px;
+        5px;
 }
 
-.stat-box {
-
-    background:
-        #f8fafc;
-
-    border:
-        1px solid #e2e8f0;
-
-    border-radius:
+.legend-indicator {
+    width:
         10px;
 
-    padding:
-        17px;
-
-    text-align:
-        center;
-}
-
-.stat-box span {
+    height:
+        10px;
 
     display:
-        block;
+        inline-block;
 
-    color:
-        #64748b;
-
-    font-size:
-        13px;
-
-    margin-bottom:
-        7px;
-}
-
-.stat-box strong {
-
-    display:
-        block;
-
-    color:
-        #14532d;
-
-    font-size:
-        23px;
+    border-radius:
+        50%;
 }
 
 
 /* =========================================================
-   PROFIT / LOSS VALUES
-========================================================= */
-
-.profit-value {
-
-    color:
-        #16a34a !important;
-
-    font-weight:
-        bold;
-}
-
-.loss-value {
-
-    color:
-        #dc2626 !important;
-
-    font-weight:
-        bold;
-}
-
-
-/* BALANCE / ZERO RESULT */
-
-.balance-value {
-
-    color:
-        #ca8a04 !important;
-
-    font-weight:
-        bold;
-}
-
-
-/* =========================================================
-   STATUS INDICATORS
-========================================================= */
-
-.profit-indicator {
-
-    display:
-        inline-flex;
-
-    align-items:
-        center;
-
-    gap:
-        6px;
-
-    padding:
-        5px 10px;
-
-    border-radius:
-        20px;
-
-    background:
-        #dcfce7;
-
-    color:
-        #15803d;
-
-    font-weight:
-        bold;
-
-    font-size:
-        13px;
-}
-
-.loss-indicator {
-
-    display:
-        inline-flex;
-
-    align-items:
-        center;
-
-    gap:
-        6px;
-
-    padding:
-        5px 10px;
-
-    border-radius:
-        20px;
-
-    background:
-        #fee2e2;
-
-    color:
-        #b91c1c;
-
-    font-weight:
-        bold;
-
-    font-size:
-        13px;
-}
-
-.balance-indicator {
-
-    display:
-        inline-flex;
-
-    align-items:
-        center;
-
-    gap:
-        6px;
-
-    padding:
-        5px 10px;
-
-    border-radius:
-        20px;
-
-    background:
-        #fef9c3;
-
-    color:
-        #a16207;
-
-    font-weight:
-        bold;
-
-    font-size:
-        13px;
-}
-
-
-/* =========================================================
-   CHART
+   CHART CONTAINER
 ========================================================= */
 
 .chart-container {
-
     position:
         relative;
 
@@ -1155,82 +1070,60 @@ body {
         350px;
 
     padding:
-        18px;
-
-    margin-top:
-        20px;
+        15px;
 
     background:
         #fafafa;
 
-    border-radius:
-        10px;
-
     border:
         1px solid #e2e8f0;
-}
 
-.chart-container h3 {
-
-    margin-bottom:
-        12px;
-
-    color:
-        #334155;
-
-    text-align:
-        center;
-
-    font-size:
-        16px;
+    border-radius:
+        11px;
 }
 
 .chart-container canvas {
-
     width:
         100% !important;
 
     height:
-        280px !important;
+        100% !important;
 }
 
 
 /* =========================================================
-   TABLE
+   MONTHLY FINANCIAL TABLE
 ========================================================= */
 
-.table-wrapper {
-
+.table-container {
     width:
         100%;
 
     overflow-x:
         auto;
 
-    border-radius:
-        9px;
+    border:
+        1px solid #e2e8f0;
 
-    margin-top:
-        15px;
+    border-radius:
+        10px;
 }
 
 table {
-
     width:
         100%;
 
-    border-collapse:
-        collapse;
-
     min-width:
         650px;
+
+    border-collapse:
+        collapse;
 
     background:
         white;
 }
 
 thead {
-
     background:
         #166534;
 
@@ -1238,129 +1131,208 @@ thead {
         white;
 }
 
-th,
-td {
-
+th {
     padding:
-        12px 14px;
+        13px 15px;
 
-    border-bottom:
-        1px solid #e2e8f0;
+    font-size:
+        13px;
+
+    font-weight:
+        700;
 
     text-align:
         left;
-}
 
-th {
-
-    font-size:
-        14px;
+    white-space:
+        nowrap;
 }
 
 td {
+    padding:
+        13px 15px;
 
     font-size:
-        14px;
+        13px;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    color:
+        #334155;
+}
+
+tbody tr:last-child td {
+    border-bottom:
+        none;
 }
 
 tbody tr:hover {
-
     background:
         #f8fafc;
 }
 
 
 /* =========================================================
-   FINANCIAL TABLE COLOURS
+   TABLE FINANCIAL COLOURS
 ========================================================= */
 
 .sales-value {
-
     color:
-        #2563eb;
+        #2563eb !important;
 
     font-weight:
-        bold;
+        800;
 }
 
 .expense-value {
-
     color:
-        #dc2626;
+        #dc2626 !important;
 
     font-weight:
-        bold;
+        800;
 }
 
 .profit-value {
-
     color:
-        #16a34a;
+        #16a34a !important;
 
     font-weight:
-        bold;
+        800;
 }
 
 .loss-value {
-
     color:
-        #dc2626;
+        #dc2626 !important;
 
     font-weight:
-        bold;
+        800;
 }
 
 .balance-value {
-
     color:
-        #ca8a04;
+        #ca8a04 !important;
 
     font-weight:
-        bold;
+        800;
 }
 
 
 /* =========================================================
-   ACTIONS
+   MANAGEMENT INSIGHTS
 ========================================================= */
 
-.report-actions {
-
+.insights-grid {
     display:
-        flex;
+        grid;
 
-    justify-content:
-        center;
-
-    align-items:
-        center;
-
-    flex-wrap:
-        wrap;
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(260px, 1fr)
+        );
 
     gap:
+        15px;
+}
+
+.insight-card {
+    background:
+        linear-gradient(
+            135deg,
+            #f8fafc,
+            #ffffff
+        );
+
+    border:
+        1px solid #e2e8f0;
+
+    border-left:
+        4px solid #166534;
+
+    border-radius:
+        11px;
+
+    padding:
+        18px;
+
+    transition:
+        all 0.2s ease;
+}
+
+.insight-card:hover {
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 6px 16px
+        rgba(0, 0, 0, 0.06);
+}
+
+.insight-card h3 {
+    color:
+        #14532d;
+
+    font-size:
+        15px;
+
+    margin-bottom:
+        6px;
+}
+
+.insight-card p {
+    color:
+        #64748b;
+
+    font-size:
+        13px;
+
+    line-height:
+        1.6;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.page-footer {
+    background:
+        #14532d;
+
+    color:
+        white;
+
+    text-align:
+        center;
+
+    padding:
+        18px;
+
+    font-size:
         12px;
 
-    margin:
-        30px 0;
+    line-height:
+        1.7;
+
+    opacity:
+        0.98;
 }
 
-.report-actions button {
+.page-footer div:first-child {
+    font-size:
+        13px;
 
-    min-width:
-        175px;
+    font-weight:
+        700;
 }
 
-.back-button {
+.page-footer div:last-child {
+    opacity:
+        0.75;
 
-    background:
-        #475569 !important;
-}
-
-.back-button:hover {
-
-    background:
-        #334155 !important;
+    font-size:
+        11px;
 }
 
 
@@ -1371,70 +1343,122 @@ tbody tr:hover {
 @media print {
 
     body {
-
-        background:
-            white;
-    }
-
-    .reports-header {
-
         background:
             white;
 
         color:
             black;
+    }
+
+    .page-header {
+        background:
+            white !important;
+
+        color:
+            black !important;
 
         box-shadow:
             none;
 
         border-bottom:
             2px solid #222;
+
+        padding:
+            10px 0;
     }
 
-    .header-actions,
-    .report-filter,
-    .report-actions {
-
+    .back-btn,
+    .report-controls,
+    .report-status,
+    .control-buttons {
         display:
             none !important;
     }
 
-    .reports-container {
-
+    .container {
         width:
             100%;
+
+        max-width:
+            none;
 
         margin:
             0;
     }
 
-    .report-section,
-    .summary-section {
-
+    .page-title-section,
+    .section,
+    .chart-section {
         box-shadow:
             none;
 
         border:
-            1px solid #ccc;
+            1px solid #bbb;
 
         break-inside:
             avoid;
+    }
 
-        margin-bottom:
-            15px;
+    .software-brand {
+        color:
+            #222;
+    }
+
+    .subtitle {
+        color:
+            #555;
+    }
+
+    .farm-branding {
+        border-top:
+            1px solid #999;
+    }
+
+    .farm-label {
+        color:
+            #555;
+
+        opacity:
+            1;
+    }
+
+    .farm-branding strong {
+        color:
+            #111;
+
+        font-size:
+            25px;
     }
 
     .chart-container {
-
         break-inside:
             avoid;
     }
 
-    table {
+    .chart-container canvas {
+        max-height:
+            300px;
+    }
 
+    table {
         min-width:
             100%;
     }
+
+    .page-footer {
+        background:
+            white;
+
+        color:
+            black;
+
+        border-top:
+            1px solid #999;
+
+        margin-top:
+            15px;
+    }
+
 }
 
 
@@ -1442,9 +1466,38 @@ tbody tr:hover {
    TABLET
 ========================================================= */
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
 
-    .reports-header {
+    .page-header {
+        align-items:
+            flex-start;
+    }
+
+    .financial-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                1fr
+            );
+    }
+
+    .report-controls {
+        align-items:
+            stretch;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .page-header {
+        padding:
+            16px;
 
         flex-direction:
             column;
@@ -1453,101 +1506,52 @@ tbody tr:hover {
             flex-start;
     }
 
-    .header-actions {
-
-        width:
-            100%;
-    }
-
-    .header-actions button {
-
-        flex:
-            1;
-    }
-
-    .reports-container {
-
-        width:
-            94%;
-    }
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 600px) {
-
-    .reports-header {
-
-        padding:
+    .software-brand {
+        font-size:
             15px;
     }
 
-    .brand-icon {
-
-        width:
-            44px;
-
-        height:
-            44px;
-
+    .subtitle {
         font-size:
-            25px;
+            12px;
     }
 
-    .reports-header h1 {
-
-        font-size:
-            20px;
-    }
-
-    .reports-header p {
-
-        font-size:
-            13px;
-    }
-
-    .header-actions {
-
-        flex-direction:
-            column;
-
-        width:
-            100%;
-    }
-
-    .header-actions button {
-
-        width:
-            100%;
-    }
-
-    .reports-container {
-
-        width:
-            94%;
-
-        margin:
-            15px auto;
-    }
-
-    .report-filter,
-    .report-section {
-
-        padding:
-            15px;
-    }
-
-    .report-filter h2,
-    .report-section h2 {
-
+    .farm-branding strong {
         font-size:
             19px;
     }
 
-    .filter-row {
+    .back-btn {
+        width:
+            100%;
+    }
+
+    .container {
+        width:
+            94%;
+
+        margin-top:
+            17px;
+    }
+
+    .page-title-section {
+        padding:
+            18px;
+    }
+
+    .page-title-section h1 {
+        font-size:
+            22px;
+    }
+
+    .page-title-section p {
+        font-size:
+            13px;
+    }
+
+    .report-controls {
+        padding:
+            16px;
 
         flex-direction:
             column;
@@ -1556,14 +1560,7 @@ tbody tr:hover {
             stretch;
     }
 
-    .form-group {
-
-        width:
-            100%;
-    }
-
-    .form-group input {
-
+    .filter-group input {
         width:
             100%;
 
@@ -1571,59 +1568,91 @@ tbody tr:hover {
             0;
     }
 
-    .filter-row button {
-
-        width:
-            100%;
-    }
-
-    .summary-grid,
-    .financial-grid,
-    .statistics-grid,
-    .module-grid {
+    .control-buttons {
+        display:
+            grid;
 
         grid-template-columns:
             1fr;
     }
 
-    .summary-card {
-
-        padding:
-            15px;
+    .control-buttons button {
+        width:
+            100%;
     }
 
-    .summary-card p {
+    .report-status {
+        flex-direction:
+            column;
 
+        align-items:
+            flex-start;
+    }
+
+    .section,
+    .chart-section {
+        padding:
+            16px;
+
+        border-radius:
+            12px;
+    }
+
+    .section-header h2,
+    .chart-card h2 {
         font-size:
             19px;
     }
 
-    .chart-container {
+    .summary-grid,
+    .report-grid,
+    .insights-grid {
+        grid-template-columns:
+            1fr;
+    }
 
+    .financial-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+    .summary-card {
+        min-height:
+            95px;
+    }
+
+    .summary-value {
+        font-size:
+            21px;
+    }
+
+    .financial-value {
+        font-size:
+            22px;
+    }
+
+    .chart-container {
         height:
             300px;
 
         padding:
-            10px;
+            8px;
     }
 
-    .chart-container canvas {
+    .financial-legend {
+        gap:
+            9px;
 
-        height:
-            235px !important;
+        font-size:
+            11px;
     }
 
-    .report-actions {
-
-        flex-direction:
-            column;
+    th,
+    td {
+        padding:
+            10px 11px;
     }
 
-    .report-actions button {
-
-        width:
-            100%;
-    }
 }
 
 
@@ -1633,87 +1662,94 @@ tbody tr:hover {
 
 @media (max-width: 380px) {
 
-    .reports-header h1 {
-
-        font-size:
-            18px;
-    }
-
-    .summary-card {
-
-        gap:
-            9px;
-    }
-
-    .card-icon {
-
+    .container {
         width:
-            42px;
-
-        height:
-            42px;
-
-        font-size:
-            24px;
+            96%;
     }
 
-    .summary-card p {
+    .software-brand {
+        font-size:
+            13px;
+    }
 
+    .farm-branding strong {
         font-size:
             17px;
     }
 
-    .report-box strong,
-    .stat-box strong {
-
+    .page-title-section h1 {
         font-size:
             20px;
     }
-}
 
-Important: this CSS supports classes such as ".sales-card", ".expense-card", ".profit-card", ".loss-card", ".balance-card", ".sales-box", ".expense-box", etc. Your HTML/JavaScript must use those classes for the colours to appear on the corresponding elements.
+    .section,
+    .chart-section {
+        padding:
+            13px;
+    }
 
-After replacing the CSS, refresh the Reports & Analytics page. If the colours still don't change, send me your "reports.html" and "reports.js", because the next step will be to make sure the HTML/JavaScript is actually assigning the correct Sales/Expense/Profit/Loss/Balance classes.
-/* =========================================================
-   MUNKA PIGGERY TECHNOLOGY
-   REGISTERED FARM BRANDING
-========================================================= */
+    .summary-value {
+        font-size:
+            19px;
+    }
 
-.farm-branding {
-    margin-top: 8px;
-    padding-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
-}
+    .financial-value {
+        font-size:
+            20px;
+    }
 
-.farm-label {
-    display: block;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.8px;
-    opacity: 0.75;
-    margin-bottom: 3px;
-}
+    .chart-container {
+        height:
+            270px;
+    }
 
-.farm-branding strong {
-    display: block;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
 }
 
 
 /* =========================================================
-   MOBILE RESPONSIVE
+   ACCESSIBILITY / TOUCH
 ========================================================= */
 
-@media (max-width: 600px) {
-
-    .farm-branding strong {
-        font-size: 16px;
-    }
-
-    .farm-label {
-        font-size: 9px;
-    }
-
+button {
+    -webkit-tap-highlight-color:
+        transparent;
 }
+
+button:focus-visible,
+input:focus-visible {
+    outline:
+        3px solid
+        rgba(37, 99, 235, 0.25);
+
+    outline-offset:
+        2px;
+}
+
+
+/* =========================================================
+   FINANCIAL STATE PRIORITY
+   JavaScript dynamically adds these classes.
+========================================================= */
+
+#profitLoss.profit-value,
+#financialProfit.profit-value {
+    color:
+        #16a34a !important;
+}
+
+#profitLoss.loss-value,
+#financialProfit.loss-value {
+    color:
+        #dc2626 !important;
+}
+
+#profitLoss.balance-value,
+#financialProfit.balance-value {
+    color:
+        #ca8a04 !important;
+}
+
+
+/* =========================================================
+   END
+========================================================= */

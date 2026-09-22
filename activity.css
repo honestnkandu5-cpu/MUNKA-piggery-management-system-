@@ -1,14 +1,13 @@
- /* ==========================================================
-   MUNKA PIGGERY FARM
-   ACTIVITY LOGS MODULE
-   activity.css
-   PROFESSIONAL VERSION
-========================================================== */
+/* =========================================================
+   MUNKA PIGGERY TECHNOLOGY
+   ACTIVITY LOGS
+   PROFESSIONAL FARM-BRANDED DESIGN
+========================================================= */
 
 
-/* ==========================================================
+/* =========================================================
    GLOBAL
-========================================================== */
+========================================================= */
 
 * {
     box-sizing: border-box;
@@ -17,1059 +16,996 @@
 }
 
 body {
-
     font-family:
         Arial,
         Helvetica,
         sans-serif;
 
-    background:
-        #f4f6f8;
-
-    color:
-        #222;
-
-    min-height:
-        100vh;
-
+    background: #f4f7f5;
+    color: #1f2937;
+    line-height: 1.5;
 }
 
 
-/* ==========================================================
+/* =========================================================
    MAIN CONTAINER
-========================================================== */
+========================================================= */
 
 .activity-container {
-
-    width:
-        95%;
-
-    max-width:
-        1450px;
-
-    margin:
-        25px auto;
-
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 
-/* ==========================================================
+/* =========================================================
    HEADER
-========================================================== */
+========================================================= */
 
 .activity-header {
+    background: linear-gradient(
+        135deg,
+        #14532d,
+        #166534
+    );
 
-    background:
-        linear-gradient(
-            135deg,
-            #198754,
-            #0f5132
-        );
+    color: #ffffff;
 
-    color:
-        white;
+    padding: 24px 28px;
 
-    padding:
-        25px;
+    border-radius: 14px;
 
-    border-radius:
-        12px;
+    display: flex;
 
-    display:
-        flex;
+    justify-content: space-between;
 
-    justify-content:
-        space-between;
+    align-items: flex-start;
 
-    align-items:
-        center;
-
-    gap:
-        20px;
+    gap: 25px;
 
     box-shadow:
-        0 5px 15px rgba(0,0,0,0.15);
+        0 6px 18px rgba(0, 0, 0, 0.12);
 
+    margin-bottom: 22px;
 }
 
-.activity-header h1 {
-
-    font-size:
-        28px;
-
-    margin-bottom:
-        8px;
-
-}
-
-.activity-header h2 {
-
-    font-size:
-        22px;
-
-    margin-bottom:
-        6px;
-
-}
-
-.activity-header p {
-
-    font-size:
-        15px;
-
-    opacity:
-        0.9;
-
-}
-
-
-/* ==========================================================
-   HEADER BUTTONS
-========================================================== */
-
-.header-actions {
-
-    display:
-        flex;
-
-    gap:
-        10px;
-
-    flex-wrap:
-        wrap;
-
-}
-
-.header-actions button {
-
-    border:
-        none;
-
-    padding:
-        11px 16px;
-
-    border-radius:
-        7px;
-
-    background:
-        white;
-
-    color:
-        #0f5132;
-
-    font-weight:
-        bold;
-
-    cursor:
-        pointer;
-
-    transition:
-        all 0.2s ease;
-
-}
-
-.header-actions button:hover {
-
-    transform:
-        translateY(-2px);
-
-    box-shadow:
-        0 4px 10px rgba(0,0,0,0.2);
-
-}
-
-
-/* ==========================================================
-   PDF BUTTON
-========================================================== */
-
-.pdf-button {
-
-    background:
-        #ffffff !important;
-
-    color:
-        #b02a37 !important;
-
-}
-
-.pdf-button:hover {
-
-    background:
-        #fff5f5 !important;
-
-    color:
-        #842029 !important;
-
-}
-
-
-/* ==========================================================
-   SUMMARY SECTION
-========================================================== */
-
-.activity-summary {
-
-    margin-top:
-        25px;
-
-}
-
-.summary-box {
-
-    background:
-        white;
-
-    padding:
-        22px;
-
-    border-radius:
-        10px;
-
-    border-left:
-        5px solid #198754;
-
-    box-shadow:
-        0 3px 10px rgba(0,0,0,0.08);
-
-}
-
-.summary-box h3 {
-
-    color:
-        #0f5132;
-
-    margin-bottom:
-        10px;
-
-}
-
-.summary-box p {
-
-    color:
-        #555;
-
-    line-height:
-        1.6;
-
-}
-
-
-/* ==========================================================
-   ACTIVITY COUNT
-========================================================== */
-
-#activityCount,
-#totalActivities {
-
-    font-weight:
-        bold;
-
-    color:
-        #198754;
-
-}
-
-
-/* ==========================================================
-   ACTIVITY SECTION
-========================================================== */
-
-.activity-section {
-
-    background:
-        white;
-
-    margin-top:
-        25px;
-
-    padding:
-        25px;
-
-    border-radius:
-        10px;
-
-    box-shadow:
-        0 3px 10px rgba(0,0,0,0.08);
-
-}
-
-.activity-section h2 {
-
-    color:
-        #0f5132;
-
-    margin-bottom:
-        20px;
-
-    border-bottom:
-        2px solid #198754;
-
-    padding-bottom:
-        10px;
-
-}
-
-
-/* ==========================================================
-   TABLE WRAPPER
-========================================================== */
-
-.table-wrapper {
-
-    width:
-        100%;
-
-    overflow-x:
-        auto;
-
-    border-radius:
-        8px;
-
-}
-
-
-/* ==========================================================
-   ACTIVITY TABLE
-========================================================== */
-
-table {
-
-    width:
-        100%;
-
-    border-collapse:
-        collapse;
-
-    min-width:
-        1000px;
-
-    background:
-        white;
-
-}
-
-
-/* ==========================================================
-   TABLE HEADER
-========================================================== */
-
-thead {
-
-    background:
-        #198754;
-
-    color:
-        white;
-
-}
-
-th {
-
-    padding:
-        14px 12px;
-
-    text-align:
-        left;
-
-    font-size:
-        14px;
-
-    font-weight:
-        bold;
-
-    white-space:
-        nowrap;
-
-}
-
-
-/* ==========================================================
-   TABLE CELLS
-========================================================== */
-
-td {
-
-    padding:
-        13px 12px;
-
-    border-bottom:
-        1px solid #e5e5e5;
-
-    font-size:
-        14px;
-
-    vertical-align:
-        top;
-
-}
-
-
-/* ==========================================================
-   ZAMBIAN DATE/TIME
-========================================================== */
-
-td:first-child {
-
-    white-space:
-        nowrap;
-
-    font-weight:
-        600;
-
-    color:
-        #333;
-
-}
-
-
-/* ==========================================================
-   USER NAME
-========================================================== */
-
-td:nth-child(2) {
-
-    font-weight:
-        600;
-
-    color:
-        #0f5132;
-
-}
-
-
-/* ==========================================================
-   USER ROLE
-========================================================== */
-
-td:nth-child(3) {
-
-    font-weight:
-        bold;
-
-}
-
-
-/* ==========================================================
-   ROLE BADGE EFFECT
-========================================================== */
-
-td:nth-child(3) {
-
-    color:
-        #495057;
-
-}
-
-
-/* ==========================================================
-   ACTION COLUMN
-========================================================== */
-
-td:nth-child(4) {
-
-    font-weight:
-        600;
-
-}
-
-
-/* ==========================================================
-   MODULE COLUMN
-========================================================== */
-
-td:nth-child(5) {
-
-    color:
-        #555;
-
-}
-
-
-/* ==========================================================
-   DESCRIPTION
-========================================================== */
-
-td:nth-child(6) {
-
-    color:
-        #444;
-
-    line-height:
-        1.5;
-
-    min-width:
-        220px;
-
-}
-
-
-/* ==========================================================
-   ALTERNATING ROWS
-========================================================== */
-
-tbody tr:nth-child(even) {
-
-    background:
-        #f8faf9;
-
-}
-
-
-/* ==========================================================
-   HOVER
-========================================================== */
-
-tbody tr:hover {
-
-    background:
-        #e9f7ef;
-
-    transition:
-        background 0.2s ease;
-
-}
-
-
-/* ==========================================================
-   LOGIN ACTION
-========================================================== */
-
-tbody tr:has(td:nth-child(4)) {
-
-    transition:
-        background 0.2s ease;
-
-}
-
-
-/* ==========================================================
-   EMPTY / LOADING MESSAGE
-========================================================== */
-
-#activityTable td[colspan] {
-
-    text-align:
-        center;
-
-    padding:
-        30px;
-
-    color:
-        #777;
-
-    font-style:
-        italic;
-
-}
-
-
-/* ==========================================================
-   ACTION BUTTONS SECTION
-========================================================== */
-
-.activity-actions {
-
-    margin-top:
-        25px;
-
-    display:
-        flex;
-
-    justify-content:
-        center;
-
-    gap:
-        12px;
-
-    flex-wrap:
-        wrap;
-
-}
-
-.activity-actions button {
-
-    border:
-        none;
-
-    padding:
-        12px 20px;
-
-    border-radius:
-        7px;
-
-    background:
-        #198754;
-
-    color:
-        white;
-
-    font-weight:
-        bold;
-
-    cursor:
-        pointer;
-
-    transition:
-        all 0.2s ease;
-
-}
-
-.activity-actions button:hover {
-
-    background:
-        #146c43;
-
-    transform:
-        translateY(-2px);
-
-    box-shadow:
-        0 4px 10px rgba(0,0,0,0.15);
-
-}
-
-
-/* ==========================================================
-   PDF ACTION BUTTON
-========================================================== */
-
-.activity-actions .pdf-button {
-
-    background:
-        #dc3545 !important;
-
-    color:
-        white !important;
-
-}
-
-.activity-actions .pdf-button:hover {
-
-    background:
-        #bb2d3b !important;
-
-}
-
-
-/* ==========================================================
-   REFRESH BUTTON
-========================================================== */
-
-.refresh-button {
-
-    background:
-        #198754 !important;
-
-    color:
-        white !important;
-
-}
-
-
-/* ==========================================================
-   PRINT
-========================================================== */
-
-@media print {
-
-    body {
-
-        background:
-            white;
-
-    }
-
-
-    .activity-container {
-
-        width:
-            100%;
-
-        max-width:
-            none;
-
-        margin:
-            0;
-
-    }
-
-
-    .activity-header {
-
-        background:
-            white !important;
-
-        color:
-            black !important;
-
-        box-shadow:
-            none;
-
-        border:
-            1px solid #ccc;
-
-    }
-
-
-    .header-actions,
-    .activity-actions {
-
-        display:
-            none;
-
-    }
-
-
-    .activity-summary,
-    .activity-section {
-
-        box-shadow:
-            none;
-
-        border:
-            1px solid #ccc;
-
-    }
-
-
-    table {
-
-        min-width:
-            100%;
-
-    }
-
-
-    thead {
-
-        background:
-            #ddd !important;
-
-        color:
-            black !important;
-
-    }
-
-
-    th,
-    td {
-
-        font-size:
-            9px;
-
-        padding:
-            6px;
-
-    }
-
-}
-
-
-/* ==========================================================
-   MOBILE RESPONSIVE
-========================================================== */
-
-@media (max-width: 768px) {
-
-    .activity-container {
-
-        width:
-            94%;
-
-        margin:
-            15px auto;
-
-    }
-
-
-    .activity-header {
-
-        flex-direction:
-            column;
-
-        align-items:
-            flex-start;
-
-        padding:
-            20px;
-
-    }
-
-
-    .activity-header h1 {
-
-        font-size:
-            23px;
-
-    }
-
-
-    .activity-header h2 {
-
-        font-size:
-            19px;
-
-    }
-
-
-    .header-actions {
-
-        width:
-            100%;
-
-    }
-
-
-    .header-actions button {
-
-        flex:
-            1;
-
-    }
-
-
-    .activity-section {
-
-        padding:
-            15px;
-
-    }
-
-
-    .summary-box {
-
-        padding:
-            17px;
-
-    }
-
-
-    table {
-
-        min-width:
-            1000px;
-
-    }
-
-
-    th,
-    td {
-
-        font-size:
-            13px;
-
-        padding:
-            11px 9px;
-
-    }
-
-}
-
-
-/* ==========================================================
-   SMALL PHONES
-========================================================== */
-
-@media (max-width: 480px) {
-
-    .activity-header {
-
-        padding:
-            16px;
-
-    }
-
-
-    .activity-header h1 {
-
-        font-size:
-            20px;
-
-    }
-
-
-    .activity-header h2 {
-
-        font-size:
-            17px;
-
-    }
-
-
-    .activity-header p {
-
-        font-size:
-            13px;
-
-    }
-
-
-    .header-actions {
-
-        flex-direction:
-            column;
-
-        width:
-            100%;
-
-    }
-
-
-    .header-actions button {
-
-        width:
-            100%;
-
-    }
-
-
-    .activity-section h2 {
-
-        font-size:
-            19px;
-
-    }
-
-
-    .activity-actions {
-
-        flex-direction:
-            column;
-
-    }
-
-
-    .activity-actions button {
-
-        width:
-            100%;
-
-    }
-
-
-    .summary-box {
-
-        padding:
-            15px;
-
-    }
-
-}.delete-all-button {
-
-    background:
-        #dc3545 !important;
-
-    color:
-        white !important;
-
-}
-
-.delete-all-button:hover {
-
-    background:
-        #b02a37 !important;
-
-    transform:
-        translateY(-2px);
-
-    box-shadow:
-        0 4px 10px rgba(0,0,0,0.2);
-
-}/* =========================================================
-   MUNKA PIGGERY TECHNOLOGY
-   ACTIVITY LOGS BRANDING
-========================================================= */
 
 .activity-brand {
     display: flex;
+
     align-items: flex-start;
-    gap: 15px;
+
+    gap: 16px;
+
+    min-width: 0;
 }
 
-.activity-brand .brand-icon {
-    font-size: 42px;
-    line-height: 1;
+
+.brand-icon {
+    width: 58px;
+    height: 58px;
+
     flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.14);
+
+    border-radius: 12px;
+
+    font-size: 31px;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.18);
 }
 
-.activity-brand h1 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 800;
-}
 
 .activity-brand h2 {
-    margin: 5px 0 0;
-    font-size: 21px;
-    font-weight: 700;
+    font-size: 26px;
+
+    font-weight: 800;
+
+    margin-top: 5px;
+
+    margin-bottom: 2px;
+
+    letter-spacing: 0.3px;
 }
 
+
 .activity-brand p {
-    margin: 5px 0 0;
     font-size: 14px;
+
     opacity: 0.85;
+
+    margin-top: 2px;
 }
 
 
 /* =========================================================
-   REGISTERED FARM
+   SOFTWARE BRAND
+========================================================= */
+
+.software-brand {
+    font-size: 16px !important;
+
+    font-weight: 700 !important;
+
+    letter-spacing: 1px;
+
+    margin: 0;
+}
+
+
+/* =========================================================
+   FARM BRANDING
 ========================================================= */
 
 .farm-branding {
-    margin-top: 8px;
-    padding-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    margin-top: 10px;
+
+    padding-top: 8px;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.25);
 }
+
 
 .farm-label {
     display: block;
-    font-size: 10px;
+
+    font-size: 9px;
+
     font-weight: 700;
-    letter-spacing: 1.8px;
-    opacity: 0.75;
+
+    letter-spacing: 2px;
+
+    opacity: 0.70;
+
     margin-bottom: 3px;
 }
 
+
 .farm-branding strong {
     display: block;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
+
+    font-size: 28px !important;
+
+    font-weight: 800 !important;
+
+    letter-spacing: 0.5px;
+
+    line-height: 1.15;
 }
 
 
 /* =========================================================
-   MOBILE RESPONSIVE
+   HEADER ACTIONS
+========================================================= */
+
+.header-actions {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: flex-end;
+
+    gap: 8px;
+}
+
+
+.header-actions button,
+.activity-actions button {
+    border: none;
+
+    background: #ffffff;
+
+    color: #14532d;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    padding: 10px 14px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+}
+
+
+.header-actions button:hover,
+.activity-actions button:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 10px
+        rgba(0, 0, 0, 0.15);
+
+    background: #f0fdf4;
+}
+
+
+.header-actions .pdf-button,
+.activity-actions .pdf-button {
+    background: #166534;
+
+    color: #ffffff;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.45);
+}
+
+
+.header-actions .delete-all-button {
+    background: #b91c1c;
+
+    color: #ffffff;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.3);
+}
+
+
+.header-actions .delete-all-button:hover {
+    background: #991b1b;
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.activity-summary {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 2fr)
+        minmax(220px, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 22px;
+}
+
+
+.summary-box {
+    background: #ffffff;
+
+    border-radius: 12px;
+
+    padding: 20px 22px;
+
+    border: 1px solid #e5e7eb;
+
+    box-shadow:
+        0 3px 12px
+        rgba(0, 0, 0, 0.06);
+}
+
+
+.summary-box h3 {
+    color: #14532d;
+
+    font-size: 17px;
+
+    margin-bottom: 7px;
+
+    font-weight: 800;
+}
+
+
+.summary-box p {
+    color: #4b5563;
+
+    font-size: 14px;
+}
+
+
+.summary-box:last-child {
+    text-align: center;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+}
+
+
+.summary-box:last-child p {
+    font-size: 32px;
+
+    font-weight: 800;
+
+    color: #166534;
+
+    line-height: 1.1;
+}
+
+
+/* =========================================================
+   ACTIVITY SECTION
+========================================================= */
+
+.activity-section {
+    background: #ffffff;
+
+    border-radius: 14px;
+
+    border: 1px solid #e5e7eb;
+
+    box-shadow:
+        0 4px 14px
+        rgba(0, 0, 0, 0.06);
+
+    overflow: hidden;
+
+    margin-bottom: 22px;
+}
+
+
+.activity-section h2 {
+    background: #f0fdf4;
+
+    color: #14532d;
+
+    font-size: 19px;
+
+    font-weight: 800;
+
+    padding: 17px 20px;
+
+    border-bottom:
+        1px solid #dcfce7;
+}
+
+
+/* =========================================================
+   TABLE WRAPPER
+========================================================= */
+
+.table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+table {
+    width: 100%;
+
+    min-width: 950px;
+
+    border-collapse: collapse;
+
+    background: #ffffff;
+}
+
+
+thead {
+    background: #14532d;
+
+    color: #ffffff;
+}
+
+
+thead th {
+    padding: 13px 12px;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    text-align: left;
+
+    white-space: nowrap;
+
+    letter-spacing: 0.2px;
+}
+
+
+tbody td {
+    padding: 12px;
+
+    font-size: 13px;
+
+    color: #374151;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    vertical-align: top;
+}
+
+
+tbody tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+
+tbody tr:hover {
+    background: #f0fdf4;
+}
+
+
+tbody td:first-child {
+    white-space: nowrap;
+
+    font-weight: 600;
+
+    color: #374151;
+}
+
+
+tbody td:nth-child(2) {
+    font-weight: 700;
+
+    color: #14532d;
+}
+
+
+tbody td:nth-child(3) {
+    font-weight: 600;
+}
+
+
+tbody td:nth-child(4) {
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   ACTIVITY ACTIONS
+========================================================= */
+
+.activity-actions {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-bottom: 20px;
+}
+
+
+.activity-actions button {
+    background: #14532d;
+
+    color: #ffffff;
+
+    border: none;
+}
+
+
+.activity-actions button:hover {
+    background: #166534;
+}
+
+
+.activity-actions .pdf-button {
+    background: #166534;
+}
+
+
+/* =========================================================
+   LOADING / EMPTY STATES
+========================================================= */
+
+#activityTable td[colspan="6"] {
+    padding: 35px 20px;
+
+    text-align: center;
+
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   RESPONSIVE TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .activity-container {
+        padding: 15px;
+    }
+
+
+    .activity-header {
+        flex-direction: column;
+
+        padding: 20px;
+    }
+
+
+    .header-actions {
+        width: 100%;
+
+        justify-content: flex-start;
+    }
+
+
+    .activity-summary {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
 ========================================================= */
 
 @media (max-width: 600px) {
 
+    .activity-container {
+        padding: 10px;
+    }
+
+
+    .activity-header {
+        padding: 17px;
+
+        border-radius: 11px;
+
+        gap: 17px;
+    }
+
+
     .activity-brand {
-        gap: 10px;
+        gap: 11px;
     }
 
-    .activity-brand .brand-icon {
-        font-size: 34px;
+
+    .brand-icon {
+        width: 45px;
+        height: 45px;
+
+        font-size: 24px;
+
+        border-radius: 9px;
     }
 
-    .activity-brand h1 {
-        font-size: 21px;
+
+    .software-brand {
+        font-size: 13px !important;
+
+        letter-spacing: 0.7px;
     }
+
 
     .activity-brand h2 {
-        font-size: 18px;
+        font-size: 21px;
+
+        margin-top: 4px;
     }
+
 
     .activity-brand p {
         font-size: 12px;
     }
 
-    .farm-branding strong {
-        font-size: 16px;
+
+    .farm-branding {
+        margin-top: 8px;
+
+        padding-top: 6px;
     }
 
+
     .farm-label {
+        font-size: 8px;
+
+        letter-spacing: 1.5px;
+    }
+
+
+    .farm-branding strong {
+        font-size: 21px !important;
+    }
+
+
+    .header-actions {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        width: 100%;
+
+        gap: 7px;
+    }
+
+
+    .header-actions button {
+        width: 100%;
+
+        padding: 10px 7px;
+
+        font-size: 11px;
+    }
+
+
+    .activity-summary {
+        gap: 10px;
+
+        margin-bottom: 12px;
+    }
+
+
+    .summary-box {
+        padding: 15px;
+    }
+
+
+    .summary-box h3 {
+        font-size: 15px;
+    }
+
+
+    .summary-box p {
+        font-size: 12px;
+    }
+
+
+    .summary-box:last-child p {
+        font-size: 27px;
+    }
+
+
+    .activity-section {
+        border-radius: 10px;
+
+        margin-bottom: 12px;
+    }
+
+
+    .activity-section h2 {
+        font-size: 16px;
+
+        padding: 13px 15px;
+    }
+
+
+    thead th {
+        padding: 11px 9px;
+
+        font-size: 11px;
+    }
+
+
+    tbody td {
+        padding: 10px 9px;
+
+        font-size: 12px;
+    }
+
+
+    .activity-actions {
+        display: grid;
+
+        grid-template-columns: 1fr;
+
+        gap: 8px;
+    }
+
+
+    .activity-actions button {
+        width: 100%;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .activity-container {
+        padding: 7px;
+    }
+
+
+    .activity-header {
+        padding: 14px;
+    }
+
+
+    .activity-brand {
+        gap: 8px;
+    }
+
+
+    .brand-icon {
+        width: 40px;
+        height: 40px;
+
+        font-size: 21px;
+    }
+
+
+    .software-brand {
+        font-size: 11px !important;
+    }
+
+
+    .activity-brand h2 {
+        font-size: 18px;
+    }
+
+
+    .activity-brand p {
+        font-size: 11px;
+    }
+
+
+    .farm-branding strong {
+        font-size: 18px !important;
+    }
+
+
+    .header-actions button {
+        font-size: 10px;
+
+        padding: 9px 5px;
+    }
+
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+@media print {
+
+    body {
+        background: #ffffff;
+
+        color: #000000;
+    }
+
+
+    .activity-container {
+        max-width: none;
+
+        padding: 0;
+
+        margin: 0;
+    }
+
+
+    .activity-header {
+        background: #ffffff !important;
+
+        color: #000000 !important;
+
+        box-shadow: none;
+
+        border-radius: 0;
+
+        padding: 0 0 12px 0;
+
+        margin-bottom: 12px;
+
+        display: block;
+    }
+
+
+    .brand-icon,
+    .header-actions,
+    .activity-actions {
+        display: none !important;
+    }
+
+
+    .activity-brand {
+        display: block;
+    }
+
+
+    .software-brand {
+        display: none !important;
+    }
+
+
+    .activity-brand h2 {
+        display: block;
+
+        color: #000000;
+
+        text-align: center;
+
+        font-size: 22px;
+
+        margin: 0 0 4px 0;
+    }
+
+
+    .activity-brand p {
+        color: #000000;
+
+        text-align: center;
+
+        font-size: 11px;
+
+        margin-bottom: 8px;
+    }
+
+
+    .farm-branding {
+        margin: 0 !important;
+
+        padding: 0 !important;
+
+        border: none !important;
+
+        text-align: center;
+    }
+
+
+    .farm-label {
+        display: none !important;
+    }
+
+
+    .farm-branding strong {
+        display: block !important;
+
+        color: #000000 !important;
+
+        font-size: 28px !important;
+
+        font-weight: 800 !important;
+
+        text-align: center !important;
+
+        line-height: 1.2;
+
+        margin: 0 0 10px 0 !important;
+    }
+
+
+    .activity-summary {
+        display: grid;
+
+        grid-template-columns: 2fr 1fr;
+
+        gap: 10px;
+
+        margin-bottom: 12px;
+    }
+
+
+    .summary-box {
+        box-shadow: none;
+
+        border: 1px solid #999;
+
+        border-radius: 0;
+
+        padding: 10px;
+    }
+
+
+    .summary-box h3 {
+        color: #000000;
+
+        font-size: 12px;
+    }
+
+
+    .summary-box p {
+        color: #000000;
+
+        font-size: 10px;
+    }
+
+
+    .summary-box:last-child p {
+        color: #000000;
+
+        font-size: 20px;
+    }
+
+
+    .activity-section {
+        box-shadow: none;
+
+        border: 1px solid #999;
+
+        border-radius: 0;
+
+        margin-bottom: 0;
+
+        overflow: visible;
+    }
+
+
+    .activity-section h2 {
+        background: #ffffff;
+
+        color: #000000;
+
+        border-bottom: 1px solid #999;
+
+        font-size: 14px;
+
+        padding: 8px;
+    }
+
+
+    table {
+        min-width: 0;
+
+        width: 100%;
+    }
+
+
+    thead {
+        background: #eeeeee !important;
+
+        color: #000000 !important;
+    }
+
+
+    thead th {
+        color: #000000 !important;
+
+        border: 1px solid #999;
+
         font-size: 9px;
+
+        padding: 6px;
+    }
+
+
+    tbody td {
+        color: #000000 !important;
+
+        border: 1px solid #999;
+
+        font-size: 8px;
+
+        padding: 5px;
+    }
+
+
+    tbody tr:nth-child(even) {
+        background: #ffffff !important;
+    }
+
+
+    #activityTable td[colspan="6"] {
+        padding: 20px;
     }
 
 }

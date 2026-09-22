@@ -1,21 +1,20 @@
-
 /* =========================================================
-   MUNKA PIGGERY
+   MUNKA PIGGERY TECHNOLOGY
    NORMAL FARM USER MANAGEMENT
    SUPABASE AUTH VERSION
    FARM USER V3
-   ========================================================= */
+   FARM-BRANDED VERSION
+========================================================= */
 
 
 /* =========================================================
    GET LOGGED-IN USER
-   ========================================================= */
+========================================================= */
 
 function getLoggedInUser() {
 
     const storedUser =
         localStorage.getItem("loggedInUser");
-
 
     if (!storedUser) {
 
@@ -27,12 +26,9 @@ function getLoggedInUser() {
         return null;
     }
 
-
     try {
 
-        return JSON.parse(
-            storedUser
-        );
+        return JSON.parse(storedUser);
 
     } catch (error) {
 
@@ -54,11 +50,120 @@ function getLoggedInUser() {
 
 
 /* =========================================================
+   GET REGISTERED FARM NAME
+========================================================= */
+
+async function getRegisteredFarmName() {
+
+    try {
+
+        const {
+            data: sessionData,
+            error: sessionError
+        } =
+            await supabaseClient
+            .auth
+            .getSession();
+
+        if (
+            sessionError ||
+            !sessionData.session
+        ) {
+
+            return "Registered Farm";
+        }
+
+        const authUserId =
+            sessionData.session.user.id;
+
+        const {
+            data: userProfile,
+            error: userError
+        } =
+            await supabaseClient
+            .from("users")
+            .select("farm_id")
+            .eq(
+                "auth_user_id",
+                authUserId
+            )
+            .maybeSingle();
+
+        if (
+            userError ||
+            !userProfile ||
+            !userProfile.farm_id
+        ) {
+
+            return "Registered Farm";
+        }
+
+        const {
+            data: farm,
+            error: farmError
+        } =
+            await supabaseClient
+            .from("farms")
+            .select("farm_name")
+            .eq(
+                "id",
+                userProfile.farm_id
+            )
+            .maybeSingle();
+
+        if (
+            farmError ||
+            !farm ||
+            !farm.farm_name
+        ) {
+
+            return "Registered Farm";
+        }
+
+        return farm.farm_name;
+
+    } catch (error) {
+
+        console.error(
+            "FARM NAME ERROR:",
+            error
+        );
+
+        return "Registered Farm";
+    }
+}
+
+
+/* =========================================================
+   SAFE FARM NAME FOR FILE NAME
+========================================================= */
+
+function getSafeFarmName(farmName) {
+
+    return String(farmName)
+
+        .replace(
+            /[^a-z0-9]/gi,
+            "_"
+        )
+
+        .replace(
+            /_+/g,
+            "_"
+        )
+
+        .replace(
+            /^_|_$/g,
+            ""
+        );
+}
+
+
+/* =========================================================
    GENERATE USER ID
-   =========================================================
    Format:
    U-XXXXXXXX
-   ========================================================= */
+========================================================= */
 
 function generateUserID() {
 
@@ -79,7 +184,6 @@ function generateUserID() {
         window.crypto.getRandomValues(
             values
         );
-
 
         for (
             let i = 0;
@@ -112,26 +216,22 @@ function generateUserID() {
         }
     }
 
-
     return "U-" + randomPart;
 }
 
 
 /* =========================================================
    LOAD USERS
-   ========================================================= */
+========================================================= */
 
 async function loadUsers() {
 
     const loggedUser =
         getLoggedInUser();
 
-
     if (!loggedUser) {
-
         return;
     }
-
 
     if (!loggedUser.farm_id) {
 
@@ -141,7 +241,6 @@ async function loadUsers() {
 
         return;
     }
-
 
     const {
         data,
@@ -193,19 +292,16 @@ async function loadUsers() {
 /* =========================================================
    SAVE USER
    CREATE SUPABASE AUTH ACCOUNT
-   ========================================================= */
+========================================================= */
 
 async function saveUser() {
 
     const loggedUser =
         getLoggedInUser();
 
-
     if (!loggedUser) {
-
         return;
     }
-
 
     if (!loggedUser.farm_id) {
 
@@ -216,10 +312,6 @@ async function saveUser() {
         return;
     }
 
-
-    /* =====================================================
-       GET FORM VALUES
-       ===================================================== */
 
     const fullName =
         document
@@ -261,10 +353,6 @@ async function saveUser() {
         .value;
 
 
-    /* =====================================================
-       VALIDATION
-       ===================================================== */
-
     if (
         fullName === "" ||
         email === "" ||
@@ -293,10 +381,6 @@ async function saveUser() {
     }
 
 
-    /* =====================================================
-       PREVENT SAVE WHILE EDITING
-       ===================================================== */
-
     const existingUserID =
         document
         .getElementById("userID")
@@ -315,10 +399,6 @@ async function saveUser() {
     }
 
 
-    /* =====================================================
-       EMAIL FORMAT CHECK
-       ===================================================== */
-
     const emailPattern =
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -335,30 +415,23 @@ async function saveUser() {
     }
 
 
-    /* =====================================================
-       GENERATE NEW USER ID
-       ===================================================== */
-
     const userID =
         generateUserID();
 
 
-    console.log(
-        "GENERATED USER ID:",
-        userID
-    );
+    const farmName =
+        await getRegisteredFarmName();
 
-
-    /* =====================================================
-       CONFIRM CREATION
-       ===================================================== */
 
     const confirmed =
         confirm(
 
             "Create this farm user?\n\n" +
 
-            "User ID: " +
+            "Farm: " +
+            farmName +
+
+            "\nUser ID: " +
             userID +
 
             "\nName: " +
@@ -377,14 +450,9 @@ async function saveUser() {
 
 
     if (!confirmed) {
-
         return;
     }
 
-
-    /* =====================================================
-       GET CURRENT SUPABASE SESSION
-       ===================================================== */
 
     const {
         data: sessionData,
@@ -410,10 +478,6 @@ async function saveUser() {
         return;
     }
 
-
-    /* =====================================================
-       CREATE FARM USER THROUGH V3 EDGE FUNCTION
-       ===================================================== */
 
     const {
         data,
@@ -455,10 +519,6 @@ async function saveUser() {
         );
 
 
-    /* =====================================================
-       EDGE FUNCTION ERROR
-       ===================================================== */
-
     if (error) {
 
         console.error(
@@ -471,10 +531,6 @@ async function saveUser() {
             error.message ||
             "Unable to create user.";
 
-
-        /* ================================================
-           TRY TO READ SERVER RESPONSE
-           ================================================ */
 
         if (
             error.context
@@ -524,10 +580,6 @@ async function saveUser() {
     }
 
 
-    /* =====================================================
-       CHECK SERVER RESPONSE
-       ===================================================== */
-
     if (
         !data ||
         data.success !== true
@@ -547,10 +599,6 @@ async function saveUser() {
         return;
     }
 
-
-    /* =====================================================
-       ACTIVITY LOG
-       ===================================================== */
 
     await saveActivity(
 
@@ -577,15 +625,14 @@ async function saveUser() {
     );
 
 
-    /* =====================================================
-       SUCCESS MESSAGE
-       ===================================================== */
-
     alert(
 
         "USER CREATED SUCCESSFULLY!\n\n" +
 
-        "User ID: " +
+        "Farm: " +
+        data.user.farm_name +
+
+        "\nUser ID: " +
         data.user.userID +
 
         "\nName: " +
@@ -598,24 +645,13 @@ async function saveUser() {
         data.user.username +
 
         "\nRole: " +
-        data.user.role +
-
-        "\nFarm: " +
-        data.user.farm_name
+        data.user.role
 
     );
 
 
-    /* =====================================================
-       CLEAR FORM
-       ===================================================== */
-
     clearForm();
 
-
-    /* =====================================================
-       RELOAD USERS
-       ===================================================== */
 
     await loadUsers();
 
@@ -624,7 +660,7 @@ async function saveUser() {
 
 /* =========================================================
    DISPLAY USERS
-   ========================================================= */
+========================================================= */
 
 function displayUsers(users) {
 
@@ -635,7 +671,6 @@ function displayUsers(users) {
 
 
     if (!table) {
-
         return;
     }
 
@@ -750,7 +785,7 @@ function displayUsers(users) {
 
 /* =========================================================
    EDIT USER
-   ========================================================= */
+========================================================= */
 
 async function editUser(id) {
 
@@ -759,7 +794,6 @@ async function editUser(id) {
 
 
     if (!loggedUser) {
-
         return;
     }
 
@@ -815,10 +849,6 @@ async function editUser(id) {
     }
 
 
-    /* =====================================================
-       PUT USER DATA INTO FORM
-       ===================================================== */
-
     document
         .getElementById("userID")
         .value =
@@ -847,10 +877,6 @@ async function editUser(id) {
             data.username ||
             "";
 
-
-    /* =====================================================
-       PASSWORD NEVER LOADED
-       ===================================================== */
 
     document
         .getElementById("password")
@@ -882,18 +908,10 @@ async function editUser(id) {
             "Active";
 
 
-    /* =====================================================
-       EMAIL CANNOT BE CHANGED HERE
-       ===================================================== */
-
     document
         .getElementById("email")
         .readOnly = true;
 
-
-    /* =====================================================
-       SCROLL TO FORM
-       ===================================================== */
 
     document
         .getElementById("userForm")
@@ -915,7 +933,7 @@ async function editUser(id) {
 
 /* =========================================================
    UPDATE USER
-   ========================================================= */
+========================================================= */
 
 async function updateUser() {
 
@@ -924,7 +942,6 @@ async function updateUser() {
 
 
     if (!loggedUser) {
-
         return;
     }
 
@@ -996,10 +1013,6 @@ async function updateUser() {
     }
 
 
-    /* =====================================================
-       PREVENT CHANGING OWN ACCOUNT
-       ===================================================== */
-
     const numericUserID =
         Number(
             userID.replace(
@@ -1035,7 +1048,7 @@ async function updateUser() {
 
 /* =========================================================
    DELETE USER
-   ========================================================= */
+========================================================= */
 
 async function deleteUser(id) {
 
@@ -1044,7 +1057,6 @@ async function deleteUser(id) {
 
 
     if (!loggedUser) {
-
         return;
     }
 
@@ -1072,11 +1084,18 @@ async function deleteUser(id) {
     }
 
 
+    const farmName =
+        await getRegisteredFarmName();
+
+
     alert(
 
         "User deletion is temporarily disabled.\n\n" +
 
-        "This is because the user now has a Supabase Auth account. " +
+        "Farm: " +
+        farmName +
+
+        "\n\nThis is because the user now has a Supabase Auth account. " +
 
         "Deleting only the database record would leave the Auth account behind.\n\n" +
 
@@ -1088,7 +1107,7 @@ async function deleteUser(id) {
 
 /* =========================================================
    CLEAR FORM
-   ========================================================= */
+========================================================= */
 
 function clearForm() {
 
@@ -1121,7 +1140,7 @@ function clearForm() {
 
 /* =========================================================
    ESCAPE HTML
-   ========================================================= */
+========================================================= */
 
 function escapeHTML(value) {
 
@@ -1165,7 +1184,7 @@ function escapeHTML(value) {
 
 /* =========================================================
    DOWNLOAD USERS PDF
-   ========================================================= */
+========================================================= */
 
 async function downloadUsersPDF() {
 
@@ -1174,7 +1193,6 @@ async function downloadUsersPDF() {
 
 
     if (!loggedUser) {
-
         return;
     }
 
@@ -1187,6 +1205,10 @@ async function downloadUsersPDF() {
 
         return;
     }
+
+
+    const farmName =
+        await getRegisteredFarmName();
 
 
     const {
@@ -1271,7 +1293,7 @@ async function downloadUsersPDF() {
 
     /* =====================================================
        PDF HEADER
-       ===================================================== */
+    ===================================================== */
 
     doc.setFont(
         "helvetica",
@@ -1285,7 +1307,7 @@ async function downloadUsersPDF() {
 
 
     doc.text(
-        "MUNKA PIGGERY",
+        farmName,
         148,
         15,
         {
@@ -1323,10 +1345,24 @@ async function downloadUsersPDF() {
 
 
     doc.text(
-        "Generated: " +
-        new Date().toLocaleString(),
+        "Farm: " +
+        farmName,
         14,
         32
+    );
+
+
+    doc.text(
+        "Generated: " +
+        new Date().toLocaleString(
+            "en-ZM",
+            {
+                timeZone:
+                    "Africa/Lusaka"
+            }
+        ),
+        14,
+        38
     );
 
 
@@ -1334,13 +1370,13 @@ async function downloadUsersPDF() {
         "Total Users: " +
         users.length,
         14,
-        38
+        44
     );
 
 
     /* =====================================================
        PDF TABLE
-       ===================================================== */
+    ===================================================== */
 
     const tableData =
         users.map(
@@ -1374,7 +1410,7 @@ async function downloadUsersPDF() {
     doc.autoTable({
 
         startY:
-            44,
+            50,
 
         head: [[
 
@@ -1467,7 +1503,7 @@ async function downloadUsersPDF() {
 
     /* =====================================================
        PDF FOOTER
-       ===================================================== */
+    ===================================================== */
 
     const pageCount =
         doc.internal
@@ -1498,7 +1534,8 @@ async function downloadUsersPDF() {
 
         doc.text(
 
-            "MUNKA PIGGERY Management System",
+            farmName +
+            " - User Management",
 
             148,
 
@@ -1508,6 +1545,17 @@ async function downloadUsersPDF() {
                 align:
                     "center"
             }
+
+        );
+
+
+        doc.text(
+
+            "MUNKA PIGGERY TECHNOLOGY",
+
+            14,
+
+            200
 
         );
 
@@ -1535,7 +1583,7 @@ async function downloadUsersPDF() {
 
     /* =====================================================
        SAVE PDF
-       ===================================================== */
+    ===================================================== */
 
     const date =
         new Date()
@@ -1546,9 +1594,16 @@ async function downloadUsersPDF() {
         );
 
 
+    const safeFarmName =
+        getSafeFarmName(
+            farmName
+        );
+
+
     doc.save(
 
-        "MUNKA_PIGGERY_Users_Report_" +
+        safeFarmName +
+        "_Users_Report_" +
         date +
         ".pdf"
 
@@ -1558,7 +1613,7 @@ async function downloadUsersPDF() {
 
 /* =========================================================
    LOAD AUTOMATICALLY
-   ========================================================= */
+========================================================= */
 
 document.addEventListener(
 

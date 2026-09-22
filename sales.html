@@ -9,9 +9,11 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-    <title>MUNKA PIGGERY TECHNOLOGY - Sales Records</title>
+    <title>Registered Farm - Sales Records</title>
 
     <link rel="stylesheet" href="sales.css">
+
+    <link rel="stylesheet" href="farm_branding.css">
 
     <!-- ==================================================
          jsPDF
@@ -37,9 +39,9 @@
 
         <div>
 
-            <h1>
-                MUNKA PIGGERY TECHNOLOGY
-            </h1>
+            <div class="software-brand">
+                🐖 MUNKA PIGGERY TECHNOLOGY
+            </div>
 
             <p class="subtitle">
                 Piggery Management System
@@ -814,24 +816,6 @@
 ====================================================== -->
 
 <script src="sales.js"></script>
-
-
-<!-- ======================================================
-     FARM BRANDING INITIALIZATION
-====================================================== -->
-
-<script>
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
-
-            if (typeof loadFarmBranding === "function") {
-                loadFarmBranding();
-            }
-
-        }
-    );
-</script>
 
 
 </body>

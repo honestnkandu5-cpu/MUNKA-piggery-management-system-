@@ -1,5 +1,5 @@
 // =====================================
-// MUNKA PIGGERY FARM
+// MUNKA PIGGERY TECHNOLOGY
 // WEANING RECORDS - SUPABASE
 // FARM-SECURED VERSION
 // =====================================
@@ -57,20 +57,115 @@ function getFarmID(){
 
 
 // =====================================
+// GET REGISTERED FARM NAME
+// =====================================
+
+async function getRegisteredFarmName(){
+
+    try{
+
+        if(
+            typeof supabaseClient === "undefined"
+        ){
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        const loggedUser =
+            getLoggedUser();
+
+
+        if(!loggedUser){
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        const farmID =
+            loggedUser.farm_id;
+
+
+        if(
+            farmID === null ||
+            farmID === undefined ||
+            farmID === ""
+        ){
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        const { data: farm, error } =
+            await supabaseClient
+            .from("farms")
+            .select("farm_name")
+            .eq("id", farmID)
+            .maybeSingle();
+
+
+        if(error){
+
+            console.error(
+                "GET FARM NAME ERROR:",
+                error
+            );
+
+            return "REGISTERED FARM";
+
+        }
+
+
+        if(
+            farm &&
+            farm.farm_name
+        ){
+
+            return String(
+                farm.farm_name
+            ).trim();
+
+        }
+
+
+        return "REGISTERED FARM";
+
+    }
+    catch(error){
+
+        console.error(
+            "FARM NAME ERROR:",
+            error
+        );
+
+        return "REGISTERED FARM";
+
+    }
+
+}
+
+
+// =====================================
 // FORMAT LOCAL DATE
 // =====================================
 
 function formatLocalDate(date){
 
-    const year = date.getFullYear();
+    const year =
+        date.getFullYear();
 
     const month =
-        String(date.getMonth() + 1)
-        .padStart(2, "0");
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
 
     const day =
-        String(date.getDate())
-        .padStart(2, "0");
+        String(
+            date.getDate()
+        ).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
 }
@@ -84,27 +179,48 @@ function formatLocalDate(date){
 function calculateWeaningDate(){
 
     const farrowDate =
-        document.getElementById("farrowDate").value;
+        document.getElementById(
+            "farrowDate"
+        ).value;
 
     if(!farrowDate){
-        document.getElementById("weaningDate").value = "";
+
+        document.getElementById(
+            "weaningDate"
+        ).value = "";
+
         return;
+
     }
 
-    const date = new Date(
-        farrowDate + "T00:00:00"
-    );
 
-    if(isNaN(date.getTime())){
+    const date =
+        new Date(
+            farrowDate + "T00:00:00"
+        );
+
+
+    if(
+        isNaN(
+            date.getTime()
+        )
+    ){
+
         return;
+
     }
+
 
     date.setDate(
         date.getDate() + 33
     );
 
-    document.getElementById("weaningDate").value =
+
+    document.getElementById(
+        "weaningDate"
+    ).value =
         formatLocalDate(date);
+
 }
 
 
@@ -116,7 +232,8 @@ async function loadRecords(){
 
     try{
 
-        const farmID = getFarmID();
+        const farmID =
+            getFarmID();
 
         if(!farmID) return;
 
@@ -126,13 +243,20 @@ async function loadRecords(){
             .from("weaning_records")
             .select("*")
             .eq("farm_id", farmID)
-            .order("id", { ascending:true });
+            .order(
+                "id",
+                {
+                    ascending:true
+                }
+            );
 
 
         if(error) throw error;
 
 
-        weaningRecords = data || [];
+        weaningRecords =
+            data || [];
+
 
         displayRecords();
 
@@ -156,19 +280,24 @@ async function loadRecords(){
 async function loadFarrowingDetails(){
 
     const sowID =
-        document.getElementById("sowID")
-        .value.trim();
+        document.getElementById(
+            "sowID"
+        ).value.trim();
 
 
     if(sowID === ""){
 
-        alert("Please enter a Sow ID.");
+        alert(
+            "Please enter a Sow ID."
+        );
 
         return;
+
     }
 
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if(!farmID) return;
 
@@ -181,26 +310,39 @@ async function loadFarrowingDetails(){
             .select("*")
             .eq("sow_id", sowID)
             .eq("farm_id", farmID)
-            .order("id", { ascending:false })
+            .order(
+                "id",
+                {
+                    ascending:false
+                }
+            )
             .limit(1)
             .single();
 
 
-        if(error || !data){
+        if(
+            error ||
+            !data
+        ){
 
             alert(
                 "No farrowing record found for this Sow ID."
             );
 
             return;
+
         }
 
 
-        document.getElementById("farrowDate").value =
+        document.getElementById(
+            "farrowDate"
+        ).value =
             data.farrow_date || "";
 
 
-        document.getElementById("totalBorn").value =
+        document.getElementById(
+            "totalBorn"
+        ).value =
             data.total_born || 0;
 
 
@@ -238,7 +380,9 @@ function loadFarrowingSow(){
 // AUTOMATIC WEANING DATE
 // =====================================
 
-document.getElementById("farrowDate")
+document.getElementById(
+    "farrowDate"
+)
 .addEventListener(
     "change",
     calculateWeaningDate
@@ -253,30 +397,40 @@ function calculateTotalWeaned(){
 
     const male =
         Number(
-            document.getElementById("maleWeaned").value
+            document.getElementById(
+                "maleWeaned"
+            ).value
         ) || 0;
 
 
     const female =
         Number(
-            document.getElementById("femaleWeaned").value
+            document.getElementById(
+                "femaleWeaned"
+            ).value
         ) || 0;
 
 
-    document.getElementById("totalWeaned").value =
+    document.getElementById(
+        "totalWeaned"
+    ).value =
         male + female;
 
 }
 
 
-document.getElementById("maleWeaned")
+document.getElementById(
+    "maleWeaned"
+)
 .addEventListener(
     "change",
     calculateTotalWeaned
 );
 
 
-document.getElementById("femaleWeaned")
+document.getElementById(
+    "femaleWeaned"
+)
 .addEventListener(
     "change",
     calculateTotalWeaned
@@ -287,26 +441,36 @@ document.getElementById("femaleWeaned")
 // OTHER MORTALITY REASON
 // =====================================
 
-document.getElementById("mortalityReason")
+document.getElementById(
+    "mortalityReason"
+)
 .addEventListener(
     "change",
     function(){
 
         const otherGroup =
-            document.getElementById("otherReasonGroup");
+            document.getElementById(
+                "otherReasonGroup"
+            );
 
         const otherInput =
-            document.getElementById("otherReason");
+            document.getElementById(
+                "otherReason"
+            );
 
 
-        if(this.value === "Other"){
+        if(
+            this.value === "Other"
+        ){
 
-            otherGroup.style.display = "flex";
+            otherGroup.style.display =
+                "flex";
 
         }
         else{
 
-            otherGroup.style.display = "none";
+            otherGroup.style.display =
+                "none";
 
             otherInput.value = "";
 
@@ -324,7 +488,9 @@ document.addEventListener(
     "DOMContentLoaded",
     function(){
 
-        document.getElementById("sowID")
+        document.getElementById(
+            "sowID"
+        )
         .addEventListener(
             "change",
             loadFarrowingDetails
@@ -343,7 +509,9 @@ document.addEventListener(
 // SAVE / UPDATE WEANING RECORDS
 // =====================================
 
-document.getElementById("weaningForm")
+document.getElementById(
+    "weaningForm"
+)
 .addEventListener(
     "submit",
     async function(e){
@@ -351,54 +519,69 @@ document.getElementById("weaningForm")
         e.preventDefault();
 
 
-        const loggedUser = getLoggedUser();
+        const loggedUser =
+            getLoggedUser();
 
         if(!loggedUser) return;
 
 
-        const farmID = getFarmID();
+        const farmID =
+            getFarmID();
 
         if(!farmID) return;
 
 
         const sowID =
-            document.getElementById("sowID")
-            .value.trim();
+            document.getElementById(
+                "sowID"
+            ).value.trim();
 
 
         if(!sowID){
 
-            alert("Please enter a Sow ID.");
+            alert(
+                "Please enter a Sow ID."
+            );
 
             return;
+
         }
 
 
         const maleWeaned =
             Number(
-                document.getElementById("maleWeaned").value
+                document.getElementById(
+                    "maleWeaned"
+                ).value
             ) || 0;
 
 
         const femaleWeaned =
             Number(
-                document.getElementById("femaleWeaned").value
+                document.getElementById(
+                    "femaleWeaned"
+                ).value
             ) || 0;
 
 
         const totalWeaned =
-            maleWeaned + femaleWeaned;
+            maleWeaned +
+            femaleWeaned;
 
 
         const totalBorn =
             Number(
-                document.getElementById("totalBorn").value
+                document.getElementById(
+                    "totalBorn"
+                ).value
             ) || 0;
 
 
         const mortality =
             Number(
-                document.getElementById("mortality").value
+                document.getElementById(
+                    "mortality"
+                ).value
             ) || 0;
 
 
@@ -407,15 +590,19 @@ document.getElementById("weaningForm")
         // ===============================
 
         let reason =
-            document.getElementById("mortalityReason")
-            .value;
+            document.getElementById(
+                "mortalityReason"
+            ).value;
 
 
-        if(reason === "Other"){
+        if(
+            reason === "Other"
+        ){
 
             reason =
-                document.getElementById("otherReason")
-                .value.trim();
+                document.getElementById(
+                    "otherReason"
+                ).value.trim();
 
         }
 
@@ -426,43 +613,56 @@ document.getElementById("weaningForm")
 
         const record = {
 
-            farm_id: farmID,
+            farm_id:
+                farmID,
 
-            sow_id: sowID,
+            sow_id:
+                sowID,
 
             farrow_date:
-                document.getElementById("farrowDate")
-                .value,
+                document.getElementById(
+                    "farrowDate"
+                ).value,
 
             weaning_date:
-                document.getElementById("weaningDate")
-                .value,
+                document.getElementById(
+                    "weaningDate"
+                ).value,
 
-            total_born: totalBorn,
+            total_born:
+                totalBorn,
 
-            male_weaned: maleWeaned,
+            male_weaned:
+                maleWeaned,
 
-            female_weaned: femaleWeaned,
+            female_weaned:
+                femaleWeaned,
 
-            total_weaned: totalWeaned,
+            total_weaned:
+                totalWeaned,
 
             average_weight:
                 Number(
-                    document.getElementById("averageWeight")
-                    .value
+                    document.getElementById(
+                        "averageWeight"
+                    ).value
                 ) || 0,
 
-            mortality: mortality,
+            mortality:
+                mortality,
 
-            mortality_reason: reason,
+            mortality_reason:
+                reason,
 
             destination_pen:
-                document.getElementById("destinationPen")
-                .value,
+                document.getElementById(
+                    "destinationPen"
+                ).value,
 
             remarks:
-                document.getElementById("remarks")
-                .value,
+                document.getElementById(
+                    "remarks"
+                ).value,
 
             created_by:
                 loggedUser.full_name,
@@ -489,8 +689,12 @@ document.getElementById("weaningForm")
 
                 const { error } =
                     await supabaseClient
-                    .from("weaning_records")
-                    .insert([record]);
+                    .from(
+                        "weaning_records"
+                    )
+                    .insert([
+                        record
+                    ]);
 
 
                 if(error) throw error;
@@ -536,7 +740,6 @@ document.getElementById("weaningForm")
 
                 delete record.farm_id;
 
-
                 delete record.created_at;
 
                 delete record.created_by;
@@ -544,10 +747,18 @@ document.getElementById("weaningForm")
 
                 const { error } =
                     await supabaseClient
-                    .from("weaning_records")
+                    .from(
+                        "weaning_records"
+                    )
                     .update(record)
-                    .eq("id", editID)
-                    .eq("farm_id", farmID);
+                    .eq(
+                        "id",
+                        editID
+                    )
+                    .eq(
+                        "farm_id",
+                        farmID
+                    );
 
 
                 if(error) throw error;
@@ -603,12 +814,29 @@ document.getElementById("weaningForm")
 
 function escapeHTML(value){
 
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
 
 }
 
@@ -622,13 +850,18 @@ function displayRecords(
 ){
 
     const table =
-        document.getElementById("weaningTable");
+        document.getElementById(
+            "weaningTable"
+        );
 
 
     table.innerHTML = "";
 
 
-    if(!records || records.length === 0){
+    if(
+        !records ||
+        records.length === 0
+    ){
 
         table.innerHTML = `
             <tr>
@@ -639,84 +872,93 @@ function displayRecords(
         `;
 
         return;
+
     }
 
 
-    records.forEach(function(record){
+    records.forEach(
+        function(record){
 
-        table.innerHTML += `
+            table.innerHTML += `
 
-            <tr>
+                <tr>
 
-                <td>
-                    ${escapeHTML(record.sow_id)}
-                </td>
+                    <td>
+                        ${escapeHTML(
+                            record.sow_id
+                        )}
+                    </td>
 
-                <td>
-                    ${escapeHTML(record.farrow_date || "")}
-                </td>
+                    <td>
+                        ${escapeHTML(
+                            record.farrow_date || ""
+                        )}
+                    </td>
 
-                <td>
-                    ${escapeHTML(record.weaning_date || "")}
-                </td>
+                    <td>
+                        ${escapeHTML(
+                            record.weaning_date || ""
+                        )}
+                    </td>
 
-                <td>
-                    ${record.total_born || 0}
-                </td>
+                    <td>
+                        ${record.total_born || 0}
+                    </td>
 
-                <td>
-                    ${record.male_weaned || 0}
-                </td>
+                    <td>
+                        ${record.male_weaned || 0}
+                    </td>
 
-                <td>
-                    ${record.female_weaned || 0}
-                </td>
+                    <td>
+                        ${record.female_weaned || 0}
+                    </td>
 
-                <td>
-                    <strong>
-                        ${record.total_weaned || 0}
-                    </strong>
-                </td>
+                    <td>
+                        <strong>
+                            ${record.total_weaned || 0}
+                        </strong>
+                    </td>
 
-                <td>
-                    ${record.average_weight || 0} Kg
-                </td>
+                    <td>
+                        ${record.average_weight || 0} Kg
+                    </td>
 
-                <td>
-                    ${record.mortality || 0}
-                </td>
+                    <td>
+                        ${record.mortality || 0}
+                    </td>
 
-                <td>
-                    ${escapeHTML(
-                        record.destination_pen || ""
-                    )}
-                </td>
+                    <td>
+                        ${escapeHTML(
+                            record.destination_pen || ""
+                        )}
+                    </td>
 
-                <td class="action-buttons">
+                    <td class="action-buttons">
 
-                    <button
-                        type="button"
-                        class="edit-btn"
-                        onclick="editRecord(${record.id})"
-                    >
-                        Edit
-                    </button>
+                        <button
+                            type="button"
+                            class="edit-btn"
+                            onclick="editRecord(${record.id})"
+                        >
+                            Edit
+                        </button>
 
-                    <button
-                        type="button"
-                        class="delete-btn"
-                        onclick="deleteRecord(${record.id})"
-                    >
-                        Delete
-                    </button>
+                        <button
+                            type="button"
+                            class="delete-btn"
+                            onclick="deleteRecord(${record.id})"
+                        >
+                            Delete
+                        </button>
 
-                </td>
+                    </td>
 
-            </tr>
+                </tr>
 
-        `;
+            `;
 
-    });
+        }
+    );
 
 }
 
@@ -727,7 +969,8 @@ function displayRecords(
 
 async function editRecord(id){
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if(!farmID) return;
 
@@ -736,49 +979,75 @@ async function editRecord(id){
 
         const { data, error } =
             await supabaseClient
-            .from("weaning_records")
+            .from(
+                "weaning_records"
+            )
             .select("*")
-            .eq("id", id)
-            .eq("farm_id", farmID)
+            .eq(
+                "id",
+                id
+            )
+            .eq(
+                "farm_id",
+                farmID
+            )
             .single();
 
 
         if(error) throw error;
 
 
-        document.getElementById("sowID").value =
+        document.getElementById(
+            "sowID"
+        ).value =
             data.sow_id || "";
 
 
-        document.getElementById("farrowDate").value =
+        document.getElementById(
+            "farrowDate"
+        ).value =
             data.farrow_date || "";
 
 
-        document.getElementById("weaningDate").value =
+        document.getElementById(
+            "weaningDate"
+        ).value =
             data.weaning_date || "";
 
 
-        document.getElementById("totalBorn").value =
+        document.getElementById(
+            "totalBorn"
+        ).value =
             data.total_born || 0;
 
 
-        document.getElementById("maleWeaned").value =
+        document.getElementById(
+            "maleWeaned"
+        ).value =
             data.male_weaned || "";
 
 
-        document.getElementById("femaleWeaned").value =
+        document.getElementById(
+            "femaleWeaned"
+        ).value =
             data.female_weaned || "";
 
 
-        document.getElementById("totalWeaned").value =
+        document.getElementById(
+            "totalWeaned"
+        ).value =
             data.total_weaned || 0;
 
 
-        document.getElementById("averageWeight").value =
+        document.getElementById(
+            "averageWeight"
+        ).value =
             data.average_weight || "";
 
 
-        document.getElementById("mortality").value =
+        document.getElementById(
+            "mortality"
+        ).value =
             data.mortality || "";
 
 
@@ -787,7 +1056,9 @@ async function editRecord(id){
         // ===============================
 
         const mortalityReason =
-            document.getElementById("mortalityReason");
+            document.getElementById(
+                "mortalityReason"
+            );
 
 
         const savedReason =
@@ -798,7 +1069,8 @@ async function editRecord(id){
             Array.from(
                 mortalityReason.options
             ).find(
-                option => option.value === savedReason
+                option =>
+                    option.value === savedReason
             );
 
 
@@ -809,38 +1081,48 @@ async function editRecord(id){
 
             document.getElementById(
                 "otherReasonGroup"
-            ).style.display = "none";
+            ).style.display =
+                "none";
 
         }
         else if(savedReason){
 
-            mortalityReason.value = "Other";
+            mortalityReason.value =
+                "Other";
 
             document.getElementById(
                 "otherReasonGroup"
-            ).style.display = "flex";
+            ).style.display =
+                "flex";
 
             document.getElementById(
                 "otherReason"
-            ).value = savedReason;
+            ).value =
+                savedReason;
 
         }
         else{
 
-            mortalityReason.value = "";
+            mortalityReason.value =
+                "";
 
             document.getElementById(
                 "otherReasonGroup"
-            ).style.display = "none";
+            ).style.display =
+                "none";
 
         }
 
 
-        document.getElementById("destinationPen").value =
+        document.getElementById(
+            "destinationPen"
+        ).value =
             data.destination_pen || "";
 
 
-        document.getElementById("remarks").value =
+        document.getElementById(
+            "remarks"
+        ).value =
             data.remarks || "";
 
 
@@ -857,7 +1139,6 @@ async function editRecord(id){
             behavior: "smooth"
 
         });
-
 
     }
     catch(error){
@@ -877,17 +1158,21 @@ async function editRecord(id){
 
 async function deleteRecord(id){
 
-    if(!confirm(
-        "Delete this weaning record?"
-    )) return;
+    if(
+        !confirm(
+            "Delete this weaning record?"
+        )
+    ) return;
 
 
-    const loggedUser = getLoggedUser();
+    const loggedUser =
+        getLoggedUser();
 
     if(!loggedUser) return;
 
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if(!farmID) return;
 
@@ -896,10 +1181,18 @@ async function deleteRecord(id){
 
         const { error } =
             await supabaseClient
-            .from("weaning_records")
+            .from(
+                "weaning_records"
+            )
             .delete()
-            .eq("id", id)
-            .eq("farm_id", farmID);
+            .eq(
+                "id",
+                id
+            )
+            .eq(
+                "farm_id",
+                farmID
+            );
 
 
         if(error) throw error;
@@ -948,11 +1241,13 @@ async function deleteRecord(id){
 async function searchRecord(){
 
     const keyword =
-        document.getElementById("searchWeaning")
-        .value.trim();
+        document.getElementById(
+            "searchWeaning"
+        ).value.trim();
 
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if(!farmID) return;
 
@@ -970,9 +1265,14 @@ async function searchRecord(){
 
         const { data, error } =
             await supabaseClient
-            .from("weaning_records")
+            .from(
+                "weaning_records"
+            )
             .select("*")
-            .eq("farm_id", farmID)
+            .eq(
+                "farm_id",
+                farmID
+            )
             .ilike(
                 "sow_id",
                 `%${keyword}%`
@@ -983,7 +1283,9 @@ async function searchRecord(){
         if(error) throw error;
 
 
-        displayRecords(data || []);
+        displayRecords(
+            data || []
+        );
 
     }
     catch(error){
@@ -997,7 +1299,9 @@ async function searchRecord(){
 }
 
 
-document.getElementById("searchWeaning")
+document.getElementById(
+    "searchWeaning"
+)
 .addEventListener(
     "keyup",
     searchRecord
@@ -1017,17 +1321,20 @@ function clearForm(){
 
     document.getElementById(
         "otherReasonGroup"
-    ).style.display = "none";
+    ).style.display =
+        "none";
 
 
     document.getElementById(
         "otherReason"
-    ).value = "";
+    ).value =
+        "";
 
 
     document.getElementById(
         "totalWeaned"
-    ).value = "";
+    ).value =
+        "";
 
 
     editID = null;
@@ -1041,7 +1348,8 @@ function clearForm(){
 
 async function generateReport(){
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if(!farmID) return;
 
@@ -1050,15 +1358,21 @@ async function generateReport(){
 
         const { data, error } =
             await supabaseClient
-            .from("weaning_records")
+            .from(
+                "weaning_records"
+            )
             .select("*")
-            .eq("farm_id", farmID);
+            .eq(
+                "farm_id",
+                farmID
+            );
 
 
         if(error) throw error;
 
 
-        const records = data || [];
+        const records =
+            data || [];
 
 
         let totalWeaned = 0;
@@ -1072,29 +1386,46 @@ async function generateReport(){
         let totalBorn = 0;
 
 
-        records.forEach(function(record){
+        records.forEach(
+            function(record){
 
-            totalBorn +=
-                Number(record.total_born) || 0;
+                totalBorn +=
+                    Number(
+                        record.total_born
+                    ) || 0;
 
-            totalMale +=
-                Number(record.male_weaned) || 0;
+                totalMale +=
+                    Number(
+                        record.male_weaned
+                    ) || 0;
 
-            totalFemale +=
-                Number(record.female_weaned) || 0;
+                totalFemale +=
+                    Number(
+                        record.female_weaned
+                    ) || 0;
 
-            totalWeaned +=
-                Number(record.total_weaned) || 0;
+                totalWeaned +=
+                    Number(
+                        record.total_weaned
+                    ) || 0;
 
-            totalMortality +=
-                Number(record.mortality) || 0;
+                totalMortality +=
+                    Number(
+                        record.mortality
+                    ) || 0;
 
-        });
+            }
+        );
+
+
+        const farmName =
+            await getRegisteredFarmName();
 
 
         alert(
 
-            "MUNKA PIGGERY WEANING REPORT\n\n" +
+            farmName +
+            " - WEANING REPORT\n\n" +
 
             "Total Records: " +
             records.length +
@@ -1134,12 +1465,14 @@ async function generateReport(){
 
 async function downloadPDF(){
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if(!farmID) return;
 
 
-    const loggedUser = getLoggedUser();
+    const loggedUser =
+        getLoggedUser();
 
     if(!loggedUser) return;
 
@@ -1153,31 +1486,55 @@ async function downloadPDF(){
             );
 
             return;
+
         }
 
 
-        const { jsPDF } = window.jspdf;
+        const farmName =
+            await getRegisteredFarmName();
+
+
+        const { jsPDF } =
+            window.jspdf;
 
 
         const { data, error } =
             await supabaseClient
-            .from("weaning_records")
+            .from(
+                "weaning_records"
+            )
             .select("*")
-            .eq("farm_id", farmID)
-            .order("id", { ascending:true });
+            .eq(
+                "farm_id",
+                farmID
+            )
+            .order(
+                "id",
+                {
+                    ascending:true
+                }
+            );
 
 
         if(error) throw error;
 
 
-        const records = data || [];
+        const records =
+            data || [];
 
 
         const doc =
             new jsPDF({
-                orientation: "landscape",
-                unit: "mm",
-                format: "a4"
+
+                orientation:
+                    "landscape",
+
+                unit:
+                    "mm",
+
+                format:
+                    "a4"
+
             });
 
 
@@ -1187,25 +1544,49 @@ async function downloadPDF(){
 
         doc.setFontSize(20);
 
-        doc.setFont(undefined, "bold");
+        doc.setFont(
+            undefined,
+            "bold"
+        );
+
 
         doc.text(
-            "MUNKA PIGGERY FARM",
+
+            farmName,
+
             148,
+
             15,
-            { align:"center" }
+
+            {
+                align:
+                    "center"
+            }
+
         );
 
 
         doc.setFontSize(14);
 
-        doc.setFont(undefined, "normal");
+        doc.setFont(
+            undefined,
+            "normal"
+        );
+
 
         doc.text(
+
             "WEANING RECORDS REPORT",
+
             148,
+
             23,
-            { align:"center" }
+
+            {
+                align:
+                    "center"
+            }
+
         );
 
 
@@ -1215,6 +1596,7 @@ async function downloadPDF(){
 
         doc.setFontSize(9);
 
+
         const today =
             new Date().toLocaleDateString(
                 "en-ZM"
@@ -1222,24 +1604,39 @@ async function downloadPDF(){
 
 
         doc.text(
-            "Farm ID: " + farmID,
+            "Farm ID: " +
+            farmID,
+
             14,
+
             32
         );
 
 
         doc.text(
+
             "Generated By: " +
-            (loggedUser.full_name || "Unknown User"),
+            (
+                loggedUser.full_name ||
+                "Unknown User"
+            ),
+
             14,
+
             38
+
         );
 
 
         doc.text(
-            "Report Date: " + today,
+
+            "Report Date: " +
+            today,
+
             14,
+
             44
+
         );
 
 
@@ -1248,33 +1645,53 @@ async function downloadPDF(){
         // ===============================
 
         let totalBorn = 0;
+
         let male = 0;
+
         let female = 0;
+
         let totalWeaned = 0;
+
         let mortality = 0;
 
 
-        records.forEach(function(record){
+        records.forEach(
+            function(record){
 
-            totalBorn +=
-                Number(record.total_born) || 0;
+                totalBorn +=
+                    Number(
+                        record.total_born
+                    ) || 0;
 
-            male +=
-                Number(record.male_weaned) || 0;
+                male +=
+                    Number(
+                        record.male_weaned
+                    ) || 0;
 
-            female +=
-                Number(record.female_weaned) || 0;
+                female +=
+                    Number(
+                        record.female_weaned
+                    ) || 0;
 
-            totalWeaned +=
-                Number(record.total_weaned) || 0;
+                totalWeaned +=
+                    Number(
+                        record.total_weaned
+                    ) || 0;
 
-            mortality +=
-                Number(record.mortality) || 0;
+                mortality +=
+                    Number(
+                        record.mortality
+                    ) || 0;
 
-        });
+            }
+        );
 
 
-        doc.setFont(undefined, "bold");
+        doc.setFont(
+            undefined,
+            "bold"
+        );
+
 
         doc.text(
             "Summary",
@@ -1283,17 +1700,36 @@ async function downloadPDF(){
         );
 
 
-        doc.setFont(undefined, "normal");
+        doc.setFont(
+            undefined,
+            "normal"
+        );
+
 
         doc.text(
-            "Records: " + records.length +
-            "   |   Total Born: " + totalBorn +
-            "   |   Male Weaned: " + male +
-            "   |   Female Weaned: " + female +
-            "   |   Total Weaned: " + totalWeaned +
-            "   |   Mortality: " + mortality,
+
+            "Records: " +
+            records.length +
+
+            "   |   Total Born: " +
+            totalBorn +
+
+            "   |   Male Weaned: " +
+            male +
+
+            "   |   Female Weaned: " +
+            female +
+
+            "   |   Total Weaned: " +
+            totalWeaned +
+
+            "   |   Mortality: " +
+            mortality,
+
             14,
+
             59
+
         );
 
 
@@ -1302,43 +1738,60 @@ async function downloadPDF(){
         // ===============================
 
         const tableData =
-            records.map(function(record){
+            records.map(
+                function(record){
 
-                return [
+                    return [
 
-                    record.sow_id || "",
+                        record.sow_id ||
+                        "",
 
-                    record.farrow_date || "",
+                        record.farrow_date ||
+                        "",
 
-                    record.weaning_date || "",
+                        record.weaning_date ||
+                        "",
 
-                    record.total_born || 0,
+                        record.total_born ||
+                        0,
 
-                    record.male_weaned || 0,
+                        record.male_weaned ||
+                        0,
 
-                    record.female_weaned || 0,
+                        record.female_weaned ||
+                        0,
 
-                    record.total_weaned || 0,
+                        record.total_weaned ||
+                        0,
 
-                    (record.average_weight || 0) +
-                    " Kg",
+                        (
+                            record.average_weight ||
+                            0
+                        ) +
+                        " Kg",
 
-                    record.mortality || 0,
+                        record.mortality ||
+                        0,
 
-                    record.mortality_reason || "",
+                        record.mortality_reason ||
+                        "",
 
-                    record.destination_pen || "",
+                        record.destination_pen ||
+                        "",
 
-                    record.remarks || ""
+                        record.remarks ||
+                        ""
 
-                ];
+                    ];
 
-            });
+                }
+            );
 
 
         doc.autoTable({
 
-            startY: 66,
+            startY:
+                66,
 
             head: [[
 
@@ -1368,63 +1821,109 @@ async function downloadPDF(){
 
             ]],
 
-            body: tableData,
+            body:
+                tableData,
 
-            theme: "grid",
+            theme:
+                "grid",
 
             styles: {
 
-                fontSize: 6,
+                fontSize:
+                    6,
 
-                cellPadding: 2,
+                cellPadding:
+                    2,
 
-                overflow: "linebreak",
+                overflow:
+                    "linebreak",
 
-                valign: "middle"
+                valign:
+                    "middle"
 
             },
 
             headStyles: {
 
-                fontSize: 6,
+                fontSize:
+                    6,
 
-                fontStyle: "bold"
+                fontStyle:
+                    "bold"
 
             },
 
             columnStyles: {
 
-                0: { cellWidth: 17 },
+                0: {
+                    cellWidth:
+                        17
+                },
 
-                1: { cellWidth: 20 },
+                1: {
+                    cellWidth:
+                        20
+                },
 
-                2: { cellWidth: 20 },
+                2: {
+                    cellWidth:
+                        20
+                },
 
-                3: { cellWidth: 12 },
+                3: {
+                    cellWidth:
+                        12
+                },
 
-                4: { cellWidth: 12 },
+                4: {
+                    cellWidth:
+                        12
+                },
 
-                5: { cellWidth: 12 },
+                5: {
+                    cellWidth:
+                        12
+                },
 
-                6: { cellWidth: 13 },
+                6: {
+                    cellWidth:
+                        13
+                },
 
-                7: { cellWidth: 18 },
+                7: {
+                    cellWidth:
+                        18
+                },
 
-                8: { cellWidth: 15 },
+                8: {
+                    cellWidth:
+                        15
+                },
 
-                9: { cellWidth: 34 },
+                9: {
+                    cellWidth:
+                        34
+                },
 
-                10: { cellWidth: 25 },
+                10: {
+                    cellWidth:
+                        25
+                },
 
-                11: { cellWidth: 45 }
+                11: {
+                    cellWidth:
+                        45
+                }
 
             },
 
             margin: {
 
-                left: 10,
+                left:
+                    10,
 
-                right: 10
+                right:
+                    10
 
             }
 
@@ -1447,15 +1946,18 @@ async function downloadPDF(){
 
             doc.setPage(page);
 
+
             const pageHeight =
                 doc.internal.pageSize.height;
 
 
             doc.setFontSize(8);
 
+
             doc.text(
 
-                "MUNKA PIGGERY FARM - Weaning Records",
+                farmName +
+                " - Weaning Records",
 
                 14,
 
@@ -1475,7 +1977,10 @@ async function downloadPDF(){
 
                 pageHeight - 8,
 
-                { align:"right" }
+                {
+                    align:
+                        "right"
+                }
 
             );
 
@@ -1492,10 +1997,25 @@ async function downloadPDF(){
             .split("T")[0];
 
 
+        const safeFarmName =
+            farmName
+            .replace(
+                /[^a-z0-9]+/gi,
+                "-"
+            )
+            .replace(
+                /^-+|-+$/g,
+                ""
+            );
+
+
         doc.save(
-            "MUNKA-PIGGERY-Weaning-Records-" +
+
+            safeFarmName +
+            "-Weaning-Records-" +
             date +
             ".pdf"
+
         );
 
     }
@@ -1504,8 +2024,10 @@ async function downloadPDF(){
         console.error(error);
 
         alert(
+
             "Unable to generate PDF: " +
             error.message
+
         );
 
     }
@@ -1517,9 +2039,307 @@ async function downloadPDF(){
 // PRINT REPORT
 // =====================================
 
-function printReport(){
+async function printReport(){
+
+    const farmName =
+        await getRegisteredFarmName();
+
+
+    const softwareBrand =
+        document.querySelector(
+            ".software-brand"
+        );
+
+
+    const systemDescription =
+        document.querySelector(
+            ".page-header p"
+        );
+
+
+    const farmLabel =
+        document.querySelector(
+            ".farm-label"
+        );
+
+
+    const farmNameElement =
+        document.querySelector(
+            "[data-farm-name]"
+        );
+
+
+    const pigIcon =
+        document.querySelector(
+            ".pig-icon"
+        );
+
+
+    // =====================================
+    // SAVE ORIGINAL VALUES
+    // =====================================
+
+    const original = {
+
+        softwareDisplay:
+            softwareBrand
+                ? softwareBrand.style.display
+                : "",
+
+        descriptionDisplay:
+            systemDescription
+                ? systemDescription.style.display
+                : "",
+
+        farmLabelDisplay:
+            farmLabel
+                ? farmLabel.style.display
+                : "",
+
+        pigIconDisplay:
+            pigIcon
+                ? pigIcon.style.display
+                : "",
+
+        farmNameText:
+            farmNameElement
+                ? farmNameElement.textContent
+                : "",
+
+        farmNameFontSize:
+            farmNameElement
+                ? farmNameElement.style.fontSize
+                : "",
+
+        farmNameFontWeight:
+            farmNameElement
+                ? farmNameElement.style.fontWeight
+                : "",
+
+        farmNameTextAlign:
+            farmNameElement
+                ? farmNameElement.style.textAlign
+                : "",
+
+        farmNameDisplay:
+            farmNameElement
+                ? farmNameElement.style.display
+                : "",
+
+        farmNameMargin:
+            farmNameElement
+                ? farmNameElement.style.margin
+                : ""
+
+    };
+
+
+    // =====================================
+    // PREPARE PRINT VERSION
+    // =====================================
+
+    if(softwareBrand){
+
+        softwareBrand.style.display =
+            "none";
+
+    }
+
+
+    if(systemDescription){
+
+        systemDescription.style.display =
+            "none";
+
+    }
+
+
+    if(farmLabel){
+
+        farmLabel.style.display =
+            "none";
+
+    }
+
+
+    if(pigIcon){
+
+        pigIcon.style.display =
+            "none";
+
+    }
+
+
+    if(farmNameElement){
+
+        farmNameElement.textContent =
+            farmName;
+
+        farmNameElement.style.display =
+            "block";
+
+        farmNameElement.style.fontSize =
+            "30px";
+
+        farmNameElement.style.fontWeight =
+            "800";
+
+        farmNameElement.style.textAlign =
+            "center";
+
+        farmNameElement.style.margin =
+            "0 0 12px 0";
+
+    }
+
+
+    // =====================================
+    // TEMPORARY PRINT CSS
+    // =====================================
+
+    const printStyle =
+        document.createElement(
+            "style"
+        );
+
+
+    printStyle.id =
+        "temporary-weaning-print-style";
+
+
+    printStyle.innerHTML = `
+
+        @media print {
+
+            .software-brand {
+                display: none !important;
+            }
+
+            .page-header p {
+                display: none !important;
+            }
+
+            .farm-label {
+                display: none !important;
+            }
+
+            .pig-icon {
+                display: none !important;
+            }
+
+            [data-farm-name] {
+                display: block !important;
+                font-size: 30px !important;
+                font-weight: 800 !important;
+                text-align: center !important;
+                margin: 0 0 12px 0 !important;
+            }
+
+        }
+
+    `;
+
+
+    document.head.appendChild(
+        printStyle
+    );
+
+
+    // =====================================
+    // PRINT
+    // =====================================
+
+    let restored = false;
+
+
+    function restorePrintVersion(){
+
+        if(restored) return;
+
+        restored = true;
+
+
+        if(softwareBrand){
+
+            softwareBrand.style.display =
+                original.softwareDisplay;
+
+        }
+
+
+        if(systemDescription){
+
+            systemDescription.style.display =
+                original.descriptionDisplay;
+
+        }
+
+
+        if(farmLabel){
+
+            farmLabel.style.display =
+                original.farmLabelDisplay;
+
+        }
+
+
+        if(pigIcon){
+
+            pigIcon.style.display =
+                original.pigIconDisplay;
+
+        }
+
+
+        if(farmNameElement){
+
+            farmNameElement.textContent =
+                original.farmNameText;
+
+            farmNameElement.style.fontSize =
+                original.farmNameFontSize;
+
+            farmNameElement.style.fontWeight =
+                original.farmNameFontWeight;
+
+            farmNameElement.style.textAlign =
+                original.farmNameTextAlign;
+
+            farmNameElement.style.display =
+                original.farmNameDisplay;
+
+            farmNameElement.style.margin =
+                original.farmNameMargin;
+
+        }
+
+
+        if(printStyle){
+
+            printStyle.remove();
+
+        }
+
+    }
+
+
+    window.addEventListener(
+        "afterprint",
+        restorePrintVersion,
+        {
+            once:true
+        }
+    );
+
 
     window.print();
+
+
+    // Backup restoration
+    setTimeout(
+        restorePrintVersion,
+        3000
+    );
 
 }
 
@@ -1527,3 +2347,50 @@ function printReport(){
 // =====================================
 // END OF WEANING MODULE
 // =====================================
+
+Replace the whole contents of "weaning.js" with that version.
+
+Now test Weaning Records
+
+Please test these before we move on:
+
+1. Normal page
+   
+   - Registered farm name appears correctly.
+   - MUNKA PIGGERY TECHNOLOGY remains visible.
+   - Weaning records still load.
+
+2. Existing functions
+   
+   - Search by Sow ID.
+   - Search/load Farrowing information.
+   - Save a record.
+   - Edit a record.
+   - Delete a record.
+   - Automatic 33-day weaning date.
+   - Male + Female = Total Weaned.
+   - Mortality reason → Other still works.
+
+3. Report
+   
+   - Click Report.
+   - It should now say:
+     "YOUR FARM NAME - WEANING REPORT"
+   - It should no longer say MUNKA PIGGERY as the report heading.
+
+4. PDF
+   
+   - Farm name should be the large main heading.
+   - "WEANING RECORDS REPORT" remains underneath.
+   - MUNKA PIGGERY should not appear as the PDF heading/footer.
+   - Footer should contain the registered farm name.
+   - Filename should look like:
+     "GRAMUS-PIGGERY-FARM-Weaning-Records-2026-09-22.pdf"
+
+5. Print
+   
+   - Farm name should appear large and centered.
+   - MUNKA PIGGERY TECHNOLOGY should disappear from the printed report.
+   - The actual Weaning report content should remain.
+
+Once you test it and say “Done,” Weaning Records will be completed and we can move to the next module: Vaccination & Treatment.
