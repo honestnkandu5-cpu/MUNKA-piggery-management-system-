@@ -14,11 +14,10 @@ let editID = null;
 
 function getLoggedUser(){
 
-    const user = JSON.parse(
-        localStorage.getItem("loggedInUser")
-    );
+    const storedUser =
+        localStorage.getItem("loggedInUser");
 
-    if(!user){
+    if(!storedUser){
 
         alert(
             "No logged-in user found. Please login again."
@@ -27,7 +26,24 @@ function getLoggedUser(){
         return null;
     }
 
-    return user;
+    try{
+
+        return JSON.parse(storedUser);
+
+    }
+    catch(error){
+
+        console.error(
+            "Logged user error:",
+            error
+        );
+
+        alert(
+            "Your login information is invalid. Please login again."
+        );
+
+        return null;
+    }
 }
 
 
@@ -37,13 +53,18 @@ function getLoggedUser(){
 
 function getFarmID(){
 
-    const loggedUser = getLoggedUser();
+    const loggedUser =
+        getLoggedUser();
 
     if(!loggedUser){
         return null;
     }
 
-    if(!loggedUser.farm_id){
+    if(
+        loggedUser.farm_id === null ||
+        loggedUser.farm_id === undefined ||
+        loggedUser.farm_id === ""
+    ){
 
         alert(
             "Your account is not linked to a farm. Please contact the administrator."
@@ -69,24 +90,20 @@ async function getRegisteredFarmName(){
         ){
 
             return "REGISTERED FARM";
-
         }
 
 
         const loggedUser =
             getLoggedUser();
 
-
         if(!loggedUser){
 
             return "REGISTERED FARM";
-
         }
 
 
         const farmID =
             loggedUser.farm_id;
-
 
         if(
             farmID === null ||
@@ -95,15 +112,24 @@ async function getRegisteredFarmName(){
         ){
 
             return "REGISTERED FARM";
-
         }
 
 
-        const { data: farm, error } =
+        const {
+            data: farm,
+            error
+        } =
             await supabaseClient
+
             .from("farms")
+
             .select("farm_name")
-            .eq("id", farmID)
+
+            .eq(
+                "id",
+                farmID
+            )
+
             .maybeSingle();
 
 
@@ -115,7 +141,6 @@ async function getRegisteredFarmName(){
             );
 
             return "REGISTERED FARM";
-
         }
 
 
@@ -127,7 +152,6 @@ async function getRegisteredFarmName(){
             return String(
                 farm.farm_name
             ).trim();
-
         }
 
 
@@ -142,9 +166,33 @@ async function getRegisteredFarmName(){
         );
 
         return "REGISTERED FARM";
-
     }
+}
 
+
+// =====================================
+// SAFE FARM NAME FOR FILE NAME
+// =====================================
+
+function getSafeFarmName(farmName){
+
+    return String(
+        farmName || "Registered-Farm"
+    )
+
+    .trim()
+
+    .replace(
+        /[^a-z0-9]+/gi,
+        "-"
+    )
+
+    .replace(
+        /^-+|-+$/g,
+        "" 
+    )
+
+    || "Registered-Farm";
 }
 
 
@@ -160,14 +208,87 @@ function formatLocalDate(date){
     const month =
         String(
             date.getMonth() + 1
-        ).padStart(2, "0");
+        ).padStart(
+            2,
+            "0"
+        );
 
     const day =
         String(
             date.getDate()
-        ).padStart(2, "0");
+        ).padStart(
+            2,
+            "0"
+        );
 
     return `${year}-${month}-${day}`;
+}
+
+
+// =====================================
+// FORMAT ZAMBIAN DATE & TIME
+// =====================================
+
+function formatZambianDateTime(dateValue){
+
+    if(!dateValue){
+        return "";
+    }
+
+    try{
+
+        const date =
+            new Date(dateValue);
+
+        if(
+            isNaN(
+                date.getTime()
+            )
+        ){
+
+            return "";
+        }
+
+
+        return date.toLocaleString(
+            "en-GB",
+            {
+                timeZone:
+                    "Africa/Lusaka",
+
+                year:
+                    "numeric",
+
+                month:
+                    "2-digit",
+
+                day:
+                    "2-digit",
+
+                hour:
+                    "2-digit",
+
+                minute:
+                    "2-digit",
+
+                second:
+                    "2-digit",
+
+                hour12:
+                    false
+            }
+        );
+
+    }
+    catch(error){
+
+        console.error(
+            "Zambian date formatting error:",
+            error
+        );
+
+        return "";
+    }
 }
 
 
@@ -190,13 +311,13 @@ function calculateWeaningDate(){
         ).value = "";
 
         return;
-
     }
 
 
     const date =
         new Date(
-            farrowDate + "T00:00:00"
+            farrowDate +
+            "T00:00:00"
         );
 
 
@@ -207,7 +328,6 @@ function calculateWeaningDate(){
     ){
 
         return;
-
     }
 
 
@@ -220,7 +340,6 @@ function calculateWeaningDate(){
         "weaningDate"
     ).value =
         formatLocalDate(date);
-
 }
 
 
@@ -235,14 +354,28 @@ async function loadRecords(){
         const farmID =
             getFarmID();
 
-        if(!farmID) return;
+        if(!farmID){
+            return;
+        }
 
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
-            .from("weaning_records")
+
+            .from(
+                "weaning_records"
+            )
+
             .select("*")
-            .eq("farm_id", farmID)
+
+            .eq(
+                "farm_id",
+                farmID
+            )
+
             .order(
                 "id",
                 {
@@ -251,7 +384,9 @@ async function loadRecords(){
             );
 
 
-        if(error) throw error;
+        if(error){
+            throw error;
+        }
 
 
         weaningRecords =
@@ -263,12 +398,15 @@ async function loadRecords(){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "Load Weaning Records Error:",
+            error
+        );
 
-        alert(error.message);
-
+        alert(
+            error.message
+        );
     }
-
 }
 
 
@@ -292,31 +430,50 @@ async function loadFarrowingDetails(){
         );
 
         return;
-
     }
 
 
     const farmID =
         getFarmID();
 
-    if(!farmID) return;
+    if(!farmID){
+        return;
+    }
 
 
     try{
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
-            .from("farrowing_records")
+
+            .from(
+                "farrowing_records"
+            )
+
             .select("*")
-            .eq("sow_id", sowID)
-            .eq("farm_id", farmID)
+
+            .eq(
+                "sow_id",
+                sowID
+            )
+
+            .eq(
+                "farm_id",
+                farmID
+            )
+
             .order(
                 "id",
                 {
                     ascending:false
                 }
             )
+
             .limit(1)
+
             .single();
 
 
@@ -330,7 +487,6 @@ async function loadFarrowingDetails(){
             );
 
             return;
-
         }
 
 
@@ -356,12 +512,15 @@ async function loadFarrowingDetails(){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "Load Farrowing Details Error:",
+            error
+        );
 
-        alert(error.message);
-
+        alert(
+            error.message
+        );
     }
-
 }
 
 
@@ -372,7 +531,6 @@ async function loadFarrowingDetails(){
 function loadFarrowingSow(){
 
     loadFarrowingDetails();
-
 }
 
 
@@ -415,7 +573,6 @@ function calculateTotalWeaned(){
         "totalWeaned"
     ).value =
         male + female;
-
 }
 
 
@@ -472,8 +629,8 @@ document.getElementById(
             otherGroup.style.display =
                 "none";
 
-            otherInput.value = "";
-
+            otherInput.value =
+                "";
         }
 
     }
@@ -488,13 +645,18 @@ document.addEventListener(
     "DOMContentLoaded",
     function(){
 
-        document.getElementById(
-            "sowID"
-        )
-        .addEventListener(
-            "change",
-            loadFarrowingDetails
-        );
+        const sowInput =
+            document.getElementById(
+                "sowID"
+            );
+
+        if(sowInput){
+
+            sowInput.addEventListener(
+                "change",
+                loadFarrowingDetails
+            );
+        }
 
 
         loadRecords();
@@ -522,13 +684,17 @@ document.getElementById(
         const loggedUser =
             getLoggedUser();
 
-        if(!loggedUser) return;
+        if(!loggedUser){
+            return;
+        }
 
 
         const farmID =
             getFarmID();
 
-        if(!farmID) return;
+        if(!farmID){
+            return;
+        }
 
 
         const sowID =
@@ -544,7 +710,6 @@ document.getElementById(
             );
 
             return;
-
         }
 
 
@@ -585,10 +750,6 @@ document.getElementById(
             ) || 0;
 
 
-        // ===============================
-        // MORTALITY REASON
-        // ===============================
-
         let reason =
             document.getElementById(
                 "mortalityReason"
@@ -603,13 +764,8 @@ document.getElementById(
                 document.getElementById(
                     "otherReason"
                 ).value.trim();
-
         }
 
-
-        // ===============================
-        // RECORD
-        // ===============================
 
         const record = {
 
@@ -675,29 +831,30 @@ document.getElementById(
 
             updated_at:
                 null
-
         };
 
 
         try{
 
-            // ===============================
-            // ADD NEW RECORD
-            // ===============================
-
             if(editID === null){
 
-                const { error } =
+                const {
+                    error
+                } =
                     await supabaseClient
+
                     .from(
                         "weaning_records"
                     )
+
                     .insert([
                         record
                     ]);
 
 
-                if(error) throw error;
+                if(error){
+                    throw error;
+                }
 
 
                 await saveActivity(
@@ -713,20 +870,18 @@ document.getElementById(
 
                     "Added weaning record for Sow ID: " +
                     record.sow_id
-
                 );
+
+
+                const farmName =
+                    await getRegisteredFarmName();
 
 
                 alert(
-                    "Weaning record saved successfully."
+                    farmName +
+                    "\n\nWeaning record saved successfully."
                 );
-
             }
-
-
-            // ===============================
-            // UPDATE EXISTING RECORD
-            // ===============================
 
             else{
 
@@ -745,23 +900,31 @@ document.getElementById(
                 delete record.created_by;
 
 
-                const { error } =
+                const {
+                    error
+                } =
                     await supabaseClient
+
                     .from(
                         "weaning_records"
                     )
+
                     .update(record)
+
                     .eq(
                         "id",
                         editID
                     )
+
                     .eq(
                         "farm_id",
                         farmID
                     );
 
 
-                if(error) throw error;
+                if(error){
+                    throw error;
+                }
 
 
                 await saveActivity(
@@ -777,17 +940,20 @@ document.getElementById(
 
                     "Updated weaning record for Sow ID: " +
                     record.sow_id
-
                 );
 
 
+                const farmName =
+                    await getRegisteredFarmName();
+
+
                 alert(
-                    "Weaning record updated successfully."
+                    farmName +
+                    "\n\nWeaning record updated successfully."
                 );
 
 
                 editID = null;
-
             }
 
 
@@ -798,10 +964,14 @@ document.getElementById(
         }
         catch(error){
 
-            console.error(error);
+            console.error(
+                "Save/Update Weaning Error:",
+                error
+            );
 
-            alert(error.message);
-
+            alert(
+                error.message
+            );
         }
 
     }
@@ -817,27 +987,31 @@ function escapeHTML(value){
     return String(
         value ?? ""
     )
+
     .replace(
         /&/g,
         "&amp;"
     )
+
     .replace(
         /</g,
         "&lt;"
     )
+
     .replace(
         />/g,
         "&gt;"
     )
+
     .replace(
         /"/g,
         "&quot;"
     )
+
     .replace(
         /'/g,
         "&#039;"
     );
-
 }
 
 
@@ -855,7 +1029,13 @@ function displayRecords(
         );
 
 
-    table.innerHTML = "";
+    if(!table){
+        return;
+    }
+
+
+    table.innerHTML =
+        "";
 
 
     if(
@@ -864,15 +1044,23 @@ function displayRecords(
     ){
 
         table.innerHTML = `
+
             <tr>
-                <td colspan="11" class="no-records">
+
+                <td
+                    colspan="11"
+                    class="no-records"
+                >
+
                     No weaning records found.
+
                 </td>
+
             </tr>
+
         `;
 
         return;
-
     }
 
 
@@ -959,7 +1147,6 @@ function displayRecords(
 
         }
     );
-
 }
 
 
@@ -972,29 +1159,41 @@ async function editRecord(id){
     const farmID =
         getFarmID();
 
-    if(!farmID) return;
+    if(!farmID){
+        return;
+    }
 
 
     try{
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
+
             .from(
                 "weaning_records"
             )
+
             .select("*")
+
             .eq(
                 "id",
                 id
             )
+
             .eq(
                 "farm_id",
                 farmID
             )
+
             .single();
 
 
-        if(error) throw error;
+        if(error){
+            throw error;
+        }
 
 
         document.getElementById(
@@ -1051,10 +1250,6 @@ async function editRecord(id){
             data.mortality || "";
 
 
-        // ===============================
-        // MORTALITY REASON
-        // ===============================
-
         const mortalityReason =
             document.getElementById(
                 "mortalityReason"
@@ -1070,7 +1265,8 @@ async function editRecord(id){
                 mortalityReason.options
             ).find(
                 option =>
-                    option.value === savedReason
+                    option.value ===
+                    savedReason
             );
 
 
@@ -1083,8 +1279,8 @@ async function editRecord(id){
                 "otherReasonGroup"
             ).style.display =
                 "none";
-
         }
+
         else if(savedReason){
 
             mortalityReason.value =
@@ -1099,8 +1295,8 @@ async function editRecord(id){
                 "otherReason"
             ).value =
                 savedReason;
-
         }
+
         else{
 
             mortalityReason.value =
@@ -1110,7 +1306,6 @@ async function editRecord(id){
                 "otherReasonGroup"
             ).style.display =
                 "none";
-
         }
 
 
@@ -1126,7 +1321,8 @@ async function editRecord(id){
             data.remarks || "";
 
 
-        editID = id;
+        editID =
+            id;
 
 
         calculateTotalWeaned();
@@ -1134,21 +1330,24 @@ async function editRecord(id){
 
         window.scrollTo({
 
-            top: 0,
+            top:0,
 
-            behavior: "smooth"
+            behavior:"smooth"
 
         });
 
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "Edit Weaning Error:",
+            error
+        );
 
-        alert(error.message);
-
+        alert(
+            error.message
+        );
     }
-
 }
 
 
@@ -1158,44 +1357,66 @@ async function editRecord(id){
 
 async function deleteRecord(id){
 
-    if(
-        !confirm(
-            "Delete this weaning record?"
-        )
-    ) return;
-
-
     const loggedUser =
         getLoggedUser();
 
-    if(!loggedUser) return;
+    if(!loggedUser){
+        return;
+    }
 
 
     const farmID =
         getFarmID();
 
-    if(!farmID) return;
+    if(!farmID){
+        return;
+    }
+
+
+    const farmName =
+        await getRegisteredFarmName();
+
+
+    if(
+        !confirm(
+            "Farm: " +
+            farmName +
+            "\n\n" +
+            "Delete this weaning record?"
+        )
+    ){
+
+        return;
+    }
 
 
     try{
 
-        const { error } =
+        const {
+            error
+        } =
             await supabaseClient
+
             .from(
                 "weaning_records"
             )
+
             .delete()
+
             .eq(
                 "id",
                 id
             )
+
             .eq(
                 "farm_id",
                 farmID
             );
 
 
-        if(error) throw error;
+        if(error){
+            throw error;
+        }
 
 
         await saveActivity(
@@ -1211,12 +1432,12 @@ async function deleteRecord(id){
 
             "Deleted weaning record ID: " +
             id
-
         );
 
 
         alert(
-            "Record deleted successfully."
+            farmName +
+            "\n\nRecord deleted successfully."
         );
 
 
@@ -1225,12 +1446,15 @@ async function deleteRecord(id){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "Delete Weaning Error:",
+            error
+        );
 
-        alert(error.message);
-
+        alert(
+            error.message
+        );
     }
-
 }
 
 
@@ -1249,7 +1473,9 @@ async function searchRecord(){
     const farmID =
         getFarmID();
 
-    if(!farmID) return;
+    if(!farmID){
+        return;
+    }
 
 
     try{
@@ -1259,28 +1485,39 @@ async function searchRecord(){
             displayRecords();
 
             return;
-
         }
 
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
+
             .from(
                 "weaning_records"
             )
+
             .select("*")
+
             .eq(
                 "farm_id",
                 farmID
             )
+
             .ilike(
                 "sow_id",
                 `%${keyword}%`
             )
-            .order("id");
+
+            .order(
+                "id"
+            );
 
 
-        if(error) throw error;
+        if(error){
+            throw error;
+        }
 
 
         displayRecords(
@@ -1290,12 +1527,15 @@ async function searchRecord(){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "Search Weaning Error:",
+            error
+        );
 
-        alert(error.message);
-
+        alert(
+            error.message
+        );
     }
-
 }
 
 
@@ -1337,8 +1577,8 @@ function clearForm(){
         "";
 
 
-    editID = null;
-
+    editID =
+        null;
 }
 
 
@@ -1351,39 +1591,54 @@ async function generateReport(){
     const farmID =
         getFarmID();
 
-    if(!farmID) return;
+    if(!farmID){
+        return;
+    }
 
 
     try{
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
+
             .from(
                 "weaning_records"
             )
+
             .select("*")
+
             .eq(
                 "farm_id",
                 farmID
             );
 
 
-        if(error) throw error;
+        if(error){
+            throw error;
+        }
 
 
         const records =
             data || [];
 
 
-        let totalWeaned = 0;
+        let totalWeaned =
+            0;
 
-        let totalMale = 0;
+        let totalMale =
+            0;
 
-        let totalFemale = 0;
+        let totalFemale =
+            0;
 
-        let totalMortality = 0;
+        let totalMortality =
+            0;
 
-        let totalBorn = 0;
+        let totalBorn =
+            0;
 
 
         records.forEach(
@@ -1450,12 +1705,15 @@ async function generateReport(){
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "Generate Weaning Report Error:",
+            error
+        );
 
-        alert(error.message);
-
+        alert(
+            error.message
+        );
     }
-
 }
 
 
@@ -1468,46 +1726,99 @@ async function downloadPDF(){
     const farmID =
         getFarmID();
 
-    if(!farmID) return;
+    if(!farmID){
+        return;
+    }
 
 
     const loggedUser =
         getLoggedUser();
 
-    if(!loggedUser) return;
+    if(!loggedUser){
+        return;
+    }
 
 
     try{
 
-        if(!window.jspdf){
+        // =====================================
+        // CHECK jsPDF
+        // =====================================
+
+        if(
+            !window.jspdf ||
+            !window.jspdf.jsPDF
+        ){
 
             alert(
-                "PDF library could not be loaded. Please check your internet connection and try again."
+                "PDF library could not be loaded. Please check your internet connection and refresh the page."
             );
 
             return;
-
         }
 
+
+        const {
+            jsPDF
+        } =
+            window.jspdf;
+
+
+        // =====================================
+        // CHECK AUTO TABLE
+        // =====================================
+
+        const testDoc =
+            new jsPDF();
+
+
+        if(
+            typeof testDoc.autoTable !==
+            "function"
+        ){
+
+            console.error(
+                "jsPDF AutoTable plugin is not available."
+            );
+
+
+            alert(
+                "The PDF table library has not loaded correctly. Please refresh the page and try again."
+            );
+
+            return;
+        }
+
+
+        // =====================================
+        // GET FARM NAME
+        // =====================================
 
         const farmName =
             await getRegisteredFarmName();
 
 
-        const { jsPDF } =
-            window.jspdf;
+        // =====================================
+        // GET RECORDS
+        // =====================================
 
-
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
+
             .from(
                 "weaning_records"
             )
+
             .select("*")
+
             .eq(
                 "farm_id",
                 farmID
             )
+
             .order(
                 "id",
                 {
@@ -1516,12 +1827,34 @@ async function downloadPDF(){
             );
 
 
-        if(error) throw error;
+        if(error){
+            throw error;
+        }
 
 
         const records =
             data || [];
 
+
+        if(
+            records.length === 0
+        ){
+
+            alert(
+
+                farmName +
+                "\n\n" +
+                "There are no Weaning Records available to download."
+
+            );
+
+            return;
+        }
+
+
+        // =====================================
+        // CREATE PDF
+        // =====================================
 
         const doc =
             new jsPDF({
@@ -1538,15 +1871,18 @@ async function downloadPDF(){
             });
 
 
-        // ===============================
+        // =====================================
         // HEADER
-        // ===============================
-
-        doc.setFontSize(20);
+        // =====================================
 
         doc.setFont(
-            undefined,
+            "helvetica",
             "bold"
+        );
+
+
+        doc.setFontSize(
+            20
         );
 
 
@@ -1566,11 +1902,14 @@ async function downloadPDF(){
         );
 
 
-        doc.setFontSize(14);
-
         doc.setFont(
-            undefined,
+            "helvetica",
             "normal"
+        );
+
+
+        doc.setFontSize(
+            14
         );
 
 
@@ -1590,26 +1929,36 @@ async function downloadPDF(){
         );
 
 
-        // ===============================
+        // =====================================
         // REPORT INFORMATION
-        // ===============================
+        // =====================================
 
-        doc.setFontSize(9);
-
-
-        const today =
-            new Date().toLocaleDateString(
-                "en-ZM"
-            );
+        doc.setFontSize(
+            9
+        );
 
 
         doc.text(
+
+            "Farm: " +
+            farmName,
+
+            14,
+
+            32
+
+        );
+
+
+        doc.text(
+
             "Farm ID: " +
             farmID,
 
             14,
 
-            32
+            38
+
         );
 
 
@@ -1623,36 +1972,43 @@ async function downloadPDF(){
 
             14,
 
-            38
+            44
 
         );
 
 
         doc.text(
 
-            "Report Date: " +
-            today,
+            "Generated: " +
+            formatZambianDateTime(
+                new Date()
+            ),
 
             14,
 
-            44
+            50
 
         );
 
 
-        // ===============================
+        // =====================================
         // SUMMARY
-        // ===============================
+        // =====================================
 
-        let totalBorn = 0;
+        let totalBorn =
+            0;
 
-        let male = 0;
+        let male =
+            0;
 
-        let female = 0;
+        let female =
+            0;
 
-        let totalWeaned = 0;
+        let totalWeaned =
+            0;
 
-        let mortality = 0;
+        let mortality =
+            0;
 
 
         records.forEach(
@@ -1688,7 +2044,7 @@ async function downloadPDF(){
 
 
         doc.setFont(
-            undefined,
+            "helvetica",
             "bold"
         );
 
@@ -1696,12 +2052,12 @@ async function downloadPDF(){
         doc.text(
             "Summary",
             14,
-            53
+            59
         );
 
 
         doc.setFont(
-            undefined,
+            "helvetica",
             "normal"
         );
 
@@ -1728,14 +2084,14 @@ async function downloadPDF(){
 
             14,
 
-            59
+            65
 
         );
 
 
-        // ===============================
-        // TABLE
-        // ===============================
+        // =====================================
+        // TABLE DATA
+        // =====================================
 
         const tableData =
             records.map(
@@ -1783,15 +2139,18 @@ async function downloadPDF(){
                         ""
 
                     ];
-
                 }
             );
 
 
+        // =====================================
+        // PDF TABLE
+        // =====================================
+
         doc.autoTable({
 
             startY:
-                66,
+                72,
 
             head: [[
 
@@ -1829,6 +2188,9 @@ async function downloadPDF(){
 
             styles: {
 
+                font:
+                    "helvetica",
+
                 fontSize:
                     6,
 
@@ -1840,17 +2202,21 @@ async function downloadPDF(){
 
                 valign:
                     "middle"
-
             },
 
             headStyles: {
 
+                fontStyle:
+                    "bold",
+
                 fontSize:
                     6,
 
-                fontStyle:
-                    "bold"
+                halign:
+                    "center",
 
+                valign:
+                    "middle"
             },
 
             columnStyles: {
@@ -1872,22 +2238,34 @@ async function downloadPDF(){
 
                 3: {
                     cellWidth:
-                        12
+                        12,
+
+                    halign:
+                        "center"
                 },
 
                 4: {
                     cellWidth:
-                        12
+                        12,
+
+                    halign:
+                        "center"
                 },
 
                 5: {
                     cellWidth:
-                        12
+                        12,
+
+                    halign:
+                        "center"
                 },
 
                 6: {
                     cellWidth:
-                        13
+                        13,
+
+                    halign:
+                        "center"
                 },
 
                 7: {
@@ -1897,7 +2275,10 @@ async function downloadPDF(){
 
                 8: {
                     cellWidth:
-                        15
+                        15,
+
+                    halign:
+                        "center"
                 },
 
                 9: {
@@ -1914,7 +2295,6 @@ async function downloadPDF(){
                     cellWidth:
                         45
                 }
-
             },
 
             margin: {
@@ -1923,19 +2303,21 @@ async function downloadPDF(){
                     10,
 
                 right:
-                    10
+                    10,
 
+                bottom:
+                    15
             }
-
         });
 
 
-        // ===============================
+        // =====================================
         // FOOTER
-        // ===============================
+        // =====================================
 
         const pageCount =
-            doc.internal.getNumberOfPages();
+            doc.internal
+            .getNumberOfPages();
 
 
         for(
@@ -1944,14 +2326,26 @@ async function downloadPDF(){
             page++
         ){
 
-            doc.setPage(page);
+            doc.setPage(
+                page
+            );
 
 
             const pageHeight =
-                doc.internal.pageSize.height;
+                doc.internal
+                .pageSize
+                .getHeight();
 
 
-            doc.setFontSize(8);
+            doc.setFont(
+                "helvetica",
+                "normal"
+            );
+
+
+            doc.setFontSize(
+                8
+            );
 
 
             doc.text(
@@ -1983,55 +2377,66 @@ async function downloadPDF(){
                 }
 
             );
-
         }
 
 
-        // ===============================
-        // SAVE PDF
-        // ===============================
+        // =====================================
+        // FILE NAME
+        // =====================================
 
         const date =
             new Date()
-            .toISOString()
-            .split("T")[0];
-
-
-        const safeFarmName =
-            farmName
-            .replace(
-                /[^a-z0-9]+/gi,
-                "-"
-            )
-            .replace(
-                /^-+|-+$/g,
-                ""
+            .toLocaleDateString(
+                "en-CA",
+                {
+                    timeZone:
+                        "Africa/Lusaka"
+                }
             );
 
 
-        doc.save(
+        const safeFarmName =
+            getSafeFarmName(
+                farmName
+            );
 
+
+        const fileName =
             safeFarmName +
             "-Weaning-Records-" +
             date +
-            ".pdf"
+            ".pdf";
 
+
+        // =====================================
+        // SAVE PDF
+        // =====================================
+
+        doc.save(
+            fileName
         );
+
 
     }
     catch(error){
 
-        console.error(error);
+        console.error(
+            "WEANING PDF ERROR:",
+            error
+        );
+
 
         alert(
 
-            "Unable to generate PDF: " +
-            error.message
+            "Unable to generate Weaning PDF.\n\n" +
+            "Error: " +
+            (
+                error.message ||
+                error
+            )
 
         );
-
     }
-
 }
 
 
@@ -2074,10 +2479,6 @@ async function printReport(){
             ".pig-icon"
         );
 
-
-    // =====================================
-    // SAVE ORIGINAL VALUES
-    // =====================================
 
     const original = {
 
@@ -2130,19 +2531,13 @@ async function printReport(){
             farmNameElement
                 ? farmNameElement.style.margin
                 : ""
-
     };
 
-
-    // =====================================
-    // PREPARE PRINT VERSION
-    // =====================================
 
     if(softwareBrand){
 
         softwareBrand.style.display =
             "none";
-
     }
 
 
@@ -2150,7 +2545,6 @@ async function printReport(){
 
         systemDescription.style.display =
             "none";
-
     }
 
 
@@ -2158,7 +2552,6 @@ async function printReport(){
 
         farmLabel.style.display =
             "none";
-
     }
 
 
@@ -2166,7 +2559,6 @@ async function printReport(){
 
         pigIcon.style.display =
             "none";
-
     }
 
 
@@ -2189,13 +2581,8 @@ async function printReport(){
 
         farmNameElement.style.margin =
             "0 0 12px 0";
-
     }
 
-
-    // =====================================
-    // TEMPORARY PRINT CSS
-    // =====================================
 
     const printStyle =
         document.createElement(
@@ -2245,25 +2632,25 @@ async function printReport(){
     );
 
 
-    // =====================================
-    // PRINT
-    // =====================================
-
-    let restored = false;
+    let restored =
+        false;
 
 
     function restorePrintVersion(){
 
-        if(restored) return;
+        if(restored){
+            return;
+        }
 
-        restored = true;
+
+        restored =
+            true;
 
 
         if(softwareBrand){
 
             softwareBrand.style.display =
                 original.softwareDisplay;
-
         }
 
 
@@ -2271,7 +2658,6 @@ async function printReport(){
 
             systemDescription.style.display =
                 original.descriptionDisplay;
-
         }
 
 
@@ -2279,7 +2665,6 @@ async function printReport(){
 
             farmLabel.style.display =
                 original.farmLabelDisplay;
-
         }
 
 
@@ -2287,7 +2672,6 @@ async function printReport(){
 
             pigIcon.style.display =
                 original.pigIconDisplay;
-
         }
 
 
@@ -2310,16 +2694,13 @@ async function printReport(){
 
             farmNameElement.style.margin =
                 original.farmNameMargin;
-
         }
 
 
         if(printStyle){
 
             printStyle.remove();
-
         }
-
     }
 
 
@@ -2335,62 +2716,13 @@ async function printReport(){
     window.print();
 
 
-    // Backup restoration
     setTimeout(
         restorePrintVersion,
         3000
     );
-
 }
 
 
 // =====================================
 // END OF WEANING MODULE
 // =====================================
-
-Replace the whole contents of "weaning.js" with that version.
-
-Now test Weaning Records
-
-Please test these before we move on:
-
-1. Normal page
-   
-   - Registered farm name appears correctly.
-   - MUNKA PIGGERY TECHNOLOGY remains visible.
-   - Weaning records still load.
-
-2. Existing functions
-   
-   - Search by Sow ID.
-   - Search/load Farrowing information.
-   - Save a record.
-   - Edit a record.
-   - Delete a record.
-   - Automatic 33-day weaning date.
-   - Male + Female = Total Weaned.
-   - Mortality reason → Other still works.
-
-3. Report
-   
-   - Click Report.
-   - It should now say:
-     "YOUR FARM NAME - WEANING REPORT"
-   - It should no longer say MUNKA PIGGERY as the report heading.
-
-4. PDF
-   
-   - Farm name should be the large main heading.
-   - "WEANING RECORDS REPORT" remains underneath.
-   - MUNKA PIGGERY should not appear as the PDF heading/footer.
-   - Footer should contain the registered farm name.
-   - Filename should look like:
-     "GRAMUS-PIGGERY-FARM-Weaning-Records-2026-09-22.pdf"
-
-5. Print
-   
-   - Farm name should appear large and centered.
-   - MUNKA PIGGERY TECHNOLOGY should disappear from the printed report.
-   - The actual Weaning report content should remain.
-
-Once you test it and say “Done,” Weaning Records will be completed and we can move to the next module: Vaccination & Treatment.
