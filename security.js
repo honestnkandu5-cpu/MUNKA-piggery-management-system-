@@ -1,572 +1,589 @@
-// ==========================================================
-// MUNKA PIGGERY FARM
-// SECURITY.JS
-// ==========================================================
-//
-// SECURITY ARCHITECTURE
-//
-// SUPER ADMIN
-// → platform_permissions
-// → platform-level access
-// → farm_id NOT required
-//
-// FARM USERS
-// → role_permissions
-// → farm-level access
-// → farm_id required
-//
-// ==========================================================
+/* ============================================================
+   MUNKA PIGGERY TECHNOLOGY
+   SECURITY & PAGE PROTECTION
+   ------------------------------------------------------------
+   CENTRAL SECURITY SYSTEM
+   ------------------------------------------------------------
+   This version automatically loads role_permissions.js
+   when necessary so protected modules do not fail simply
+   because the permission script was not manually included.
+============================================================ */
 
+
+/* ============================================================
+   GLOBAL SECURITY VARIABLES
+============================================================ */
 
 let currentUser = null;
 let currentRole = null;
-let currentPermissions = [];
 
 
-// ==========================================================
-// PAGE → MODULE
-// ==========================================================
+/* ============================================================
+   MODULE → PAGE PROTECTION MAP
+============================================================ */
 
 const pageModules = {
 
-    "dashboard.html": null,
-
     "pig_registration.html": "Pig Registration",
+
     "gestation.html": "Gestation",
+
     "farrowing.html": "Farrowing",
+
     "weaning.html": "Weaning",
-    "feeding.html": "Feeding",
 
     "vaccination.html": "Vaccination & Treatment",
 
+    "treatment.html": "Vaccination & Treatment",
+
+    "feeding.html": "Feeding",
+
     "sales.html": "Sales",
+
     "expenses.html": "Expenses",
 
     "reports.html": "Reports & Analytics",
 
-    "users.html": "Users",
-    "activity.html": "Activity Logs"
+    "platform_users.html": "Platform Users",
+
+    "activity.html": "Activity Logs",
+
+    "users.html": "Users"
 
 };
 
 
-// ==========================================================
-// GET CURRENT PAGE
-// ==========================================================
+/* ============================================================
+   GET CURRENT PAGE
+============================================================ */
 
-function getCurrentPage(){
+function getCurrentPage() {
 
-    let page =
-        window.location.pathname
+    let page = window.location.pathname
         .split("/")
         .pop();
 
-
-    if(!page){
-
-        page = "dashboard.html";
-
+    if (!page) {
+        page = "index.html";
     }
 
-
-    return page;
-
+    return page.toLowerCase();
 }
 
 
-// ==========================================================
-// GET AUTHENTICATED USER
-// ==========================================================
+/* ============================================================
+   GET AUTHENTICATED SUPABASE USER
+============================================================ */
 
-async function getAuthenticatedUser(){
-
-    console.log(
-        "Checking Supabase session..."
-    );
-
+async function getAuthenticatedUser() {
 
     const {
         data,
         error
-    } =
-        await supabaseClient
-            .auth
-            .getSession();
+    } = await supabaseClient.auth.getSession();
 
 
-    if(error){
+    if (error) {
 
         console.error(
-            "SESSION ERROR:",
+            "Session error:",
             error
         );
-
-        throw error;
-
-    }
-
-
-    console.log(
-        "SESSION RESULT:",
-        data
-    );
-
-
-    if(
-        !data ||
-        !data.session
-    ){
 
         return null;
-
     }
 
 
-    return data.session.user;
-
+    return data?.session?.user || null;
 }
 
 
-// ==========================================================
-// GET USER PROFILE
-// ==========================================================
+/* ============================================================
+   GET USER PROFILE
+============================================================ */
 
-async function getUserProfile(
-    authUserId
-){
-
-    console.log(
-        "Searching users table for auth_user_id:",
-        authUserId
-    );
-
+async function getUserProfile(authUserId) {
 
     const {
         data,
         error
-    } =
-        await supabaseClient
-
-            .from("users")
-
-            .select("*")
-
-            .eq(
-                "auth_user_id",
-                authUserId
-            )
-
-            .single();
+    } = await supabaseClient
+        .from("users")
+        .select("*")
+        .eq("auth_user_id", authUserId)
+        .single();
 
 
-    console.log(
-        "USER PROFILE RESULT:",
-        data
-    );
-
-
-    if(error){
+    if (error) {
 
         console.error(
-            "USER PROFILE DATABASE ERROR:",
+            "User profile error:",
             error
         );
 
-        throw error;
-
+        return null;
     }
 
 
     return data;
-
 }
 
 
-// ==========================================================
-// GET FARM ROLE PERMISSIONS
-// ==========================================================
+/* ============================================================
+   SAVE USER TO LOCAL STORAGE
+============================================================ */
 
-async function getRolePermissions(
-    role
-){
+function saveSecurityUser(profile) {
 
-    console.log(
-        "Loading FARM permissions for role:",
-        role
+    if (!profile) {
+        return;
+    }
+
+
+    localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(profile)
     );
+}
 
+
+/* ============================================================
+   CLEAR LOGIN DATA
+============================================================ */
+
+function clearLoginData() {
+
+    localStorage.removeItem(
+        "loggedInUser"
+    );
+}
+
+
+/* ============================================================
+   CHECK ACCOUNT STATUS
+============================================================ */
+
+function isAccountActive(profile) {
+
+    if (!profile) {
+        return false;
+    }
+
+
+    return String(
+        profile.status || ""
+    )
+        .trim()
+        .toLowerCase() === "active";
+}
+
+
+/* ============================================================
+   CHECK FARM SUBSCRIPTION
+============================================================ */
+
+async function checkFarmSubscription(profile) {
+
+    const role = String(
+        profile.role || ""
+    )
+        .trim()
+        .toLowerCase();
+
+
+    /* --------------------------------------------------------
+       SUPER ADMIN BYPASS
+    -------------------------------------------------------- */
+
+    if (role === "super admin") {
+
+        return {
+            allowed: true,
+            reason: "Super Admin"
+        };
+    }
+
+
+    /* --------------------------------------------------------
+       FARM ID REQUIRED
+    -------------------------------------------------------- */
+
+    if (!profile.farm_id) {
+
+        return {
+            allowed: false,
+            reason: "No farm assigned to this user."
+        };
+    }
+
+
+    /* --------------------------------------------------------
+       GET FARM
+    -------------------------------------------------------- */
 
     const {
-        data,
+        data: farm,
         error
-    } =
-        await supabaseClient
-
-            .from("role_permissions")
-
-            .select(
-                "id,role,module,can_view,can_add,can_edit,can_delete,can_report"
-            )
-
-            .eq(
-                "role",
-                role
-            );
+    } = await supabaseClient
+        .from("farms")
+        .select(
+            "id, farm_name, status, subscription_start, subscription_end"
+        )
+        .eq("id", profile.farm_id)
+        .single();
 
 
-    if(error){
+    if (error) {
 
         console.error(
-            "ROLE PERMISSIONS DATABASE ERROR:",
+            "Farm subscription error:",
             error
         );
 
-        throw error;
+        return {
+            allowed: false,
+            reason: "Unable to verify farm subscription."
+        };
+    }
 
+
+    if (!farm) {
+
+        return {
+            allowed: false,
+            reason: "Farm record not found."
+        };
+    }
+
+
+    /* --------------------------------------------------------
+       FARM STATUS
+    -------------------------------------------------------- */
+
+    if (
+        farm.status &&
+        String(farm.status)
+            .trim()
+            .toLowerCase() !== "active"
+    ) {
+
+        return {
+            allowed: false,
+            reason: "Farm account is not active."
+        };
+    }
+
+
+    /* --------------------------------------------------------
+       SUBSCRIPTION EXPIRY
+    -------------------------------------------------------- */
+
+    if (farm.subscription_end) {
+
+        const today = new Date();
+
+        const endDate = new Date(
+            farm.subscription_end
+        );
+
+
+        if (
+            !isNaN(endDate.getTime()) &&
+            today > endDate
+        ) {
+
+            return {
+                allowed: false,
+                reason: "Farm subscription has expired."
+            };
+        }
+    }
+
+
+    return {
+        allowed: true,
+        farm: farm
+    };
+}
+
+
+/* ============================================================
+   LOAD PERMISSION ENGINE AUTOMATICALLY
+============================================================ */
+
+async function ensurePermissionEngineLoaded() {
+
+    /* --------------------------------------------------------
+       IF PERMISSION ENGINE ALREADY EXISTS
+    -------------------------------------------------------- */
+
+    if (
+        typeof window.initializePermissions === "function" &&
+        typeof window.canView === "function"
+    ) {
+
+        console.log(
+            "MUNKA permission engine already loaded."
+        );
+
+        return true;
     }
 
 
     console.log(
-        "FARM ROLE PERMISSIONS RESULT:",
-        data
+        "Permission engine not found. Loading role_permissions.js..."
     );
 
 
-    return data || [];
+    /* --------------------------------------------------------
+       CHECK WHETHER SCRIPT TAG ALREADY EXISTS
+    -------------------------------------------------------- */
 
-}
-
-
-// ==========================================================
-// GET SUPER ADMIN PLATFORM PERMISSIONS
-// ==========================================================
-
-async function getPlatformPermissions(
-    role
-){
-
-    console.log(
-        "Loading PLATFORM permissions for role:",
-        role
-    );
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-
-            .from("platform_permissions")
-
-            .select(
-                "id,role,module,can_view,can_add,can_edit,can_delete,can_report"
-            )
-
-            .eq(
-                "role",
-                role
-            );
-
-
-    if(error){
-
-        console.error(
-            "PLATFORM PERMISSIONS DATABASE ERROR:",
-            error
-        );
-
-        throw error;
-
-    }
-
-
-    console.log(
-        "PLATFORM PERMISSIONS RESULT:",
-        data
-    );
-
-
-    return data || [];
-
-}
-
-
-// ==========================================================
-// FIND PERMISSION
-// ==========================================================
-
-function getPermission(
-    moduleName
-){
-
-    return currentPermissions.find(
-        permission =>
-
-            String(
-                permission.module
-            )
-            .trim()
-            .toLowerCase()
-
-            ===
-
-            String(
-                moduleName
-            )
-            .trim()
-            .toLowerCase()
-
-    ) || null;
-
-}
-
-
-// ==========================================================
-// PERMISSION FUNCTIONS
-// ==========================================================
-
-function canView(
-    moduleName
-){
-
-    const permission =
-        getPermission(
-            moduleName
+    const existingScript =
+        document.querySelector(
+            'script[src="role_permissions.js"]'
         );
 
 
-    return !!(
-        permission &&
-        permission.can_view === true
-    );
+    if (existingScript) {
 
-}
-
-
-function canAdd(
-    moduleName
-){
-
-    const permission =
-        getPermission(
-            moduleName
+        console.log(
+            "role_permissions.js tag already exists. Waiting for it..."
         );
 
+        return new Promise(resolve => {
 
-    return !!(
-        permission &&
-        permission.can_add === true
-    );
+            let attempts = 0;
 
-}
+            const timer = setInterval(() => {
 
-
-function canEdit(
-    moduleName
-){
-
-    const permission =
-        getPermission(
-            moduleName
-        );
+                attempts++;
 
 
-    return !!(
-        permission &&
-        permission.can_edit === true
-    );
+                if (
+                    typeof window.initializePermissions === "function" &&
+                    typeof window.canView === "function"
+                ) {
 
-}
+                    clearInterval(timer);
 
-
-function canDelete(
-    moduleName
-){
-
-    const permission =
-        getPermission(
-            moduleName
-        );
-
-
-    return !!(
-        permission &&
-        permission.can_delete === true
-    );
-
-}
-
-
-function canReport(
-    moduleName
-){
-
-    const permission =
-        getPermission(
-            moduleName
-        );
-
-
-    return !!(
-        permission &&
-        permission.can_report === true
-    );
-
-}
-
-
-// ==========================================================
-// APPLY DASHBOARD PERMISSIONS
-// ==========================================================
-
-function applyDashboardPermissions(){
-
-    const buttons =
-        document.querySelectorAll(
-            "#dashboardButtons button[data-permission-module]"
-        );
-
-
-    buttons.forEach(
-        button => {
-
-            const module =
-                button.getAttribute(
-                    "data-permission-module"
-                );
-
-
-            const permissionType =
-                button.getAttribute(
-                    "data-permission-type"
-                );
-
-
-            let allowed = false;
-
-
-            if(
-                permissionType ===
-                "can_view"
-            ){
-
-                allowed =
-                    canView(
-                        module
+                    console.log(
+                        "Permission engine became available."
                     );
 
+                    resolve(true);
+
+                    return;
+                }
+
+
+                if (attempts >= 50) {
+
+                    clearInterval(timer);
+
+                    console.error(
+                        "Permission engine failed to become available."
+                    );
+
+                    resolve(false);
+                }
+
+            }, 100);
+
+        });
+    }
+
+
+    /* --------------------------------------------------------
+       CREATE SCRIPT ELEMENT
+    -------------------------------------------------------- */
+
+    return new Promise(resolve => {
+
+        const script =
+            document.createElement("script");
+
+
+        script.src =
+            "role_permissions.js";
+
+
+        script.async = false;
+
+
+        script.onload = function () {
+
+            console.log(
+                "role_permissions.js loaded successfully."
+            );
+
+
+            if (
+                typeof window.initializePermissions === "function" &&
+                typeof window.canView === "function"
+            ) {
+
+                resolve(true);
+
+            } else {
+
+                console.error(
+                    "role_permissions.js loaded but permission functions are missing."
+                );
+
+                resolve(false);
             }
+        };
 
 
-            if(allowed){
+        script.onerror = function () {
 
-                button.style.display =
-                    "block";
+            console.error(
+                "Unable to load role_permissions.js."
+            );
 
-            }
 
-            else{
+            resolve(false);
+        };
 
-                button.style.display =
-                    "none";
 
-            }
+        document.head.appendChild(script);
 
-        }
-    );
-
+    });
 }
 
 
-// ==========================================================
-// PROTECT CURRENT PAGE
-// ==========================================================
+/* ============================================================
+   PROTECT CURRENT PAGE
+============================================================ */
 
-function protectCurrentPage(){
+async function protectCurrentPage() {
 
     const page =
         getCurrentPage();
 
 
-    const module =
-        pageModules[
-            page
-        ];
+    /* --------------------------------------------------------
+       MAIN DASHBOARD / SUPER ADMIN PAGES
+       DO NOT BLOCK HERE
+    -------------------------------------------------------- */
 
+    if (
 
-    if(!module){
+        page === "dashboard.html" ||
+
+        page === "superadmin.html" ||
+
+        page === "platform_dashboard.html"
+
+    ) {
 
         return true;
-
     }
 
 
-    if(
-        !canView(
-            module
-        )
-    ){
+    /* --------------------------------------------------------
+       FIND REQUIRED MODULE
+    -------------------------------------------------------- */
+
+    const requiredModule =
+        pageModules[page];
+
+
+    /* --------------------------------------------------------
+       PAGE DOES NOT REQUIRE MODULE PROTECTION
+    -------------------------------------------------------- */
+
+    if (!requiredModule) {
+
+        return true;
+    }
+
+
+    /* --------------------------------------------------------
+       PERMISSION ENGINE CHECK
+    -------------------------------------------------------- */
+
+    if (
+        typeof window.canView !== "function"
+    ) {
+
+        console.error(
+            "Permission engine is not available."
+        );
+
+        return false;
+    }
+
+
+    /* --------------------------------------------------------
+       CHECK VIEW PERMISSION
+    -------------------------------------------------------- */
+
+    if (
+        !window.canView(requiredModule)
+    ) {
 
         alert(
-            "Access Denied.\n\n" +
-            "You do not have permission to view this module."
+            "You do not have permission to access this module."
         );
 
 
-        window.location.href =
-            "dashboard.html";
+        window.location.replace(
+            "dashboard.html"
+        );
 
 
         return false;
-
     }
 
 
     return true;
-
 }
 
 
-// ==========================================================
-// MAIN SECURITY CHECK
-// ==========================================================
+/* ============================================================
+   MAIN SECURITY CHECK
+============================================================ */
 
-async function checkPageSecurity(){
+async function checkPageSecurity() {
 
-    console.log(
-        "=========================================="
-    );
-
-    console.log(
-        "MUNKA PIGGERY SECURITY CHECK"
-    );
-
-    console.log(
-        "=========================================="
-    );
+    try {
 
 
-    try{
+        /* ----------------------------------------------------
+           1. MAKE SURE PERMISSION ENGINE EXISTS
+        ---------------------------------------------------- */
 
-        // ==================================================
-        // 1. AUTHENTICATION
-        // ==================================================
+        const permissionEngineReady =
+            await ensurePermissionEngineLoaded();
+
+
+        if (!permissionEngineReady) {
+
+            alert(
+                "Permission system could not be loaded."
+            );
+
+            console.error(
+                "MUNKA permission engine failed to load."
+            );
+
+            return;
+        }
+
+
+        /* ----------------------------------------------------
+           2. CHECK SUPABASE SESSION
+        ---------------------------------------------------- */
 
         const authUser =
             await getAuthenticatedUser();
 
 
-        if(!authUser){
+        if (!authUser) {
 
-            console.error(
-                "NO AUTHENTICATED USER FOUND."
-            );
-
-
-            localStorage.removeItem(
-                "loggedInUser"
-            );
+            clearLoginData();
 
 
             alert(
@@ -574,330 +591,306 @@ async function checkPageSecurity(){
             );
 
 
-            window.location.href =
-                "login.html";
+            window.location.replace(
+                "login.html"
+            );
 
 
             return;
-
         }
 
 
-        console.log(
-            "AUTHENTICATED USER ID:",
-            authUser.id
-        );
+        /* ----------------------------------------------------
+           3. GET USER PROFILE
+        ---------------------------------------------------- */
 
-
-        console.log(
-            "AUTHENTICATED EMAIL:",
-            authUser.email
-        );
-
-
-        // ==================================================
-        // 2. USER PROFILE
-        // ==================================================
-
-        const userData =
+        const profile =
             await getUserProfile(
                 authUser.id
             );
 
 
-        if(!userData){
+        if (!profile) {
 
-            throw new Error(
-                "User profile was not found."
-            );
+            clearLoginData();
 
-        }
-
-
-        console.log(
-            "USER PROFILE:",
-            userData
-        );
-
-
-        // ==================================================
-        // 3. ACCOUNT STATUS
-        // ==================================================
-
-        console.log(
-            "ACCOUNT STATUS:",
-            userData.status
-        );
-
-
-        if(
-            String(
-                userData.status
-            )
-            .trim()
-            .toLowerCase()
-
-            !==
-
-            "active"
-        ){
 
             alert(
-                "Your account is not active."
+                "User profile not found."
             );
 
 
-            await supabaseClient
-                .auth
-                .signOut();
+            await supabaseClient.auth.signOut();
 
 
-            localStorage.removeItem(
-                "loggedInUser"
+            window.location.replace(
+                "login.html"
             );
-
-
-            window.location.href =
-                "login.html";
 
 
             return;
-
         }
 
 
-        // ==================================================
-        // 4. ROLE
-        // ==================================================
+        /* ----------------------------------------------------
+           4. CHECK ACCOUNT STATUS
+        ---------------------------------------------------- */
+
+        if (
+            !isAccountActive(profile)
+        ) {
+
+            alert(
+                "Your account is not active. Please contact the administrator."
+            );
+
+
+            await supabaseClient.auth.signOut();
+
+
+            clearLoginData();
+
+
+            window.location.replace(
+                "login.html"
+            );
+
+
+            return;
+        }
+
+
+        /* ----------------------------------------------------
+           5. SAVE USER INFORMATION
+        ---------------------------------------------------- */
 
         currentUser =
-            userData;
+            profile;
 
 
         currentRole =
-            userData.role;
+            profile.role;
 
 
-        console.log(
-            "USER ROLE:",
-            currentRole
+        saveSecurityUser(
+            profile
         );
 
 
-        if(!currentRole){
+        /* ----------------------------------------------------
+           6. CHECK FARM SUBSCRIPTION
+        ---------------------------------------------------- */
 
-            throw new Error(
-                "The user profile has no role."
-            );
-
-        }
-
-
-        // ==================================================
-        // 5. SAVE USER
-        // ==================================================
-
-        localStorage.setItem(
-            "loggedInUser",
-            JSON.stringify(
-                userData
-            )
-        );
-
-
-        // ==================================================
-        // 6. LOAD CORRECT PERMISSIONS
-        // ==================================================
-
-        if(
-            String(
-                currentRole
-            )
-            .trim()
-            .toLowerCase()
-
-            ===
-
-            "super admin"
-        ){
-
-            console.log(
-                "SUPER ADMIN DETECTED."
+        const subscription =
+            await checkFarmSubscription(
+                profile
             );
 
 
-            // ----------------------------------------------
-            // SUPER ADMIN
-            // ----------------------------------------------
-
-            currentPermissions =
-                await getPlatformPermissions(
-                    currentRole
-                );
-
-        }
-
-        else{
-
-            console.log(
-                "FARM USER DETECTED."
-            );
-
-
-            // ----------------------------------------------
-            // NORMAL FARM ROLE
-            // ----------------------------------------------
-
-            currentPermissions =
-                await getRolePermissions(
-                    currentRole
-                );
-
-        }
-
-
-        console.log(
-            "TOTAL PERMISSIONS:",
-            currentPermissions.length
-        );
-
-
-        // ==================================================
-        // 7. CHECK PERMISSIONS
-        // ==================================================
-
-        if(
-            currentPermissions.length === 0
-        ){
+        if (
+            !subscription.allowed
+        ) {
 
             alert(
-                "No permissions have been assigned to your role."
+                subscription.reason
+            );
+
+
+            await supabaseClient.auth.signOut();
+
+
+            clearLoginData();
+
+
+            window.location.replace(
+                "login.html"
             );
 
 
             return;
-
         }
 
 
-        // ==================================================
-        // 8. PROTECT CURRENT PAGE
-        // ==================================================
+        /* ----------------------------------------------------
+           7. INITIALIZE PERMISSIONS
+        ---------------------------------------------------- */
 
-        const allowed =
-            protectCurrentPage();
+        if (
+            typeof window.initializePermissions !== "function"
+        ) {
+
+            console.error(
+                "initializePermissions() is missing."
+            );
 
 
-        if(!allowed){
+            alert(
+                "Permission system could not be loaded."
+            );
+
 
             return;
-
         }
 
 
-        // ==================================================
-        // 9. DASHBOARD BUTTONS
-        // ==================================================
+        const permissionsReady =
+            await window.initializePermissions();
 
-        if(
-            getCurrentPage()
-            ===
-            "dashboard.html"
-        ){
 
-            applyDashboardPermissions();
+        if (!permissionsReady) {
 
+            alert(
+                "Your permissions could not be loaded. Please contact the administrator."
+            );
+
+
+            return;
         }
 
 
-        // ==================================================
-        // SUCCESS
-        // ==================================================
+        /* ----------------------------------------------------
+           8. PROTECT CURRENT PAGE
+        ---------------------------------------------------- */
+
+        const pageAllowed =
+            await protectCurrentPage();
+
+
+        if (!pageAllowed) {
+
+            return;
+        }
+
+
+        /* ----------------------------------------------------
+           9. APPLY BUTTON PERMISSIONS
+        ---------------------------------------------------- */
+
+        if (
+            typeof window.applyPermissionControls === "function"
+        ) {
+
+            window.applyPermissionControls();
+        }
+
+
+        /* ----------------------------------------------------
+           10. APPLY DASHBOARD PERMISSIONS
+        ---------------------------------------------------- */
+
+        if (
+            typeof window.applyDashboardPermissions === "function"
+        ) {
+
+            window.applyDashboardPermissions();
+        }
+
+
+        /* ----------------------------------------------------
+           SECURITY PASSED
+        ---------------------------------------------------- */
 
         console.log(
-            "=========================================="
+            "========================================"
         );
 
         console.log(
-            "SECURITY CHECK PASSED"
+            "MUNKA SECURITY CHECK PASSED"
         );
 
         console.log(
-            "ROLE:",
+            "Current user:",
+            currentUser
+        );
+
+        console.log(
+            "Current role:",
             currentRole
         );
 
         console.log(
-            "PERMISSIONS:",
-            currentPermissions
+            "Current page:",
+            getCurrentPage()
         );
 
         console.log(
-            "=========================================="
+            "========================================"
         );
 
-    }
 
-    catch(error){
+    } catch (error) {
 
-        console.error(
-            "=========================================="
-        );
 
         console.error(
-            "SECURITY VERIFICATION FAILED"
-        );
-
-        console.error(
-            "ACTUAL ERROR:",
+            "Security system error:",
             error
-        );
-
-        console.error(
-            "ERROR MESSAGE:",
-            error?.message
-        );
-
-        console.error(
-            "ERROR DETAILS:",
-            error?.details
-        );
-
-        console.error(
-            "ERROR HINT:",
-            error?.hint
-        );
-
-        console.error(
-            "ERROR CODE:",
-            error?.code
-        );
-
-        console.error(
-            "=========================================="
         );
 
 
         alert(
-            "Security error:\n\n" +
-            (
-                error?.message ||
-                "Unknown security error."
-            )
+            "A security error occurred. Please login again."
         );
 
-    }
 
+        clearLoginData();
+
+
+        try {
+
+            await supabaseClient.auth.signOut();
+
+        } catch (logoutError) {
+
+            console.error(
+                "Logout error:",
+                logoutError
+            );
+        }
+
+
+        window.location.replace(
+            "login.html"
+        );
+    }
 }
 
 
-// ==========================================================
-// START
-// ==========================================================
+/* ============================================================
+   GLOBAL EXPORTS
+============================================================ */
+
+window.currentUser =
+    currentUser;
+
+window.currentRole =
+    currentRole;
+
+window.getAuthenticatedUser =
+    getAuthenticatedUser;
+
+window.getUserProfile =
+    getUserProfile;
+
+window.checkFarmSubscription =
+    checkFarmSubscription;
+
+window.ensurePermissionEngineLoaded =
+    ensurePermissionEngineLoaded;
+
+window.protectCurrentPage =
+    protectCurrentPage;
+
+window.checkPageSecurity =
+    checkPageSecurity;
+
+
+/* ============================================================
+   START SECURITY AFTER PAGE LOAD
+============================================================ */
 
 document.addEventListener(
     "DOMContentLoaded",
-    function(){
+    function () {
 
         checkPageSecurity();
 
