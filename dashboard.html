@@ -9,9 +9,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-    <title>
-        MUNKA PIGGERY TECHNOLOGY
-    </title>
+    <title>MUNKA PIGGERY TECHNOLOGY</title>
 
     <link
         rel="stylesheet"
@@ -19,9 +17,7 @@
 
 </head>
 
-
 <body>
-
 
 <!-- ======================================================
      TOP NAVIGATION
@@ -37,20 +33,44 @@
 
         <div>
 
-            <h1>
-                MUNKA PIGGERY TECHNOLOGY
-            </h1>
+            <h1>MUNKA PIGGERY TECHNOLOGY</h1>
 
-            <span>
-                Piggery Management System
-            </span>
+            <span>Piggery Management System</span>
 
         </div>
 
     </div>
 
-
     <div class="top-actions">
+
+        <!-- ==============================================
+             NOTIFICATION BUTTON
+        =============================================== -->
+
+        <button
+            type="button"
+            class="notification-btn"
+            id="notificationButton"
+            onclick="openNotifications()"
+            title="Notifications"
+            aria-label="Open notifications">
+
+            <span class="notification-icon">
+                🔔
+            </span>
+
+            <span
+                id="notificationBadge"
+                class="notification-badge"
+                style="display:none;"
+                aria-label="Unread notifications">
+                0
+            </span>
+
+        </button>
+
+
+        <!-- CHANGE PASSWORD -->
 
         <button
             type="button"
@@ -58,10 +78,15 @@
             onclick="window.location.href='change_password.html'">
 
             🔐
-            <span>Change Password</span>
+
+            <span>
+                Change Password
+            </span>
 
         </button>
 
+
+        <!-- LOGOUT -->
 
         <button
             type="button"
@@ -77,7 +102,6 @@
 </header>
 
 
-
 <!-- ======================================================
      MAIN PAGE
 ====================================================== -->
@@ -91,20 +115,15 @@
 
     <section class="welcome-section">
 
-
         <div class="welcome-content">
 
             <span class="welcome-label">
                 FARM MANAGEMENT DASHBOARD
             </span>
 
-
-            <!-- REGISTERED FARM NAME -->
-
             <div class="farm-name-label">
                 REGISTERED FARM
             </div>
-
 
             <h1
                 id="farmName"
@@ -114,11 +133,9 @@
 
             </h1>
 
-
             <h2 id="welcomeUser">
                 Welcome
             </h2>
-
 
             <p>
                 Manage your piggery operations,
@@ -127,19 +144,15 @@
 
         </div>
 
-
         <div class="user-information">
 
             <div class="user-avatar">
                 👤
             </div>
 
-
             <div>
 
-                <p id="userDetails">
-                </p>
-
+                <p id="userDetails"></p>
 
                 <p
                     id="lastLogin"
@@ -152,6 +165,489 @@
 
     </section>
 
+
+    <!-- ==================================================
+         ANNOUNCEMENTS & ALERTS
+    ================================================== -->
+
+    <section class="announcements-section">
+
+        <div class="announcement-header">
+
+            <div>
+
+                <span class="section-label">
+                    COMMUNICATION CENTRE
+                </span>
+
+                <h3>
+                    Announcements & Alerts
+                </h3>
+
+                <p>
+                    Important messages and alerts for your farm.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                id="refreshAnnouncements"
+                class="refresh-announcements-btn"
+                onclick="loadDashboardAnnouncements()">
+
+                ↻ Refresh
+
+            </button>
+
+        </div>
+
+        <div
+            id="announcementStatus"
+            class="announcement-status">
+
+            Loading announcements...
+
+        </div>
+
+        <div
+            id="dashboardAnnouncements"
+            class="dashboard-announcements">
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         ANNOUNCEMENT MANAGEMENT
+         OWNER/ADMIN ONLY
+    ================================================== -->
+
+    <section
+        id="announcementManagementSection"
+        class="announcement-management-section"
+        style="display:none;">
+
+        <div class="announcement-management-header">
+
+            <div>
+
+                <span class="section-label">
+                    ADMINISTRATION
+                </span>
+
+                <h3>
+                    Announcement Management
+                </h3>
+
+                <p>
+                    Create and manage announcements for your farm.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="management-toggle-btn"
+                onclick="toggleAnnouncementForm()">
+
+                + New Announcement
+
+            </button>
+
+        </div>
+
+
+        <!-- ==============================================
+             ANNOUNCEMENT FORM
+        =============================================== -->
+
+        <div
+            id="announcementFormWrapper"
+            class="announcement-form-wrapper"
+            style="display:none;">
+
+            <div class="management-form-title">
+
+                <strong id="announcementFormTitle">
+                    Create New Announcement
+                </strong>
+
+                <span>
+                    Fill in the details below.
+                </span>
+
+            </div>
+
+
+            <form
+                id="dashboardAnnouncementForm"
+                onsubmit="saveDashboardAnnouncement(event)">
+
+                <input
+                    type="hidden"
+                    id="dashboardAnnouncementId">
+
+
+                <div class="announcement-form-grid">
+
+
+                    <!-- TITLE -->
+
+                    <div class="announcement-form-field full-width">
+
+                        <label for="dashboardAnnouncementTitle">
+                            Announcement Title
+                        </label>
+
+                        <input
+                            type="text"
+                            id="dashboardAnnouncementTitle"
+                            placeholder="Enter announcement title"
+                            maxlength="150"
+                            required>
+
+                    </div>
+
+
+                    <!-- MESSAGE -->
+
+                    <div class="announcement-form-field full-width">
+
+                        <label for="dashboardAnnouncementMessage">
+                            Message
+                        </label>
+
+                        <textarea
+                            id="dashboardAnnouncementMessage"
+                            rows="5"
+                            maxlength="3000"
+                            placeholder="Write the announcement message..."
+                            required></textarea>
+
+                    </div>
+
+
+                    <!-- PRIORITY -->
+
+                    <div class="announcement-form-field">
+
+                        <label for="dashboardAnnouncementPriority">
+                            Priority
+                        </label>
+
+                        <select
+                            id="dashboardAnnouncementPriority"
+                            required>
+
+                            <option value="Normal">
+                                Normal
+                            </option>
+
+                            <option value="Important">
+                                Important
+                            </option>
+
+                            <option value="Urgent">
+                                Urgent
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- TARGET -->
+
+                    <div class="announcement-form-field">
+
+                        <label for="dashboardAnnouncementTargetType">
+                            Send To
+                        </label>
+
+                        <select
+                            id="dashboardAnnouncementTargetType"
+                            onchange="handleAnnouncementTargetChange()"
+                            required>
+
+                            <option value="Farm">
+                                Entire Farm
+                            </option>
+
+                            <option value="Role">
+                                Specific Role
+                            </option>
+
+                            <option value="User">
+                                Specific User
+                            </option>
+
+                            <option
+                                value="Platform"
+                                id="dashboardPlatformTargetOption"
+                                style="display:none;">
+
+                                Entire Platform
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ROLE -->
+
+                    <div
+                        id="dashboardRoleTargetGroup"
+                        class="announcement-form-field"
+                        style="display:none;">
+
+                        <label for="dashboardAnnouncementTargetRole">
+                            Select Role
+                        </label>
+
+                        <select
+                            id="dashboardAnnouncementTargetRole">
+
+                            <option value="">
+                                Select a role
+                            </option>
+
+                            <option value="Owner/Admin">
+                                Owner/Admin
+                            </option>
+
+                            <option value="Farm Manager">
+                                Farm Manager
+                            </option>
+
+                            <option value="Serviceman (Gestation Pen)">
+                                Serviceman (Gestation Pen)
+                            </option>
+
+                            <option value="Farrowman (Farrowing Pen)">
+                                Farrowman (Farrowing Pen)
+                            </option>
+
+                            <option value="Sales Officer">
+                                Sales Officer
+                            </option>
+
+                            <option value="Veterinary Officer">
+                                Veterinary Officer
+                            </option>
+
+                            <option value="Farm Worker">
+                                Farm Worker
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- USER -->
+
+                    <div
+                        id="dashboardUserTargetGroup"
+                        class="announcement-form-field"
+                        style="display:none;">
+
+                        <label for="dashboardAnnouncementTargetUser">
+                            Select User
+                        </label>
+
+                        <select
+                            id="dashboardAnnouncementTargetUser">
+
+                            <option value="">
+                                Loading users...
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- START DATE -->
+
+                    <div class="announcement-form-field">
+
+                        <label for="dashboardAnnouncementStartAt">
+                            Start Date & Time
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="dashboardAnnouncementStartAt">
+
+                    </div>
+
+
+                    <!-- EXPIRY -->
+
+                    <div class="announcement-form-field">
+
+                        <label for="dashboardAnnouncementExpiresAt">
+                            Expiry Date & Time
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="dashboardAnnouncementExpiresAt">
+
+                        <small>
+                            Leave empty for no expiry.
+                        </small>
+
+                    </div>
+
+
+                    <!-- ACTIVE -->
+
+                    <div class="announcement-form-field checkbox-field">
+
+                        <label>
+
+                            <input
+                                type="checkbox"
+                                id="dashboardAnnouncementActive"
+                                checked>
+
+                            <span>
+                                Announcement is active
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="announcementManagementMessage"
+                    class="announcement-management-message"
+                    style="display:none;">
+                </div>
+
+
+                <div class="announcement-form-actions">
+
+                    <button
+                        type="submit"
+                        class="save-announcement-btn">
+
+                        Save Announcement
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="cancel-announcement-btn"
+                        onclick="cancelAnnouncementForm()">
+
+                        Cancel
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+
+        <!-- ==============================================
+             MANAGEMENT TABLE
+        =============================================== -->
+
+        <div class="announcement-management-list">
+
+            <div class="management-list-header">
+
+                <div>
+
+                    <strong>
+                        Your Farm Announcements
+                    </strong>
+
+                    <span>
+                        Manage announcements created for this farm.
+                    </span>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="small-refresh-btn"
+                    onclick="loadManagedAnnouncements()">
+
+                    ↻ Refresh
+
+                </button>
+
+            </div>
+
+
+            <div
+                id="managedAnnouncementsStatus"
+                class="managed-announcements-status">
+
+                Loading...
+
+            </div>
+
+
+            <div class="announcement-management-table-wrapper">
+
+                <table class="announcement-management-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Title
+                            </th>
+
+                            <th>
+                                Priority
+                            </th>
+
+                            <th>
+                                Target
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Created
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody
+                        id="managedAnnouncementsBody">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </section>
 
 
     <!-- ==================================================
@@ -180,9 +676,7 @@
 
         </div>
 
-
         <div class="overview-cards">
-
 
             <div class="overview-card">
 
@@ -267,11 +761,9 @@
 
             </div>
 
-
         </div>
 
     </section>
-
 
 
     <!-- ==================================================
@@ -335,7 +827,6 @@
             </button>
 
 
-
             <!-- GESTATION -->
 
             <button
@@ -367,7 +858,6 @@
                 </span>
 
             </button>
-
 
 
             <!-- FARROWING -->
@@ -403,7 +893,6 @@
             </button>
 
 
-
             <!-- WEANING -->
 
             <button
@@ -435,7 +924,6 @@
                 </span>
 
             </button>
-
 
 
             <!-- VACCINATION -->
@@ -471,7 +959,6 @@
             </button>
 
 
-
             <!-- FEEDING -->
 
             <button
@@ -503,7 +990,6 @@
                 </span>
 
             </button>
-
 
 
             <!-- SALES -->
@@ -539,7 +1025,6 @@
             </button>
 
 
-
             <!-- EXPENSES -->
 
             <button
@@ -571,7 +1056,6 @@
                 </span>
 
             </button>
-
 
 
             <!-- REPORTS -->
@@ -607,8 +1091,7 @@
             </button>
 
 
-
-            <!-- USER MANAGEMENT -->
+            <!-- USERS -->
 
             <button
                 type="button"
@@ -639,7 +1122,6 @@
                 </span>
 
             </button>
-
 
 
             <!-- ACTIVITY LOGS -->
@@ -674,11 +1156,9 @@
 
             </button>
 
-
         </div>
 
     </section>
-
 
 
     <!-- ==================================================
@@ -697,25 +1177,229 @@
 
     </footer>
 
-
 </main>
 
+
+<!-- ======================================================
+     ANNOUNCEMENT DETAILS MODAL
+====================================================== -->
+
+<div
+    id="announcementModal"
+    class="announcement-modal"
+    aria-hidden="true">
+
+    <div class="announcement-modal-content">
+
+        <button
+            type="button"
+            class="announcement-modal-close"
+            onclick="closeAnnouncementModal()"
+            aria-label="Close announcement">
+
+            ×
+
+        </button>
+
+        <div
+            id="modalPriority"
+            class="modal-priority">
+        </div>
+
+        <h2 id="modalAnnouncementTitle">
+            Announcement
+        </h2>
+
+        <div
+            id="modalAnnouncementDate"
+            class="modal-announcement-date">
+        </div>
+
+        <div
+            id="modalAnnouncementMessage"
+            class="modal-announcement-message">
+        </div>
+
+        <button
+            type="button"
+            class="modal-close-button"
+            onclick="closeAnnouncementModal()">
+
+            Close
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ======================================================
+     NOTIFICATION CENTRE MODAL
+====================================================== -->
+
+<div
+    id="notificationModal"
+    class="announcement-modal"
+    aria-hidden="true">
+
+    <div class="announcement-modal-content notification-modal-content">
+
+        <!-- CLOSE -->
+
+        <button
+            type="button"
+            class="announcement-modal-close"
+            onclick="closeNotifications()"
+            aria-label="Close notifications">
+
+            ×
+
+        </button>
+
+
+        <!-- HEADER -->
+
+        <div class="notification-centre-header">
+
+            <div>
+
+                <div class="modal-priority notification-heading">
+                    🔔 NOTIFICATIONS
+                </div>
+
+                <h2>
+                    Notification Centre
+                </h2>
+
+                <p class="notification-subtitle">
+                    Important updates and messages from MUNKA PIGGERY TECHNOLOGY.
+                </p>
+
+            </div>
+
+
+            <!-- UNREAD SUMMARY -->
+
+            <div
+                id="notificationUnreadSummary"
+                class="notification-unread-summary">
+
+                <span>
+                    Unread
+                </span>
+
+                <strong id="notificationUnreadCount">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- NOTIFICATION ACTIONS -->
+
+        <div class="notification-actions">
+
+            <button
+                type="button"
+                id="markAllNotificationsReadButton"
+                class="mark-all-notifications-btn"
+                onclick="markAllDashboardNotificationsAsRead()">
+
+                ✓ Mark All as Read
+
+            </button>
+
+
+            <button
+                type="button"
+                class="refresh-notifications-btn"
+                onclick="loadDashboardNotifications()">
+
+                ↻ Refresh
+
+            </button>
+
+        </div>
+
+
+        <!-- NOTIFICATION STATUS -->
+
+        <div
+            id="notificationStatus"
+            class="notification-status"
+            aria-live="polite">
+
+            Loading notifications...
+
+        </div>
+
+
+        <!-- NOTIFICATION LIST -->
+
+        <div
+            id="notificationList"
+            class="notification-list"
+            aria-live="polite">
+
+            Loading notifications...
+
+        </div>
+
+
+        <!-- EMPTY STATE -->
+
+        <div
+            id="notificationEmptyState"
+            class="notification-empty-state"
+            style="display:none;">
+
+            <div class="notification-empty-icon">
+                🔔
+            </div>
+
+            <h3>
+                No Notifications
+            </h3>
+
+            <p>
+                You currently have no notifications.
+            </p>
+
+        </div>
+
+
+        <!-- CLOSE -->
+
+        <button
+            type="button"
+            class="modal-close-button"
+            onclick="closeNotifications()">
+
+            Close
+
+        </button>
+
+    </div>
+
+</div>
 
 
 <!-- ======================================================
      JAVASCRIPT
 ====================================================== -->
 
-<script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase.js"></script>
+
+<script src="role_permissions.js"></script>
 
 <script src="security.js"></script>
 
 <script src="dashboard.js"></script>
-
 
 </body>
 

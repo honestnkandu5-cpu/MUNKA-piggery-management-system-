@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MUNKA PIGGERY TECHNOLOGY - Announcements</title>
+
+    <link rel="stylesheet" href="./announcements.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="page-header">
+
+        <div>
+
+            <div class="brand-title">
+                MUNKA PIGGERY TECHNOLOGY
+            </div>
+
+            <div class="page-title">
+                Announcements & Alerts
+            </div>
+
+            <div
+                id="farmName"
+                class="farm-name">
+                Loading farm...
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <button
+                type="button"
+                class="secondary-btn"
+                onclick="window.location.href='./dashboard.html'">
+
+                ← Dashboard
+
+            </button>
+
+
+            <button
+                type="button"
+                class="secondary-btn"
+                onclick="logoutUser()">
+
+                Logout
+
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="container">
+
+
+        <!-- SECURITY MESSAGE -->
+
+        <div
+            id="securityMessage"
+            class="message-box hidden">
+        </div>
+
+
+        <!-- =================================================
+             CREATE / EDIT ANNOUNCEMENT
+        ================================================== -->
+
+        <section
+            id="announcementFormSection"
+            class="card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2 id="formHeading">
+                        Create Announcement
+                    </h2>
+
+                    <p>
+                        Send important information, alerts and
+                        farm notices to selected users.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form id="announcementForm">
+
+                <!-- Hidden announcement ID -->
+
+                <input
+                    type="hidden"
+                    id="announcementId"
+                    value="">
+
+
+                <!-- TITLE -->
+
+                <div class="form-group">
+
+                    <label for="title">
+                        Announcement Title
+                    </label>
+
+                    <input
+                        type="text"
+                        id="title"
+                        maxlength="150"
+                        placeholder="Enter announcement title"
+                        required>
+
+                </div>
+
+
+                <!-- MESSAGE -->
+
+                <div class="form-group">
+
+                    <label for="message">
+                        Message
+                    </label>
+
+                    <textarea
+                        id="message"
+                        rows="6"
+                        maxlength="2000"
+                        placeholder="Write the announcement message..."
+                        required></textarea>
+
+                </div>
+
+
+                <!-- PRIORITY + TARGET -->
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label for="priority">
+                            Priority
+                        </label>
+
+                        <select
+                            id="priority"
+                            required>
+
+                            <option value="Normal">
+                                Normal
+                            </option>
+
+                            <option value="Important">
+                                Important
+                            </option>
+
+                            <option value="Urgent">
+                                Urgent
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="targetType">
+                            Send To
+                        </label>
+
+                        <select
+                            id="targetType"
+                            required>
+
+                            <option value="Farm">
+                                Whole Farm
+                            </option>
+
+                            <option value="Role">
+                                Specific Role
+                            </option>
+
+                            <option value="User">
+                                Specific User
+                            </option>
+
+                            <option
+                                id="platformTargetOption"
+                                value="Platform"
+                                style="display:none;">
+
+                                Entire Platform
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     FARM TARGET
+                ================================================== -->
+
+                <div
+                    id="farmTargetGroup"
+                    class="form-group conditional-group hidden">
+
+                    <label for="targetFarm">
+                        Target Farm
+                    </label>
+
+                    <select id="targetFarm">
+
+                        <option value="">
+                            Select farm
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- =================================================
+                     ROLE TARGET
+                ================================================== -->
+
+                <div
+                    id="roleTargetGroup"
+                    class="form-group conditional-group hidden">
+
+                    <label for="targetRole">
+                        Target Role
+                    </label>
+
+                    <select id="targetRole">
+
+                        <option value="">
+                            Select role
+                        </option>
+
+                        <option value="Owner/Admin">
+                            Owner/Admin
+                        </option>
+
+                        <option value="Farm Manager">
+                            Farm Manager
+                        </option>
+
+                        <option value="Serviceman (Gestation Pen)">
+                            Serviceman (Gestation Pen)
+                        </option>
+
+                        <option value="Farrowman (Farrowing Pen)">
+                            Farrowman (Farrowing Pen)
+                        </option>
+
+                        <option value="Sales Officer">
+                            Sales Officer
+                        </option>
+
+                        <option value="Veterinary Officer">
+                            Veterinary Officer
+                        </option>
+
+                        <option value="Farm Worker">
+                            Farm Worker
+                        </option>
+
+                        <option value="Super Admin">
+                            Super Admin
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- =================================================
+                     USER TARGET
+                ================================================== -->
+
+                <div
+                    id="userTargetGroup"
+                    class="form-group conditional-group hidden">
+
+                    <label for="targetUser">
+                        Target User
+                    </label>
+
+                    <select id="targetUser">
+
+                        <option value="">
+                            Select user
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- =================================================
+                     DATES
+                ================================================== -->
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label for="startAt">
+                            Start Date & Time
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="startAt">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="expiresAt">
+                            Expiry Date & Time
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="expiresAt">
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACTIVE -->
+
+                <div class="checkbox-row">
+
+                    <input
+                        type="checkbox"
+                        id="isActive"
+                        checked>
+
+                    <label for="isActive">
+                        Announcement is active
+                    </label>
+
+                </div>
+
+
+                <!-- BUTTONS -->
+
+                <div class="form-actions">
+
+                    <button
+                        type="submit"
+                        id="saveButton"
+                        class="primary-btn">
+
+                        Publish Announcement
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="cancelEditButton"
+                        class="secondary-btn hidden">
+
+                        Cancel Edit
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="clearFormButton"
+                        class="secondary-btn">
+
+                        Clear
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- =====================================================
+             ANNOUNCEMENT LIST
+        ====================================================== -->
+
+        <section class="card">
+
+            <div class="card-header list-header">
+
+                <div>
+
+                    <h2>
+                        Announcement Management
+                    </h2>
+
+                    <p>
+                        Manage announcements already created.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="refreshButton"
+                    class="secondary-btn">
+
+                    ↻ Refresh
+
+                </button>
+
+            </div>
+
+
+            <!-- LOADING -->
+
+            <div
+                id="loadingAnnouncements"
+                class="loading">
+
+                Loading announcements...
+
+            </div>
+
+
+            <!-- EMPTY -->
+
+            <div
+                id="emptyAnnouncements"
+                class="empty-state hidden">
+
+                <div class="empty-icon">
+                    🔔
+                </div>
+
+                <h3>
+                    No announcements yet
+                </h3>
+
+                <p>
+                    Create your first announcement using
+                    the form above.
+                </p>
+
+            </div>
+
+
+            <!-- TABLE -->
+
+            <div
+                id="announcementTableWrapper"
+                class="table-wrapper hidden">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Title
+                            </th>
+
+                            <th>
+                                Priority
+                            </th>
+
+                            <th>
+                                Target
+                            </th>
+
+                            <th>
+                                Start
+                            </th>
+
+                            <th>
+                                Expiry
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="announcementTableBody">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         VIEW MESSAGE MODAL
+    ====================================================== -->
+
+    <div
+        id="messageModal"
+        class="modal hidden">
+
+        <div class="modal-content">
+
+
+            <button
+                type="button"
+                id="closeModal"
+                class="modal-close">
+
+                ×
+
+            </button>
+
+
+            <h3 id="modalTitle">
+                Message
+            </h3>
+
+
+            <div id="modalMessage">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         
+         IMPORTANT:
+         The order matters.
+    ====================================================== -->
+
+
+    <!-- Supabase library -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+    <!-- Supabase connection -->
+
+    <script src="./supabase.js"></script>
+
+
+    <!-- Farm branding -->
+
+    <script src="./farm_branding.js"></script>
+
+
+    <!-- Activity logging -->
+
+    <script src="./activity.js"></script>
+
+
+    <!-- Role permissions -->
+
+    <script src="./role_permissions.js"></script>
+
+
+    <!-- Security / logout -->
+
+    <script src="./security.js"></script>
+
+
+    <!-- Announcements module -->
+
+    <script src="./announcements.js?v=20260928"></script>
+
+
+</body>
+
+</html>

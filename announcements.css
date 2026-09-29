@@ -1,0 +1,505 @@
+/* ============================================================
+   MUNKA PIGGERY TECHNOLOGY
+   ANNOUNCEMENTS & ALERTS
+============================================================ */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f1f4f2;
+    color: #1f2933;
+}
+
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.page-header {
+    background: #064d2f;
+    color: white;
+    padding: 20px 30px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 20px;
+
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+}
+
+.brand-title {
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.farm-name {
+    margin-top: 6px;
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+
+/* ============================================================
+   CONTAINER
+============================================================ */
+
+.container {
+    width: min(1250px, 94%);
+    margin: 30px auto;
+}
+
+
+/* ============================================================
+   CARDS
+============================================================ */
+
+.card {
+    background: white;
+    border-radius: 14px;
+    padding: 25px;
+    margin-bottom: 25px;
+
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+}
+
+.card-header {
+    margin-bottom: 22px;
+}
+
+.card-header h2 {
+    margin: 0 0 6px;
+    color: #064d2f;
+}
+
+.card-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+
+/* ============================================================
+   FORM
+============================================================ */
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: #374151;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 12px 13px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+
+    font-size: 15px;
+    font-family: inherit;
+
+    background: white;
+
+    outline: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #087443;
+    box-shadow: 0 0 0 3px rgba(8,116,67,0.10);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 130px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 10px 0 20px;
+}
+
+.checkbox-row input {
+    width: auto;
+}
+
+.checkbox-row label {
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+
+button {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.primary-btn,
+.secondary-btn,
+.action-btn {
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+.primary-btn {
+    background: #087443;
+    color: white;
+}
+
+.primary-btn:hover {
+    background: #065c35;
+}
+
+.secondary-btn {
+    background: #e8eeeb;
+    color: #064d2f;
+}
+
+.secondary-btn:hover {
+    background: #dbe5df;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+
+/* ============================================================
+   TABLE
+============================================================ */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+thead {
+    background: #064d2f;
+    color: white;
+}
+
+th,
+td {
+    padding: 13px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+}
+
+th {
+    font-size: 13px;
+}
+
+td {
+    font-size: 14px;
+}
+
+tbody tr:hover {
+    background: #f7faf8;
+}
+
+
+/* ============================================================
+   PRIORITY
+============================================================ */
+
+.priority-badge,
+.status-badge,
+.target-badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.priority-normal {
+    background: #e5f3ea;
+    color: #087443;
+}
+
+.priority-important {
+    background: #fff4d6;
+    color: #8a6500;
+}
+
+.priority-urgent {
+    background: #fde3e3;
+    color: #a51d1d;
+}
+
+.status-active {
+    background: #e5f3ea;
+    color: #087443;
+}
+
+.status-inactive {
+    background: #eeeeee;
+    color: #666666;
+}
+
+.target-badge {
+    background: #edf2f7;
+    color: #374151;
+}
+
+
+/* ============================================================
+   TABLE ACTIONS
+============================================================ */
+
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 7px 10px;
+    font-size: 12px;
+}
+
+.view-btn {
+    background: #e7f0ff;
+    color: #1855a5;
+}
+
+.edit-btn {
+    background: #fff4d6;
+    color: #795900;
+}
+
+.toggle-btn {
+    background: #e8eeeb;
+    color: #064d2f;
+}
+
+.delete-btn {
+    background: #fde3e3;
+    color: #a51d1d;
+}
+
+
+/* ============================================================
+   LOADING / EMPTY
+============================================================ */
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: #6b7280;
+}
+
+.empty-icon {
+    font-size: 45px;
+    margin-bottom: 10px;
+}
+
+.empty-state h3 {
+    margin: 0 0 8px;
+    color: #374151;
+}
+
+
+/* ============================================================
+   MESSAGE BOX
+============================================================ */
+
+.message-box {
+    padding: 13px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.message-success {
+    background: #e5f3ea;
+    color: #075c34;
+}
+
+.message-error {
+    background: #fde3e3;
+    color: #9d1c1c;
+}
+
+.message-info {
+    background: #e7f0ff;
+    color: #1855a5;
+}
+
+
+/* ============================================================
+   MODAL
+============================================================ */
+
+.modal {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0,0,0,0.55);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+
+    z-index: 9999;
+}
+
+.modal-content {
+    width: min(650px, 100%);
+    max-height: 85vh;
+    overflow-y: auto;
+
+    background: white;
+    border-radius: 14px;
+
+    padding: 28px;
+
+    position: relative;
+}
+
+.modal-content h3 {
+    color: #064d2f;
+    margin-top: 0;
+}
+
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+
+    width: 35px;
+    height: 35px;
+
+    border-radius: 50%;
+
+    background: #eeeeee;
+    color: #333;
+
+    font-size: 23px;
+}
+
+#modalMessage {
+    white-space: pre-wrap;
+    line-height: 1.7;
+    color: #374151;
+}
+
+
+/* ============================================================
+   UTILITIES
+============================================================ */
+
+.hidden {
+    display: none !important;
+}
+
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (max-width: 750px) {
+
+    .page-header {
+        padding: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+
+    .container {
+        width: 94%;
+        margin: 20px auto;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .list-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-actions button {
+        flex: 1;
+    }
+}
+
