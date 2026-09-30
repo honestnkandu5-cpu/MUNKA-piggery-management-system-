@@ -49,28 +49,57 @@
 
     </div>
 
+
+    <!-- ============================= -->
+    <!-- SEARCH -->
+    <!-- ============================= -->
+
     <section class="search-section">
-        <h2>Search Weaning Records</h2>
+
+        <h2>
+            Search Weaning Records
+        </h2>
+
         <div class="searchBox">
+
             <input
                 type="text"
                 id="searchWeaning"
                 placeholder="Search by Sow ID..."
             >
+
         </div>
+
     </section>
+
+
+    <!-- ============================= -->
+    <!-- WEANING FORM -->
+    <!-- ============================= -->
 
     <form id="weaningForm">
 
+
+        <!-- ============================= -->
+        <!-- SOW & WEANING INFORMATION -->
+        <!-- ============================= -->
+
         <div class="form-section full-width">
+
             <div class="section-title">
                 🐷 Sow &amp; Weaning Information
             </div>
 
+
             <div class="form-grid">
 
+
                 <div class="form-group">
-                    <label for="sowID">Sow ID</label>
+
+                    <label for="sowID">
+                        Sow ID
+                    </label>
+
 
                     <div class="input-button-group">
 
@@ -81,6 +110,7 @@
                             required
                         >
 
+
                         <button
                             type="button"
                             class="search-sow-btn"
@@ -90,17 +120,24 @@
                         </button>
 
                     </div>
+
                 </div>
 
+
                 <div class="form-group">
-                    <label for="farrowDate">Farrow Date</label>
+
+                    <label for="farrowDate">
+                        Farrow Date
+                    </label>
 
                     <input
                         type="date"
                         id="farrowDate"
                         required
                     >
+
                 </div>
+
 
                 <div class="form-group">
 
@@ -120,6 +157,7 @@
 
                 </div>
 
+
                 <div class="form-group">
 
                     <label for="totalBorn">
@@ -135,8 +173,15 @@
 
                 </div>
 
+
             </div>
+
         </div>
+
+
+        <!-- ============================= -->
+        <!-- WEANED PIGLETS -->
+        <!-- ============================= -->
 
         <div class="form-section full-width">
 
@@ -144,7 +189,9 @@
                 🐷 Weaned Piglets
             </div>
 
+
             <div class="form-grid">
+
 
                 <div class="form-group">
 
@@ -152,23 +199,32 @@
                         Male Weaned
                     </label>
 
-                    <select id="maleWeaned" required>
+
+                    <select
+                        id="maleWeaned"
+                        required
+                    >
 
                         <option value="">
                             Select
                         </option>
 
                         <script>
+
                             for(let i = 1; i <= 20; i++){
+
                                 document.write(
                                     `<option value="${i}">${i}</option>`
                                 );
+
                             }
+
                         </script>
 
                     </select>
 
                 </div>
+
 
                 <div class="form-group">
 
@@ -176,23 +232,32 @@
                         Female Weaned
                     </label>
 
-                    <select id="femaleWeaned" required>
+
+                    <select
+                        id="femaleWeaned"
+                        required
+                    >
 
                         <option value="">
                             Select
                         </option>
 
                         <script>
+
                             for(let i = 1; i <= 20; i++){
+
                                 document.write(
                                     `<option value="${i}">${i}</option>`
                                 );
+
                             }
+
                         </script>
 
                     </select>
 
                 </div>
+
 
                 <div class="form-group">
 
@@ -212,11 +277,13 @@
 
                 </div>
 
+
                 <div class="form-group">
 
                     <label for="averageWeight">
                         Average Weaning Weight (Kg)
                     </label>
+
 
                     <select
                         id="averageWeight"
@@ -228,22 +295,28 @@
                         </option>
 
                         <script>
+
                             for(let i = 1; i <= 30; i++){
+
                                 document.write(
                                     `<option value="${i}">${i} Kg</option>`
                                 );
+
                             }
+
                         </script>
 
                     </select>
 
                 </div>
 
+
                 <div class="form-group">
 
                     <label for="mortality">
                         Mortality
                     </label>
+
 
                     <select
                         id="mortality"
@@ -255,14 +328,19 @@
                         </option>
 
                         <script>
+
                             for(let i = 1; i <= 18; i++){
+
                                 document.write(
                                     `<option value="${i}">${i}</option>`
                                 );
+
                             }
+
                         </script>
 
                     </select>
+
 
                     <small>
                         Number of piglets lost before/during weaning.
@@ -270,9 +348,15 @@
 
                 </div>
 
+
             </div>
 
         </div>
+
+
+        <!-- ============================= -->
+        <!-- MORTALITY INFORMATION -->
+        <!-- ============================= -->
 
         <div class="form-section full-width">
 
@@ -280,7 +364,9 @@
                 ⚠️ Mortality Information
             </div>
 
+
             <div class="form-grid">
+
 
                 <div class="form-group">
 
@@ -288,11 +374,13 @@
                         Mortality Reason
                     </label>
 
+
                     <select id="mortalityReason">
 
                         <option value="">
                             Select Reason
                         </option>
+
 
                         <optgroup label="Sow-Related Causes">
 
@@ -313,6 +401,7 @@
                             </option>
 
                         </optgroup>
+
 
                         <optgroup label="Piglet Health Causes">
 
@@ -354,6 +443,7 @@
 
                         </optgroup>
 
+
                         <optgroup label="Other Causes">
 
                             <option>
@@ -382,6 +472,7 @@
 
                 </div>
 
+
                 <div
                     class="form-group"
                     id="otherReasonGroup"
@@ -392,6 +483,7 @@
                         Other Mortality Reason
                     </label>
 
+
                     <input
                         type="text"
                         id="otherReason"
@@ -400,11 +492,13 @@
 
                 </div>
 
+
                 <div class="form-group">
 
                     <label for="destinationPen">
                         Destination Pen
                     </label>
+
 
                     <select id="destinationPen">
 
@@ -452,9 +546,15 @@
 
                 </div>
 
+
             </div>
 
         </div>
+
+
+        <!-- ============================= -->
+        <!-- ASSESSMENT & RECOMMENDATIONS -->
+        <!-- ============================= -->
 
         <div class="form-section full-width">
 
@@ -462,7 +562,9 @@
                 📝 Weaning Assessment &amp; Recommendations
             </div>
 
+
             <div class="form-grid">
+
 
                 <div class="form-group full-width">
 
@@ -470,11 +572,13 @@
                         Remarks / Recommendations
                     </label>
 
+
                     <select id="remarks">
 
                         <option value="">
                             Select Assessment / Recommendation
                         </option>
+
 
                         <optgroup label="✅ Positive - Good Weaning">
 
@@ -523,6 +627,7 @@
                             </option>
 
                         </optgroup>
+
 
                         <optgroup label="⚠️ Negative - Poor Weaning">
 
@@ -580,6 +685,7 @@
 
                         </optgroup>
 
+
                         <optgroup label="🔍 Reasons for Poor Weaning">
 
                             <option>
@@ -623,6 +729,7 @@
                             </option>
 
                         </optgroup>
+
 
                         <optgroup label="💡 Recommended Corrective Actions">
 
@@ -672,20 +779,28 @@
 
                 </div>
 
+
             </div>
 
         </div>
 
+
+        <!-- ============================= -->
+        <!-- ACTION BUTTONS -->
+        <!-- ============================= -->
+
         <div class="buttons full-width">
+
 
             <button
                 type="submit"
                 class="btn-primary"
                 data-permission="add"
-                data-module="Weaning Records"
+                data-module="Weaning"
             >
                 💾 Save Record
             </button>
+
 
             <button
                 type="button"
@@ -695,35 +810,39 @@
                 🧹 Clear
             </button>
 
+
             <button
                 type="button"
                 class="btn-report"
                 onclick="generateReport()"
                 data-permission="report"
-                data-module="Weaning Records"
+                data-module="Weaning"
             >
                 📊 Report
             </button>
+
 
             <button
                 type="button"
                 class="btn-pdf"
                 onclick="downloadPDF()"
                 data-permission="report"
-                data-module="Weaning Records"
+                data-module="Weaning"
             >
                 📄 Download PDF
             </button>
+
 
             <button
                 type="button"
                 class="btn-print"
                 onclick="printReport()"
                 data-permission="report"
-                data-module="Weaning Records"
+                data-module="Weaning"
             >
                 🖨 Print
             </button>
+
 
             <button
                 type="button"
@@ -733,17 +852,26 @@
                 ↩️ Back
             </button>
 
+
         </div>
+
 
     </form>
 
+
     <hr>
+
+
+    <!-- ============================= -->
+    <!-- REGISTERED RECORDS -->
+    <!-- ============================= -->
 
     <section class="records-section">
 
         <h2>
             Registered Weaning Records
         </h2>
+
 
         <div class="table-wrapper">
 
@@ -769,7 +897,9 @@
 
                 </thead>
 
+
                 <tbody id="weaningTable"></tbody>
+
 
             </table>
 
@@ -777,23 +907,50 @@
 
     </section>
 
+
 </div>
+
+
+<!-- ============================= -->
+<!-- PDF LIBRARIES -->
+<!-- ============================= -->
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 
+
+<!-- ============================= -->
+<!-- SUPABASE -->
+<!-- ============================= -->
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="supabase.js"></script>
 
+
+<!-- ============================= -->
+<!-- FARM BRANDING -->
+<!-- ============================= -->
+
 <script src="farm_branding.js"></script>
+
+
+<!-- ============================= -->
+<!-- ACTIVITY & SECURITY -->
+<!-- ============================= -->
 
 <script src="activity.js"></script>
 
 <script src="security.js"></script>
 
+
+<!-- ============================= -->
+<!-- WEANING JAVASCRIPT -->
+<!-- ============================= -->
+
 <script src="weaning.js"></script>
+
 
 </body>
 
