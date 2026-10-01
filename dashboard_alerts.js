@@ -1,65 +1,238 @@
 /* ============================================================
    MUNKA PIGGERY MANAGEMENT SYSTEM
-   DASHBOARD FARM ALERTS
+   FARM DASHBOARD ALERTS - COMPLETE VERSION
+   ============================================================
+
+   GESTATION ALERTS
+   ----------------
+   21-Day Pregnancy Check
+   90-Day Feed Up
+   101-Day Dewormer
+   101-Day Litter Guard
+   107-Day Action Day
+   114-Day Expected Farrowing
+
+   FARROWING ALERTS
+   ----------------
+   Iron Injection
+   Teeth Clipping
+   Tail Docking
+
+   WEANING ALERTS
+   --------------
+   Uses weaning_records table
+   Uses weaning_date
+   Farm scoped
+
+   OTHER ALERTS
+   ------------
+   Not Serviced
+   Feeding
+   Water
+
+   IMPORTANT
+   ----------
+   Uses supabaseClient
+   Uses local browser dates
+   Farm-scoped
+   ============================================================ */
+
+
+/* ============================================================
+   GLOBAL VARIABLES
    ============================================================ */
 
 let dashboardFarmAlerts = [];
+let dashboardAlertsSectionCreated = false;
+
 
 /* ============================================================
    DATE HELPERS
    ============================================================ */
 
-function getTodayDate() {
-    const now = new Date();
+function alertDateOnly(value) {
 
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-}
-
-function parseDate(dateValue) {
-    if (!dateValue) return null;
-
-    const date = new Date(dateValue);
-
-    if (isNaN(date.getTime())) {
+    if (!value) {
         return null;
     }
 
-    return date;
-}
+    if (value instanceof Date) {
 
-function formatAlertDate(dateValue) {
-    if (!dateValue) return "N/A";
+        if (isNaN(value.getTime())) {
+            return null;
+        }
 
-    const date = parseDate(dateValue);
+        return new Date(
+            value.getFullYear(),
+            value.getMonth(),
+            value.getDate()
+        );
+    }
 
-    if (!date) return "N/A";
+    const text = String(value).trim();
 
-    return date.toLocaleDateString("en-ZM", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-    });
-}
+    const match = text.match(
+        /^(\d{4})-(\d{2})-(\d{2})/
+    );
 
-function getDaysDifference(targetDate, todayDate = getTodayDate()) {
-    const target = new Date(`${targetDate}T00:00:00`);
-    const today = new Date(`${todayDate}T00:00:00`);
+    if (match) {
 
-    return Math.round(
-        (target - today) / (1000 * 60 * 60 * 24)
+        const year = Number(match[1]);
+        const month = Number(match[2]);
+        const day = Number(match[3]);
+
+        return new Date(
+            year,
+            month - 1,
+            day
+        );
+    }
+
+    const parsed = new Date(text);
+
+    if (isNaN(parsed.getTime())) {
+        return null;
+    }
+
+    return new Date(
+        parsed.getFullYear(),
+        parsed.getMonth(),
+        parsed.getDate()
     );
 }
+
+
+function alertToday() {
+
+    const now = new Date();
+
+    return new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+}
+
+
+function alertDateDifference(date1, date2) {
+
+    const first = new Date(
+        date1.getFullYear(),
+        date1.getMonth(),
+        date1.getDate()
+    );
+
+    const second = new Date(
+        date2.getFullYear(),
+        date2.getMonth(),
+        date2.getDate()
+    );
+
+    const difference =
+        first.getTime() -
+        second.getTime();
+
+    return Math.round(
+        difference /
+        (1000 * 60 * 60 * 24)
+    );
+}
+
+
+function addDaysToDate(date, days) {
+
+    if (!date) {
+        return null;
+    }
+
+    const result = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    );
+
+    result.setDate(
+        result.getDate() + days
+    );
+
+    return new Date(
+        result.getFullYear(),
+        result.getMonth(),
+        result.getDate()
+    );
+}
+
+
+function formatAlertDate(value) {
+
+    const date =
+        alertDateOnly(value);
+
+    if (!date) {
+        return "Date not recorded";
+    }
+
+    return date.toLocaleDateString(
+        "en-ZM",
+        {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        }
+    );
+}
+
+
+function formatAlertTime(value) {
+
+    if (!value) {
+        return "Time not recorded";
+    }
+
+    const match =
+        String(value).match(
+            /^(\d{1,2}):(\d{2})/
+        );
+
+    if (!match) {
+        return String(value);
+    }
+
+    const hour =
+        Number(match[1]);
+
+    const minute =
+        Number(match[2]);
+
+    const date = new Date();
+
+    date.setHours(
+        hour,
+        minute,
+        0,
+        0
+    );
+
+    return date.toLocaleTimeString(
+        "en-ZM",
+        {
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+}
+
 
 /* ============================================================
    HTML SECURITY
    ============================================================ */
 
 function escapeAlertHTML(value) {
-    if (value === null || value === undefined) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
         return "";
     }
 
@@ -71,505 +244,1675 @@ function escapeAlertHTML(value) {
         .replace(/'/g, "&#039;");
 }
 
+
 /* ============================================================
-   USER / FARM HELPERS
+   USER / FARM
    ============================================================ */
 
-function getLoggedInUserForAlerts() {
-    try {
-        const storedUser = localStorage.getItem("loggedInUser");
+function getDashboardAlertUser() {
 
-        if (!storedUser) {
+    try {
+
+        const stored =
+            localStorage.getItem(
+                "loggedInUser"
+            );
+
+        if (!stored) {
             return null;
         }
 
-        return JSON.parse(storedUser);
+        return JSON.parse(stored);
+
     } catch (error) {
-        console.error("Unable to read loggedInUser:", error);
+
+        console.error(
+            "Could not read loggedInUser:",
+            error
+        );
+
         return null;
     }
 }
 
-function getFarmIdForAlerts() {
-    const user = getLoggedInUserForAlerts();
 
-    if (!user) {
-        return null;
+function getDashboardAlertFarmId() {
+
+    const user =
+        getDashboardAlertUser();
+
+    if (
+        user &&
+        user.farm_id
+    ) {
+
+        return Number(
+            user.farm_id
+        );
     }
 
-    return user.farm_id || null;
+    if (
+        typeof window.dashboardCurrentFarmId !==
+        "undefined" &&
+        window.dashboardCurrentFarmId
+    ) {
+
+        return Number(
+            window.dashboardCurrentFarmId
+        );
+    }
+
+    return null;
 }
+
 
 /* ============================================================
    CREATE FARM ALERT SECTION
    ============================================================ */
 
 function createFarmAlertsSection() {
-    const existingSection = document.getElementById("farmAlertsSection");
 
-    if (existingSection) {
-        return existingSection;
-    }
-
-    const section = document.createElement("section");
-
-    section.id = "farmAlertsSection";
-    section.className = "farm-alerts-section";
-
-    section.innerHTML = `
-        <div class="farm-alerts-header">
-            <div>
-                <h2>Farm Alerts</h2>
-                <p>Important farm activities and upcoming actions</p>
-            </div>
-
-            <div id="farmAlertsCount" class="farm-alerts-count">
-                0
-            </div>
-        </div>
-
-        <div id="farmAlertsContainer" class="farm-alerts-container">
-            <div class="farm-alerts-loading">
-                Loading farm alerts...
-            </div>
-        </div>
-    `;
-
-    const dashboard =
-        document.querySelector(".dashboard-container") ||
-        document.querySelector("main") ||
-        document.body;
-
-    dashboard.appendChild(section);
-
-    return section;
-}
-
-/* ============================================================
-   DISPLAY FARM ALERTS
-   ============================================================ */
-
-function displayFarmAlerts(alerts) {
-    const container = document.getElementById("farmAlertsContainer");
-    const countElement = document.getElementById("farmAlertsCount");
-
-    if (!container) {
-        console.warn("Farm alerts container not found.");
+    if (
+        dashboardAlertsSectionCreated
+    ) {
         return;
     }
 
-    if (countElement) {
-        countElement.textContent = alerts.length;
+    const existing =
+        document.getElementById(
+            "farmAlertsSection"
+        );
+
+    if (existing) {
+
+        dashboardAlertsSectionCreated =
+            true;
+
+        return;
     }
 
-    if (!alerts || alerts.length === 0) {
+    const announcementsSection =
+        document.querySelector(
+            ".announcements-section"
+        ) ||
+        document.querySelector(
+            "#announcementsSection"
+        );
+
+    const section =
+        document.createElement(
+            "section"
+        );
+
+    section.id =
+        "farmAlertsSection";
+
+    section.className =
+        "dashboard-section farm-alerts-section";
+
+    section.innerHTML = `
+
+        <div class="section-heading">
+
+            <div>
+
+                <h2>🚨 Farm Alerts</h2>
+
+                <p class="section-description">
+                    Important farm activities requiring attention.
+                </p>
+
+            </div>
+
+            <div class="farm-alert-heading-actions">
+
+                <span
+                    id="farmAlertsCount"
+                    class="farm-alerts-count"
+                >
+                    0
+                </span>
+
+                <button
+                    type="button"
+                    id="refreshFarmAlerts"
+                    class="farm-refresh-alerts-btn"
+                >
+                    🔄 Refresh
+                </button>
+
+            </div>
+
+        </div>
+
+        <div
+            id="farmAlertsStatus"
+            class="farm-alerts-status"
+        >
+            Checking farm records...
+        </div>
+
+        <div
+            id="farmAlertsContainer"
+            class="farm-alerts-container"
+        >
+
+            <div class="farm-alert-loading">
+                Checking farm records...
+            </div>
+
+        </div>
+    `;
+
+
+    if (
+        announcementsSection &&
+        announcementsSection.parentNode
+    ) {
+
+        announcementsSection.parentNode.insertBefore(
+            section,
+            announcementsSection.nextSibling
+        );
+
+    } else {
+
+        const main =
+            document.querySelector(
+                "main"
+            ) ||
+            document.body;
+
+        main.appendChild(
+            section
+        );
+    }
+
+
+    dashboardAlertsSectionCreated =
+        true;
+
+
+    const refreshButton =
+        document.getElementById(
+            "refreshFarmAlerts"
+        );
+
+    if (refreshButton) {
+
+        refreshButton.addEventListener(
+            "click",
+            loadDashboardFarmAlerts
+        );
+    }
+}
+
+
+/* ============================================================
+   DISPLAY ALERTS
+   ============================================================ */
+
+function displayFarmAlerts(alerts) {
+
+    const container =
+        document.getElementById(
+            "farmAlertsContainer"
+        );
+
+    const status =
+        document.getElementById(
+            "farmAlertsStatus"
+        );
+
+    const count =
+        document.getElementById(
+            "farmAlertsCount"
+        );
+
+
+    if (!container) {
+
+        console.error(
+            "farmAlertsContainer not found."
+        );
+
+        return;
+    }
+
+
+    if (count) {
+
+        count.textContent =
+            alerts.length;
+    }
+
+
+    if (!alerts.length) {
+
+        if (status) {
+
+            status.textContent =
+                "No active alerts at the moment.";
+        }
+
+
         container.innerHTML = `
-            <div class="farm-alerts-empty">
-                <div class="empty-alert-icon">✓</div>
-                <h3>No Farm Alerts</h3>
-                <p>There are no important farm activities requiring attention at the moment.</p>
+
+            <div class="farm-alert-empty">
+
+                <div class="farm-alert-empty-icon">
+                    ✅
+                </div>
+
+                <h3>
+                    No Active Alerts
+                </h3>
+
+                <p>
+                    There are currently no farm activities
+                    requiring attention.
+                </p>
+
             </div>
         `;
 
         return;
     }
 
-    container.innerHTML = alerts
-        .map(alert => createFarmAlertCard(alert))
-        .join("");
+
+    if (status) {
+
+        status.textContent =
+            `${alerts.length} alert${alerts.length === 1 ? "" : "s"} require attention.`;
+    }
+
+
+    container.innerHTML =
+        alerts
+            .map(createFarmAlertCard)
+            .join("");
 }
 
+
 /* ============================================================
-   CREATE FARM ALERT CARD
+   ALERT CARD
    ============================================================ */
 
 function createFarmAlertCard(alert) {
-    const priority = alert.priority || "Important";
 
-    let priorityClass = "important";
+    const priority =
+        String(
+            alert.priority ||
+            "Normal"
+        ).toLowerCase();
 
-    if (priority.toLowerCase() === "urgent") {
-        priorityClass = "urgent";
-    }
-
-    if (priority.toLowerCase() === "normal") {
-        priorityClass = "normal";
-    }
 
     return `
-        <div class="farm-alert-card ${priorityClass}">
 
-            <div class="farm-alert-icon">
-                ${alert.icon || "🔔"}
-            </div>
+        <article
+            class="farm-alert-card farm-alert-${priority}"
+        >
 
-            <div class="farm-alert-content">
+            <div class="farm-alert-card-top">
 
-                <div class="farm-alert-top">
-                    <h3>${escapeAlertHTML(alert.title)}</h3>
-
-                    <span class="farm-alert-priority ${priorityClass}">
-                        ${escapeAlertHTML(priority)}
-                    </span>
+                <div class="farm-alert-icon">
+                    ${alert.icon || "⚠️"}
                 </div>
 
-                <p class="farm-alert-message">
-                    ${escapeAlertHTML(alert.message || "")}
-                </p>
+                <div class="farm-alert-main">
 
-                ${
-                    alert.details
-                        ? `
-                        <div class="farm-alert-details">
-                            ${alert.details}
-                        </div>
-                        `
-                        : ""
-                }
+                    <div class="farm-alert-title-row">
+
+                        <h3>
+                            ${escapeAlertHTML(
+                                alert.title ||
+                                "Farm Alert"
+                            )}
+                        </h3>
+
+                        <span
+                            class="
+                                farm-alert-priority
+                                farm-alert-priority-${priority}
+                            "
+                        >
+                            ${escapeAlertHTML(
+                                alert.priority ||
+                                "Normal"
+                            )}
+                        </span>
+
+                    </div>
+
+
+                    <p class="farm-alert-message">
+                        ${escapeAlertHTML(
+                            alert.message ||
+                            ""
+                        )}
+                    </p>
+
+
+                    ${
+                        alert.details
+                            ? `
+                                <div class="farm-alert-details">
+                                    ${alert.details}
+                                </div>
+                              `
+                            : ""
+                    }
+
+
+                    ${
+                        alert.action
+                            ? `
+                                <div class="farm-alert-action">
+                                    <strong>Action:</strong>
+                                    ${escapeAlertHTML(
+                                        alert.action
+                                    )}
+                                </div>
+                              `
+                            : ""
+                    }
+
+                </div>
 
             </div>
-        </div>
+
+        </article>
     `;
 }
 
+
 /* ============================================================
-   GESTATION CLOSED CHECK
+   GESTATION STATUS
    ============================================================ */
 
-function gestationStatusIsClosed(record) {
-    if (!record) {
-        return false;
-    }
+function gestationStatusIsClosed(status) {
 
-    const status = String(record.status || "")
-        .trim()
-        .toLowerCase();
+    const value =
+        String(
+            status || ""
+        )
+            .toLowerCase()
+            .trim();
 
-    return [
-        "closed",
-        "completed",
-        "complete",
-        "farrowed",
-        "cancelled",
-        "canceled"
-    ].includes(status);
+
+    return (
+        value === "completed" ||
+        value === "farrowed" ||
+        value === "cancelled" ||
+        value === "closed"
+    );
 }
 
+
 /* ============================================================
-   21-DAY CHECK ALERTS
+   GESTATION - 21 DAY CHECK
    ============================================================ */
 
 async function load21DayCheckAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("gestation_records")
-            .select(`
-                id,
-                sow_id,
-                service_date,
-                check_21_day,
-                status,
-                farm_id
-            `)
-            .eq("farm_id", farmId);
+            .select(
+                "id,sow_id,service_date,status,farm_id"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            )
+            .not(
+                "service_date",
+                "is",
+                null
+            );
+
 
         if (error) {
-            console.error("21-Day Check alerts error:", error);
-            return [];
+
+            console.error(
+                "21-DAY CHECK ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
 
-        return (data || [])
-            .filter(record => {
-                if (gestationStatusIsClosed(record)) {
-                    return false;
-                }
+        (data || []).forEach(record => {
 
-                return record.check_21_day === today;
-            })
-            .map(record => ({
-                type: "21-Day Check",
-                title: "21-Day Pregnancy Check",
-                message: `Pregnancy check is due for Sow ${record.sow_id}.`,
-                priority: "Urgent",
-                icon: "🩺",
-                details: `
-                    <strong>Sow ID:</strong> ${escapeAlertHTML(record.sow_id)}
-                    &nbsp; | &nbsp;
-                    <strong>Check Date:</strong> ${formatAlertDate(record.check_21_day)}
-                `
-            }));
+            if (
+                gestationStatusIsClosed(
+                    record.status
+                )
+            ) {
+                return;
+            }
+
+
+            const serviceDate =
+                alertDateOnly(
+                    record.service_date
+                );
+
+            if (!serviceDate) {
+                return;
+            }
+
+
+            const checkDate =
+                addDaysToDate(
+                    serviceDate,
+                    21
+                );
+
+
+            const difference =
+                alertDateDifference(
+                    checkDate,
+                    alertToday()
+                );
+
+
+            if (difference < 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Overdue 21-Day Check",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has an overdue 21-day pregnancy check.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Service Date:</strong>
+                        ${formatAlertDate(
+                            record.service_date
+                        )}
+
+                        <br>
+
+                        <strong>21-Day Check:</strong>
+                        ${formatAlertDate(
+                            checkDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Check the sow and complete the pregnancy check.",
+
+                    priority: "Urgent",
+
+                    icon: "🔎",
+
+                    date: checkDate
+                });
+
+                return;
+            }
+
+
+            if (difference === 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "21-Day Check Due Today",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} is due for the 21-day pregnancy check today.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Service Date:</strong>
+                        ${formatAlertDate(
+                            record.service_date
+                        )}
+
+                        <br>
+
+                        <strong>Check Date:</strong>
+                        ${formatAlertDate(
+                            checkDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Carry out the required 21-day pregnancy check.",
+
+                    priority: "Urgent",
+
+                    icon: "🔎",
+
+                    date: checkDate
+                });
+
+                return;
+            }
+
+
+            if (
+                difference > 0 &&
+                difference <= 7
+            ) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Upcoming 21-Day Check",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has a 21-day pregnancy check coming up.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Check Date:</strong>
+                        ${formatAlertDate(
+                            checkDate
+                        )}
+
+                        <br>
+
+                        <strong>Days Remaining:</strong>
+                        ${difference}
+
+                    `,
+
+                    action:
+                        "Prepare for the 21-day pregnancy check.",
+
+                    priority: "Important",
+
+                    icon: "🔎",
+
+                    date: checkDate
+                });
+            }
+
+        });
 
     } catch (error) {
-        console.error("Unexpected 21-Day Check error:", error);
-        return [];
+
+        console.error(
+            "21-DAY CHECK EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
 
+
 /* ============================================================
-   90-DAY FEED UP ALERTS
+   GESTATION - 90 DAY FEED UP
    ============================================================ */
 
 async function load90DayFeedUpAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("gestation_records")
-            .select(`
-                id,
-                sow_id,
-                feed_up_date,
-                status,
-                farm_id
-            `)
-            .eq("farm_id", farmId);
+            .select(
+                "id,sow_id,service_date,status,farm_id"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            )
+            .not(
+                "service_date",
+                "is",
+                null
+            );
+
 
         if (error) {
-            console.error("90-Day Feed Up alerts error:", error);
-            return [];
+
+            console.error(
+                "90-DAY FEED UP ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
 
-        return (data || [])
-            .filter(record => {
-                if (gestationStatusIsClosed(record)) {
-                    return false;
-                }
+        (data || []).forEach(record => {
 
-                return record.feed_up_date === today;
-            })
-            .map(record => ({
-                type: "90-Day Feed Up",
-                title: "90-Day Feed Up",
-                message: `Feed-up activity is due for Sow ${record.sow_id}.`,
-                priority: "Important",
-                icon: "🌾",
-                details: `
-                    <strong>Sow ID:</strong> ${escapeAlertHTML(record.sow_id)}
-                    &nbsp; | &nbsp;
-                    <strong>Date:</strong> ${formatAlertDate(record.feed_up_date)}
-                `
-            }));
+            if (
+                gestationStatusIsClosed(
+                    record.status
+                )
+            ) {
+                return;
+            }
+
+
+            const serviceDate =
+                alertDateOnly(
+                    record.service_date
+                );
+
+            if (!serviceDate) {
+                return;
+            }
+
+
+            const feedUpDate =
+                addDaysToDate(
+                    serviceDate,
+                    90
+                );
+
+
+            const difference =
+                alertDateDifference(
+                    feedUpDate,
+                    alertToday()
+                );
+
+
+            if (difference < 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Overdue 90-Day Feed Up",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has an overdue 90-day feed-up activity.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Feed-Up Date:</strong>
+                        ${formatAlertDate(
+                            feedUpDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Review the sow's feeding programme and complete the required feed-up activity.",
+
+                    priority: "Urgent",
+
+                    icon: "🌾",
+
+                    date: feedUpDate
+                });
+
+                return;
+            }
+
+
+            if (difference === 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "90-Day Feed Up Due Today",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} is due for the 90-day feed-up activity today.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Feed-Up Date:</strong>
+                        ${formatAlertDate(
+                            feedUpDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Carry out the planned 90-day feed-up programme.",
+
+                    priority: "Urgent",
+
+                    icon: "🌾",
+
+                    date: feedUpDate
+                });
+
+                return;
+            }
+
+
+            if (
+                difference > 0 &&
+                difference <= 7
+            ) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Upcoming 90-Day Feed Up",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has a 90-day feed-up activity coming up.`,
+
+                    details: `
+
+                        <strong>Feed-Up Date:</strong>
+                        ${formatAlertDate(
+                            feedUpDate
+                        )}
+
+                        <br>
+
+                        <strong>Days Remaining:</strong>
+                        ${difference}
+
+                    `,
+
+                    action:
+                        "Prepare the required feeding programme.",
+
+                    priority: "Important",
+
+                    icon: "🌾",
+
+                    date: feedUpDate
+                });
+            }
+
+        });
 
     } catch (error) {
-        console.error("Unexpected 90-Day Feed Up error:", error);
-        return [];
+
+        console.error(
+            "90-DAY FEED UP EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
 
+
 /* ============================================================
-   101-DAY DEWORMER ALERTS
+   GESTATION - 101 DAY DEWORMER
    ============================================================ */
 
 async function load101DayDewormerAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("gestation_records")
-            .select(`
-                id,
-                sow_id,
-                dewormer_date,
-                status,
-                farm_id
-            `)
-            .eq("farm_id", farmId);
+            .select(
+                "id,sow_id,service_date,status,farm_id"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            )
+            .not(
+                "service_date",
+                "is",
+                null
+            );
+
 
         if (error) {
-            console.error("101-Day Dewormer alerts error:", error);
-            return [];
+
+            console.error(
+                "101-DAY DEWORMER ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
 
-        return (data || [])
-            .filter(record => {
-                if (gestationStatusIsClosed(record)) {
-                    return false;
-                }
+        (data || []).forEach(record => {
 
-                return record.dewormer_date === today;
-            })
-            .map(record => ({
-                type: "101-Day Dewormer",
-                title: "101-Day Dewormer",
-                message: `Dewormer activity is due for Sow ${record.sow_id}.`,
-                priority: "Important",
-                icon: "💊",
-                details: `
-                    <strong>Sow ID:</strong> ${escapeAlertHTML(record.sow_id)}
-                    &nbsp; | &nbsp;
-                    <strong>Date:</strong> ${formatAlertDate(record.dewormer_date)}
-                `
-            }));
+            if (
+                gestationStatusIsClosed(
+                    record.status
+                )
+            ) {
+                return;
+            }
+
+
+            const serviceDate =
+                alertDateOnly(
+                    record.service_date
+                );
+
+            if (!serviceDate) {
+                return;
+            }
+
+
+            const dewormerDate =
+                addDaysToDate(
+                    serviceDate,
+                    101
+                );
+
+
+            const difference =
+                alertDateDifference(
+                    dewormerDate,
+                    alertToday()
+                );
+
+
+            if (difference < 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Overdue Dewormer",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has an overdue 101-day dewormer activity.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Dewormer Date:</strong>
+                        ${formatAlertDate(
+                            dewormerDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Review the sow record and follow the farm veterinary programme.",
+
+                    priority: "Urgent",
+
+                    icon: "💊",
+
+                    date: dewormerDate
+                });
+
+                return;
+            }
+
+
+            if (difference === 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "101-Day Dewormer Due Today",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} is due for the 101-day dewormer activity today.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Dewormer Date:</strong>
+                        ${formatAlertDate(
+                            dewormerDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Carry out the required deworming procedure according to the farm veterinary programme.",
+
+                    priority: "Urgent",
+
+                    icon: "💊",
+
+                    date: dewormerDate
+                });
+
+                return;
+            }
+
+
+            if (
+                difference > 0 &&
+                difference <= 7
+            ) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Upcoming 101-Day Dewormer",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has a 101-day dewormer activity coming up.`,
+
+                    details: `
+
+                        <strong>Dewormer Date:</strong>
+                        ${formatAlertDate(
+                            dewormerDate
+                        )}
+
+                        <br>
+
+                        <strong>Days Remaining:</strong>
+                        ${difference}
+
+                    `,
+
+                    action:
+                        "Prepare for the required deworming procedure.",
+
+                    priority: "Important",
+
+                    icon: "💊",
+
+                    date: dewormerDate
+                });
+            }
+
+        });
 
     } catch (error) {
-        console.error("Unexpected 101-Day Dewormer error:", error);
-        return [];
+
+        console.error(
+            "101-DAY DEWORMER EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
 
+
 /* ============================================================
-   101-DAY LITTER GUARD ALERTS
+   GESTATION - 101 DAY LITTER GUARD
    ============================================================ */
 
 async function load101DayLitterGuardAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("gestation_records")
-            .select(`
-                id,
-                sow_id,
-                litter_guard_date,
-                status,
-                farm_id
-            `)
-            .eq("farm_id", farmId);
+            .select(
+                "id,sow_id,service_date,status,farm_id"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            )
+            .not(
+                "service_date",
+                "is",
+                null
+            );
+
 
         if (error) {
-            console.error("101-Day Litter Guard alerts error:", error);
-            return [];
+
+            console.error(
+                "101-DAY LITTER GUARD ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
 
-        return (data || [])
-            .filter(record => {
-                if (gestationStatusIsClosed(record)) {
-                    return false;
-                }
+        (data || []).forEach(record => {
 
-                return record.litter_guard_date === today;
-            })
-            .map(record => ({
-                type: "101-Day Litter Guard",
-                title: "101-Day Litter Guard",
-                message: `Litter Guard activity is due for Sow ${record.sow_id}.`,
-                priority: "Important",
-                icon: "🛡️",
-                details: `
-                    <strong>Sow ID:</strong> ${escapeAlertHTML(record.sow_id)}
-                    &nbsp; | &nbsp;
-                    <strong>Date:</strong> ${formatAlertDate(record.litter_guard_date)}
-                `
-            }));
+            if (
+                gestationStatusIsClosed(
+                    record.status
+                )
+            ) {
+                return;
+            }
+
+
+            const serviceDate =
+                alertDateOnly(
+                    record.service_date
+                );
+
+            if (!serviceDate) {
+                return;
+            }
+
+
+            const litterGuardDate =
+                addDaysToDate(
+                    serviceDate,
+                    101
+                );
+
+
+            const difference =
+                alertDateDifference(
+                    litterGuardDate,
+                    alertToday()
+                );
+
+
+            if (difference < 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Overdue Litter Guard",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has an overdue 101-day Litter Guard activity.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Litter Guard Date:</strong>
+                        ${formatAlertDate(
+                            litterGuardDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Review the sow record and follow the planned farm programme.",
+
+                    priority: "Urgent",
+
+                    icon: "🛡️",
+
+                    date: litterGuardDate
+                });
+
+                return;
+            }
+
+
+            if (difference === 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "101-Day Litter Guard Due Today",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} is due for Litter Guard today.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Litter Guard Date:</strong>
+                        ${formatAlertDate(
+                            litterGuardDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Carry out the planned Litter Guard procedure.",
+
+                    priority: "Urgent",
+
+                    icon: "🛡️",
+
+                    date: litterGuardDate
+                });
+
+                return;
+            }
+
+
+            if (
+                difference > 0 &&
+                difference <= 7
+            ) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Upcoming Litter Guard",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has a 101-day Litter Guard activity coming up.`,
+
+                    details: `
+
+                        <strong>Litter Guard Date:</strong>
+                        ${formatAlertDate(
+                            litterGuardDate
+                        )}
+
+                        <br>
+
+                        <strong>Days Remaining:</strong>
+                        ${difference}
+
+                    `,
+
+                    action:
+                        "Prepare for the planned Litter Guard procedure.",
+
+                    priority: "Important",
+
+                    icon: "🛡️",
+
+                    date: litterGuardDate
+                });
+            }
+
+        });
 
     } catch (error) {
-        console.error("Unexpected 101-Day Litter Guard error:", error);
-        return [];
+
+        console.error(
+            "101-DAY LITTER GUARD EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
 
+
 /* ============================================================
-   107-DAY ACTION DAY ALERTS
+   GESTATION - 107 DAY ACTION DAY
    ============================================================ */
 
 async function loadActionDayAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("gestation_records")
-            .select(`
-                id,
-                sow_id,
-                action_date,
-                status,
-                farm_id
-            `)
-            .eq("farm_id", farmId);
+            .select(
+                "id,sow_id,action_day,status,farm_id"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            )
+            .not(
+                "action_day",
+                "is",
+                null
+            );
+
 
         if (error) {
-            console.error("107-Day Action Day alerts error:", error);
-            return [];
+
+            console.error(
+                "ACTION DAY ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
 
-        return (data || [])
-            .filter(record => {
-                if (gestationStatusIsClosed(record)) {
-                    return false;
-                }
+        (data || []).forEach(record => {
 
-                return record.action_date === today;
-            })
-            .map(record => ({
-                type: "107-Day Action Day",
-                title: "107-Day Action Day",
-                message: `Action-day preparations are due for Sow ${record.sow_id}.`,
-                priority: "Urgent",
-                icon: "⚠️",
-                details: `
-                    <strong>Sow ID:</strong> ${escapeAlertHTML(record.sow_id)}
-                    &nbsp; | &nbsp;
-                    <strong>Date:</strong> ${formatAlertDate(record.action_date)}
-                `
-            }));
+            if (
+                gestationStatusIsClosed(
+                    record.status
+                )
+            ) {
+                return;
+            }
+
+
+            const actionDate =
+                alertDateOnly(
+                    record.action_day
+                );
+
+            if (!actionDate) {
+                return;
+            }
+
+
+            const difference =
+                alertDateDifference(
+                    actionDate,
+                    alertToday()
+                );
+
+
+            if (difference < 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Overdue Action Day",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has an overdue Action Day.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Action Day:</strong>
+                        ${formatAlertDate(
+                            actionDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Review the sow record and complete the required Action Day procedures if still applicable.",
+
+                    priority: "Urgent",
+
+                    icon: "⚠️",
+
+                    date: actionDate
+                });
+
+                return;
+            }
+
+
+            if (difference === 0) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Action Day is Ready",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} is ready for Action Day today.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Action Day:</strong>
+                        ${formatAlertDate(
+                            actionDate
+                        )}
+
+                    `,
+
+                    action:
+                        "Carry out the required Action Day procedures.",
+
+                    priority: "Urgent",
+
+                    icon: "📅",
+
+                    date: actionDate
+                });
+
+                return;
+            }
+
+
+            if (
+                difference > 0 &&
+                difference <= 7
+            ) {
+
+                alerts.push({
+
+                    type: "Gestation",
+
+                    title:
+                        "Upcoming Action Day",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has an upcoming Action Day.`,
+
+                    details: `
+
+                        <strong>Action Day:</strong>
+                        ${formatAlertDate(
+                            actionDate
+                        )}
+
+                        <br>
+
+                        <strong>Days Remaining:</strong>
+                        ${difference}
+
+                    `,
+
+                    action:
+                        "Prepare for the Action Day activities.",
+
+                    priority: "Important",
+
+                    icon: "📅",
+
+                    date: actionDate
+                });
+            }
+
+        });
 
     } catch (error) {
-        console.error("Unexpected Action Day error:", error);
-        return [];
+
+        console.error(
+            "ACTION DAY EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
 
+
 /* ============================================================
-   114-DAY EXPECTED FARROWING ALERTS
+   GESTATION - 114 DAY EXPECTED FARROWING
    ============================================================ */
 
 async function load114DayAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("gestation_records")
-            .select(`
-                id,
-                sow_id,
-                expected_farrowing_date,
-                status,
-                farm_id
-            `)
-            .eq("farm_id", farmId);
+            .select(
+                "id,sow_id,service_date,expected_farrowing_date,status,farm_id"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            )
+            .not(
+                "service_date",
+                "is",
+                null
+            );
+
 
         if (error) {
-            console.error("114-Day alerts error:", error);
-            return [];
+
+            console.error(
+                "114-DAY ALERT ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
 
-        return (data || [])
-            .filter(record => {
-                if (gestationStatusIsClosed(record)) {
-                    return false;
-                }
+        (data || []).forEach(record => {
 
-                return record.expected_farrowing_date === today;
-            })
-            .map(record => ({
-                type: "114-Day Farrowing",
-                title: "Expected Farrowing Today",
-                message: `Sow ${record.sow_id} is expected to farrow today.`,
-                priority: "Urgent",
-                icon: "🐖",
+            if (
+                gestationStatusIsClosed(
+                    record.status
+                )
+            ) {
+                return;
+            }
+
+
+            const serviceDate =
+                alertDateOnly(
+                    record.service_date
+                );
+
+            if (!serviceDate) {
+                return;
+            }
+
+
+            let expectedDate =
+                alertDateOnly(
+                    record.expected_farrowing_date
+                );
+
+
+            if (!expectedDate) {
+
+                expectedDate =
+                    addDaysToDate(
+                        serviceDate,
+                        114
+                    );
+            }
+
+
+            const difference =
+                alertDateDifference(
+                    expectedDate,
+                    alertToday()
+                );
+
+
+            if (
+                difference < 0 ||
+                difference > 7
+            ) {
+                return;
+            }
+
+
+            alerts.push({
+
+                type: "Gestation",
+
+                title:
+                    difference === 0
+                        ? "Expected Farrowing is Today"
+                        : "Upcoming Expected Farrowing",
+
+                message:
+                    difference === 0
+                        ? `Sow ${record.sow_id || "Unknown"} is expected to farrow today.`
+                        : `Sow ${record.sow_id || "Unknown"} is expected to farrow soon.`,
+
                 details: `
-                    <strong>Sow ID:</strong> ${escapeAlertHTML(record.sow_id)}
-                    &nbsp; | &nbsp;
-                    <strong>Expected Date:</strong>
-                    ${formatAlertDate(record.expected_farrowing_date)}
-                `
-            }));
+
+                    <strong>Sow ID:</strong>
+                    ${escapeAlertHTML(
+                        record.sow_id ||
+                        "Not recorded"
+                    )}
+
+                    <br>
+
+                    <strong>Expected Farrowing:</strong>
+                    ${formatAlertDate(
+                        expectedDate
+                    )}
+
+                    ${
+                        difference > 0
+                            ? `
+                                <br>
+                                <strong>Days Remaining:</strong>
+                                ${difference}
+                              `
+                            : ""
+                    }
+
+                `,
+
+                action:
+                    "Prepare the farrowing area and monitor the sow closely.",
+
+                priority:
+                    difference === 0
+                        ? "Urgent"
+                        : "Important",
+
+                icon: "🐷",
+
+                date: expectedDate
+            });
+
+        });
 
     } catch (error) {
-        console.error("Unexpected 114-Day error:", error);
-        return [];
+
+        console.error(
+            "114-DAY ALERT EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
 
+
 /* ============================================================
-   FARROWING DAY 3 ALERTS
+   FARROWING - IRON / TEETH / TAIL
    ============================================================ */
 
 async function loadFarrowingDay3Alerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("farrowing_records")
             .select(`
                 id,
@@ -578,597 +1921,1557 @@ async function loadFarrowingDay3Alerts(farmId) {
                 teeth_date,
                 tail_date,
                 iron_date,
-                weaning_date,
                 farm_id
             `)
-            .eq("farm_id", farmId);
+            .eq(
+                "farm_id",
+                farmId
+            );
+
 
         if (error) {
-            console.error("Farrowing alerts error:", error);
-            return [];
+
+            console.error(
+                "FARROWING DAY 3 ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
-        const alerts = [];
 
         (data || []).forEach(record => {
 
-            if (record.iron_date === today) {
-                alerts.push({
-                    type: "Iron Injection",
-                    title: "Iron Injection Due",
-                    message: `Iron injection is due for Sow ${record.sow_id}.`,
-                    priority: "Urgent",
-                    icon: "💉",
-                    details: `
-                        <strong>Sow ID:</strong>
-                        ${escapeAlertHTML(record.sow_id)}
-                        &nbsp; | &nbsp;
-                        <strong>Iron Date:</strong>
-                        ${formatAlertDate(record.iron_date)}
-                    `
-                });
+            const sow =
+                record.sow_id ||
+                "Unknown Sow";
+
+
+            /* =================================================
+               IRON INJECTION
+               ================================================= */
+
+            if (record.iron_date) {
+
+                const ironDate =
+                    alertDateOnly(
+                        record.iron_date
+                    );
+
+                if (ironDate) {
+
+                    const difference =
+                        alertDateDifference(
+                            ironDate,
+                            alertToday()
+                        );
+
+
+                    if (
+                        difference >= 0 &&
+                        difference <= 7
+                    ) {
+
+                        alerts.push({
+
+                            type: "Farrowing",
+
+                            title:
+                                difference === 0
+                                    ? "Iron Injection Due Today"
+                                    : "Upcoming Iron Injection",
+
+                            message:
+                                difference === 0
+                                    ? `Sow ${sow} has an iron injection scheduled today.`
+                                    : `Sow ${sow} has an iron injection coming up.`,
+
+                            details: `
+
+                                <strong>Sow ID:</strong>
+                                ${escapeAlertHTML(
+                                    sow
+                                )}
+
+                                <br>
+
+                                <strong>Iron Injection Date:</strong>
+                                ${formatAlertDate(
+                                    ironDate
+                                )}
+
+                                ${
+                                    difference > 0
+                                        ? `
+                                            <br>
+                                            <strong>Days Remaining:</strong>
+                                            ${difference}
+                                          `
+                                        : ""
+                                }
+
+                            `,
+
+                            action:
+                                "Check the farrowing record and follow the farm/veterinary programme for the scheduled activity.",
+
+                            priority:
+                                difference === 0
+                                    ? "Urgent"
+                                    : "Important",
+
+                            icon: "🩸",
+
+                            date: ironDate
+                        });
+                    }
+
+
+                    if (
+                        difference < 0 &&
+                        difference >= -7
+                    ) {
+
+                        alerts.push({
+
+                            type: "Farrowing",
+
+                            title:
+                                "Overdue Iron Injection",
+
+                            message:
+                                `Sow ${sow} has an overdue iron injection activity.`,
+
+                            details: `
+
+                                <strong>Sow ID:</strong>
+                                ${escapeAlertHTML(
+                                    sow
+                                )}
+
+                                <br>
+
+                                <strong>Scheduled Date:</strong>
+                                ${formatAlertDate(
+                                    ironDate
+                                )}
+
+                                <br>
+
+                                <strong>Days Overdue:</strong>
+                                ${Math.abs(
+                                    difference
+                                )}
+
+                            `,
+
+                            action:
+                                "Review the farrowing record and follow the farm/veterinary programme.",
+
+                            priority: "Urgent",
+
+                            icon: "🩸",
+
+                            date: ironDate
+                        });
+                    }
+                }
             }
 
-            if (record.teeth_date === today) {
-                alerts.push({
-                    type: "Teeth Clipping",
-                    title: "Teeth Clipping Due",
-                    message: `Teeth clipping is scheduled for Sow ${record.sow_id}'s litter.`,
-                    priority: "Important",
-                    icon: "🦷",
-                    details: `
-                        <strong>Sow ID:</strong>
-                        ${escapeAlertHTML(record.sow_id)}
-                        &nbsp; | &nbsp;
-                        <strong>Date:</strong>
-                        ${formatAlertDate(record.teeth_date)}
-                    `
-                });
+
+            /* =================================================
+               TEETH CLIPPING
+               ================================================= */
+
+            if (record.teeth_date) {
+
+                const teethDate =
+                    alertDateOnly(
+                        record.teeth_date
+                    );
+
+                if (teethDate) {
+
+                    const difference =
+                        alertDateDifference(
+                            teethDate,
+                            alertToday()
+                        );
+
+
+                    if (
+                        difference >= 0 &&
+                        difference <= 7
+                    ) {
+
+                        alerts.push({
+
+                            type: "Farrowing",
+
+                            title:
+                                difference === 0
+                                    ? "Teeth Clipping Due Today"
+                                    : "Upcoming Teeth Clipping",
+
+                            message:
+                                difference === 0
+                                    ? `Sow ${sow} has teeth clipping scheduled today.`
+                                    : `Sow ${sow} has teeth clipping coming up.`,
+
+                            details: `
+
+                                <strong>Sow ID:</strong>
+                                ${escapeAlertHTML(
+                                    sow
+                                )}
+
+                                <br>
+
+                                <strong>Teeth Clipping Date:</strong>
+                                ${formatAlertDate(
+                                    teethDate
+                                )}
+
+                                ${
+                                    difference > 0
+                                        ? `
+                                            <br>
+                                            <strong>Days Remaining:</strong>
+                                            ${difference}
+                                          `
+                                        : ""
+                                }
+
+                            `,
+
+                            action:
+                                "Check the farrowing record and follow the farm programme for the scheduled activity.",
+
+                            priority:
+                                difference === 0
+                                    ? "Urgent"
+                                    : "Important",
+
+                            icon: "🦷",
+
+                            date: teethDate
+                        });
+                    }
+
+
+                    if (
+                        difference < 0 &&
+                        difference >= -7
+                    ) {
+
+                        alerts.push({
+
+                            type: "Farrowing",
+
+                            title:
+                                "Overdue Teeth Clipping",
+
+                            message:
+                                `Sow ${sow} has an overdue teeth clipping activity.`,
+
+                            details: `
+
+                                <strong>Sow ID:</strong>
+                                ${escapeAlertHTML(
+                                    sow
+                                )}
+
+                                <br>
+
+                                <strong>Scheduled Date:</strong>
+                                ${formatAlertDate(
+                                    teethDate
+                                )}
+
+                                <br>
+
+                                <strong>Days Overdue:</strong>
+                                ${Math.abs(
+                                    difference
+                                )}
+
+                            `,
+
+                            action:
+                                "Review the farrowing record and follow the farm programme.",
+
+                            priority: "Urgent",
+
+                            icon: "🦷",
+
+                            date: teethDate
+                        });
+                    }
+                }
             }
 
-            if (record.tail_date === today) {
-                alerts.push({
-                    type: "Tail Docking",
-                    title: "Tail Docking Due",
-                    message: `Tail docking is scheduled for Sow ${record.sow_id}'s litter.`,
-                    priority: "Important",
-                    icon: "🐷",
-                    details: `
-                        <strong>Sow ID:</strong>
-                        ${escapeAlertHTML(record.sow_id)}
-                        &nbsp; | &nbsp;
-                        <strong>Date:</strong>
-                        ${formatAlertDate(record.tail_date)}
-                    `
-                });
+
+            /* =================================================
+               TAIL DOCKING
+               ================================================= */
+
+            if (record.tail_date) {
+
+                const tailDate =
+                    alertDateOnly(
+                        record.tail_date
+                    );
+
+                if (tailDate) {
+
+                    const difference =
+                        alertDateDifference(
+                            tailDate,
+                            alertToday()
+                        );
+
+
+                    if (
+                        difference >= 0 &&
+                        difference <= 7
+                    ) {
+
+                        alerts.push({
+
+                            type: "Farrowing",
+
+                            title:
+                                difference === 0
+                                    ? "Tail Docking Due Today"
+                                    : "Upcoming Tail Docking",
+
+                            message:
+                                difference === 0
+                                    ? `Sow ${sow} has tail docking scheduled today.`
+                                    : `Sow ${sow} has tail docking coming up.`,
+
+                            details: `
+
+                                <strong>Sow ID:</strong>
+                                ${escapeAlertHTML(
+                                    sow
+                                )}
+
+                                <br>
+
+                                <strong>Tail Docking Date:</strong>
+                                ${formatAlertDate(
+                                    tailDate
+                                )}
+
+                                ${
+                                    difference > 0
+                                        ? `
+                                            <br>
+                                            <strong>Days Remaining:</strong>
+                                            ${difference}
+                                          `
+                                        : ""
+                                }
+
+                            `,
+
+                            action:
+                                "Check the farrowing record and follow the farm programme for the scheduled activity.",
+
+                            priority:
+                                difference === 0
+                                    ? "Urgent"
+                                    : "Important",
+
+                            icon: "✂️",
+
+                            date: tailDate
+                        });
+                    }
+
+
+                    if (
+                        difference < 0 &&
+                        difference >= -7
+                    ) {
+
+                        alerts.push({
+
+                            type: "Farrowing",
+
+                            title:
+                                "Overdue Tail Docking",
+
+                            message:
+                                `Sow ${sow} has an overdue tail docking activity.`,
+
+                            details: `
+
+                                <strong>Sow ID:</strong>
+                                ${escapeAlertHTML(
+                                    sow
+                                )}
+
+                                <br>
+
+                                <strong>Scheduled Date:</strong>
+                                ${formatAlertDate(
+                                    tailDate
+                                )}
+
+                                <br>
+
+                                <strong>Days Overdue:</strong>
+                                ${Math.abs(
+                                    difference
+                                )}
+
+                            `,
+
+                            action:
+                                "Review the farrowing record and follow the farm programme.",
+
+                            priority: "Urgent",
+
+                            icon: "✂️",
+
+                            date: tailDate
+                        });
+                    }
+                }
             }
 
-            if (record.weaning_date === today) {
-                alerts.push({
-                    type: "Weaning",
-                    title: "Weaning Due Today",
-                    message: `Weaning is scheduled for Sow ${record.sow_id}.`,
-                    priority: "Urgent",
-                    icon: "🐖",
-                    details: `
-                        <strong>Sow ID:</strong>
-                        ${escapeAlertHTML(record.sow_id)}
-                        &nbsp; | &nbsp;
-                        <strong>Weaning Date:</strong>
-                        ${formatAlertDate(record.weaning_date)}
-                    `
-                });
-            }
         });
 
-        return alerts;
-
     } catch (error) {
-        console.error("Unexpected Farrowing Day 3 error:", error);
-        return [];
+
+        console.error(
+            "FARROWING DAY 3 EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
+
 
 /* ============================================================
    WEANING ALERTS
-   USING weaning_records TABLE
+   ============================================================
+
+   IMPORTANT:
+   This uses the ACTUAL weaning_records table.
+
+   TABLE:
+   weaning_records
+
+   COLUMNS USED:
+   id
+   sow_id
+   weaning_date
+   total_weaned
+   farm_id
+
    ============================================================ */
 
 async function loadWeaningAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        console.log(
+            "Loading WEANING alerts for farm:",
+            farmId
+        );
+
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("weaning_records")
             .select(`
                 id,
                 sow_id,
-                farrow_date,
                 weaning_date,
-                total_born,
-                male_weaned,
-                female_weaned,
                 total_weaned,
-                average_weight,
-                mortality,
-                destination_pen,
-                remarks,
                 farm_id
             `)
-            .eq("farm_id", farmId);
+            .eq(
+                "farm_id",
+                farmId
+            )
+            .not(
+                "weaning_date",
+                "is",
+                null
+            );
+
 
         if (error) {
-            console.error("Weaning alerts error:", error);
-            return [];
+
+            console.error(
+                "WEANING DATABASE ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
 
-        return (data || [])
-            .filter(record => {
+        console.log(
+            "WEANING RECORDS FOUND:",
+            data
+        );
 
-                if (!record.weaning_date) {
-                    return false;
-                }
 
-                const daysDifference = getDaysDifference(
-                    record.weaning_date,
-                    today
+        (data || []).forEach(record => {
+
+            const weaningDate =
+                alertDateOnly(
+                    record.weaning_date
                 );
 
-                /*
-                    Show:
-                    - overdue up to 7 days
-                    - today
-                    - upcoming within 7 days
-                */
 
-                return daysDifference >= -7 && daysDifference <= 7;
-            })
-            .map(record => {
+            if (!weaningDate) {
 
-                const daysDifference = getDaysDifference(
-                    record.weaning_date,
-                    today
+                console.warn(
+                    "Invalid weaning date:",
+                    record
                 );
 
-                let title;
-                let message;
-                let priority;
-                let icon = "🐖";
+                return;
+            }
 
-                if (daysDifference < 0) {
-                    title = "Overdue Weaning";
 
-                    message =
-                        `Weaning for Sow ${record.sow_id} is overdue by ` +
-                        `${Math.abs(daysDifference)} day(s).`;
+            const difference =
+                alertDateDifference(
+                    weaningDate,
+                    alertToday()
+                );
 
-                    priority = "Urgent";
-                    icon = "⚠️";
 
-                } else if (daysDifference === 0) {
-                    title = "Weaning Due Today";
+            /*
+               SHOW:
 
-                    message =
-                        `Weaning is due today for Sow ${record.sow_id}.`;
+               Overdue
+               Today
+               Next 7 Days
 
-                    priority = "Urgent";
+               Anything more than 7 days away
+               is not displayed.
+            */
 
-                } else {
-                    title = "Upcoming Weaning";
+            if (
+                difference < -7 ||
+                difference > 7
+            ) {
+                return;
+            }
 
-                    message =
-                        `Weaning for Sow ${record.sow_id} is due in ` +
-                        `${daysDifference} day(s).`;
 
-                    priority = "Important";
-                }
+            /* =================================================
+               OVERDUE
+               ================================================= */
 
-                return {
+            if (difference < 0) {
+
+                alerts.push({
+
                     type: "Weaning",
-                    title,
-                    message,
-                    priority,
-                    icon,
+
+                    title:
+                        "Overdue Weaning",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has an overdue weaning activity.`,
 
                     details: `
+
                         <strong>Sow ID:</strong>
-                        ${escapeAlertHTML(record.sow_id)}
-                        &nbsp; | &nbsp;
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
 
                         <strong>Weaning Date:</strong>
-                        ${formatAlertDate(record.weaning_date)}
-                        &nbsp; | &nbsp;
+                        ${formatAlertDate(
+                            weaningDate
+                        )}
 
-                        <strong>Total Weaned:</strong>
-                        ${record.total_weaned ?? 0}
-                    `
-                };
-            });
+                        <br>
+
+                        <strong>Days Overdue:</strong>
+                        ${Math.abs(
+                            difference
+                        )}
+
+                        ${
+                            record.total_weaned !== null &&
+                            record.total_weaned !== undefined
+                                ? `
+                                    <br>
+                                    <strong>Total Weaned:</strong>
+                                    ${escapeAlertHTML(
+                                        record.total_weaned
+                                    )}
+                                  `
+                                : ""
+                        }
+
+                    `,
+
+                    action:
+                        "Review the weaning record and update the record after the weaning activity is completed.",
+
+                    priority:
+                        "Urgent",
+
+                    icon:
+                        "🍼",
+
+                    date:
+                        weaningDate
+                });
+
+                return;
+            }
+
+
+            /* =================================================
+               DUE TODAY
+               ================================================= */
+
+            if (difference === 0) {
+
+                alerts.push({
+
+                    type: "Weaning",
+
+                    title:
+                        "Weaning Due Today",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has a litter scheduled for weaning today.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Weaning Date:</strong>
+                        ${formatAlertDate(
+                            weaningDate
+                        )}
+
+                        ${
+                            record.total_weaned !== null &&
+                            record.total_weaned !== undefined
+                                ? `
+                                    <br>
+                                    <strong>Total Weaned:</strong>
+                                    ${escapeAlertHTML(
+                                        record.total_weaned
+                                    )}
+                                  `
+                                : ""
+                        }
+
+                    `,
+
+                    action:
+                        "Prepare for the weaning activity and update the weaning record after completion.",
+
+                    priority:
+                        "Urgent",
+
+                    icon:
+                        "🍼",
+
+                    date:
+                        weaningDate
+                });
+
+                return;
+            }
+
+
+            /* =================================================
+               UPCOMING
+               ================================================= */
+
+            if (
+                difference > 0 &&
+                difference <= 7
+            ) {
+
+                alerts.push({
+
+                    type: "Weaning",
+
+                    title:
+                        "Upcoming Weaning",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has a litter scheduled for weaning.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Weaning Date:</strong>
+                        ${formatAlertDate(
+                            weaningDate
+                        )}
+
+                        <br>
+
+                        <strong>Days Remaining:</strong>
+                        ${difference}
+
+                        ${
+                            record.total_weaned !== null &&
+                            record.total_weaned !== undefined
+                                ? `
+                                    <br>
+                                    <strong>Total Weaned:</strong>
+                                    ${escapeAlertHTML(
+                                        record.total_weaned
+                                    )}
+                                  `
+                                : ""
+                        }
+
+                    `,
+
+                    action:
+                        "Prepare for the upcoming weaning activity.",
+
+                    priority:
+                        "Important",
+
+                    icon:
+                        "🍼",
+
+                    date:
+                        weaningDate
+                });
+            }
+
+        });
+
+
+        console.log(
+            "WEANING ALERTS CREATED:",
+            alerts
+        );
+
 
     } catch (error) {
-        console.error("Unexpected Weaning error:", error);
-        return [];
+
+        console.error(
+            "WEANING ALERT EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
 
+
 /* ============================================================
-   NOT SERVICED ALERTS
+   NOT SERVICED
    ============================================================ */
 
 async function loadNotServicedAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
-            .from("pigs")
-            .select(`
-                id,
-                pig_id,
-                sex,
-                status,
-                farm_id
-            `)
-            .eq("farm_id", farmId);
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("gestation_records")
+            .select(
+                "id,sow_id,service_date,registration_date,status,farm_id"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            );
+
 
         if (error) {
-            console.error("Not Serviced alerts error:", error);
-            return [];
+
+            console.error(
+                "NOT SERVICED ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        return (data || [])
-            .filter(pig => {
-                const sex = String(pig.sex || "")
-                    .trim()
-                    .toLowerCase();
 
-                const status = String(pig.status || "")
-                    .trim()
-                    .toLowerCase();
+        (data || []).forEach(record => {
 
-                return (
-                    sex === "female" &&
-                    (
-                        status === "not serviced" ||
-                        status === "not_serviced"
-                    )
+            if (record.service_date) {
+                return;
+            }
+
+
+            if (
+                gestationStatusIsClosed(
+                    record.status
+                )
+            ) {
+                return;
+            }
+
+
+            const registrationDate =
+                alertDateOnly(
+                    record.registration_date
                 );
-            })
-            .map(pig => ({
-                type: "Not Serviced",
-                title: "Sow Not Serviced",
-                message: `Female pig ${pig.pig_id} has not been serviced.`,
-                priority: "Important",
-                icon: "🐖",
-                details: `
-                    <strong>Pig ID:</strong>
-                    ${escapeAlertHTML(pig.pig_id)}
-                    &nbsp; | &nbsp;
 
-                    <strong>Status:</strong>
-                    Not Serviced
-                `
-            }));
+            if (!registrationDate) {
+                return;
+            }
+
+
+            const daysWaiting =
+                alertDateDifference(
+                    alertToday(),
+                    registrationDate
+                );
+
+
+            if (daysWaiting < 1) {
+                return;
+            }
+
+
+            alerts.push({
+
+                type: "Gestation",
+
+                title:
+                    daysWaiting >= 3
+                        ? "Sow Not Serviced"
+                        : "Sow Awaiting Service",
+
+                message:
+                    `Sow ${record.sow_id || "Unknown"} has not been serviced.`,
+
+                details: `
+
+                    <strong>Sow ID:</strong>
+                    ${escapeAlertHTML(
+                        record.sow_id ||
+                        "Not recorded"
+                    )}
+
+                    <br>
+
+                    <strong>Registration Date:</strong>
+                    ${formatAlertDate(
+                        registrationDate
+                    )}
+
+                    <br>
+
+                    <strong>Days Waiting:</strong>
+                    ${daysWaiting}
+
+                `,
+
+                action:
+                    "Check the sow and record the service date after successful servicing.",
+
+                priority:
+                    daysWaiting >= 3
+                        ? "Urgent"
+                        : "Important",
+
+                icon: "🐖",
+
+                date: registrationDate
+            });
+
+        });
 
     } catch (error) {
-        console.error("Unexpected Not Serviced error:", error);
-        return [];
+
+        console.error(
+            "NOT SERVICED EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
+
 
 /* ============================================================
    FEEDING ALERTS
-   USING CORRECT feeding_records SCHEMA
    ============================================================ */
 
 async function loadFeedingAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("feeding_records")
-            .select(`
-                id,
-                record_id,
-                feeding_date,
-                pen_number,
-                pig_category,
-                breed,
-                feed_type,
-                feed_brand,
-                quantity,
-                morning_feeding,
-                evening_feeding,
-                water_available,
-                responsible_person,
-                remarks,
-                farm_id
-            `)
-            .eq("farm_id", farmId);
+            .select(
+                "id,feeding_date,pen,feed_type,quantity,morning_feeding_time,evening_feeding_time,farm_id"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            );
+
 
         if (error) {
-            console.error("Feeding alerts error:", error);
-            return [];
+
+            console.error(
+                "FEEDING ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
-        const alerts = [];
 
         (data || []).forEach(record => {
 
-            /*
-             * Only show feeding schedules recorded for TODAY.
-             */
+            const feedingDate =
+                alertDateOnly(
+                    record.feeding_date
+                );
 
-            if (record.feeding_date !== today) {
+            if (!feedingDate) {
                 return;
             }
 
-            /* ------------------------------------------------
-               MORNING FEEDING
-               ------------------------------------------------ */
 
-            if (record.morning_feeding) {
+            if (
+                alertDateDifference(
+                    feedingDate,
+                    alertToday()
+                ) !== 0
+            ) {
+                return;
+            }
+
+
+            if (
+                record.morning_feeding_time
+            ) {
 
                 alerts.push({
+
                     type: "Feeding",
-                    title: "Morning Feeding",
+
+                    title:
+                        "Morning Feeding",
+
                     message:
-                        `Morning feeding is scheduled for ` +
-                        `${record.pen_number || "the pen"}.`,
+                        `Morning feeding is scheduled for ${record.pen || "the pen"}.`,
+
+                    details: `
+
+                        <strong>Pen:</strong>
+                        ${escapeAlertHTML(
+                            record.pen ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Feed:</strong>
+                        ${escapeAlertHTML(
+                            record.feed_type ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Quantity:</strong>
+                        ${escapeAlertHTML(
+                            record.quantity ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Time:</strong>
+                        ${formatAlertTime(
+                            record.morning_feeding_time
+                        )}
+
+                    `,
+
+                    action:
+                        "Check the feed and complete the morning feeding as scheduled.",
+
                     priority: "Important",
+
                     icon: "🌅",
 
-                    details: `
-                        <strong>Pen:</strong>
-                        ${escapeAlertHTML(record.pen_number || "N/A")}
-                        &nbsp; | &nbsp;
-
-                        <strong>Pig Category:</strong>
-                        ${escapeAlertHTML(record.pig_category || "N/A")}
-                        &nbsp; | &nbsp;
-
-                        <strong>Feed:</strong>
-                        ${escapeAlertHTML(record.feed_type || "N/A")}
-                        &nbsp; | &nbsp;
-
-                        <strong>Feed Brand:</strong>
-                        ${escapeAlertHTML(record.feed_brand || "N/A")}
-                        &nbsp; | &nbsp;
-
-                        <strong>Quantity:</strong>
-                        ${record.quantity ?? "N/A"}
-                        &nbsp; | &nbsp;
-
-                        <strong>Time:</strong>
-                        ${escapeAlertHTML(record.morning_feeding)}
-                    `
+                    date: feedingDate
                 });
             }
 
-            /* ------------------------------------------------
-               EVENING FEEDING
-               ------------------------------------------------ */
 
-            if (record.evening_feeding) {
+            if (
+                record.evening_feeding_time
+            ) {
 
                 alerts.push({
+
                     type: "Feeding",
-                    title: "Evening Feeding",
+
+                    title:
+                        "Evening Feeding",
+
                     message:
-                        `Evening feeding is scheduled for ` +
-                        `${record.pen_number || "the pen"}.`,
-                    priority: "Important",
-                    icon: "🌙",
+                        `Evening feeding is scheduled for ${record.pen || "the pen"}.`,
 
                     details: `
-                        <strong>Pen:</strong>
-                        ${escapeAlertHTML(record.pen_number || "N/A")}
-                        &nbsp; | &nbsp;
 
-                        <strong>Pig Category:</strong>
-                        ${escapeAlertHTML(record.pig_category || "N/A")}
-                        &nbsp; | &nbsp;
+                        <strong>Pen:</strong>
+                        ${escapeAlertHTML(
+                            record.pen ||
+                            "Not recorded"
+                        )}
+
+                        <br>
 
                         <strong>Feed:</strong>
-                        ${escapeAlertHTML(record.feed_type || "N/A")}
-                        &nbsp; | &nbsp;
+                        ${escapeAlertHTML(
+                            record.feed_type ||
+                            "Not recorded"
+                        )}
 
-                        <strong>Feed Brand:</strong>
-                        ${escapeAlertHTML(record.feed_brand || "N/A")}
-                        &nbsp; | &nbsp;
+                        <br>
 
                         <strong>Quantity:</strong>
-                        ${record.quantity ?? "N/A"}
-                        &nbsp; | &nbsp;
+                        ${escapeAlertHTML(
+                            record.quantity ||
+                            "Not recorded"
+                        )}
+
+                        <br>
 
                         <strong>Time:</strong>
-                        ${escapeAlertHTML(record.evening_feeding)}
-                    `
+                        ${formatAlertTime(
+                            record.evening_feeding_time
+                        )}
+
+                    `,
+
+                    action:
+                        "Check the feed and complete the evening feeding as scheduled.",
+
+                    priority: "Important",
+
+                    icon: "🌙",
+
+                    date: feedingDate
                 });
             }
+
         });
 
-        return alerts;
-
     } catch (error) {
-        console.error("Unexpected Feeding error:", error);
-        return [];
+
+        console.error(
+            "FEEDING EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
+
 
 /* ============================================================
    WATER ALERTS
-   USING CORRECT feeding_records SCHEMA
    ============================================================ */
 
 async function loadWaterAlerts(farmId) {
+
+    const alerts = [];
+
     try {
-        const { data, error } = await supabaseClient
+
+        const {
+            data,
+            error
+        } = await supabaseClient
             .from("feeding_records")
-            .select(`
-                id,
-                feeding_date,
-                pen_number,
-                water_available,
-                farm_id
-            `)
-            .eq("farm_id", farmId);
+            .select(
+                "id,feeding_date,pen,water_available,farm_id"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            );
+
 
         if (error) {
-            console.error("Water alerts error:", error);
-            return [];
+
+            console.error(
+                "WATER ERROR:",
+                error
+            );
+
+            return alerts;
         }
 
-        const today = getTodayDate();
-        const alerts = [];
 
         (data || []).forEach(record => {
 
-            if (record.feeding_date !== today) {
+            const feedingDate =
+                alertDateOnly(
+                    record.feeding_date
+                );
+
+            if (!feedingDate) {
                 return;
             }
 
-            const waterStatus = String(
-                record.water_available || ""
-            )
-                .trim()
-                .toLowerCase();
 
-            /*
-             * "Yes" and "Available" mean water is available.
-             * Anything else is treated as requiring attention.
-             */
-
-            const waterConfirmed =
-                waterStatus === "yes" ||
-                waterStatus === "available";
-
-            if (!waterConfirmed) {
-
-                alerts.push({
-                    type: "Water",
-                    title: "Water Availability Check",
-                    message:
-                        `Water availability needs attention for ` +
-                        `${record.pen_number || "the pen"}.`,
-                    priority: "Urgent",
-                    icon: "💧",
-
-                    details: `
-                        <strong>Pen:</strong>
-                        ${escapeAlertHTML(record.pen_number || "N/A")}
-                        &nbsp; | &nbsp;
-
-                        <strong>Water Status:</strong>
-                        ${escapeAlertHTML(record.water_available || "Not Available")}
-                    `
-                });
+            if (
+                alertDateDifference(
+                    feedingDate,
+                    alertToday()
+                ) !== 0
+            ) {
+                return;
             }
+
+
+            const water =
+                String(
+                    record.water_available ||
+                    ""
+                )
+                    .toLowerCase()
+                    .trim();
+
+
+            if (water === "yes") {
+                return;
+            }
+
+
+            alerts.push({
+
+                type: "Water",
+
+                title:
+                    "Water Availability Check",
+
+                message:
+                    `Water availability has not been confirmed for ${record.pen || "the pen"}.`,
+
+                details: `
+
+                    <strong>Pen:</strong>
+                    ${escapeAlertHTML(
+                        record.pen ||
+                        "Not recorded"
+                    )}
+
+                    <br>
+
+                    <strong>Water Available:</strong>
+                    ${escapeAlertHTML(
+                        record.water_available ||
+                        "Not recorded"
+                    )}
+
+                `,
+
+                action:
+                    "Check the water supply and ensure clean water is available.",
+
+                priority: "Urgent",
+
+                icon: "💧",
+
+                date: feedingDate
+            });
+
         });
 
-        return alerts;
-
     } catch (error) {
-        console.error("Unexpected Water error:", error);
-        return [];
+
+        console.error(
+            "WATER EXCEPTION:",
+            error
+        );
     }
+
+    return alerts;
 }
 
+
 /* ============================================================
-   SORT DASHBOARD ALERTS
+   SORT ALERTS
    ============================================================ */
 
 function sortDashboardAlerts(alerts) {
 
     const priorityOrder = {
+
         Urgent: 1,
+
         Important: 2,
+
         Normal: 3
     };
 
-    return alerts.sort((a, b) => {
 
-        const priorityA =
-            priorityOrder[a.priority] || 99;
+    return alerts.sort(
+        (a, b) => {
 
-        const priorityB =
-            priorityOrder[b.priority] || 99;
+            const priorityDifference =
+                (
+                    priorityOrder[
+                        a.priority
+                    ] || 3
+                ) -
+                (
+                    priorityOrder[
+                        b.priority
+                    ] || 3
+                );
 
-        return priorityA - priorityB;
-    });
+
+            if (
+                priorityDifference !== 0
+            ) {
+
+                return priorityDifference;
+            }
+
+
+            const dateA =
+                a.date instanceof Date
+                    ? a.date.getTime()
+                    : Number.MAX_SAFE_INTEGER;
+
+
+            const dateB =
+                b.date instanceof Date
+                    ? b.date.getTime()
+                    : Number.MAX_SAFE_INTEGER;
+
+
+            return dateA - dateB;
+        }
+    );
 }
 
+
 /* ============================================================
-   LOAD ALL DASHBOARD FARM ALERTS
+   LOAD ALL DASHBOARD ALERTS
    ============================================================ */
 
 async function loadDashboardFarmAlerts() {
 
-    try {
+    console.log(
+        "===================================="
+    );
 
-        const farmId = getFarmIdForAlerts();
+    console.log(
+        "MUNKA PIGGERY FARM ALERTS"
+    );
 
-        if (!farmId) {
+    console.log(
+        "Loading complete alert system..."
+    );
 
-            console.warn(
-                "No farm ID found for dashboard alerts."
-            );
+    console.log(
+        "===================================="
+    );
 
-            displayFarmAlerts([]);
 
-            return;
+    createFarmAlertsSection();
+
+
+    const container =
+        document.getElementById(
+            "farmAlertsContainer"
+        );
+
+    const status =
+        document.getElementById(
+            "farmAlertsStatus"
+        );
+
+
+    if (container) {
+
+        container.innerHTML = `
+
+            <div class="farm-alert-loading">
+                🔄 Checking gestation, farrowing,
+                weaning, feeding and farm records...
+            </div>
+
+        `;
+    }
+
+
+    if (status) {
+
+        status.textContent =
+            "Checking farm records...";
+    }
+
+
+    const farmId =
+        getDashboardAlertFarmId();
+
+
+    console.log(
+        "ALERT FARM ID:",
+        farmId
+    );
+
+
+    if (!farmId) {
+
+        console.error(
+            "NO FARM ID FOUND."
+        );
+
+
+        if (status) {
+
+            status.textContent =
+                "Farm information could not be identified.";
         }
 
-        createFarmAlertsSection();
 
-        const results = await Promise.all([
+        if (container) {
 
-            load21DayCheckAlerts(farmId),
+            container.innerHTML = `
 
-            load90DayFeedUpAlerts(farmId),
+                <div class="farm-alert-error">
 
-            load101DayDewormerAlerts(farmId),
+                    <h3>
+                        ⚠️ Farm Information Missing
+                    </h3>
 
-            load101DayLitterGuardAlerts(farmId),
+                    <p>
+                        The system could not identify
+                        the farm connected to this account.
+                    </p>
 
-            loadActionDayAlerts(farmId),
+                </div>
 
-            load114DayAlerts(farmId),
+            `;
+        }
 
-            loadFarrowingDay3Alerts(farmId),
+        return;
+    }
 
-            loadWeaningAlerts(farmId),
 
-            loadNotServicedAlerts(farmId),
+    if (
+        typeof supabaseClient ===
+        "undefined"
+    ) {
 
-            loadFeedingAlerts(farmId),
+        console.error(
+            "supabaseClient is not available."
+        );
 
-            loadWaterAlerts(farmId)
 
-        ]);
+        if (status) {
 
-        dashboardFarmAlerts = results.flat();
+            status.textContent =
+                "Database connection is not available.";
+        }
+
+        return;
+    }
+
+
+    try {
+
+        const results =
+            await Promise.all([
+
+                /* =================================================
+                   GESTATION
+                   ================================================= */
+
+                load21DayCheckAlerts(
+                    farmId
+                ),
+
+                load90DayFeedUpAlerts(
+                    farmId
+                ),
+
+                load101DayDewormerAlerts(
+                    farmId
+                ),
+
+                load101DayLitterGuardAlerts(
+                    farmId
+                ),
+
+                loadActionDayAlerts(
+                    farmId
+                ),
+
+                load114DayAlerts(
+                    farmId
+                ),
+
+
+                /* =================================================
+                   FARROWING
+                   ================================================= */
+
+                loadFarrowingDay3Alerts(
+                    farmId
+                ),
+
+
+                /* =================================================
+                   WEANING
+                   ================================================= */
+
+                loadWeaningAlerts(
+                    farmId
+                ),
+
+
+                /* =================================================
+                   OTHER
+                   ================================================= */
+
+                loadNotServicedAlerts(
+                    farmId
+                ),
+
+                loadFeedingAlerts(
+                    farmId
+                ),
+
+                loadWaterAlerts(
+                    farmId
+                )
+
+            ]);
+
 
         dashboardFarmAlerts =
-            sortDashboardAlerts(dashboardFarmAlerts);
+            results.flat();
 
-        displayFarmAlerts(dashboardFarmAlerts);
+
+        dashboardFarmAlerts =
+            sortDashboardAlerts(
+                dashboardFarmAlerts
+            );
+
 
         console.log(
-            "Farm alerts loaded:",
+            "===================================="
+        );
+
+        console.log(
+            "TOTAL FARM ALERTS:",
+            dashboardFarmAlerts.length
+        );
+
+        console.log(
+            "ALL FARM ALERTS:",
             dashboardFarmAlerts
         );
+
+        console.log(
+            "===================================="
+        );
+
+
+        displayFarmAlerts(
+            dashboardFarmAlerts
+        );
+
 
     } catch (error) {
 
         console.error(
-            "Failed to load dashboard farm alerts:",
+            "FARM ALERT SYSTEM ERROR:",
             error
         );
 
-        displayFarmAlerts([]);
+
+        if (status) {
+
+            status.textContent =
+                "Farm alerts could not be loaded.";
+        }
+
+
+        if (container) {
+
+            container.innerHTML = `
+
+                <div class="farm-alert-error">
+
+                    <h3>
+                        ⚠️ Alerts Could Not Be Loaded
+                    </h3>
+
+                    <p>
+                        An error occurred while checking
+                        the farm records.
+                    </p>
+
+                    <p>
+                        Please refresh the dashboard
+                        and try again.
+                    </p>
+
+                </div>
+
+            `;
+        }
     }
 }
 
+
 /* ============================================================
-   INITIALIZE DASHBOARD FARM ALERTS
+   INITIALIZE
    ============================================================ */
 
 function initializeDashboardFarmAlerts() {
@@ -1177,17 +3480,36 @@ function initializeDashboardFarmAlerts() {
         "Initializing MUNKA PIGGERY Farm Alerts..."
     );
 
+
     createFarmAlertsSection();
 
-    loadDashboardFarmAlerts();
+
+    setTimeout(
+        () => {
+
+            loadDashboardFarmAlerts();
+
+        },
+        700
+    );
 }
+
 
 /* ============================================================
    DOM READY
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", function () {
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeDashboardFarmAlerts
+    );
+
+} else {
 
     initializeDashboardFarmAlerts();
-
-});
+}
