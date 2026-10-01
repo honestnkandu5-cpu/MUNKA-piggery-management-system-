@@ -3,23 +3,25 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-<title>
-    MUNKA PIGGERY - Platform Dashboard
-</title>
+    <title>
+        MUNKA PIGGERY - Platform Dashboard
+    </title>
 
-<link
-    rel="stylesheet"
-    href="platform_dashboard.css">
+    <link
+        rel="stylesheet"
+        href="platform_dashboard.css">
 
 </head>
 
+
 <body>
+
 
 <!-- ======================================================
      HEADER
@@ -64,11 +66,13 @@
 </header>
 
 
+
 <!-- ======================================================
      MAIN CONTAINER
 ====================================================== -->
 
 <main class="platform-container">
+
 
 
 <!-- ==================================================
@@ -513,6 +517,246 @@
 
 
 <!-- ==================================================
+     PLATFORM FARM ALERTS
+================================================== -->
+
+<section class="dashboard-section platform-farm-alerts-section">
+
+    <div class="section-heading">
+
+        <div>
+
+            <h2>
+                🚨 Farm Alerts
+            </h2>
+
+            <p class="section-description">
+                Monitor important alerts across all registered farms.
+            </p>
+
+        </div>
+
+
+        <div class="platform-alert-heading-actions">
+
+            <span
+                id="platformFarmAlertsCount"
+                class="platform-farm-alerts-count">
+
+                0
+
+            </span>
+
+
+            <button
+                type="button"
+                id="refreshPlatformFarmAlerts"
+                class="platform-refresh-alerts-btn">
+
+                🔄 Refresh
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="platformFarmAlertsStatus"
+        class="platform-farm-alerts-status">
+
+        Checking all farms...
+
+    </div>
+
+
+    <div
+        id="platformFarmAlerts"
+        class="platform-farm-alerts-container">
+
+        <div class="platform-alert-loading">
+
+            Checking farm records...
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==================================================
+     PLATFORM ANNOUNCEMENTS
+================================================== -->
+
+<section class="dashboard-section platform-announcements-section">
+
+    <div class="section-heading">
+
+        <div>
+
+            <h2>
+                📢 Announcements
+            </h2>
+
+            <p class="section-description">
+                View announcements across the MUNKA PIGGERY platform.
+            </p>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="refreshPlatformAnnouncements">
+
+            🔄 Refresh
+
+        </button>
+
+    </div>
+
+
+    <!-- ANNOUNCEMENT FILTERS -->
+
+    <div class="platform-announcement-filters">
+
+
+        <!-- FARM FILTER -->
+
+        <div class="platform-filter-group">
+
+            <label
+                for="platformAnnouncementFarmFilter">
+
+                Farm
+
+            </label>
+
+
+            <select
+                id="platformAnnouncementFarmFilter">
+
+                <option value="all">
+                    All Farms
+                </option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- PRIORITY FILTER -->
+
+        <div class="platform-filter-group">
+
+            <label
+                for="platformAnnouncementPriorityFilter">
+
+                Priority
+
+            </label>
+
+
+            <select
+                id="platformAnnouncementPriorityFilter">
+
+                <option value="all">
+                    All Priorities
+                </option>
+
+                <option value="Normal">
+                    Normal
+                </option>
+
+                <option value="Important">
+                    Important
+                </option>
+
+                <option value="Urgent">
+                    Urgent
+                </option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- TARGET FILTER -->
+
+        <div class="platform-filter-group">
+
+            <label
+                for="platformAnnouncementTargetFilter">
+
+                Target
+
+            </label>
+
+
+            <select
+                id="platformAnnouncementTargetFilter">
+
+                <option value="all">
+                    All Targets
+                </option>
+
+                <option value="Platform">
+                    Platform
+                </option>
+
+                <option value="Farm">
+                    Farm
+                </option>
+
+                <option value="Role">
+                    Role
+                </option>
+
+                <option value="User">
+                    User
+                </option>
+
+            </select>
+
+        </div>
+
+
+    </div>
+
+
+
+    <div
+        id="platformAnnouncementsStatus"
+        class="platform-announcements-status">
+
+        Loading announcements...
+
+    </div>
+
+
+
+    <div
+        id="platformAnnouncements"
+        class="platform-announcements-container">
+
+        <div class="platform-announcement-loading">
+
+            Loading announcements...
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==================================================
      RECENT PLATFORM ACTIVITY
 ================================================== -->
 
@@ -607,9 +851,16 @@
      SUPABASE
 ====================================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
+
 
 <script src="supabase.js"></script>
+
+<script src="platform_alerts.js"></script>
+
+<script src="platform_announcements.js"></script>
 
 <script src="platform_dashboard.js"></script>
 

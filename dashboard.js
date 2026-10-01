@@ -15,6 +15,7 @@
 // 9. Secure automatic notification creation
 // 10. Notification read/unread management
 // 11. Professional notification centre
+// 12. Live Farm Statistics
 // ==========================================================
 
 
@@ -31,6 +32,31 @@ let managedAnnouncements = [];
 let dashboardCurrentUser = null;
 
 let dashboardCurrentFarmId = null;
+
+
+// ==========================================================
+// LIVE FARM STATISTICS STORAGE
+// ==========================================================
+
+let dashboardFarmStatistics = {
+
+    totalPigs: 0,
+
+    pregnantSows: 0,
+
+    expectedFarrowings: 0,
+
+    pigletsWeaned: 0,
+
+    treatmentsThisMonth: 0,
+
+    salesThisMonth: 0,
+
+    expensesThisMonth: 0,
+
+    netBalance: 0
+
+};
 
 
 // ==========================================================
@@ -520,6 +546,1217 @@ function prepareAnnouncementManagement(){
     loadAnnouncementTargetUsers();
 
     loadManagedAnnouncements();
+
+}
+
+
+// ==========================================================
+// ==========================================================
+// LIVE FARM STATISTICS
+// ==========================================================
+// ==========================================================
+
+
+// ==========================================================
+// FORMAT MONEY
+// ==========================================================
+
+function formatDashboardMoney(amount){
+
+    const numericAmount =
+        Number(amount) || 0;
+
+
+    return numericAmount.toLocaleString(
+        "en-ZM",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    );
+
+}
+
+
+// ==========================================================
+// GET ZAMBIA CURRENT MONTH RANGE
+// ==========================================================
+//
+// Returns UTC ISO values representing the current
+// calendar month in Africa/Lusaka.
+// ==========================================================
+
+function getDashboardCurrentMonthRange(){
+
+    const now =
+        new Date();
+
+
+    const zambiaParts =
+        new Intl.DateTimeFormat(
+            "en-GB",
+            {
+                timeZone:
+                    "Africa/Lusaka",
+
+                year:
+                    "numeric",
+
+                month:
+                    "2-digit",
+
+                day:
+                    "2-digit"
+            }
+        ).formatToParts(now);
+
+
+    const values = {};
+
+
+    zambiaParts.forEach(
+        function(part){
+
+            if(part.type !== "literal"){
+
+                values[part.type] =
+                    part.value;
+
+            }
+
+        }
+    );
+
+
+    const year =
+        Number(values.year);
+
+    const month =
+        Number(values.month);
+
+
+    // Africa/Lusaka is UTC+2.
+    // The range is converted to UTC for Supabase.
+    const monthStart =
+        new Date(
+            Date.UTC(
+                year,
+                month - 1,
+                1,
+                -2,
+                0,
+                0
+            )
+        );
+
+
+    const nextMonthStart =
+        month === 12
+
+            ? new Date(
+                Date.UTC(
+                    year + 1,
+                    0,
+                    1,
+                    -2,
+                    0,
+                    0
+                )
+            )
+
+            : new Date(
+                Date.UTC(
+                    year,
+                    month,
+                    1,
+                    -2,
+                    0,
+                    0
+                )
+            );
+
+
+    return {
+
+        start:
+            monthStart.toISOString(),
+
+        end:
+            nextMonthStart.toISOString()
+
+    };
+
+}
+
+
+// ==========================================================
+// CREATE STATISTICS PANEL
+// ==========================================================
+//
+// The panel is created dynamically so that the existing
+// dashboard.html does not have to be changed at this stage.
+// ==========================================================
+
+function createDashboardStatisticsPanel(){
+
+    let panel =
+        document.getElementById(
+            "dashboardFarmStatistics"
+        );
+
+
+    if(panel){
+
+        return panel;
+
+    }
+
+
+    const announcementContainer =
+        document.getElementById(
+            "dashboardAnnouncements"
+        );
+
+
+    if(!announcementContainer){
+
+        console.warn(
+            "Statistics panel could not find dashboardAnnouncements."
+        );
+
+        return null;
+
+    }
+
+
+    // Try to place the statistics after the announcement
+    // section rather than inside the announcement cards.
+    let insertionPoint =
+        announcementContainer.closest(
+            "section"
+        );
+
+
+    if(!insertionPoint){
+
+        insertionPoint =
+            announcementContainer.parentElement;
+
+    }
+
+
+    if(!insertionPoint){
+
+        return null;
+
+    }
+
+
+    panel =
+        document.createElement(
+            "section"
+        );
+
+
+    panel.id =
+        "dashboardFarmStatistics";
+
+
+    panel.setAttribute(
+        "aria-label",
+        "Live Farm Statistics"
+    );
+
+
+    panel.innerHTML = `
+
+        <div style="
+            background:linear-gradient(135deg,#ffffff,#f7faf8);
+            border-radius:18px;
+            padding:22px;
+            margin:24px 0;
+            border:1px solid #e2e8e5;
+            box-shadow:0 8px 25px rgba(0,0,0,0.06);
+        ">
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:15px;
+                flex-wrap:wrap;
+                margin-bottom:18px;
+            ">
+
+                <div>
+
+                    <div style="
+                        font-size:12px;
+                        font-weight:700;
+                        letter-spacing:1px;
+                        text-transform:uppercase;
+                        color:#64806f;
+                        margin-bottom:5px;
+                    ">
+                        Farm Overview
+                    </div>
+
+                    <h2 style="
+                        margin:0;
+                        color:#174d32;
+                        font-size:22px;
+                    ">
+                        Live Farm Statistics
+                    </h2>
+
+                    <p style="
+                        margin:5px 0 0;
+                        color:#68756e;
+                        font-size:13px;
+                    ">
+                        Current performance figures for your farm
+                    </p>
+
+                </div>
+
+                <button
+                    type="button"
+                    id="refreshFarmStatisticsButton"
+                    style="
+                        border:none;
+                        border-radius:10px;
+                        padding:10px 15px;
+                        background:#174d32;
+                        color:#ffffff;
+                        cursor:pointer;
+                        font-weight:600;
+                    "
+                >
+                    ↻ Refresh
+                </button>
+
+            </div>
+
+
+            <div
+                id="farmStatisticsStatus"
+                style="
+                    display:none;
+                    margin-bottom:15px;
+                    padding:10px 12px;
+                    border-radius:9px;
+                    background:#f1f6f3;
+                    color:#496457;
+                    font-size:13px;
+                "
+            ></div>
+
+
+            <div
+                id="farmStatisticsGrid"
+                style="
+                    display:grid;
+                    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+                    gap:15px;
+                "
+            >
+
+                ${createStatisticsCardHTML(
+                    "totalPigs",
+                    "🐖",
+                    "Total Pigs",
+                    "0"
+                )}
+
+                ${createStatisticsCardHTML(
+                    "pregnantSows",
+                    "🤰",
+                    "Pregnant Sows",
+                    "0"
+                )}
+
+                ${createStatisticsCardHTML(
+                    "expectedFarrowings",
+                    "🐷",
+                    "Expected Farrowings",
+                    "0"
+                )}
+
+                ${createStatisticsCardHTML(
+                    "pigletsWeaned",
+                    "🍼",
+                    "Piglets Weaned",
+                    "0"
+                )}
+
+                ${createStatisticsCardHTML(
+                    "treatmentsThisMonth",
+                    "💉",
+                    "Treatments This Month",
+                    "0"
+                )}
+
+                ${createStatisticsCardHTML(
+                    "salesThisMonth",
+                    "💰",
+                    "Sales This Month",
+                    "K0.00"
+                )}
+
+                ${createStatisticsCardHTML(
+                    "expensesThisMonth",
+                    "💸",
+                    "Expenses This Month",
+                    "K0.00"
+                )}
+
+                ${createStatisticsCardHTML(
+                    "netBalance",
+                    "📊",
+                    "Net Balance",
+                    "K0.00"
+                )}
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    insertionPoint.insertAdjacentElement(
+        "afterend",
+        panel
+    );
+
+
+    const refreshButton =
+        document.getElementById(
+            "refreshFarmStatisticsButton"
+        );
+
+
+    if(refreshButton){
+
+        refreshButton.addEventListener(
+            "click",
+            async function(){
+
+                await loadDashboardFarmStatistics();
+
+            }
+        );
+
+    }
+
+
+    return panel;
+
+}
+
+
+// ==========================================================
+// STATISTICS CARD HTML
+// ==========================================================
+
+function createStatisticsCardHTML(
+    id,
+    icon,
+    title,
+    value
+){
+
+    return `
+
+        <div
+            class="dashboard-stat-card"
+            data-stat-card="${id}"
+            style="
+                background:#ffffff;
+                border:1px solid #e4ebe7;
+                border-radius:14px;
+                padding:17px;
+                min-height:105px;
+                box-sizing:border-box;
+            "
+        >
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:10px;
+            ">
+
+                <div>
+
+                    <div style="
+                        font-size:12px;
+                        color:#718078;
+                        font-weight:600;
+                        margin-bottom:8px;
+                    ">
+                        ${title}
+                    </div>
+
+                    <div
+                        id="stat-${id}"
+                        style="
+                            font-size:25px;
+                            font-weight:800;
+                            color:#174d32;
+                            line-height:1.2;
+                        "
+                    >
+                        ${value}
+                    </div>
+
+                </div>
+
+                <div style="
+                    width:38px;
+                    height:38px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    border-radius:11px;
+                    background:#eef6f1;
+                    font-size:20px;
+                ">
+                    ${icon}
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+// ==========================================================
+// UPDATE STATISTICS CARD
+// ==========================================================
+
+function updateDashboardStatistic(
+    id,
+    value
+){
+
+    const element =
+        document.getElementById(
+            "stat-" + id
+        );
+
+
+    if(element){
+
+        element.textContent =
+            value;
+
+    }
+
+}
+
+
+// ==========================================================
+// DISPLAY FARM STATISTICS
+// ==========================================================
+
+function displayDashboardFarmStatistics(){
+
+    updateDashboardStatistic(
+        "totalPigs",
+        dashboardFarmStatistics.totalPigs
+    );
+
+
+    updateDashboardStatistic(
+        "pregnantSows",
+        dashboardFarmStatistics.pregnantSows
+    );
+
+
+    updateDashboardStatistic(
+        "expectedFarrowings",
+        dashboardFarmStatistics.expectedFarrowings
+    );
+
+
+    updateDashboardStatistic(
+        "pigletsWeaned",
+        dashboardFarmStatistics.pigletsWeaned
+    );
+
+
+    updateDashboardStatistic(
+        "treatmentsThisMonth",
+        dashboardFarmStatistics.treatmentsThisMonth
+    );
+
+
+    updateDashboardStatistic(
+        "salesThisMonth",
+        "K" +
+        formatDashboardMoney(
+            dashboardFarmStatistics.salesThisMonth
+        )
+    );
+
+
+    updateDashboardStatistic(
+        "expensesThisMonth",
+        "K" +
+        formatDashboardMoney(
+            dashboardFarmStatistics.expensesThisMonth
+        )
+    );
+
+
+    const net =
+        Number(
+            dashboardFarmStatistics.netBalance
+        ) || 0;
+
+
+    updateDashboardStatistic(
+        "netBalance",
+        (net < 0 ? "-K" : "K") +
+        formatDashboardMoney(
+            Math.abs(net)
+        )
+    );
+
+
+    const netElement =
+        document.getElementById(
+            "stat-netBalance"
+        );
+
+
+    if(netElement){
+
+        netElement.style.color =
+            net < 0
+                ? "#b42318"
+                : "#174d32";
+
+    }
+
+}
+
+
+// ==========================================================
+// LOAD LIVE FARM STATISTICS
+// ==========================================================
+
+async function loadDashboardFarmStatistics(){
+
+    createDashboardStatisticsPanel();
+
+
+    const statusElement =
+        document.getElementById(
+            "farmStatisticsStatus"
+        );
+
+
+    if(statusElement){
+
+        statusElement.style.display =
+            "block";
+
+        statusElement.textContent =
+            "Updating live farm statistics...";
+
+    }
+
+
+    // ------------------------------------------------------
+    // RESET VALUES
+    // ------------------------------------------------------
+
+    dashboardFarmStatistics = {
+
+        totalPigs: 0,
+
+        pregnantSows: 0,
+
+        expectedFarrowings: 0,
+
+        pigletsWeaned: 0,
+
+        treatmentsThisMonth: 0,
+
+        salesThisMonth: 0,
+
+        expensesThisMonth: 0,
+
+        netBalance: 0
+
+    };
+
+
+    displayDashboardFarmStatistics();
+
+
+    // ------------------------------------------------------
+    // SUPABASE CHECK
+    // ------------------------------------------------------
+
+    if(
+        typeof supabaseClient ===
+        "undefined"
+    ){
+
+        console.error(
+            "STATISTICS ERROR: supabaseClient is not available."
+        );
+
+        if(statusElement){
+
+            statusElement.textContent =
+                "Farm statistics are unavailable.";
+
+        }
+
+        return;
+
+    }
+
+
+    // ------------------------------------------------------
+    // SUPER ADMIN
+    // ------------------------------------------------------
+    //
+    // The statistics are farm-specific. Therefore, a
+    // Super Admin without a farm_id will not be shown
+    // farm statistics until a farm context is selected.
+    // ------------------------------------------------------
+
+    if(!dashboardCurrentFarmId){
+
+        if(statusElement){
+
+            statusElement.textContent =
+                "Select or enter a farm context to view farm statistics.";
+
+        }
+
+        return;
+
+    }
+
+
+    const farmId =
+        Number(
+            dashboardCurrentFarmId
+        );
+
+
+    if(
+        !Number.isFinite(farmId)
+    ){
+
+        if(statusElement){
+
+            statusElement.textContent =
+                "Invalid farm identification.";
+
+        }
+
+        return;
+
+    }
+
+
+    try{
+
+        const monthRange =
+            getDashboardCurrentMonthRange();
+
+
+        // ==================================================
+        // 1. TOTAL PIGS
+        // ==================================================
+
+        const pigsResult =
+            await supabaseClient
+                .from("pigs")
+                .select(
+                    "id",
+                    {
+                        count:
+                            "exact",
+                        head:
+                            true
+                    }
+                )
+                .eq(
+                    "farm_id",
+                    farmId
+                );
+
+
+        if(pigsResult.error){
+
+            throw pigsResult.error;
+
+        }
+
+
+        dashboardFarmStatistics.totalPigs =
+            Number(
+                pigsResult.count || 0
+            );
+
+
+        // ==================================================
+        // 2. GESTATION RECORDS
+        // ==================================================
+
+        const gestationResult =
+            await supabaseClient
+                .from("gestation_records")
+                .select(
+                    "id, delivery_date, status"
+                )
+                .eq(
+                    "farm_id",
+                    farmId
+                );
+
+
+        if(gestationResult.error){
+
+            throw gestationResult.error;
+
+        }
+
+
+        const gestationRecords =
+            gestationResult.data || [];
+
+
+        const now =
+            new Date();
+
+
+        // Current pregnant records:
+        //
+        // We consider a sow currently pregnant when:
+        // - delivery_date exists and is today/future
+        // - status is not a clearly completed/cancelled
+        //   status.
+        //
+        // This avoids counting old completed pregnancies.
+
+        dashboardFarmStatistics.pregnantSows =
+            gestationRecords.filter(
+                function(record){
+
+                    if(!record.delivery_date){
+
+                        return false;
+
+                    }
+
+
+                    const deliveryDate =
+                        new Date(
+                            record.delivery_date
+                        );
+
+
+                    if(
+                        isNaN(
+                            deliveryDate.getTime()
+                        )
+                    ){
+
+                        return false;
+
+                    }
+
+
+                    const status =
+                        String(
+                            record.status || ""
+                        )
+                        .trim()
+                        .toLowerCase();
+
+
+                    const closedStatuses = [
+
+                        "completed",
+                        "complete",
+                        "farrowed",
+                        "farrow",
+                        "closed",
+                        "cancelled",
+                        "canceled",
+                        "failed",
+                        "aborted"
+
+                    ];
+
+
+                    if(
+                        closedStatuses.includes(
+                            status
+                        )
+                    ){
+
+                        return false;
+
+                    }
+
+
+                    return deliveryDate >= now;
+
+                }
+            ).length;
+
+
+        // ==================================================
+        // 3. EXPECTED FARROWINGS
+        // ==================================================
+        //
+        // Future delivery dates are counted.
+        // ==================================================
+
+        dashboardFarmStatistics.expectedFarrowings =
+            gestationRecords.filter(
+                function(record){
+
+                    if(!record.delivery_date){
+
+                        return false;
+
+                    }
+
+
+                    const deliveryDate =
+                        new Date(
+                            record.delivery_date
+                        );
+
+
+                    if(
+                        isNaN(
+                            deliveryDate.getTime()
+                        )
+                    ){
+
+                        return false;
+
+                    }
+
+
+                    const status =
+                        String(
+                            record.status || ""
+                        )
+                        .trim()
+                        .toLowerCase();
+
+
+                    const closedStatuses = [
+
+                        "completed",
+                        "complete",
+                        "farrowed",
+                        "farrow",
+                        "closed",
+                        "cancelled",
+                        "canceled",
+                        "failed",
+                        "aborted"
+
+                    ];
+
+
+                    if(
+                        closedStatuses.includes(
+                            status
+                        )
+                    ){
+
+                        return false;
+
+                    }
+
+
+                    return deliveryDate >= now;
+
+                }
+            ).length;
+
+
+        // ==================================================
+        // 4. PIGLETS WEANED
+        // ==================================================
+
+        const farrowingResult =
+            await supabaseClient
+                .from("farrowing_records")
+                .select(
+                    "total_weaned"
+                )
+                .eq(
+                    "farm_id",
+                    farmId
+                );
+
+
+        if(farrowingResult.error){
+
+            throw farrowingResult.error;
+
+        }
+
+
+        dashboardFarmStatistics.pigletsWeaned =
+            (farrowingResult.data || [])
+                .reduce(
+                    function(total, record){
+
+                        return total +
+                            (
+                                Number(
+                                    record.total_weaned
+                                ) || 0
+                            );
+
+                    },
+                    0
+                );
+
+
+        // ==================================================
+        // 5. TREATMENTS THIS MONTH
+        // ==================================================
+
+        const treatmentResult =
+            await supabaseClient
+                .from("treatment_records")
+                .select(
+                    "id",
+                    {
+                        count:
+                            "exact",
+                        head:
+                            true
+                    }
+                )
+                .eq(
+                    "farm_id",
+                    farmId
+                )
+                .gte(
+                    "treatment_date",
+                    monthRange.start.slice(
+                        0,
+                        10
+                    )
+                )
+                .lt(
+                    "treatment_date",
+                    monthRange.end.slice(
+                        0,
+                        10
+                    )
+                );
+
+
+        if(treatmentResult.error){
+
+            throw treatmentResult.error;
+
+        }
+
+
+        dashboardFarmStatistics.treatmentsThisMonth =
+            Number(
+                treatmentResult.count || 0
+            );
+
+
+        // ==================================================
+        // 6. SALES THIS MONTH
+        // ==================================================
+
+        const salesResult =
+            await supabaseClient
+                .from("sales_records")
+                .select(
+                    "total_amount, sale_date"
+                )
+                .eq(
+                    "farm_id",
+                    farmId
+                )
+                .gte(
+                    "sale_date",
+                    monthRange.start.slice(
+                        0,
+                        10
+                    )
+                )
+                .lt(
+                    "sale_date",
+                    monthRange.end.slice(
+                        0,
+                        10
+                    )
+                );
+
+
+        if(salesResult.error){
+
+            throw salesResult.error;
+
+        }
+
+
+        dashboardFarmStatistics.salesThisMonth =
+            (salesResult.data || [])
+                .reduce(
+                    function(total, record){
+
+                        return total +
+                            (
+                                Number(
+                                    record.total_amount
+                                ) || 0
+                            );
+
+                    },
+                    0
+                );
+
+
+        // ==================================================
+        // 7. EXPENSES THIS MONTH
+        // ==================================================
+
+        const expensesResult =
+            await supabaseClient
+                .from("expenses_records")
+                .select(
+                    "total_amount, expense_date"
+                )
+                .eq(
+                    "farm_id",
+                    farmId
+                )
+                .gte(
+                    "expense_date",
+                    monthRange.start.slice(
+                        0,
+                        10
+                    )
+                )
+                .lt(
+                    "expense_date",
+                    monthRange.end.slice(
+                        0,
+                        10
+                    )
+                );
+
+
+        if(expensesResult.error){
+
+            throw expensesResult.error;
+
+        }
+
+
+        dashboardFarmStatistics.expensesThisMonth =
+            (expensesResult.data || [])
+                .reduce(
+                    function(total, record){
+
+                        return total +
+                            (
+                                Number(
+                                    record.total_amount
+                                ) || 0
+                            );
+
+                    },
+                    0
+                );
+
+
+        // ==================================================
+        // 8. NET BALANCE
+        // ==================================================
+
+        dashboardFarmStatistics.netBalance =
+
+            dashboardFarmStatistics.salesThisMonth -
+
+            dashboardFarmStatistics.expensesThisMonth;
+
+
+        // ==================================================
+        // DISPLAY
+        // ==================================================
+
+        displayDashboardFarmStatistics();
+
+
+        if(statusElement){
+
+            statusElement.textContent =
+                "Statistics updated successfully.";
+
+            setTimeout(
+                function(){
+
+                    if(statusElement){
+
+                        statusElement.style.display =
+                            "none";
+
+                    }
+
+                },
+                2500
+            );
+
+        }
+
+
+        console.log(
+            "LIVE FARM STATISTICS:",
+            dashboardFarmStatistics
+        );
+
+    }
+    catch(error){
+
+        console.error(
+            "LOAD FARM STATISTICS ERROR:",
+            error
+        );
+
+
+        if(statusElement){
+
+            statusElement.style.display =
+                "block";
+
+            statusElement.textContent =
+                "Some farm statistics could not be loaded. Please check your database permissions.";
+
+        }
+
+    }
 
 }
 
@@ -1886,12 +3123,6 @@ function hideAnnouncementManagementMessage(){
 
 // ==========================================================
 // SECURE AUTOMATIC NOTIFICATION ENGINE
-// ==========================================================
-//
-// Notifications are created through:
-// create_announcement_notifications(bigint)
-//
-// No direct browser INSERT is used.
 // ==========================================================
 
 async function createNotificationsForAnnouncement(
@@ -4173,10 +5404,6 @@ async function markAllDashboardNotificationsAsRead(){
 // ==========================================================
 // BACKWARD-COMPATIBILITY FUNCTION
 // ==========================================================
-//
-// Existing code may call this function.
-// It now delegates to the professional "mark all" function.
-// ==========================================================
 
 async function markDashboardNotificationsAsRead(){
 
@@ -4483,6 +5710,12 @@ document.addEventListener(
         displayLoggedInUser();
 
         await displayFarmName();
+
+        // Load live farm statistics after the farm
+        // has been identified.
+        createDashboardStatisticsPanel();
+
+        await loadDashboardFarmStatistics();
 
         await loadDashboardAnnouncements();
 

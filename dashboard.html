@@ -41,11 +41,10 @@
 
     </div>
 
+
     <div class="top-actions">
 
-        <!-- ==============================================
-             NOTIFICATION BUTTON
-        =============================================== -->
+        <!-- NOTIFICATIONS -->
 
         <button
             type="button"
@@ -103,7 +102,7 @@
 
 
 <!-- ======================================================
-     MAIN PAGE
+     MAIN DASHBOARD
 ====================================================== -->
 
 <main class="dashboard-container">
@@ -121,9 +120,11 @@
                 FARM MANAGEMENT DASHBOARD
             </span>
 
+
             <div class="farm-name-label">
                 REGISTERED FARM
             </div>
+
 
             <h1
                 id="farmName"
@@ -133,9 +134,11 @@
 
             </h1>
 
+
             <h2 id="welcomeUser">
                 Welcome
             </h2>
+
 
             <p>
                 Manage your piggery operations,
@@ -144,11 +147,13 @@
 
         </div>
 
+
         <div class="user-information">
 
             <div class="user-avatar">
                 👤
             </div>
+
 
             <div>
 
@@ -190,6 +195,7 @@
 
             </div>
 
+
             <button
                 type="button"
                 id="refreshAnnouncements"
@@ -202,6 +208,7 @@
 
         </div>
 
+
         <div
             id="announcementStatus"
             class="announcement-status">
@@ -209,6 +216,7 @@
             Loading announcements...
 
         </div>
+
 
         <div
             id="dashboardAnnouncements"
@@ -221,7 +229,7 @@
 
     <!-- ==================================================
          ANNOUNCEMENT MANAGEMENT
-         OWNER/ADMIN ONLY
+         OWNER / ADMIN ONLY
     ================================================== -->
 
     <section
@@ -247,6 +255,7 @@
 
             </div>
 
+
             <button
                 type="button"
                 class="management-toggle-btn"
@@ -259,9 +268,7 @@
         </div>
 
 
-        <!-- ==============================================
-             ANNOUNCEMENT FORM
-        =============================================== -->
+        <!-- ANNOUNCEMENT FORM -->
 
         <div
             id="announcementFormWrapper"
@@ -389,6 +396,7 @@
                                 style="display:none;">
 
                                 Entire Platform
+
                             </option>
 
                         </select>
@@ -543,6 +551,7 @@
 
                     </button>
 
+
                     <button
                         type="button"
                         class="cancel-announcement-btn"
@@ -559,9 +568,7 @@
         </div>
 
 
-        <!-- ==============================================
-             MANAGEMENT TABLE
-        =============================================== -->
+        <!-- MANAGEMENT LIST -->
 
         <div class="announcement-management-list">
 
@@ -578,6 +585,7 @@
                     </span>
 
                 </div>
+
 
                 <button
                     type="button"
@@ -608,37 +616,25 @@
 
                         <tr>
 
-                            <th>
-                                Title
-                            </th>
+                            <th>Title</th>
 
-                            <th>
-                                Priority
-                            </th>
+                            <th>Priority</th>
 
-                            <th>
-                                Target
-                            </th>
+                            <th>Target</th>
 
-                            <th>
-                                Status
-                            </th>
+                            <th>Status</th>
 
-                            <th>
-                                Created
-                            </th>
+                            <th>Created</th>
 
-                            <th>
-                                Actions
-                            </th>
+                            <th>Actions</th>
 
                         </tr>
 
                     </thead>
 
+
                     <tbody
                         id="managedAnnouncementsBody">
-
                     </tbody>
 
                 </table>
@@ -648,6 +644,16 @@
         </div>
 
     </section>
+
+
+    <!-- ==================================================
+         FARM STATISTICS
+         CREATED BY dashboard_stats.js
+         
+         The JavaScript module automatically inserts the
+         professional statistics panel immediately after
+         the announcements section.
+    ================================================== -->
 
 
     <!-- ==================================================
@@ -670,13 +676,16 @@
 
             </div>
 
+
             <p>
                 Select a module below to continue.
             </p>
 
         </div>
 
+
         <div class="overview-cards">
+
 
             <div class="overview-card">
 
@@ -767,7 +776,7 @@
 
 
     <!-- ==================================================
-         MODULES
+         SYSTEM MODULES
     ================================================== -->
 
     <section class="modules-section">
@@ -926,7 +935,7 @@
             </button>
 
 
-            <!-- VACCINATION -->
+            <!-- VACCINATION & TREATMENT -->
 
             <button
                 type="button"
@@ -1201,24 +1210,29 @@
 
         </button>
 
+
         <div
             id="modalPriority"
             class="modal-priority">
         </div>
 
+
         <h2 id="modalAnnouncementTitle">
             Announcement
         </h2>
+
 
         <div
             id="modalAnnouncementDate"
             class="modal-announcement-date">
         </div>
 
+
         <div
             id="modalAnnouncementMessage"
             class="modal-announcement-message">
         </div>
+
 
         <button
             type="button"
@@ -1235,7 +1249,7 @@
 
 
 <!-- ======================================================
-     NOTIFICATION CENTRE MODAL
+     NOTIFICATION CENTRE
 ====================================================== -->
 
 <div
@@ -1244,6 +1258,7 @@
     aria-hidden="true">
 
     <div class="announcement-modal-content notification-modal-content">
+
 
         <!-- CLOSE -->
 
@@ -1268,18 +1283,19 @@
                     🔔 NOTIFICATIONS
                 </div>
 
+
                 <h2>
                     Notification Centre
                 </h2>
 
+
                 <p class="notification-subtitle">
-                    Important updates and messages from MUNKA PIGGERY TECHNOLOGY.
+                    Important updates and messages from
+                    MUNKA PIGGERY TECHNOLOGY.
                 </p>
 
             </div>
 
-
-            <!-- UNREAD SUMMARY -->
 
             <div
                 id="notificationUnreadSummary"
@@ -1298,7 +1314,7 @@
         </div>
 
 
-        <!-- NOTIFICATION ACTIONS -->
+        <!-- ACTIONS -->
 
         <div class="notification-actions">
 
@@ -1325,7 +1341,7 @@
         </div>
 
 
-        <!-- NOTIFICATION STATUS -->
+        <!-- STATUS -->
 
         <div
             id="notificationStatus"
@@ -1337,7 +1353,7 @@
         </div>
 
 
-        <!-- NOTIFICATION LIST -->
+        <!-- LIST -->
 
         <div
             id="notificationList"
@@ -1360,9 +1376,11 @@
                 🔔
             </div>
 
+
             <h3>
                 No Notifications
             </h3>
+
 
             <p>
                 You currently have no notifications.
@@ -1399,7 +1417,14 @@
 
 <script src="security.js"></script>
 
+<!-- MAIN DASHBOARD LOGIC -->
 <script src="dashboard.js"></script>
+<script src="dashboard_stats.js"></script>
+<script src="dashboard_alerts.js"></script>
+
+<!-- LIVE FARM STATISTICS -->
+
+
 
 </body>
 
