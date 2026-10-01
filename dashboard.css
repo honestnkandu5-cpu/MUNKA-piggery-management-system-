@@ -3360,3 +3360,97 @@ html {
 /* ============================================================
    END OF MUNKA PIGGERY PROFESSIONAL ALERT CSS
    ============================================================ */
+/* ============================================================
+   FARM ALERT DISMISS BUTTON
+   ============================================================ */
+
+.farm-alert-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--munka-cool-200);
+}
+
+.dismiss-farm-alert-btn {
+    min-height: 40px;
+    padding: 9px 16px;
+
+    border: 1px solid var(--munka-cool-300);
+    border-radius: 9px;
+
+    background: var(--munka-white);
+    color: var(--munka-cool-700);
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.dismiss-farm-alert-btn:hover {
+    background: var(--munka-cool-100);
+    color: var(--munka-cool-900);
+    border-color: var(--munka-cool-500);
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 3px 10px rgba(15, 23, 42, 0.08);
+}
+
+.dismiss-farm-alert-btn:active {
+    transform: translateY(0);
+}
+
+.dismiss-farm-alert-btn:focus-visible {
+    outline: 3px solid rgba(25, 118, 210, 0.25);
+    outline-offset: 2px;
+}
+
+/* Urgent alert */
+
+.farm-alert-urgent .dismiss-farm-alert-btn:hover {
+    background: var(--munka-red-100);
+    color: var(--munka-red-800);
+    border-color: rgba(220, 38, 38, 0.35);
+}
+
+/* Important alert */
+
+.farm-alert-important .dismiss-farm-alert-btn:hover {
+    background: var(--munka-blue-100);
+    color: var(--munka-blue-800);
+    border-color: rgba(25, 118, 210, 0.35);
+}
+
+/* Normal alert */
+
+.farm-alert-normal .dismiss-farm-alert-btn:hover {
+    background: var(--munka-green-100);
+    color: var(--munka-green-800);
+    border-color: rgba(25, 135, 84, 0.35);
+}
+
+
+@media (max-width: 480px) {
+
+    .farm-alert-actions {
+        justify-content: stretch;
+    }
+
+    .dismiss-farm-alert-btn {
+        width: 100%;
+        min-height: 44px;
+        font-size: 15px;
+    }
+}
