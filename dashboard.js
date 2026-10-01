@@ -1,34 +1,3 @@
-(async function () {
-    try {
-        const { data, error } = await supabaseClient
-            .from("announcements")
-            .select("id, title, target_type")
-            .limit(1);
-
-        if (error) {
-            alert(
-                "ANNOUNCEMENTS DATABASE TEST FAILED\n\n" +
-                error.message
-            );
-            console.error(error);
-            return;
-        }
-
-        alert(
-            "ANNOUNCEMENTS DATABASE TEST PASSED\n\n" +
-            "Supabase can read the announcements table."
-        );
-
-        console.log("Announcements test:", data);
-
-    } catch (error) {
-        alert(
-            "DATABASE TEST ERROR\n\n" +
-            error.message
-        );
-        console.error(error);
-    }
-})();
 // ==========================================================
 // MUNKA PIGGERY TECHNOLOGY
 // DASHBOARD.JS
