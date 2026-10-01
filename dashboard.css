@@ -2218,4 +2218,1145 @@ pre {
 body,
 html {
     max-width: 100%;
+}/* ============================================================
+   MUNKA PIGGERY MANAGEMENT SYSTEM
+   PROFESSIONAL COMMERCIAL FARM DASHBOARD ALERTS
+   ============================================================
+
+   DESIGN SYSTEM
+   ------------------------------------------------------------
+   GREEN  = Farm / Success / Normal
+   BLUE   = Information / Scheduled Activities
+   RED    = Urgent / Overdue
+   COOL   = Background / Neutral
+   ============================================================ */
+
+
+/* ============================================================
+   ROOT DESIGN VARIABLES
+   ============================================================ */
+
+:root {
+
+    /* FARM GREEN */
+    --munka-green-900: #0b3d2e;
+    --munka-green-800: #0f5132;
+    --munka-green-700: #146c43;
+    --munka-green-600: #198754;
+    --munka-green-500: #20a464;
+    --munka-green-100: #e8f5ee;
+
+    /* PROFESSIONAL BLUE */
+    --munka-blue-900: #123b63;
+    --munka-blue-800: #155a8a;
+    --munka-blue-700: #1769aa;
+    --munka-blue-600: #1976d2;
+    --munka-blue-100: #e8f2fb;
+
+    /* URGENT RED */
+    --munka-red-900: #7f1d1d;
+    --munka-red-800: #991b1b;
+    --munka-red-700: #b42318;
+    --munka-red-600: #dc2626;
+    --munka-red-100: #fdecec;
+
+    /* COOL NEUTRALS */
+    --munka-cool-50: #f8fafc;
+    --munka-cool-100: #f1f5f9;
+    --munka-cool-200: #e2e8f0;
+    --munka-cool-300: #cbd5e1;
+    --munka-cool-500: #64748b;
+    --munka-cool-700: #334155;
+    --munka-cool-900: #0f172a;
+
+    /* WHITE */
+    --munka-white: #ffffff;
+
+    /* SHADOWS */
+    --munka-shadow-sm:
+        0 2px 8px rgba(15, 23, 42, 0.06);
+
+    --munka-shadow-md:
+        0 6px 20px rgba(15, 23, 42, 0.08);
+
+    --munka-shadow-lg:
+        0 12px 30px rgba(15, 23, 42, 0.12);
+
+    /* RADIUS */
+    --munka-radius-sm: 8px;
+    --munka-radius-md: 12px;
+    --munka-radius-lg: 16px;
+    --munka-radius-xl: 20px;
 }
+
+
+/* ============================================================
+   FARM ALERTS MAIN SECTION
+   ============================================================ */
+
+.farm-alerts-section {
+
+    width: 100%;
+
+    margin: 24px 0;
+
+    padding: 0;
+
+    background: var(--munka-white);
+
+    border: 1px solid var(--munka-cool-200);
+
+    border-radius: var(--munka-radius-xl);
+
+    box-shadow: var(--munka-shadow-md);
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+}
+
+
+/* ============================================================
+   ALERT SECTION HEADING
+   ============================================================ */
+
+.farm-alerts-section .section-heading {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 24px 28px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--munka-green-900),
+            var(--munka-green-700)
+        );
+
+    color: var(--munka-white);
+
+    border-bottom: 1px solid
+        rgba(255, 255, 255, 0.15);
+}
+
+
+/* ============================================================
+   HEADING TITLE
+   ============================================================ */
+
+.farm-alerts-section .section-heading h2 {
+
+    margin: 0;
+
+    font-size: 26px;
+
+    line-height: 1.3;
+
+    font-weight: 800;
+
+    letter-spacing: -0.3px;
+
+    color: var(--munka-white);
+}
+
+
+/* ============================================================
+   SECTION DESCRIPTION
+   ============================================================ */
+
+.farm-alerts-section
+.section-description {
+
+    margin: 7px 0 0;
+
+    font-size: 16px;
+
+    line-height: 1.5;
+
+    font-weight: 500;
+
+    color:
+        rgba(255, 255, 255, 0.88);
+}
+
+
+/* ============================================================
+   HEADING ACTIONS
+   ============================================================ */
+
+.farm-alert-heading-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    flex-shrink: 0;
+}
+
+
+/* ============================================================
+   ALERT COUNT
+   ============================================================ */
+
+.farm-alerts-count {
+
+    min-width: 42px;
+
+    height: 42px;
+
+    padding: 0 12px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    border-radius: 50%;
+
+    background: var(--munka-red-600);
+
+    color: var(--munka-white);
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    border: 3px solid
+        rgba(255, 255, 255, 0.85);
+
+    box-shadow:
+        0 3px 10px
+        rgba(0, 0, 0, 0.18);
+}
+
+
+/* ============================================================
+   REFRESH BUTTON
+   ============================================================ */
+
+.farm-refresh-alerts-btn {
+
+    min-height: 44px;
+
+    padding: 10px 17px;
+
+    border: 1px solid
+        rgba(255, 255, 255, 0.35);
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.14);
+
+    color: var(--munka-white);
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.farm-refresh-alerts-btn:hover {
+
+    background:
+        rgba(255, 255, 255, 0.24);
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 12px
+        rgba(0, 0, 0, 0.15);
+}
+
+
+.farm-refresh-alerts-btn:active {
+
+    transform: translateY(0);
+}
+
+
+/* ============================================================
+   ALERT STATUS BAR
+   ============================================================ */
+
+.farm-alerts-status {
+
+    padding: 15px 28px;
+
+    background:
+        var(--munka-cool-50);
+
+    border-bottom: 1px solid
+        var(--munka-cool-200);
+
+    color: var(--munka-cool-700);
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   ALERT CONTAINER
+   ============================================================ */
+
+.farm-alerts-container {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+
+    padding: 20px 24px 24px;
+
+    background:
+        var(--munka-cool-50);
+}
+
+
+/* ============================================================
+   INDIVIDUAL ALERT CARD
+   ============================================================ */
+
+.farm-alert-card {
+
+    position: relative;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    background:
+        var(--munka-white);
+
+    border: 1px solid
+        var(--munka-cool-200);
+
+    border-radius:
+        var(--munka-radius-md);
+
+    box-shadow:
+        var(--munka-shadow-sm);
+
+    overflow: hidden;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+
+.farm-alert-card:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        var(--munka-shadow-md);
+}
+
+
+/* ============================================================
+   CARD TOP
+   ============================================================ */
+
+.farm-alert-card-top {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 17px;
+
+    padding: 20px 22px;
+}
+
+
+/* ============================================================
+   ALERT ICON
+   ============================================================ */
+
+.farm-alert-icon {
+
+    width: 54px;
+
+    min-width: 54px;
+
+    height: 54px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 14px;
+
+    background:
+        var(--munka-blue-100);
+
+    color:
+        var(--munka-blue-700);
+
+    font-size: 28px;
+
+    line-height: 1;
+
+    box-shadow:
+        inset 0 0 0 1px
+        rgba(23, 105, 170, 0.08);
+}
+
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+
+.farm-alert-main {
+
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+/* ============================================================
+   TITLE ROW
+   ============================================================ */
+
+.farm-alert-title-row {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 8px;
+}
+
+
+/* ============================================================
+   ALERT TITLE
+   ============================================================ */
+
+.farm-alert-title-row h3 {
+
+    margin: 0;
+
+    color:
+        var(--munka-cool-900);
+
+    font-size: 20px;
+
+    line-height: 1.35;
+
+    font-weight: 800;
+
+    letter-spacing: -0.15px;
+}
+
+
+/* ============================================================
+   ALERT MESSAGE
+   ============================================================ */
+
+.farm-alert-message {
+
+    margin: 0 0 13px;
+
+    color:
+        var(--munka-cool-700);
+
+    font-size: 17px;
+
+    line-height: 1.55;
+
+    font-weight: 500;
+}
+
+
+/* ============================================================
+   PRIORITY BADGE
+   ============================================================ */
+
+.farm-alert-priority {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    min-height: 30px;
+
+    padding: 5px 11px;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+
+    line-height: 1;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.4px;
+}
+
+
+/* ============================================================
+   URGENT
+   ============================================================ */
+
+.farm-alert-urgent {
+
+    border-left:
+        6px solid
+        var(--munka-red-600);
+}
+
+
+.farm-alert-priority-urgent {
+
+    background:
+        var(--munka-red-100);
+
+    color:
+        var(--munka-red-800);
+
+    border: 1px solid
+        rgba(220, 38, 38, 0.18);
+}
+
+
+.farm-alert-urgent
+.farm-alert-icon {
+
+    background:
+        var(--munka-red-100);
+
+    color:
+        var(--munka-red-700);
+}
+
+
+/* ============================================================
+   IMPORTANT
+   ============================================================ */
+
+.farm-alert-important {
+
+    border-left:
+        6px solid
+        var(--munka-blue-600);
+}
+
+
+.farm-alert-priority-important {
+
+    background:
+        var(--munka-blue-100);
+
+    color:
+        var(--munka-blue-800);
+
+    border: 1px solid
+        rgba(25, 118, 210, 0.16);
+}
+
+
+.farm-alert-important
+.farm-alert-icon {
+
+    background:
+        var(--munka-blue-100);
+
+    color:
+        var(--munka-blue-700);
+}
+
+
+/* ============================================================
+   NORMAL
+   ============================================================ */
+
+.farm-alert-normal {
+
+    border-left:
+        6px solid
+        var(--munka-green-600);
+}
+
+
+.farm-alert-priority-normal {
+
+    background:
+        var(--munka-green-100);
+
+    color:
+        var(--munka-green-800);
+
+    border: 1px solid
+        rgba(25, 135, 84, 0.16);
+}
+
+
+.farm-alert-normal
+.farm-alert-icon {
+
+    background:
+        var(--munka-green-100);
+
+    color:
+        var(--munka-green-700);
+}
+
+
+/* ============================================================
+   ALERT DETAILS
+   ============================================================ */
+
+.farm-alert-details {
+
+    margin-top: 10px;
+
+    padding: 14px 16px;
+
+    background:
+        var(--munka-cool-50);
+
+    border: 1px solid
+        var(--munka-cool-200);
+
+    border-radius: 10px;
+
+    color:
+        var(--munka-cool-700);
+
+    font-size: 16px;
+
+    line-height: 1.7;
+
+    font-weight: 500;
+}
+
+
+.farm-alert-details strong {
+
+    color:
+        var(--munka-cool-900);
+
+    font-weight: 800;
+}
+
+
+/* ============================================================
+   ACTION AREA
+   ============================================================ */
+
+.farm-alert-action {
+
+    margin-top: 12px;
+
+    padding: 12px 15px;
+
+    background:
+        var(--munka-green-100);
+
+    border-left:
+        4px solid
+        var(--munka-green-600);
+
+    border-radius: 8px;
+
+    color:
+        var(--munka-green-900);
+
+    font-size: 15px;
+
+    line-height: 1.55;
+
+    font-weight: 600;
+}
+
+
+.farm-alert-action strong {
+
+    font-weight: 800;
+}
+
+
+/* ============================================================
+   LOADING
+   ============================================================ */
+
+.farm-alert-loading {
+
+    padding: 35px 20px;
+
+    text-align: center;
+
+    background:
+        var(--munka-white);
+
+    border: 1px dashed
+        var(--munka-cool-300);
+
+    border-radius:
+        var(--munka-radius-md);
+
+    color:
+        var(--munka-blue-700);
+
+    font-size: 17px;
+
+    line-height: 1.5;
+
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.farm-alert-empty {
+
+    padding: 45px 25px;
+
+    text-align: center;
+
+    background:
+        var(--munka-white);
+
+    border: 1px solid
+        var(--munka-cool-200);
+
+    border-radius:
+        var(--munka-radius-md);
+
+    box-shadow:
+        var(--munka-shadow-sm);
+}
+
+
+.farm-alert-empty-icon {
+
+    width: 65px;
+
+    height: 65px;
+
+    margin: 0 auto 15px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        var(--munka-green-100);
+
+    color:
+        var(--munka-green-700);
+
+    font-size: 30px;
+
+    font-weight: 800;
+}
+
+
+.farm-alert-empty h3 {
+
+    margin: 0 0 8px;
+
+    color:
+        var(--munka-green-900);
+
+    font-size: 22px;
+
+    font-weight: 800;
+}
+
+
+.farm-alert-empty p {
+
+    margin: 0;
+
+    color:
+        var(--munka-cool-500);
+
+    font-size: 16px;
+
+    line-height: 1.6;
+}
+
+
+/* ============================================================
+   ERROR STATE
+   ============================================================ */
+
+.farm-alert-error {
+
+    padding: 25px;
+
+    background:
+        var(--munka-red-100);
+
+    border:
+        1px solid
+        rgba(220, 38, 38, 0.2);
+
+    border-left:
+        6px solid
+        var(--munka-red-600);
+
+    border-radius:
+        var(--munka-radius-md);
+}
+
+
+.farm-alert-error h3 {
+
+    margin: 0 0 8px;
+
+    color:
+        var(--munka-red-800);
+
+    font-size: 20px;
+
+    font-weight: 800;
+}
+
+
+.farm-alert-error p {
+
+    margin: 5px 0;
+
+    color:
+        var(--munka-red-900);
+
+    font-size: 16px;
+
+    line-height: 1.6;
+}
+
+
+/* ============================================================
+   URGENT VISUAL ATTENTION
+   ============================================================ */
+
+.farm-alert-urgent {
+
+    box-shadow:
+        0 4px 14px
+        rgba(220, 38, 38, 0.08);
+}
+
+
+.farm-alert-urgent:hover {
+
+    border-color:
+        rgba(220, 38, 38, 0.3);
+
+    box-shadow:
+        0 8px 24px
+        rgba(220, 38, 38, 0.13);
+}
+
+
+/* ============================================================
+   MOBILE RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .farm-alerts-section {
+
+        margin: 18px 0;
+
+        border-radius:
+            var(--munka-radius-md);
+    }
+
+
+    .farm-alerts-section
+    .section-heading {
+
+        padding: 20px;
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 16px;
+    }
+
+
+    .farm-alerts-section
+    .section-heading h2 {
+
+        font-size: 23px;
+    }
+
+
+    .farm-alerts-section
+    .section-description {
+
+        font-size: 15px;
+    }
+
+
+    .farm-alert-heading-actions {
+
+        width: 100%;
+
+        justify-content: space-between;
+    }
+
+
+    .farm-refresh-alerts-btn {
+
+        min-height: 46px;
+
+        font-size: 15px;
+
+        padding: 10px 15px;
+    }
+
+
+    .farm-alerts-status {
+
+        padding: 13px 20px;
+
+        font-size: 15px;
+    }
+
+
+    .farm-alerts-container {
+
+        padding: 15px;
+
+        gap: 12px;
+    }
+
+
+    .farm-alert-card-top {
+
+        gap: 13px;
+
+        padding: 17px 16px;
+    }
+
+
+    .farm-alert-icon {
+
+        width: 48px;
+
+        min-width: 48px;
+
+        height: 48px;
+
+        font-size: 24px;
+
+        border-radius: 12px;
+    }
+
+
+    .farm-alert-title-row {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 8px;
+    }
+
+
+    .farm-alert-title-row h3 {
+
+        font-size: 19px;
+    }
+
+
+    .farm-alert-message {
+
+        font-size: 16px;
+
+        line-height: 1.55;
+    }
+
+
+    .farm-alert-details {
+
+        padding: 12px;
+
+        font-size: 15px;
+
+        line-height: 1.65;
+    }
+
+
+    .farm-alert-action {
+
+        font-size: 15px;
+
+        padding: 11px 12px;
+    }
+}
+
+
+/* ============================================================
+   SMALL PHONES
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+    .farm-alerts-section
+    .section-heading {
+
+        padding: 17px 15px;
+    }
+
+
+    .farm-alerts-section
+    .section-heading h2 {
+
+        font-size: 21px;
+    }
+
+
+    .farm-alerts-container {
+
+        padding: 10px;
+    }
+
+
+    .farm-alert-card-top {
+
+        padding: 15px 13px;
+
+        gap: 11px;
+    }
+
+
+    .farm-alert-icon {
+
+        width: 43px;
+
+        min-width: 43px;
+
+        height: 43px;
+
+        font-size: 21px;
+    }
+
+
+    .farm-alert-title-row h3 {
+
+        font-size: 18px;
+    }
+
+
+    .farm-alert-message {
+
+        font-size: 15px;
+    }
+
+
+    .farm-alert-details {
+
+        font-size: 14px;
+    }
+
+
+    .farm-alert-priority {
+
+        font-size: 11px;
+
+        padding: 5px 9px;
+    }
+
+
+    .farm-alerts-count {
+
+        min-width: 38px;
+
+        height: 38px;
+
+        font-size: 16px;
+    }
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+.farm-refresh-alerts-btn:focus-visible {
+
+    outline:
+        3px solid
+        rgba(255, 255, 255, 0.8);
+
+    outline-offset: 3px;
+}
+
+
+.farm-alert-card:focus-within {
+
+    outline:
+        3px solid
+        rgba(25, 118, 210, 0.25);
+
+    outline-offset: 2px;
+}
+
+
+/* ============================================================
+   REDUCE ANIMATION FOR ACCESSIBILITY
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .farm-alert-card,
+    .farm-refresh-alerts-btn {
+
+        transition: none;
+    }
+}
+
+
+/* ============================================================
+   END OF MUNKA PIGGERY PROFESSIONAL ALERT CSS
+   ============================================================ */
