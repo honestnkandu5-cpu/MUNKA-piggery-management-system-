@@ -17,7 +17,12 @@
    Iron Injection
    Teeth Clipping
    Tail Docking
-   Weaning
+
+   WEANING ALERTS
+   --------------
+   Uses weaning_records table
+   Uses weaning_date
+   Farm scoped
 
    OTHER ALERTS
    ------------
@@ -1895,28 +1900,6 @@ async function load114DayAlerts(farmId) {
 
 
 /* ============================================================
-   FARROWING STATUS
-   ============================================================ */
-
-function farrowingStatusIsClosed(status) {
-
-    const value =
-        String(
-            status || ""
-        )
-            .toLowerCase()
-            .trim();
-
-    return (
-        value === "completed" ||
-        value === "closed" ||
-        value === "cancelled" ||
-        value === "weaned"
-    );
-}
-
-
-/* ============================================================
    FARROWING - IRON / TEETH / TAIL
    ============================================================ */
 
@@ -2374,7 +2357,22 @@ async function loadFarrowingDay3Alerts(farmId) {
 
 
 /* ============================================================
-   FARROWING - WEANING
+   WEANING ALERTS
+   ============================================================
+
+   IMPORTANT:
+   This uses the ACTUAL weaning_records table.
+
+   TABLE:
+   weaning_records
+
+   COLUMNS USED:
+   id
+   sow_id
+   weaning_date
+   total_weaned
+   farm_id
+
    ============================================================ */
 
 async function loadWeaningAlerts(farmId) {
@@ -2383,14 +2381,24 @@ async function loadWeaningAlerts(farmId) {
 
     try {
 
+        console.log(
+            "Loading WEANING alerts for farm:",
+            farmId
+        );
+
+
         const {
             data,
             error
         } = await supabaseClient
-            .from("farrowing_records")
-            .select(
-                "id,sow_id,weaning_date,farm_id"
-            )
+            .from("weaning_records")
+            .select(`
+                id,
+                sow_id,
+                weaning_date,
+                total_weaned,
+                farm_id
+            `)
             .eq(
                 "farm_id",
                 farmId
@@ -2405,12 +2413,18 @@ async function loadWeaningAlerts(farmId) {
         if (error) {
 
             console.error(
-                "WEANING ERROR:",
+                "WEANING DATABASE ERROR:",
                 error
             );
 
             return alerts;
         }
+
+
+        console.log(
+            "WEANING RECORDS FOUND:",
+            data
+        );
 
 
         (data || []).forEach(record => {
@@ -2420,7 +2434,14 @@ async function loadWeaningAlerts(farmId) {
                     record.weaning_date
                 );
 
+
             if (!weaningDate) {
+
+                console.warn(
+                    "Invalid weaning date:",
+                    record
+                );
+
                 return;
             }
 
@@ -2433,10 +2454,14 @@ async function loadWeaningAlerts(farmId) {
 
 
             /*
-               Only show:
-               - overdue within 7 days
-               - today
-               - next 7 days
+               SHOW:
+
+               Overdue
+               Today
+               Next 7 Days
+
+               Anything more than 7 days away
+               is not displayed.
             */
 
             if (
@@ -2447,11 +2472,15 @@ async function loadWeaningAlerts(farmId) {
             }
 
 
+            /* =================================================
+               OVERDUE
+               ================================================= */
+
             if (difference < 0) {
 
                 alerts.push({
 
-                    type: "Farrowing",
+                    type: "Weaning",
 
                     title:
                         "Overdue Weaning",
@@ -2481,82 +2510,182 @@ async function loadWeaningAlerts(farmId) {
                             difference
                         )}
 
+                        ${
+                            record.total_weaned !== null &&
+                            record.total_weaned !== undefined
+                                ? `
+                                    <br>
+                                    <strong>Total Weaned:</strong>
+                                    ${escapeAlertHTML(
+                                        record.total_weaned
+                                    )}
+                                  `
+                                : ""
+                        }
+
                     `,
 
                     action:
-                        "Review the farrowing record and update it after the weaning activity is completed.",
+                        "Review the weaning record and update the record after the weaning activity is completed.",
 
-                    priority: "Urgent",
+                    priority:
+                        "Urgent",
 
-                    icon: "🍼",
+                    icon:
+                        "🍼",
 
-                    date: weaningDate
+                    date:
+                        weaningDate
                 });
 
                 return;
             }
 
 
-            alerts.push({
+            /* =================================================
+               DUE TODAY
+               ================================================= */
 
-                type: "Farrowing",
+            if (difference === 0) {
 
-                title:
-                    difference === 0
-                        ? "Weaning Due Today"
-                        : "Upcoming Weaning",
+                alerts.push({
 
-                message:
-                    difference === 0
-                        ? `Sow ${record.sow_id || "Unknown"} has a litter scheduled for weaning today.`
-                        : `Sow ${record.sow_id || "Unknown"} has a litter scheduled for weaning.`,
+                    type: "Weaning",
 
-                details: `
+                    title:
+                        "Weaning Due Today",
 
-                    <strong>Sow ID:</strong>
-                    ${escapeAlertHTML(
-                        record.sow_id ||
-                        "Not recorded"
-                    )}
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has a litter scheduled for weaning today.`,
 
-                    <br>
+                    details: `
 
-                    <strong>Weaning Date:</strong>
-                    ${formatAlertDate(
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Weaning Date:</strong>
+                        ${formatAlertDate(
+                            weaningDate
+                        )}
+
+                        ${
+                            record.total_weaned !== null &&
+                            record.total_weaned !== undefined
+                                ? `
+                                    <br>
+                                    <strong>Total Weaned:</strong>
+                                    ${escapeAlertHTML(
+                                        record.total_weaned
+                                    )}
+                                  `
+                                : ""
+                        }
+
+                    `,
+
+                    action:
+                        "Prepare for the weaning activity and update the weaning record after completion.",
+
+                    priority:
+                        "Urgent",
+
+                    icon:
+                        "🍼",
+
+                    date:
                         weaningDate
-                    )}
+                });
 
-                    ${
-                        difference > 0
-                            ? `
-                                <br>
-                                <strong>Days Remaining:</strong>
-                                ${difference}
-                              `
-                            : ""
-                    }
+                return;
+            }
 
-                `,
 
-                action:
-                    "Prepare for the weaning activity and update the farrowing record after completion.",
+            /* =================================================
+               UPCOMING
+               ================================================= */
 
-                priority:
-                    difference === 0
-                        ? "Urgent"
-                        : "Important",
+            if (
+                difference > 0 &&
+                difference <= 7
+            ) {
 
-                icon: "🍼",
+                alerts.push({
 
-                date: weaningDate
-            });
+                    type: "Weaning",
+
+                    title:
+                        "Upcoming Weaning",
+
+                    message:
+                        `Sow ${record.sow_id || "Unknown"} has a litter scheduled for weaning.`,
+
+                    details: `
+
+                        <strong>Sow ID:</strong>
+                        ${escapeAlertHTML(
+                            record.sow_id ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
+                        <strong>Weaning Date:</strong>
+                        ${formatAlertDate(
+                            weaningDate
+                        )}
+
+                        <br>
+
+                        <strong>Days Remaining:</strong>
+                        ${difference}
+
+                        ${
+                            record.total_weaned !== null &&
+                            record.total_weaned !== undefined
+                                ? `
+                                    <br>
+                                    <strong>Total Weaned:</strong>
+                                    ${escapeAlertHTML(
+                                        record.total_weaned
+                                    )}
+                                  `
+                                : ""
+                        }
+
+                    `,
+
+                    action:
+                        "Prepare for the upcoming weaning activity.",
+
+                    priority:
+                        "Important",
+
+                    icon:
+                        "🍼",
+
+                    date:
+                        weaningDate
+                });
+            }
 
         });
+
+
+        console.log(
+            "WEANING ALERTS CREATED:",
+            alerts
+        );
+
 
     } catch (error) {
 
         console.error(
-            "WEANING EXCEPTION:",
+            "WEANING ALERT EXCEPTION:",
             error
         );
     }
@@ -3111,7 +3240,7 @@ async function loadDashboardFarmAlerts() {
 
             <div class="farm-alert-loading">
                 🔄 Checking gestation, farrowing,
-                feeding and farm records...
+                weaning, feeding and farm records...
             </div>
 
         `;
@@ -3198,7 +3327,9 @@ async function loadDashboardFarmAlerts() {
         const results =
             await Promise.all([
 
-                /* GESTATION */
+                /* =================================================
+                   GESTATION
+                   ================================================= */
 
                 load21DayCheckAlerts(
                     farmId
@@ -3225,18 +3356,27 @@ async function loadDashboardFarmAlerts() {
                 ),
 
 
-                /* FARROWING */
+                /* =================================================
+                   FARROWING
+                   ================================================= */
 
                 loadFarrowingDay3Alerts(
                     farmId
                 ),
+
+
+                /* =================================================
+                   WEANING
+                   ================================================= */
 
                 loadWeaningAlerts(
                     farmId
                 ),
 
 
-                /* OTHER */
+                /* =================================================
+                   OTHER
+                   ================================================= */
 
                 loadNotServicedAlerts(
                     farmId
@@ -3273,6 +3413,7 @@ async function loadDashboardFarmAlerts() {
         );
 
         console.log(
+            "ALL FARM ALERTS:",
             dashboardFarmAlerts
         );
 
