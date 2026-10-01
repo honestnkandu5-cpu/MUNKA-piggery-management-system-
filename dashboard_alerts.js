@@ -3,38 +3,25 @@
    FARM DASHBOARD ALERTS - COMPLETE VERSION
    ============================================================
 
-   GESTATION ALERTS
-   ----------------
-   21-Day Pregnancy Check
-   90-Day Feed Up
-   101-Day Dewormer
-   101-Day Litter Guard
-   107-Day Action Day
-   114-Day Expected Farrowing
-
-   FARROWING ALERTS
-   ----------------
-   Iron Injection
-   Teeth Clipping
-   Tail Docking
-
-   WEANING ALERTS
-   --------------
-   Uses weaning_records table
-   Uses weaning_date
-   Farm scoped
-
-   OTHER ALERTS
-   ------------
-   Not Serviced
-   Feeding
-   Water
+   FEATURES
+   --------
+   • Gestation Alerts
+   • Farrowing Alerts
+   • Weaning Alerts
+   • Not Serviced Alerts
+   • Feeding Alerts
+   • Water Alerts
+   • Owner/Admin Alert Dismissal
+   • Farm-Scoped Dismissals
+   • Persistent Dismissals
+   • Secure Role Checking
 
    IMPORTANT
    ----------
    Uses supabaseClient
    Uses local browser dates
    Farm-scoped
+   Does NOT delete farm records
    ============================================================ */
 
 
@@ -44,6 +31,7 @@
 
 let dashboardFarmAlerts = [];
 let dashboardAlertsSectionCreated = false;
+let dashboardDismissedAlertKeys = new Set();
 
 
 /* ============================================================
@@ -307,6 +295,418 @@ function getDashboardAlertFarmId() {
 
 
 /* ============================================================
+   OWNER / ADMIN CHECK
+   ============================================================ */
+
+function dashboardUserCanDismissAlerts() {
+
+    const user =
+        getDashboardAlertUser();
+
+    if (!user) {
+        return false;
+    }
+
+    const role =
+        String(
+            user.role || ""
+        )
+            .trim();
+
+    const status =
+        String(
+            user.status || ""
+        )
+            .trim();
+
+    return (
+        role === "Owner/Admin" &&
+        status === "Active"
+    );
+}
+
+
+/* ============================================================
+   CREATE UNIQUE ALERT KEY
+   ============================================================ */
+
+function createFarmAlertKey(alert) {
+
+    const type =
+        String(
+            alert.type || "General"
+        ).trim();
+
+    const title =
+        String(
+            alert.title || "Farm Alert"
+        ).trim();
+
+    let datePart = "";
+
+    if (alert.date) {
+
+        const date =
+            alertDateOnly(
+                alert.date
+            );
+
+        if (date) {
+
+            datePart =
+                `${date.getFullYear()}-${String(
+                    date.getMonth() + 1
+                ).padStart(2, "0")}-${String(
+                    date.getDate()
+                ).padStart(2, "0")}`;
+        }
+    }
+
+    const sourceId =
+        alert.source_id ||
+        alert.record_id ||
+        alert.sow_id ||
+        "";
+
+    return [
+        type,
+        title,
+        sourceId,
+        datePart
+    ]
+        .map(value =>
+            String(value)
+                .trim()
+                .replace(/\s+/g, "_")
+        )
+        .join("|");
+}
+
+
+/* ============================================================
+   LOAD DISMISSED ALERTS
+   ============================================================ */
+
+async function loadDismissedFarmAlerts(farmId) {
+
+    dashboardDismissedAlertKeys =
+        new Set();
+
+    if (!farmId) {
+        return;
+    }
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("dismissed_farm_alerts")
+            .select(
+                "id,farm_id,alert_key,dismissed_by,dismissed_at"
+            )
+            .eq(
+                "farm_id",
+                farmId
+            );
+
+
+        if (error) {
+
+            console.error(
+                "DISMISSED ALERTS LOAD ERROR:",
+                error
+            );
+
+            return;
+        }
+
+
+        (data || []).forEach(record => {
+
+            if (
+                record.alert_key
+            ) {
+
+                dashboardDismissedAlertKeys.add(
+                    String(
+                        record.alert_key
+                    )
+                );
+            }
+        });
+
+
+        console.log(
+            "DISMISSED ALERT KEYS:",
+            dashboardDismissedAlertKeys
+        );
+
+    } catch (error) {
+
+        console.error(
+            "DISMISSED ALERTS EXCEPTION:",
+            error
+        );
+    }
+}
+
+
+/* ============================================================
+   FILTER DISMISSED ALERTS
+   ============================================================ */
+
+function filterDismissedFarmAlerts(alerts) {
+
+    if (
+        !dashboardDismissedAlertKeys ||
+        !dashboardDismissedAlertKeys.size
+    ) {
+
+        return alerts;
+    }
+
+
+    return alerts.filter(alert => {
+
+        const key =
+            alert.alert_key ||
+            createFarmAlertKey(
+                alert
+            );
+
+        alert.alert_key =
+            key;
+
+        return !dashboardDismissedAlertKeys.has(
+            key
+        );
+    });
+}
+
+
+/* ============================================================
+   DISMISS ALERT
+   ============================================================ */
+
+async function dismissFarmAlert(alertKey) {
+
+    if (!alertKey) {
+
+        console.error(
+            "Cannot dismiss alert: alert key missing."
+        );
+
+        return;
+    }
+
+
+    if (
+        !dashboardUserCanDismissAlerts()
+    ) {
+
+        alert(
+            "Only an active Owner/Admin can dismiss farm alerts."
+        );
+
+        return;
+    }
+
+
+    const user =
+        getDashboardAlertUser();
+
+    const farmId =
+        getDashboardAlertFarmId();
+
+
+    if (!user) {
+
+        alert(
+            "Your user session could not be identified."
+        );
+
+        return;
+    }
+
+
+    if (!farmId) {
+
+        alert(
+            "The farm connected to this account could not be identified."
+        );
+
+        return;
+    }
+
+
+    if (
+        typeof supabaseClient ===
+        "undefined"
+    ) {
+
+        alert(
+            "Database connection is not available."
+        );
+
+        return;
+    }
+
+
+    const button =
+        document.querySelector(
+            `[data-dismiss-alert="${CSS.escape(
+                alertKey
+            )}"]`
+        );
+
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+        button.innerHTML =
+            "⏳ Dismissing...";
+    }
+
+
+    try {
+
+        const {
+            error
+        } = await supabaseClient
+            .from("dismissed_farm_alerts")
+            .insert({
+
+                farm_id:
+                    Number(farmId),
+
+                alert_key:
+                    String(alertKey),
+
+                dismissed_by:
+                    user.id
+                        ? Number(user.id)
+                        : null
+            });
+
+
+        /*
+           If the record already exists,
+           treat it as already dismissed.
+        */
+
+        if (error) {
+
+            const errorText =
+                String(
+                    error.message ||
+                    error.details ||
+                    ""
+                ).toLowerCase();
+
+
+            if (
+                !errorText.includes(
+                    "duplicate"
+                ) &&
+                !errorText.includes(
+                    "unique"
+                )
+            ) {
+
+                console.error(
+                    "DISMISS ALERT ERROR:",
+                    error
+                );
+
+                if (button) {
+
+                    button.disabled =
+                        false;
+
+                    button.innerHTML =
+                        "🗑️ Dismiss Alert";
+                }
+
+                alert(
+                    "The alert could not be dismissed. Please try again."
+                );
+
+                return;
+            }
+        }
+
+
+        dashboardDismissedAlertKeys.add(
+            String(alertKey)
+        );
+
+
+        dashboardFarmAlerts =
+            dashboardFarmAlerts.filter(
+                alert => {
+
+                    const key =
+                        alert.alert_key ||
+                        createFarmAlertKey(
+                            alert
+                        );
+
+                    return (
+                        key !==
+                        String(alertKey)
+                    );
+                }
+            );
+
+
+        displayFarmAlerts(
+            dashboardFarmAlerts
+        );
+
+
+        console.log(
+            "Farm alert dismissed:",
+            alertKey
+        );
+
+    } catch (error) {
+
+        console.error(
+            "DISMISS ALERT EXCEPTION:",
+            error
+        );
+
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+            button.innerHTML =
+                "🗑️ Dismiss Alert";
+        }
+
+
+        alert(
+            "An unexpected error occurred while dismissing the alert."
+        );
+    }
+}
+
+
+/* ============================================================
+   MAKE DISMISS FUNCTION AVAILABLE TO HTML BUTTONS
+   ============================================================ */
+
+window.dismissFarmAlert =
+    dismissFarmAlert;
+
+
+/* ============================================================
    CREATE FARM ALERT SECTION
    ============================================================ */
 
@@ -318,10 +718,12 @@ function createFarmAlertsSection() {
         return;
     }
 
+
     const existing =
         document.getElementById(
             "farmAlertsSection"
         );
+
 
     if (existing) {
 
@@ -331,6 +733,7 @@ function createFarmAlertsSection() {
         return;
     }
 
+
     const announcementsSection =
         document.querySelector(
             ".announcements-section"
@@ -339,16 +742,20 @@ function createFarmAlertsSection() {
             "#announcementsSection"
         );
 
+
     const section =
         document.createElement(
             "section"
         );
 
+
     section.id =
         "farmAlertsSection";
 
+
     section.className =
         "dashboard-section farm-alerts-section";
+
 
     section.innerHTML = `
 
@@ -438,6 +845,7 @@ function createFarmAlertsSection() {
             "refreshFarmAlerts"
         );
 
+
     if (refreshButton) {
 
         refreshButton.addEventListener(
@@ -459,10 +867,12 @@ function displayFarmAlerts(alerts) {
             "farmAlertsContainer"
         );
 
+
     const status =
         document.getElementById(
             "farmAlertsStatus"
         );
+
 
     const count =
         document.getElementById(
@@ -547,10 +957,46 @@ function createFarmAlertCard(alert) {
         ).toLowerCase();
 
 
+    const alertKey =
+        alert.alert_key ||
+        createFarmAlertKey(
+            alert
+        );
+
+
+    alert.alert_key =
+        alertKey;
+
+
+    const canDismiss =
+        dashboardUserCanDismissAlerts();
+
+
+    const dismissButton =
+        canDismiss
+            ? `
+                <button
+                    type="button"
+                    class="farm-alert-dismiss-btn"
+                    data-dismiss-alert="${escapeAlertHTML(
+                        alertKey
+                    )}"
+                    onclick="dismissFarmAlert(this.getAttribute('data-dismiss-alert'))"
+                    title="Dismiss this alert"
+                >
+                    🗑️ Dismiss Alert
+                </button>
+              `
+            : "";
+
+
     return `
 
         <article
             class="farm-alert-card farm-alert-${priority}"
+            data-alert-key="${escapeAlertHTML(
+                alertKey
+            )}"
         >
 
             <div class="farm-alert-card-top">
@@ -615,6 +1061,11 @@ function createFarmAlertCard(alert) {
                                 </div>
                               `
                             : ""
+                    }
+
+
+                    ${
+                        dismissButton
                     }
 
                 </div>
@@ -705,6 +1156,7 @@ async function load21DayCheckAlerts(farmId) {
                     record.service_date
                 );
 
+
             if (!serviceDate) {
                 return;
             }
@@ -767,7 +1219,10 @@ async function load21DayCheckAlerts(farmId) {
 
                     icon: "🔎",
 
-                    date: checkDate
+                    date: checkDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -817,7 +1272,10 @@ async function load21DayCheckAlerts(farmId) {
 
                     icon: "🔎",
 
-                    date: checkDate
+                    date: checkDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -868,7 +1326,10 @@ async function load21DayCheckAlerts(farmId) {
 
                     icon: "🔎",
 
-                    date: checkDate
+                    date: checkDate,
+
+                    source_id:
+                        record.id
                 });
             }
 
@@ -942,6 +1403,7 @@ async function load90DayFeedUpAlerts(farmId) {
                     record.service_date
                 );
 
+
             if (!serviceDate) {
                 return;
             }
@@ -997,7 +1459,10 @@ async function load90DayFeedUpAlerts(farmId) {
 
                     icon: "🌾",
 
-                    date: feedUpDate
+                    date: feedUpDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -1040,7 +1505,10 @@ async function load90DayFeedUpAlerts(farmId) {
 
                     icon: "🌾",
 
-                    date: feedUpDate
+                    date: feedUpDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -1083,7 +1551,10 @@ async function load90DayFeedUpAlerts(farmId) {
 
                     icon: "🌾",
 
-                    date: feedUpDate
+                    date: feedUpDate,
+
+                    source_id:
+                        record.id
                 });
             }
 
@@ -1157,6 +1628,7 @@ async function load101DayDewormerAlerts(farmId) {
                     record.service_date
                 );
 
+
             if (!serviceDate) {
                 return;
             }
@@ -1212,7 +1684,10 @@ async function load101DayDewormerAlerts(farmId) {
 
                     icon: "💊",
 
-                    date: dewormerDate
+                    date: dewormerDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -1255,7 +1730,10 @@ async function load101DayDewormerAlerts(farmId) {
 
                     icon: "💊",
 
-                    date: dewormerDate
+                    date: dewormerDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -1298,7 +1776,10 @@ async function load101DayDewormerAlerts(farmId) {
 
                     icon: "💊",
 
-                    date: dewormerDate
+                    date: dewormerDate,
+
+                    source_id:
+                        record.id
                 });
             }
 
@@ -1372,6 +1853,7 @@ async function load101DayLitterGuardAlerts(farmId) {
                     record.service_date
                 );
 
+
             if (!serviceDate) {
                 return;
             }
@@ -1427,7 +1909,10 @@ async function load101DayLitterGuardAlerts(farmId) {
 
                     icon: "🛡️",
 
-                    date: litterGuardDate
+                    date: litterGuardDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -1470,7 +1955,10 @@ async function load101DayLitterGuardAlerts(farmId) {
 
                     icon: "🛡️",
 
-                    date: litterGuardDate
+                    date: litterGuardDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -1513,7 +2001,10 @@ async function load101DayLitterGuardAlerts(farmId) {
 
                     icon: "🛡️",
 
-                    date: litterGuardDate
+                    date: litterGuardDate,
+
+                    source_id:
+                        record.id
                 });
             }
 
@@ -1587,6 +2078,7 @@ async function loadActionDayAlerts(farmId) {
                     record.action_day
                 );
 
+
             if (!actionDate) {
                 return;
             }
@@ -1635,7 +2127,10 @@ async function loadActionDayAlerts(farmId) {
 
                     icon: "⚠️",
 
-                    date: actionDate
+                    date: actionDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -1678,7 +2173,10 @@ async function loadActionDayAlerts(farmId) {
 
                     icon: "📅",
 
-                    date: actionDate
+                    date: actionDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
@@ -1721,7 +2219,10 @@ async function loadActionDayAlerts(farmId) {
 
                     icon: "📅",
 
-                    date: actionDate
+                    date: actionDate,
+
+                    source_id:
+                        record.id
                 });
             }
 
@@ -1794,6 +2295,7 @@ async function load114DayAlerts(farmId) {
                 alertDateOnly(
                     record.service_date
                 );
+
 
             if (!serviceDate) {
                 return;
@@ -1882,7 +2384,10 @@ async function load114DayAlerts(farmId) {
 
                 icon: "🐷",
 
-                date: expectedDate
+                date: expectedDate,
+
+                source_id:
+                    record.id
             });
 
         });
@@ -1958,6 +2463,7 @@ async function loadFarrowingDay3Alerts(farmId) {
                         record.iron_date
                     );
 
+
                 if (ironDate) {
 
                     const difference =
@@ -2022,7 +2528,10 @@ async function loadFarrowingDay3Alerts(farmId) {
 
                             icon: "🩸",
 
-                            date: ironDate
+                            date: ironDate,
+
+                            source_id:
+                                record.id
                         });
                     }
 
@@ -2072,7 +2581,10 @@ async function loadFarrowingDay3Alerts(farmId) {
 
                             icon: "🩸",
 
-                            date: ironDate
+                            date: ironDate,
+
+                            source_id:
+                                record.id
                         });
                     }
                 }
@@ -2089,6 +2601,7 @@ async function loadFarrowingDay3Alerts(farmId) {
                     alertDateOnly(
                         record.teeth_date
                     );
+
 
                 if (teethDate) {
 
@@ -2154,7 +2667,10 @@ async function loadFarrowingDay3Alerts(farmId) {
 
                             icon: "🦷",
 
-                            date: teethDate
+                            date: teethDate,
+
+                            source_id:
+                                record.id
                         });
                     }
 
@@ -2204,7 +2720,10 @@ async function loadFarrowingDay3Alerts(farmId) {
 
                             icon: "🦷",
 
-                            date: teethDate
+                            date: teethDate,
+
+                            source_id:
+                                record.id
                         });
                     }
                 }
@@ -2221,6 +2740,7 @@ async function loadFarrowingDay3Alerts(farmId) {
                     alertDateOnly(
                         record.tail_date
                     );
+
 
                 if (tailDate) {
 
@@ -2286,7 +2806,10 @@ async function loadFarrowingDay3Alerts(farmId) {
 
                             icon: "✂️",
 
-                            date: tailDate
+                            date: tailDate,
+
+                            source_id:
+                                record.id
                         });
                     }
 
@@ -2336,7 +2859,10 @@ async function loadFarrowingDay3Alerts(farmId) {
 
                             icon: "✂️",
 
-                            date: tailDate
+                            date: tailDate,
+
+                            source_id:
+                                record.id
                         });
                     }
                 }
@@ -2358,21 +2884,6 @@ async function loadFarrowingDay3Alerts(farmId) {
 
 /* ============================================================
    WEANING ALERTS
-   ============================================================
-
-   IMPORTANT:
-   This uses the ACTUAL weaning_records table.
-
-   TABLE:
-   weaning_records
-
-   COLUMNS USED:
-   id
-   sow_id
-   weaning_date
-   total_weaned
-   farm_id
-
    ============================================================ */
 
 async function loadWeaningAlerts(farmId) {
@@ -2421,12 +2932,6 @@ async function loadWeaningAlerts(farmId) {
         }
 
 
-        console.log(
-            "WEANING RECORDS FOUND:",
-            data
-        );
-
-
         (data || []).forEach(record => {
 
             const weaningDate =
@@ -2436,12 +2941,6 @@ async function loadWeaningAlerts(farmId) {
 
 
             if (!weaningDate) {
-
-                console.warn(
-                    "Invalid weaning date:",
-                    record
-                );
-
                 return;
             }
 
@@ -2453,17 +2952,6 @@ async function loadWeaningAlerts(farmId) {
                 );
 
 
-            /*
-               SHOW:
-
-               Overdue
-               Today
-               Next 7 Days
-
-               Anything more than 7 days away
-               is not displayed.
-            */
-
             if (
                 difference < -7 ||
                 difference > 7
@@ -2471,10 +2959,6 @@ async function loadWeaningAlerts(farmId) {
                 return;
             }
 
-
-            /* =================================================
-               OVERDUE
-               ================================================= */
 
             if (difference < 0) {
 
@@ -2535,16 +3019,15 @@ async function loadWeaningAlerts(farmId) {
                         "🍼",
 
                     date:
-                        weaningDate
+                        weaningDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
             }
 
-
-            /* =================================================
-               DUE TODAY
-               ================================================= */
 
             if (difference === 0) {
 
@@ -2598,16 +3081,15 @@ async function loadWeaningAlerts(farmId) {
                         "🍼",
 
                     date:
-                        weaningDate
+                        weaningDate,
+
+                    source_id:
+                        record.id
                 });
 
                 return;
             }
 
-
-            /* =================================================
-               UPCOMING
-               ================================================= */
 
             if (
                 difference > 0 &&
@@ -2669,18 +3151,14 @@ async function loadWeaningAlerts(farmId) {
                         "🍼",
 
                     date:
-                        weaningDate
+                        weaningDate,
+
+                    source_id:
+                        record.id
                 });
             }
 
         });
-
-
-        console.log(
-            "WEANING ALERTS CREATED:",
-            alerts
-        );
-
 
     } catch (error) {
 
@@ -2750,6 +3228,7 @@ async function loadNotServicedAlerts(farmId) {
                     record.registration_date
                 );
 
+
             if (!registrationDate) {
                 return;
             }
@@ -2811,7 +3290,10 @@ async function loadNotServicedAlerts(farmId) {
 
                 icon: "🐖",
 
-                date: registrationDate
+                date: registrationDate,
+
+                source_id:
+                    record.id
             });
 
         });
@@ -2830,6 +3312,18 @@ async function loadNotServicedAlerts(farmId) {
 
 /* ============================================================
    FEEDING ALERTS
+   ============================================================
+
+   CORRECT TABLE FIELDS
+   --------------------
+   pen_number
+   feed_type
+   quantity
+   morning_feeding
+   evening_feeding
+   feeding_date
+   farm_id
+
    ============================================================ */
 
 async function loadFeedingAlerts(farmId) {
@@ -2844,7 +3338,7 @@ async function loadFeedingAlerts(farmId) {
         } = await supabaseClient
             .from("feeding_records")
             .select(
-                "id,feeding_date,pen,feed_type,quantity,morning_feeding_time,evening_feeding_time,farm_id"
+                "id,record_id,feeding_date,pen_number,pig_category,breed,feed_type,feed_brand,quantity,morning_feeding,evening_feeding,farm_id"
             )
             .eq(
                 "farm_id",
@@ -2870,6 +3364,7 @@ async function loadFeedingAlerts(farmId) {
                     record.feeding_date
                 );
 
+
             if (!feedingDate) {
                 return;
             }
@@ -2886,7 +3381,7 @@ async function loadFeedingAlerts(farmId) {
 
 
             if (
-                record.morning_feeding_time
+                record.morning_feeding
             ) {
 
                 alerts.push({
@@ -2897,13 +3392,13 @@ async function loadFeedingAlerts(farmId) {
                         "Morning Feeding",
 
                     message:
-                        `Morning feeding is scheduled for ${record.pen || "the pen"}.`,
+                        `Morning feeding is scheduled for ${record.pen_number || "the pen"}.`,
 
                     details: `
 
                         <strong>Pen:</strong>
                         ${escapeAlertHTML(
-                            record.pen ||
+                            record.pen_number ||
                             "Not recorded"
                         )}
 
@@ -2917,9 +3412,17 @@ async function loadFeedingAlerts(farmId) {
 
                         <br>
 
+                        <strong>Feed Brand:</strong>
+                        ${escapeAlertHTML(
+                            record.feed_brand ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
                         <strong>Quantity:</strong>
                         ${escapeAlertHTML(
-                            record.quantity ||
+                            record.quantity ??
                             "Not recorded"
                         )}
 
@@ -2927,7 +3430,7 @@ async function loadFeedingAlerts(farmId) {
 
                         <strong>Time:</strong>
                         ${formatAlertTime(
-                            record.morning_feeding_time
+                            record.morning_feeding
                         )}
 
                     `,
@@ -2939,13 +3442,16 @@ async function loadFeedingAlerts(farmId) {
 
                     icon: "🌅",
 
-                    date: feedingDate
+                    date: feedingDate,
+
+                    source_id:
+                        `${record.id}-morning`
                 });
             }
 
 
             if (
-                record.evening_feeding_time
+                record.evening_feeding
             ) {
 
                 alerts.push({
@@ -2956,13 +3462,13 @@ async function loadFeedingAlerts(farmId) {
                         "Evening Feeding",
 
                     message:
-                        `Evening feeding is scheduled for ${record.pen || "the pen"}.`,
+                        `Evening feeding is scheduled for ${record.pen_number || "the pen"}.`,
 
                     details: `
 
                         <strong>Pen:</strong>
                         ${escapeAlertHTML(
-                            record.pen ||
+                            record.pen_number ||
                             "Not recorded"
                         )}
 
@@ -2976,9 +3482,17 @@ async function loadFeedingAlerts(farmId) {
 
                         <br>
 
+                        <strong>Feed Brand:</strong>
+                        ${escapeAlertHTML(
+                            record.feed_brand ||
+                            "Not recorded"
+                        )}
+
+                        <br>
+
                         <strong>Quantity:</strong>
                         ${escapeAlertHTML(
-                            record.quantity ||
+                            record.quantity ??
                             "Not recorded"
                         )}
 
@@ -2986,7 +3500,7 @@ async function loadFeedingAlerts(farmId) {
 
                         <strong>Time:</strong>
                         ${formatAlertTime(
-                            record.evening_feeding_time
+                            record.evening_feeding
                         )}
 
                     `,
@@ -2998,7 +3512,10 @@ async function loadFeedingAlerts(farmId) {
 
                     icon: "🌙",
 
-                    date: feedingDate
+                    date: feedingDate,
+
+                    source_id:
+                        `${record.id}-evening`
                 });
             }
 
@@ -3032,7 +3549,7 @@ async function loadWaterAlerts(farmId) {
         } = await supabaseClient
             .from("feeding_records")
             .select(
-                "id,feeding_date,pen,water_available,farm_id"
+                "id,feeding_date,pen_number,water_available,farm_id"
             )
             .eq(
                 "farm_id",
@@ -3058,6 +3575,7 @@ async function loadWaterAlerts(farmId) {
                     record.feeding_date
                 );
 
+
             if (!feedingDate) {
                 return;
             }
@@ -3082,7 +3600,10 @@ async function loadWaterAlerts(farmId) {
                     .trim();
 
 
-            if (water === "yes") {
+            if (
+                water === "yes" ||
+                water === "available"
+            ) {
                 return;
             }
 
@@ -3095,13 +3616,13 @@ async function loadWaterAlerts(farmId) {
                     "Water Availability Check",
 
                 message:
-                    `Water availability has not been confirmed for ${record.pen || "the pen"}.`,
+                    `Water availability has not been confirmed for ${record.pen_number || "the pen"}.`,
 
                 details: `
 
                     <strong>Pen:</strong>
                     ${escapeAlertHTML(
-                        record.pen ||
+                        record.pen_number ||
                         "Not recorded"
                     )}
 
@@ -3122,7 +3643,10 @@ async function loadWaterAlerts(farmId) {
 
                 icon: "💧",
 
-                date: feedingDate
+                date: feedingDate,
+
+                source_id:
+                    record.id
             });
 
         });
@@ -3228,6 +3752,7 @@ async function loadDashboardFarmAlerts() {
             "farmAlertsContainer"
         );
 
+
     const status =
         document.getElementById(
             "farmAlertsStatus"
@@ -3324,6 +3849,16 @@ async function loadDashboardFarmAlerts() {
 
     try {
 
+        /*
+           First load the alerts that the current
+           Owner/Admin or user has already dismissed.
+        */
+
+        await loadDismissedFarmAlerts(
+            farmId
+        );
+
+
         const results =
             await Promise.all([
 
@@ -3397,6 +3932,35 @@ async function loadDashboardFarmAlerts() {
             results.flat();
 
 
+        /*
+           Give every alert its unique key.
+        */
+
+        dashboardFarmAlerts =
+            dashboardFarmAlerts.map(
+                alert => {
+
+                    alert.alert_key =
+                        createFarmAlertKey(
+                            alert
+                        );
+
+                    return alert;
+                }
+            );
+
+
+        /*
+           Remove alerts that have already
+           been dismissed by Owner/Admin.
+        */
+
+        dashboardFarmAlerts =
+            filterDismissedFarmAlerts(
+                dashboardFarmAlerts
+            );
+
+
         dashboardFarmAlerts =
             sortDashboardAlerts(
                 dashboardFarmAlerts
@@ -3408,12 +3972,12 @@ async function loadDashboardFarmAlerts() {
         );
 
         console.log(
-            "TOTAL FARM ALERTS:",
+            "ACTIVE FARM ALERTS:",
             dashboardFarmAlerts.length
         );
 
         console.log(
-            "ALL FARM ALERTS:",
+            "ALL ACTIVE FARM ALERTS:",
             dashboardFarmAlerts
         );
 
