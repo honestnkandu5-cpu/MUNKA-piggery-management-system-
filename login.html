@@ -1,18 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!DOCTYPE html><html lang="en">
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>MUNKA PIGGERY - Login</title>
-
-<style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MUNKA PIGGERY - Login</title><style>
 
 /* =========================================================
    MUNKA PIGGERY TECHNOLOGY
-   FRESH FARMTECH LOGIN DESIGN
+   FULL-SCREEN FARMTECH LOGIN
    GREEN + GOLD + BLACK + WHITE
 ========================================================= */
 
@@ -29,6 +22,7 @@ body {
 }
 
 body {
+
     min-height: 100vh;
 
     font-family:
@@ -40,8 +34,6 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-
-    padding: 20px;
 
     color: #17231c;
 
@@ -66,29 +58,32 @@ body {
 
 
 /* =========================================================
-   MAIN CARD
+   FULL SCREEN LOGIN CONTAINER
 ========================================================= */
 
 .login-container {
 
     width: 100%;
-    max-width: 760px;
+    min-height: 100vh;
+
+    padding:
+        55px
+        7vw
+        40px;
 
     background: rgba(255,255,255,0.98);
 
-    border-radius: 26px;
-
-    padding: 38px 42px 34px;
-
     position: relative;
 
-    overflow: hidden;
+    overflow-y: auto;
 
-    border: 1px solid rgba(212,175,55,0.45);
+    border: none;
 
-    box-shadow:
-        0 30px 80px rgba(0,0,0,0.45),
-        0 0 40px rgba(53,168,83,0.12);
+    box-shadow: none;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 
@@ -104,7 +99,7 @@ body {
     left: 0;
 
     width: 100%;
-    height: 6px;
+    height: 7px;
 
     background:
         linear-gradient(
@@ -120,49 +115,61 @@ body {
 
 
 /* =========================================================
-   BRAND
+   BRAND LOGO
 ========================================================= */
 
 .brand-icon {
 
-    width: 68px;
-    height: 68px;
+    width: 120px;
+    height: 120px;
 
-    margin: 4px auto 12px;
-
-    border-radius: 50%;
+    margin:
+        5px
+        auto
+        15px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
-    background:
-        linear-gradient(
-            145deg,
-            #0b3d2e,
-            #198754
-        );
+    background: transparent;
 
-    color: #ffffff;
+    border: none;
 
-    font-size: 31px;
-
-    border: 3px solid #d4af37;
-
-    box-shadow:
-        0 8px 20px rgba(11,61,46,0.25);
+    box-shadow: none;
 }
 
+.brand-logo {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+/* =========================================================
+   BRAND NAME
+========================================================= */
 
 .login-container h1 {
 
     margin: 0;
 
-    font-size: 35px;
+    font-size: clamp(
+        30px,
+        4vw,
+        48px
+    );
 
     font-weight: 900;
 
     letter-spacing: 2px;
+
+    text-align: center;
 
     color: #0b3d2e;
 }
@@ -170,15 +177,24 @@ body {
 
 .login-container h3 {
 
-    margin: 5px 0 0;
+    margin:
+        7px
+        0
+        0;
 
-    font-size: 14px;
+    font-size: clamp(
+        13px,
+        1.5vw,
+        17px
+    );
 
     font-weight: 700;
 
-    letter-spacing: 2.5px;
+    letter-spacing: 3px;
 
     text-transform: uppercase;
+
+    text-align: center;
 
     color: #198754;
 }
@@ -190,23 +206,49 @@ body {
 
 .welcome {
 
-    margin: 28px 0 5px;
+    margin:
+        35px
+        0
+        7px;
 
-    font-size: 26px;
+    font-size: clamp(
+        25px,
+        3vw,
+        34px
+    );
 
     font-weight: 800;
 
     color: #17231c;
+
+    text-align: center;
 }
 
 
 .login-instruction {
 
-    margin: 0 0 24px;
+    margin:
+        0
+        0
+        28px;
 
-    font-size: 14px;
+    font-size: 15px;
 
     color: #6b756f;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   MAIN FORM AREA
+========================================================= */
+
+#loginForm {
+
+    width: 100%;
+
+    max-width: 1100px;
 }
 
 
@@ -216,9 +258,9 @@ body {
 
 .role-title {
 
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 
-    font-size: 14px;
+    font-size: 15px;
 
     font-weight: 800;
 
@@ -232,14 +274,19 @@ body {
 
 .roles-container {
 
+    width: 100%;
+
     display: grid;
 
     grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
 
-    gap: 11px;
+    gap: 13px;
 
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 
@@ -247,19 +294,21 @@ body {
 
     width: 100%;
 
-    min-height: 58px;
+    min-height: 65px;
 
-    padding: 10px;
+    padding: 11px;
 
     border-radius: 13px;
 
-    border: 1px solid #d9e4dd;
+    border:
+        1px solid
+        #d9e4dd;
 
     background: #ffffff;
 
     color: #26352d;
 
-    font-size: 13px;
+    font-size: 14px;
 
     font-weight: 700;
 
@@ -269,20 +318,29 @@ body {
         0.2s ease;
 
     box-shadow:
-        0 3px 10px rgba(11,61,46,0.06);
+        0
+        3px
+        10px
+        rgba(11,61,46,0.06);
 }
 
 
 .role-button:hover {
 
-    transform: translateY(-2px);
+    transform:
+        translateY(-2px);
 
-    border-color: #35a853;
+    border-color:
+        #35a853;
 
-    background: #f0faf3;
+    background:
+        #f0faf3;
 
     box-shadow:
-        0 7px 18px rgba(25,135,84,0.15);
+        0
+        7px
+        18px
+        rgba(25,135,84,0.15);
 }
 
 
@@ -290,7 +348,8 @@ body {
 
     color: #ffffff;
 
-    border-color: #d4af37;
+    border-color:
+        #d4af37;
 
     background:
         linear-gradient(
@@ -300,9 +359,13 @@ body {
         );
 
     box-shadow:
-        0 8px 20px rgba(11,61,46,0.25);
+        0
+        8px
+        20px
+        rgba(11,61,46,0.25);
 
-    transform: translateY(-2px);
+    transform:
+        translateY(-2px);
 }
 
 
@@ -312,13 +375,17 @@ body {
 
 .selected-role {
 
-    min-height: 22px;
+    min-height: 23px;
 
-    margin: 7px 0 17px;
+    margin:
+        8px
+        0
+        17px;
 
-    color: #198754;
+    color:
+        #198754;
 
-    font-size: 13px;
+    font-size: 14px;
 
     font-weight: 800;
 }
@@ -332,21 +399,27 @@ body {
 
     width: 100%;
 
-    height: 52px;
+    height: 58px;
 
-    padding: 0 15px;
+    padding:
+        0
+        17px;
 
-    margin-bottom: 13px;
+    margin-bottom: 14px;
 
     border-radius: 11px;
 
-    border: 1px solid #d8e1dc;
+    border:
+        1px solid
+        #d8e1dc;
 
-    background: #fbfdfc;
+    background:
+        #fbfdfc;
 
-    color: #17231c;
+    color:
+        #17231c;
 
-    font-size: 15px;
+    font-size: 16px;
 
     outline: none;
 
@@ -357,18 +430,25 @@ body {
 
 .login-container input::placeholder {
 
-    color: #98a29d;
+    color:
+        #98a29d;
 }
 
 
 .login-container input:focus {
 
-    border-color: #198754;
+    border-color:
+        #198754;
 
-    background: #ffffff;
+    background:
+        #ffffff;
 
     box-shadow:
-        0 0 0 3px rgba(25,135,84,0.12);
+        0
+        0
+        0
+        3px
+        rgba(25,135,84,0.12);
 }
 
 
@@ -386,7 +466,7 @@ body {
 
 .password-container input {
 
-    padding-right: 75px;
+    padding-right: 80px;
 }
 
 
@@ -398,7 +478,8 @@ body {
 
     top: 50%;
 
-    transform: translateY(-50%);
+    transform:
+        translateY(-50%);
 
     width: auto;
 
@@ -406,17 +487,21 @@ body {
 
     margin: 0;
 
-    padding: 7px 9px;
+    padding:
+        8px
+        10px;
 
     border: none;
 
     border-radius: 7px;
 
-    background: transparent;
+    background:
+        transparent;
 
-    color: #198754;
+    color:
+        #198754;
 
-    font-size: 13px;
+    font-size: 14px;
 
     font-weight: 800;
 
@@ -426,9 +511,11 @@ body {
 
 #togglePassword:hover {
 
-    background: #eaf7ef;
+    background:
+        #eaf7ef;
 
-    color: #0b3d2e;
+    color:
+        #0b3d2e;
 }
 
 
@@ -440,29 +527,36 @@ body {
 
     text-align: right;
 
-    margin-top: 0;
-
-    margin-bottom: 18px;
+    margin:
+        0
+        0
+        20px;
 }
 
 
 .forgot-password a {
 
-    color: #198754;
+    color:
+        #198754;
 
-    font-size: 13px;
+    font-size:
+        14px;
 
-    font-weight: 700;
+    font-weight:
+        700;
 
-    text-decoration: none;
+    text-decoration:
+        none;
 }
 
 
 .forgot-password a:hover {
 
-    color: #0b3d2e;
+    color:
+        #0b3d2e;
 
-    text-decoration: underline;
+    text-decoration:
+        underline;
 }
 
 
@@ -474,7 +568,7 @@ body {
 
     width: 100%;
 
-    height: 55px;
+    height: 60px;
 
     border: none;
 
@@ -488,18 +582,26 @@ body {
             #d4af37
         );
 
-    color: #ffffff;
+    color:
+        #ffffff;
 
-    font-size: 16px;
+    font-size:
+        17px;
 
-    font-weight: 800;
+    font-weight:
+        800;
 
-    letter-spacing: 0.5px;
+    letter-spacing:
+        0.6px;
 
-    cursor: pointer;
+    cursor:
+        pointer;
 
     box-shadow:
-        0 9px 22px rgba(11,61,46,0.25);
+        0
+        9px
+        22px
+        rgba(11,61,46,0.25);
 
     transition:
         0.2s ease;
@@ -508,18 +610,24 @@ body {
 
 .login-button:hover {
 
-    transform: translateY(-2px);
+    transform:
+        translateY(-2px);
 
-    filter: brightness(1.06);
+    filter:
+        brightness(1.06);
 
     box-shadow:
-        0 13px 27px rgba(11,61,46,0.32);
+        0
+        13px
+        27px
+        rgba(11,61,46,0.32);
 }
 
 
 .login-button:active {
 
-    transform: translateY(0);
+    transform:
+        translateY(0);
 }
 
 
@@ -529,17 +637,25 @@ body {
 
 #message {
 
-    min-height: 20px;
+    min-height:
+        20px;
 
-    margin: 13px 0 0;
+    margin:
+        13px
+        0
+        0;
 
-    font-size: 13px;
+    font-size:
+        14px;
 
-    font-weight: 700;
+    font-weight:
+        700;
 
-    line-height: 1.4;
+    line-height:
+        1.4;
 
-    color: #c62828;
+    color:
+        #c62828;
 }
 
 
@@ -549,23 +665,62 @@ body {
 
 .farm-footer {
 
-    margin-top: 22px;
+    width:
+        100%;
 
-    padding-top: 15px;
+    max-width:
+        1100px;
 
-    border-top: 1px solid #e4ebe7;
+    margin-top:
+        28px;
 
-    text-align: center;
+    padding-top:
+        17px;
 
-    font-size: 12px;
+    border-top:
+        1px solid
+        #e4ebe7;
 
-    color: #7b857f;
+    text-align:
+        center;
+
+    font-size:
+        13px;
+
+    color:
+        #7b857f;
 }
 
 
 .farm-footer strong {
 
-    color: #198754;
+    color:
+        #198754;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .login-container {
+
+        padding:
+            45px
+            35px
+            30px;
+    }
+
+    .roles-container {
+
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(0,1fr)
+            );
+    }
 }
 
 
@@ -577,156 +732,212 @@ body {
 
     body {
 
-        padding: 12px;
-
+        min-height:
+            100vh;
     }
+
 
     .login-container {
 
-        padding: 32px 18px 25px;
+        min-height:
+            100vh;
 
-        border-radius: 21px;
-
+        padding:
+            38px
+            18px
+            25px;
     }
+
 
     .brand-icon {
 
-        width: 58px;
+        width:
+            90px;
 
-        height: 58px;
+        height:
+            90px;
 
-        font-size: 26px;
-
+        margin-bottom:
+            12px;
     }
+
 
     .login-container h1 {
 
-        font-size: 27px;
+        font-size:
+            28px;
 
-        letter-spacing: 1.5px;
-
+        letter-spacing:
+            1.5px;
     }
+
 
     .login-container h3 {
 
-        font-size: 11px;
+        font-size:
+            11px;
 
-        letter-spacing: 1.5px;
-
+        letter-spacing:
+            1.5px;
     }
+
 
     .welcome {
 
-        margin-top: 23px;
+        margin-top:
+            25px;
 
-        font-size: 22px;
-
+        font-size:
+            23px;
     }
+
 
     .login-instruction {
 
-        font-size: 13px;
-
+        font-size:
+            13px;
     }
+
 
     .roles-container {
 
-        gap: 8px;
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0,1fr)
+            );
 
+        gap:
+            9px;
     }
+
 
     .role-button {
 
-        min-height: 55px;
+        min-height:
+            58px;
 
-        padding: 9px 5px;
+        padding:
+            9px
+            5px;
 
-        font-size: 11.5px;
-
+        font-size:
+            11.5px;
     }
+
 
     .login-container input {
 
-        height: 50px;
+        height:
+            54px;
 
-        font-size: 14px;
-
+        font-size:
+            15px;
     }
+
 
     .login-button {
 
-        height: 52px;
+        height:
+            56px;
 
+        font-size:
+            15px;
     }
-
 }
 
 
 /* =========================================================
-   SMALL PHONES
+   VERY SMALL PHONES
 ========================================================= */
 
 @media (max-width: 380px) {
 
     .login-container {
 
-        padding: 27px 14px 22px;
-
+        padding:
+            32px
+            13px
+            20px;
     }
+
+
+    .brand-icon {
+
+        width:
+            78px;
+
+        height:
+            78px;
+    }
+
 
     .login-container h1 {
 
-        font-size: 24px;
-
+        font-size:
+            24px;
     }
+
 
     .welcome {
 
-        font-size: 20px;
-
+        font-size:
+            20px;
     }
+
 
     .role-button {
 
-        min-height: 52px;
+        min-height:
+            53px;
 
-        font-size: 10.5px;
-
+        font-size:
+            10.5px;
     }
-
 }
 
-</style>
+</style></head><body><div class="login-container"><!-- =====================================================
+     REAL MUNKA PIGGERY LOGO
+====================================================== -->
 
-</head>
+<div class="brand-icon">
 
+    <img
+        src="munka-logo.png"
+        alt="MUNKA PIGGERY Management System"
+        class="brand-logo"
+    >
 
-<body>
-
-<div class="login-container">
-
-    <!-- BRAND ICON -->
-    <div class="brand-icon">
-        🌿
-    </div>
-
-    <!-- BRAND -->
-    <h1>MUNKA PIGGERY</h1>
-
-    <h3>Farm Management System</h3>
+</div>
 
 
-    <!-- WELCOME -->
-    <div class="welcome">
-        Welcome Back
-    </div>
+<!-- BRAND -->
 
-    <p class="login-instruction">
-        Sign in to manage your farm operations
-    </p>
+<h1>
+    MUNKA PIGGERY
+</h1>
+
+<h3>
+    Farm Management System
+</h3>
 
 
-    <!-- ROLE -->
+<!-- WELCOME -->
+
+<div class="welcome">
+    Welcome Back
+</div>
+
+<p class="login-instruction">
+    Sign in to manage your farm operations
+</p>
+
+
+<!-- ROLE -->
+
+<form id="loginForm">
+
+
     <div class="role-title">
         Select Your Role
     </div>
@@ -734,56 +945,78 @@ body {
 
     <div class="roles-container">
 
+
         <button
             type="button"
             class="role-button"
             data-role="owner/admin">
+
             Owner / Admin
+
         </button>
+
 
         <button
             type="button"
             class="role-button"
             data-role="farm manager">
+
             Farm Manager
+
         </button>
+
 
         <button
             type="button"
             class="role-button"
             data-role="serviceman">
+
             Serviceman<br>
             (Gestation Pen)
+
         </button>
+
 
         <button
             type="button"
             class="role-button"
             data-role="farrowman">
+
             Farrowman<br>
             (Farrowing Pen)
+
         </button>
+
 
         <button
             type="button"
             class="role-button"
             data-role="sales officer">
+
             Sales Officer
+
         </button>
+
 
         <button
             type="button"
             class="role-button"
             data-role="veterinary officer">
+
             Veterinary Officer
+
         </button>
+
 
         <button
             type="button"
             class="role-button"
             data-role="farm worker">
+
             Farm Worker
+
         </button>
+
 
     </div>
 
@@ -794,84 +1027,87 @@ body {
     </div>
 
 
-    <!-- LOGIN FORM -->
+    <!-- EMAIL -->
 
-    <form id="loginForm">
+    <input
+        type="email"
+        id="email"
+        placeholder="Email Address"
+        autocomplete="email"
+        required
+    >
+
+
+    <!-- PASSWORD -->
+
+    <div class="password-container">
 
         <input
-            type="email"
-            id="email"
-            placeholder="Email Address"
+            type="password"
+            id="password"
+            placeholder="Password"
+            autocomplete="current-password"
             required
         >
 
-
-        <div class="password-container">
-
-            <input
-                type="password"
-                id="password"
-                placeholder="Password"
-                required
-            >
-
-            <button
-                type="button"
-                id="togglePassword">
-                Show
-            </button>
-
-        </div>
-
-
-        <div class="forgot-password">
-
-            <a href="forgot_password.html">
-                Forgot Password?
-            </a>
-
-        </div>
-
-
         <button
-            type="submit"
-            class="login-button">
-            🌿 LOGIN TO FARM
+            type="button"
+            id="togglePassword">
+
+            Show
+
         </button>
-
-
-        <p id="message"></p>
-
-    </form>
-
-
-    <!-- FOOTER -->
-
-    <div class="farm-footer">
-
-        <strong>MUNKA PIGGERY TECHNOLOGY</strong><br>
-
-        Professional Farm Management &amp; Records System
 
     </div>
 
+
+    <!-- FORGOT PASSWORD -->
+
+    <div class="forgot-password">
+
+        <a href="forgot_password.html">
+            Forgot Password?
+        </a>
+
+    </div>
+
+
+    <!-- LOGIN -->
+
+    <button
+        type="submit"
+        class="login-button">
+
+        🌿 LOGIN TO FARM
+
+    </button>
+
+
+    <p id="message"></p>
+
+
+</form>
+
+
+<!-- FOOTER -->
+
+<div class="farm-footer">
+
+    <strong>
+        MUNKA PIGGERY TECHNOLOGY
+    </strong>
+
+    <br>
+
+    Professional Farm Management &amp; Records System
+
 </div>
 
-
-<!-- SUPABASE -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="supabase.js"></script>
-
-<script src="activity.js"></script>
-
-<script src="login.js"></script>
-
-
-<!-- ROLE + PASSWORD UI -->
-
-<script>
+</div><!-- =========================================================
+     SUPABASE
+========================================================= --><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="activity.js"></script><script src="login.js"></script><!-- =========================================================
+     ROLE + PASSWORD UI
+========================================================= --><script>
 
 const roleButtons =
     document.querySelectorAll(".role-button");
@@ -889,13 +1125,18 @@ roleButtons.forEach(button => {
     button.addEventListener("click", () => {
 
         roleButtons.forEach(btn => {
+
             btn.classList.remove("selected");
+
         });
+
 
         button.classList.add("selected");
 
+
         selectedRoleValue =
             button.dataset.role;
+
 
         selectedRole.textContent =
             "Selected role: " +
@@ -917,27 +1158,35 @@ const togglePassword =
     document.getElementById("togglePassword");
 
 
-togglePassword.addEventListener("click", () => {
+togglePassword.addEventListener(
+    "click",
+    () => {
 
-    if (password.type === "password") {
+        if (
+            password.type ===
+            "password"
+        ) {
 
-        password.type = "text";
+            password.type =
+                "text";
 
-        togglePassword.textContent = "Hide";
+            togglePassword.textContent =
+                "Hide";
 
-    } else {
+        }
 
-        password.type = "password";
+        else {
 
-        togglePassword.textContent = "Show";
+            password.type =
+                "password";
+
+            togglePassword.textContent =
+                "Show";
+
+        }
 
     }
+);
 
-});
-
-
-</script>
-
-</body>
-
+</script></body>
 </html>
