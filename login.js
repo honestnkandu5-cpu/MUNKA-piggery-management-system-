@@ -7,13 +7,11 @@
 // DIRECT DASHBOARD REDIRECT
 // =====================================
 
-
 document
     .getElementById("loginForm")
     .addEventListener("submit", async function(e){
 
         e.preventDefault();
-
 
         // =====================================
         // GET LOGIN DETAILS
@@ -25,24 +23,16 @@ document
                 .value
                 .trim();
 
-
         const password =
             document
                 .getElementById("password")
                 .value
                 .trim();
 
-
         const message =
             document.getElementById("message");
 
-
-        message.textContent =
-            "Checking login...";
-
-
         try{
-
 
             // =====================================
             // 1. SUPABASE AUTHENTICATION
@@ -62,7 +52,6 @@ document
 
                     });
 
-
             if(authError){
 
                 message.textContent =
@@ -72,10 +61,8 @@ document
 
             }
 
-
             const uid =
                 authData.user.id;
-
 
             // =====================================
             // 2. GET USER PROFILE
@@ -89,18 +76,13 @@ document
 
             } =
                 await supabaseClient
-
                     .from("users")
-
                     .select("*")
-
                     .eq(
                         "auth_user_id",
                         uid
                     )
-
                     .single();
-
 
             if(
                 userError ||
@@ -111,14 +93,12 @@ document
                     .auth
                     .signOut();
 
-
                 message.textContent =
                     "User profile not found.";
 
                 return;
 
             }
-
 
             // =====================================
             // 3. ACCOUNT STATUS
@@ -138,14 +118,12 @@ document
                     .auth
                     .signOut();
 
-
                 message.textContent =
                     "Your account is not active. Please contact the administrator.";
 
                 return;
 
             }
-
 
             // =====================================
             // 4. USER ROLE
@@ -154,13 +132,11 @@ document
             const userRole =
                 userData.role;
 
-
             if(!userRole){
 
                 await supabaseClient
                     .auth
                     .signOut();
-
 
                 message.textContent =
                     "User role is not assigned. Please contact the administrator.";
@@ -168,7 +144,6 @@ document
                 return;
 
             }
-
 
             // =====================================
             // 5. CHECK SUPER ADMIN
@@ -181,13 +156,11 @@ document
                     ===
                     "super admin";
 
-
             // =====================================
             // 6. FARM SUBSCRIPTION CHECK
             // =====================================
 
             if(!isSuperAdmin){
-
 
                 if(!userData.farm_id){
 
@@ -195,14 +168,12 @@ document
                         .auth
                         .signOut();
 
-
                     message.textContent =
                         "Your account is not linked to a farm. Please contact the administrator.";
 
                     return;
 
                 }
-
 
                 const {
 
@@ -212,20 +183,15 @@ document
 
                 } =
                     await supabaseClient
-
                         .from("farms")
-
                         .select(
                             "id, farm_name, status, subscription_start, subscription_end"
                         )
-
                         .eq(
                             "id",
                             userData.farm_id
                         )
-
                         .single();
-
 
                 if(
                     farmError ||
@@ -237,11 +203,9 @@ document
                         farmError
                     );
 
-
                     await supabaseClient
                         .auth
                         .signOut();
-
 
                     message.textContent =
                         "Your farm could not be found. Please contact the administrator.";
@@ -249,7 +213,6 @@ document
                     return;
 
                 }
-
 
                 // =====================================
                 // FARM STATUS
@@ -269,14 +232,12 @@ document
                         .auth
                         .signOut();
 
-
                     message.textContent =
                         "Your farm subscription is inactive or expired. Please contact the administrator to renew your subscription.";
 
                     return;
 
                 }
-
 
                 // =====================================
                 // SUBSCRIPTION END
@@ -293,14 +254,12 @@ document
                         .auth
                         .signOut();
 
-
                     message.textContent =
                         "Your farm subscription has expired. Please contact the administrator to renew your subscription.";
 
                     return;
 
                 }
-
 
                 // =====================================
                 // SUBSCRIPTION START
@@ -317,14 +276,12 @@ document
                         .auth
                         .signOut();
 
-
                     message.textContent =
                         "Your farm subscription has not started yet.";
 
                     return;
 
                 }
-
 
                 // =====================================
                 // ADD FARM INFORMATION
@@ -333,20 +290,16 @@ document
                 userData.farm_name =
                     farmData.farm_name;
 
-
                 userData.subscription_start =
                     farmData.subscription_start;
 
-
                 userData.subscription_end =
                     farmData.subscription_end;
-
 
                 userData.farm_status =
                     farmData.status;
 
             }
-
 
             // =====================================
             // 7. UPDATE LAST LOGIN
@@ -364,7 +317,6 @@ document
                         "update_my_last_login"
                     );
 
-
             if(lastLoginError){
 
                 console.error(
@@ -380,7 +332,6 @@ document
 
             }
 
-
             // =====================================
             // 8. SAVE USER LOCALLY
             // =====================================
@@ -389,7 +340,6 @@ document
                 "loggedInUser",
                 JSON.stringify(userData)
             );
-
 
             // =====================================
             // 9. SAVE ACTIVITY LOG
@@ -422,23 +372,9 @@ document
 
             }
 
-
             // =====================================
             // 10. DIRECT REDIRECT
             // =====================================
-            //
-            // IMPORTANT:
-            // No alert.
-            // No browser popup.
-            // No "MUNKA PIGGERY says".
-            //
-            // The user goes directly to
-            // the correct dashboard.
-            // =====================================
-
-            message.textContent =
-                "Login successful. Opening dashboard...";
-
 
             if(isSuperAdmin){
 
@@ -457,7 +393,6 @@ document
 
         }
 
-
         // =====================================
         // SYSTEM ERROR
         // =====================================
@@ -468,7 +403,6 @@ document
                 "LOGIN SYSTEM ERROR:",
                 error
             );
-
 
             message.textContent =
                 "System error. Please try again.";
