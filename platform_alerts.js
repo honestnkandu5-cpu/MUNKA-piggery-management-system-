@@ -1,20 +1,30 @@
-/* ============================================================
-   MUNKA PIGGERY MANAGEMENT SYSTEM
+/* ==========================================================
+   MUNKA PIGGERY
    PLATFORM FARM ALERTS
-   Super Admin - All Farms
-   ============================================================ */
+   SUPER ADMIN
+   ==========================================================
+
+   PURPOSE:
+   - Super Admin can see alerts from ALL farms
+   - Uses the actual database schemas
+   - Does NOT depend on Super Admin farm_id
+   - Does NOT use incorrect fields such as:
+       pig_id
+       farrowing_date
+       expected_farrowing_date
+       morning_time
+       evening_time
+   - Uses the actual fields from the database
+   ========================================================== */
 
 let platformFarmAlerts = [];
 
-
-/* ============================================================
+/* ==========================================================
    BASIC HELPERS
-   ============================================================ */
+   ========================================================== */
 
-function escapePlatformAlertHTML(value) {
-    if (value === null || value === undefined) {
-        return "";
-    }
+function platformEscapeHTML(value) {
+    if (value === null || value === undefined) return "";
 
     return String(value)
         .replace(/&/g, "&amp;")
@@ -25,106 +35,88 @@ function escapePlatformAlertHTML(value) {
 }
 
 
-function getPlatformToday() {
+/* ==========================================================
+   DATE HELPERS
+   ========================================================== */
+
+function platformToday() {
     const now = new Date();
 
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
+    return new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+}
+
+
+function platformDateOnly(value) {
+    if (!value) return null;
+
+    const d = new Date(value);
+
+    if (isNaN(d.getTime())) return null;
+
+    return new Date(
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate()
+    );
+}
+
+
+function platformDateString(value) {
+    const d = platformDateOnly(value);
+
+    if (!d) return "";
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
 }
 
 
-function dateFromString(dateString) {
-    if (!dateString) {
-        return null;
-    }
+function platformDaysDifference(dateValue) {
+    const target = platformDateOnly(dateValue);
+    const today = platformToday();
 
-    const parts = String(dateString).split("-");
+    if (!target) return null;
 
-    if (parts.length !== 3) {
-        return null;
-    }
-
-    const year = Number(parts[0]);
-    const month = Number(parts[1]) - 1;
-    const day = Number(parts[2]);
-
-    return new Date(year, month, day);
+    return Math.round(
+        (target - today) / (1000 * 60 * 60 * 24)
+    );
 }
 
 
-function addDaysToDate(dateString, days) {
-    const date = dateFromString(dateString);
+function platformFormatDate(value) {
+    const d = platformDateOnly(value);
 
-    if (!date) {
-        return null;
-    }
+    if (!d) return "No date";
 
-    date.setDate(date.getDate() + days);
-
-    return date;
-}
-
-
-function formatPlatformDate(dateString) {
-    if (!dateString) {
-        return "N/A";
-    }
-
-    const date = dateFromString(dateString);
-
-    if (!date || isNaN(date.getTime())) {
-        return dateString;
-    }
-
-    return date.toLocaleDateString("en-ZM", {
-        year: "numeric",
+    return d.toLocaleDateString("en-ZM", {
+        day: "2-digit",
         month: "short",
-        day: "numeric"
+        year: "numeric"
     });
 }
 
 
-function daysDifference(dateString, todayString) {
-    const targetDate = dateFromString(dateString);
-    const todayDate = dateFromString(todayString);
-
-    if (!targetDate || !todayDate) {
-        return null;
-    }
-
-    const difference =
-        (targetDate.getTime() - todayDate.getTime()) /
-        (1000 * 60 * 60 * 24);
-
-    return Math.round(difference);
-}
-
-
-/* ============================================================
+/* ==========================================================
    PRIORITY
-   ============================================================ */
+   ========================================================== */
 
 function platformPriorityRank(priority) {
-    const value = String(priority || "").toLowerCase();
-
-    if (value === "urgent") {
-        return 1;
-    }
-
-    if (value === "important") {
-        return 2;
-    }
-
+    if (priority === "Urgent") return 1;
+    if (priority === "Important") return 2;
     return 3;
 }
 
 
-/* ============================================================
+/* ==========================================================
    ADD ALERT
-   ============================================================ */
+   ========================================================== */
 
 function addPlatformFarmAlert({
     farmId,
@@ -132,8 +124,8 @@ function addPlatformFarmAlert({
     type,
     title,
     message,
-    priority = "Important",
-    details = ""
+    date = null,
+    priority = "Important"
 }) {
     platformFarmAlerts.push({
         farmId,
@@ -141,93 +133,70 @@ function addPlatformFarmAlert({
         type,
         title,
         message,
-        priority,
-        details,
-        createdAt: new Date()
+        date,
+        priority
     });
 }
 
 
-/* ============================================================
+/* ==========================================================
    21-DAY CHECK
-   ============================================================ */
+   ========================================================== */
 
-async function loadPlatform21DayCheckAlerts(farm) {
-
-    const today = getPlatformToday();
-    const sevenDaysLater = addDaysToDate(today, 7);
+async function loadPlatform21DayAlerts(farms) {
 
     const { data, error } = await supabaseClient
         .from("gestation_records")
         .select(`
             id,
             sow_id,
-            service_date,
             check21,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .not("check21", "is", null)
-        .gte("check21", today)
-        .lte(
-            "check21",
-            `${sevenDaysLater.getFullYear()}-${String(
-                sevenDaysLater.getMonth() + 1
-            ).padStart(2, "0")}-${String(
-                sevenDaysLater.getDate()
-            ).padStart(2, "0")}`
-        );
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .not("check21", "is", null);
 
     if (error) {
-        console.error(
-            `Platform 21-Day Check error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform 21-Day Check error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const days = daysDifference(record.check21, today);
+        const days = platformDaysDifference(record.check21);
 
-        let priority = "Important";
+        if (days === null) return;
 
-        if (days === 0) {
-            priority = "Urgent";
-        }
+        if (days < 0 || days > 7) return;
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
 
         addPlatformFarmAlert({
             farmId: farm.id,
             farmName: farm.farm_name,
             type: "Gestation",
-            title: "21-Day Pregnancy Check",
+            title: "21-Day Check",
             message:
-                days === 0
-                    ? `21-day pregnancy check is due today for Sow ${record.sow_id}.`
-                    : `21-day pregnancy check is due in ${days} day${days === 1 ? "" : "s"} for Sow ${record.sow_id}.`,
-            priority,
-            details:
-                `Sow ID: ${record.sow_id} | Check Date: ${formatPlatformDate(record.check21)}`
+                `Sow ${record.sow_id} has a 21-day pregnancy check due.`,
+            date: record.check21,
+            priority: days <= 1 ? "Urgent" : "Important"
         });
     });
 }
 
 
-/* ============================================================
-   90-DAY FEED UP
-   ============================================================ */
+/* ==========================================================
+   90-DAY FEED
+   ========================================================== */
 
-async function loadPlatform90DayFeedAlerts(farm) {
-
-    const today = getPlatformToday();
-    const sevenDaysLater = addDaysToDate(today, 7);
-
-    const sevenDaysLaterString =
-        `${sevenDaysLater.getFullYear()}-${String(
-            sevenDaysLater.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-            sevenDaysLater.getDate()
-        ).padStart(2, "0")}`;
+async function loadPlatform90DayAlerts(farms) {
 
     const { data, error } = await supabaseClient
         .from("gestation_records")
@@ -237,28 +206,30 @@ async function loadPlatform90DayFeedAlerts(farm) {
             feed90,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .not("feed90", "is", null)
-        .gte("feed90", today)
-        .lte("feed90", sevenDaysLaterString);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .not("feed90", "is", null);
 
     if (error) {
-        console.error(
-            `Platform 90-Day Feed error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform 90-Day Feed error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const days = daysDifference(record.feed90, today);
+        const days = platformDaysDifference(record.feed90);
 
-        let priority = "Important";
+        if (days === null) return;
 
-        if (days === 0) {
-            priority = "Urgent";
-        }
+        if (days < 0 || days > 7) return;
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
 
         addPlatformFarmAlert({
             farmId: farm.id,
@@ -266,32 +237,19 @@ async function loadPlatform90DayFeedAlerts(farm) {
             type: "Gestation",
             title: "90-Day Feed Up",
             message:
-                days === 0
-                    ? `90-day feed-up action is due today for Sow ${record.sow_id}.`
-                    : `90-day feed-up action is due in ${days} day${days === 1 ? "" : "s"} for Sow ${record.sow_id}.`,
-            priority,
-            details:
-                `Sow ID: ${record.sow_id} | Feed-Up Date: ${formatPlatformDate(record.feed90)}`
+                `Sow ${record.sow_id} has reached the 90-day feed-up stage.`,
+            date: record.feed90,
+            priority: days <= 1 ? "Urgent" : "Important"
         });
     });
 }
 
 
-/* ============================================================
+/* ==========================================================
    101-DAY DEWORMER
-   ============================================================ */
+   ========================================================== */
 
-async function loadPlatform101DayDewormerAlerts(farm) {
-
-    const today = getPlatformToday();
-    const sevenDaysLater = addDaysToDate(today, 7);
-
-    const sevenDaysLaterString =
-        `${sevenDaysLater.getFullYear()}-${String(
-            sevenDaysLater.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-            sevenDaysLater.getDate()
-        ).padStart(2, "0")}`;
+async function loadPlatformDewormerAlerts(farms) {
 
     const { data, error } = await supabaseClient
         .from("gestation_records")
@@ -301,22 +259,30 @@ async function loadPlatform101DayDewormerAlerts(farm) {
             deworm101,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .not("deworm101", "is", null)
-        .gte("deworm101", today)
-        .lte("deworm101", sevenDaysLaterString);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .not("deworm101", "is", null);
 
     if (error) {
-        console.error(
-            `Platform 101-Day Dewormer error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform Dewormer error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const days = daysDifference(record.deworm101, today);
+        const days = platformDaysDifference(record.deworm101);
+
+        if (days === null) return;
+
+        if (days < 0 || days > 7) return;
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
 
         addPlatformFarmAlert({
             farmId: farm.id,
@@ -324,32 +290,19 @@ async function loadPlatform101DayDewormerAlerts(farm) {
             type: "Gestation",
             title: "101-Day Dewormer",
             message:
-                days === 0
-                    ? `101-day dewormer is due today for Sow ${record.sow_id}.`
-                    : `101-day dewormer is due in ${days} day${days === 1 ? "" : "s"} for Sow ${record.sow_id}.`,
-            priority: days === 0 ? "Urgent" : "Important",
-            details:
-                `Sow ID: ${record.sow_id} | Dewormer Date: ${formatPlatformDate(record.deworm101)}`
+                `Sow ${record.sow_id} has a 101-day dewormer activity due.`,
+            date: record.deworm101,
+            priority: days <= 1 ? "Urgent" : "Important"
         });
     });
 }
 
 
-/* ============================================================
+/* ==========================================================
    101-DAY LITTER GUARD
-   ============================================================ */
+   ========================================================== */
 
-async function loadPlatform101DayLitterGuardAlerts(farm) {
-
-    const today = getPlatformToday();
-    const sevenDaysLater = addDaysToDate(today, 7);
-
-    const sevenDaysLaterString =
-        `${sevenDaysLater.getFullYear()}-${String(
-            sevenDaysLater.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-            sevenDaysLater.getDate()
-        ).padStart(2, "0")}`;
+async function loadPlatformLitterGuardAlerts(farms) {
 
     const { data, error } = await supabaseClient
         .from("gestation_records")
@@ -359,22 +312,30 @@ async function loadPlatform101DayLitterGuardAlerts(farm) {
             litter101,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .not("litter101", "is", null)
-        .gte("litter101", today)
-        .lte("litter101", sevenDaysLaterString);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .not("litter101", "is", null);
 
     if (error) {
-        console.error(
-            `Platform 101-Day Litter Guard error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform Litter Guard error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const days = daysDifference(record.litter101, today);
+        const days = platformDaysDifference(record.litter101);
+
+        if (days === null) return;
+
+        if (days < 0 || days > 7) return;
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
 
         addPlatformFarmAlert({
             farmId: farm.id,
@@ -382,32 +343,19 @@ async function loadPlatform101DayLitterGuardAlerts(farm) {
             type: "Gestation",
             title: "101-Day Litter Guard",
             message:
-                days === 0
-                    ? `101-day Litter Guard action is due today for Sow ${record.sow_id}.`
-                    : `101-day Litter Guard action is due in ${days} day${days === 1 ? "" : "s"} for Sow ${record.sow_id}.`,
-            priority: days === 0 ? "Urgent" : "Important",
-            details:
-                `Sow ID: ${record.sow_id} | Litter Guard Date: ${formatPlatformDate(record.litter101)}`
+                `Sow ${record.sow_id} has a 101-day litter guard activity due.`,
+            date: record.litter101,
+            priority: days <= 1 ? "Urgent" : "Important"
         });
     });
 }
 
 
-/* ============================================================
+/* ==========================================================
    107-DAY ACTION DAY
-   ============================================================ */
+   ========================================================== */
 
-async function loadPlatformActionDayAlerts(farm) {
-
-    const today = getPlatformToday();
-    const sevenDaysLater = addDaysToDate(today, 7);
-
-    const sevenDaysLaterString =
-        `${sevenDaysLater.getFullYear()}-${String(
-            sevenDaysLater.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-            sevenDaysLater.getDate()
-        ).padStart(2, "0")}`;
+async function loadPlatformActionDayAlerts(farms) {
 
     const { data, error } = await supabaseClient
         .from("gestation_records")
@@ -417,22 +365,30 @@ async function loadPlatformActionDayAlerts(farm) {
             action_day,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .not("action_day", "is", null)
-        .gte("action_day", today)
-        .lte("action_day", sevenDaysLaterString);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .not("action_day", "is", null);
 
     if (error) {
-        console.error(
-            `Platform Action Day error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform Action Day error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const days = daysDifference(record.action_day, today);
+        const days = platformDaysDifference(record.action_day);
+
+        if (days === null) return;
+
+        if (days < 0 || days > 7) return;
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
 
         addPlatformFarmAlert({
             farmId: farm.id,
@@ -440,32 +396,19 @@ async function loadPlatformActionDayAlerts(farm) {
             type: "Gestation",
             title: "107-Day Action Day",
             message:
-                days === 0
-                    ? `107-day action day is due today for Sow ${record.sow_id}.`
-                    : `107-day action day is due in ${days} day${days === 1 ? "" : "s"} for Sow ${record.sow_id}.`,
-            priority: days === 0 ? "Urgent" : "Important",
-            details:
-                `Sow ID: ${record.sow_id} | Action Date: ${formatPlatformDate(record.action_day)}`
+                `Sow ${record.sow_id} has reached the 107-day action stage.`,
+            date: record.action_day,
+            priority: days <= 1 ? "Urgent" : "Important"
         });
     });
 }
 
 
-/* ============================================================
+/* ==========================================================
    114-DAY FARROWSURE
-   ============================================================ */
+   ========================================================== */
 
-async function loadPlatform114DayAlerts(farm) {
-
-    const today = getPlatformToday();
-    const sevenDaysLater = addDaysToDate(today, 7);
-
-    const sevenDaysLaterString =
-        `${sevenDaysLater.getFullYear()}-${String(
-            sevenDaysLater.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-            sevenDaysLater.getDate()
-        ).padStart(2, "0")}`;
+async function loadPlatformFarrowSureAlerts(farms) {
 
     const { data, error } = await supabaseClient
         .from("gestation_records")
@@ -475,22 +418,30 @@ async function loadPlatform114DayAlerts(farm) {
             farrowsure,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .not("farrowsure", "is", null)
-        .gte("farrowsure", today)
-        .lte("farrowsure", sevenDaysLaterString);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .not("farrowsure", "is", null);
 
     if (error) {
-        console.error(
-            `Platform FarrowSure error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform FarrowSure error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const days = daysDifference(record.farrowsure, today);
+        const days = platformDaysDifference(record.farrowsure);
+
+        if (days === null) return;
+
+        if (days < 0 || days > 7) return;
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
 
         addPlatformFarmAlert({
             farmId: farm.id,
@@ -498,32 +449,19 @@ async function loadPlatform114DayAlerts(farm) {
             type: "Gestation",
             title: "114-Day FarrowSure",
             message:
-                days === 0
-                    ? `114-day FarrowSure action is due today for Sow ${record.sow_id}.`
-                    : `114-day FarrowSure action is due in ${days} day${days === 1 ? "" : "s"} for Sow ${record.sow_id}.`,
-            priority: days === 0 ? "Urgent" : "Important",
-            details:
-                `Sow ID: ${record.sow_id} | FarrowSure Date: ${formatPlatformDate(record.farrowsure)}`
+                `Sow ${record.sow_id} has reached the 114-day FarrowSure stage.`,
+            date: record.farrowsure,
+            priority: days <= 1 ? "Urgent" : "Important"
         });
     });
 }
 
 
-/* ============================================================
-   EXPECTED FARROWING / DELIVERY
-   ============================================================ */
+/* ==========================================================
+   EXPECTED DELIVERY / FARROWING
+   ========================================================== */
 
-async function loadPlatformDeliveryAlerts(farm) {
-
-    const today = getPlatformToday();
-    const sevenDaysLater = addDaysToDate(today, 7);
-
-    const sevenDaysLaterString =
-        `${sevenDaysLater.getFullYear()}-${String(
-            sevenDaysLater.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-            sevenDaysLater.getDate()
-        ).padStart(2, "0")}`;
+async function loadPlatformDeliveryAlerts(farms) {
 
     const { data, error } = await supabaseClient
         .from("gestation_records")
@@ -533,22 +471,36 @@ async function loadPlatformDeliveryAlerts(farm) {
             delivery_date,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .not("delivery_date", "is", null)
-        .gte("delivery_date", today)
-        .lte("delivery_date", sevenDaysLaterString);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .not("delivery_date", "is", null);
 
     if (error) {
-        console.error(
-            `Platform Delivery Date error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform Delivery Date error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const days = daysDifference(record.delivery_date, today);
+        const days = platformDaysDifference(record.delivery_date);
+
+        if (days === null) return;
+
+        if (days < -7 || days > 7) return;
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
+
+        let priority = "Important";
+
+        if (days <= 0) {
+            priority = "Urgent";
+        }
 
         addPlatformFarmAlert({
             farmId: farm.id,
@@ -556,32 +508,71 @@ async function loadPlatformDeliveryAlerts(farm) {
             type: "Gestation",
             title: "Expected Farrowing",
             message:
-                days === 0
-                    ? `Expected farrowing is today for Sow ${record.sow_id}.`
-                    : `Expected farrowing is in ${days} day${days === 1 ? "" : "s"} for Sow ${record.sow_id}.`,
-            priority: days === 0 ? "Urgent" : "Important",
-            details:
-                `Sow ID: ${record.sow_id} | Expected Date: ${formatPlatformDate(record.delivery_date)}`
+                days < 0
+                    ? `Sow ${record.sow_id} is ${Math.abs(days)} day(s) past the expected farrowing date.`
+                    : days === 0
+                        ? `Sow ${record.sow_id} is expected to farrow today.`
+                        : `Sow ${record.sow_id} is expected to farrow in ${days} day(s).`,
+            date: record.delivery_date,
+            priority
         });
     });
 }
 
 
-/* ============================================================
+/* ==========================================================
+   NOT SERVICED
+   ========================================================== */
+
+async function loadPlatformNotServicedAlerts(farms) {
+
+    const { data, error } = await supabaseClient
+        .from("gestation_records")
+        .select(`
+            id,
+            sow_id,
+            status,
+            service_date,
+            farm_id
+        `)
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .eq("status", "Pregnant")
+        .is("service_date", null);
+
+    if (error) {
+        console.error("Platform Not Serviced error:", error);
+        return;
+    }
+
+    data.forEach(record => {
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
+
+        addPlatformFarmAlert({
+            farmId: farm.id,
+            farmName: farm.farm_name,
+            type: "Gestation",
+            title: "Not Serviced",
+            message:
+                `Sow ${record.sow_id} is marked Pregnant but has no service date.`,
+            priority: "Urgent"
+        });
+    });
+}
+
+
+/* ==========================================================
    FARROWING INTERVENTIONS
-   ============================================================ */
+   ========================================================== */
 
-async function loadPlatformFarrowingInterventionAlerts(farm) {
-
-    const today = getPlatformToday();
-    const sevenDaysLater = addDaysToDate(today, 7);
-
-    const sevenDaysLaterString =
-        `${sevenDaysLater.getFullYear()}-${String(
-            sevenDaysLater.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-            sevenDaysLater.getDate()
-        ).padStart(2, "0")}`;
+async function loadPlatformFarrowingAlerts(farms) {
 
     const { data, error } = await supabaseClient
         .from("farrowing_records")
@@ -594,225 +585,188 @@ async function loadPlatformFarrowingInterventionAlerts(farm) {
             iron_date,
             farm_id
         `)
-        .eq("farm_id", farm.id);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        );
 
     if (error) {
-        console.error(
-            `Platform Farrowing Intervention error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform Farrowing error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const interventions = [
-            {
-                field: "iron_date",
-                title: "Iron Injection",
-                label: "Iron injection",
-                date: record.iron_date
-            },
-            {
-                field: "teeth_date",
-                title: "Teeth Clipping",
-                label: "Teeth clipping",
-                date: record.teeth_date
-            },
-            {
-                field: "tail_date",
-                title: "Tail Docking",
-                label: "Tail docking",
-                date: record.tail_date
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
+
+
+        /* IRON */
+
+        if (record.iron_date) {
+
+            const days = platformDaysDifference(record.iron_date);
+
+            if (days !== null && days >= -7 && days <= 7) {
+
+                addPlatformFarmAlert({
+                    farmId: farm.id,
+                    farmName: farm.farm_name,
+                    type: "Farrowing",
+                    title: "Iron Injection",
+                    message:
+                        `Iron injection is due for sow ${record.sow_id}.`,
+                    date: record.iron_date,
+                    priority: days <= 0 ? "Urgent" : "Important"
+                });
             }
-        ];
+        }
 
-        interventions.forEach(intervention => {
 
-            if (!intervention.date) {
-                return;
+        /* TEETH */
+
+        if (record.teeth_date) {
+
+            const days = platformDaysDifference(record.teeth_date);
+
+            if (days !== null && days >= -7 && days <= 7) {
+
+                addPlatformFarmAlert({
+                    farmId: farm.id,
+                    farmName: farm.farm_name,
+                    type: "Farrowing",
+                    title: "Teeth Clipping",
+                    message:
+                        `Teeth clipping is due for sow ${record.sow_id}.`,
+                    date: record.teeth_date,
+                    priority: days <= 0 ? "Urgent" : "Important"
+                });
             }
+        }
 
-            const days = daysDifference(
-                intervention.date,
-                today
-            );
 
-            if (
-                days === null ||
-                days < 0 ||
-                days > 7
-            ) {
-                return;
+        /* TAIL */
+
+        if (record.tail_date) {
+
+            const days = platformDaysDifference(record.tail_date);
+
+            if (days !== null && days >= -7 && days <= 7) {
+
+                addPlatformFarmAlert({
+                    farmId: farm.id,
+                    farmName: farm.farm_name,
+                    type: "Farrowing",
+                    title: "Tail Docking",
+                    message:
+                        `Tail docking is due for sow ${record.sow_id}.`,
+                    date: record.tail_date,
+                    priority: days <= 0 ? "Urgent" : "Important"
+                });
             }
-
-            addPlatformFarmAlert({
-                farmId: farm.id,
-                farmName: farm.farm_name,
-                type: "Farrowing",
-                title: intervention.title,
-                message:
-                    days === 0
-                        ? `${intervention.label} is due today for Sow ${record.sow_id}.`
-                        : `${intervention.label} is due in ${days} day${days === 1 ? "" : "s"} for Sow ${record.sow_id}.`,
-                priority: days === 0 ? "Urgent" : "Important",
-                details:
-                    `Sow ID: ${record.sow_id} | Date: ${formatPlatformDate(intervention.date)}`
-            });
-        });
+        }
     });
 }
 
 
-/* ============================================================
-   WEANING ALERTS
-   ============================================================ */
+/* ==========================================================
+   WEANING
+   IMPORTANT:
+   USES weaning_records
+   ========================================================== */
 
-async function loadPlatformWeaningAlerts(farm) {
-
-    const today = getPlatformToday();
-
-    const sevenDaysBack = addDaysToDate(today, -7);
-    const sevenDaysForward = addDaysToDate(today, 7);
-
-    const sevenDaysBackString =
-        `${sevenDaysBack.getFullYear()}-${String(
-            sevenDaysBack.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-            sevenDaysBack.getDate()
-        ).padStart(2, "0")}`;
-
-    const sevenDaysForwardString =
-        `${sevenDaysForward.getFullYear()}-${String(
-            sevenDaysForward.getMonth() + 1
-        ).padStart(2, "0")}-${String(
-            sevenDaysForward.getDate()
-        ).padStart(2, "0")}`;
+async function loadPlatformWeaningAlerts(farms) {
 
     const { data, error } = await supabaseClient
         .from("weaning_records")
         .select(`
             id,
             sow_id,
-            farrow_date,
             weaning_date,
             total_weaned,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .not("weaning_date", "is", null)
-        .gte("weaning_date", sevenDaysBackString)
-        .lte("weaning_date", sevenDaysForwardString);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .not("weaning_date", "is", null);
 
     if (error) {
-        console.error(
-            `Platform Weaning error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform Weaning error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const days = daysDifference(
-            record.weaning_date,
-            today
+        const days = platformDaysDifference(record.weaning_date);
+
+        if (days === null) return;
+
+        /*
+           Show:
+           - up to 7 days overdue
+           - today
+           - next 7 days
+        */
+
+        if (days < -7 || days > 7) return;
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
         );
 
-        if (days === null) {
-            return;
-        }
-
-        if (days < -7 || days > 7) {
-            return;
-        }
+        if (!farm) return;
 
         let priority = "Important";
-
-        if (days <= 0) {
-            priority = "Urgent";
-        }
-
         let message = "";
 
-        if (days === 0) {
-            message =
-                `Weaning is due today for Sow ${record.sow_id}.`;
-        } else if (days > 0) {
-            message =
-                `Weaning is due in ${days} day${days === 1 ? "" : "s"} for Sow ${record.sow_id}.`;
-        } else {
-            const overdueDays = Math.abs(days);
+        if (days < 0) {
+
+            priority = "Urgent";
 
             message =
-                `Weaning for Sow ${record.sow_id} is ${overdueDays} day${overdueDays === 1 ? "" : "s"} overdue.`;
+                `Weaning for sow ${record.sow_id} is ${Math.abs(days)} day(s) overdue.`;
+
+        } else if (days === 0) {
+
+            priority = "Urgent";
+
+            message =
+                `Weaning for sow ${record.sow_id} is due today.`;
+
+        } else {
+
+            priority = "Important";
+
+            message =
+                `Weaning for sow ${record.sow_id} is due in ${days} day(s).`;
         }
 
         addPlatformFarmAlert({
             farmId: farm.id,
             farmName: farm.farm_name,
             type: "Weaning",
-            title: "Weaning Alert",
-            message,
-            priority,
-            details:
-                `Sow ID: ${record.sow_id} | Weaning Date: ${formatPlatformDate(record.weaning_date)} | Total Weaned: ${record.total_weaned ?? 0}`
-        });
-    });
-}
-
-
-/* ============================================================
-   NOT SERVICED
-   ============================================================ */
-
-async function loadPlatformNotServicedAlerts(farm) {
-
-    const { data, error } = await supabaseClient
-        .from("gestation_records")
-        .select(`
-            id,
-            sow_id,
-            status,
-            service_date,
-            farm_id
-        `)
-        .eq("farm_id", farm.id)
-        .eq("status", "Pregnant")
-        .is("service_date", null);
-
-    if (error) {
-        console.error(
-            `Platform Not Serviced error for ${farm.farm_name}:`,
-            error
-        );
-        return;
-    }
-
-    (data || []).forEach(record => {
-
-        addPlatformFarmAlert({
-            farmId: farm.id,
-            farmName: farm.farm_name,
-            type: "Gestation",
-            title: "Not Serviced",
+            title: "Weaning Due",
             message:
-                `Sow ${record.sow_id} is marked Pregnant but has no service date recorded.`,
-            priority: "Urgent",
-            details:
-                `Sow ID: ${record.sow_id} | Status: ${record.status} | Service Date: Not Recorded`
+                `${message} Total Weaned: ${record.total_weaned ?? 0}.`,
+            date: record.weaning_date,
+            priority
         });
     });
 }
 
 
-/* ============================================================
-   FEEDING ALERTS
-   ============================================================ */
+/* ==========================================================
+   FEEDING
+   ========================================================== */
 
-async function loadPlatformFeedingAlerts(farm) {
+async function loadPlatformFeedingAlerts(farms) {
 
-    const today = getPlatformToday();
+    const todayString = platformDateString(new Date());
 
     const { data, error } = await supabaseClient
         .from("feeding_records")
@@ -828,22 +782,28 @@ async function loadPlatformFeedingAlerts(farm) {
             quantity,
             morning_feeding,
             evening_feeding,
-            water_available,
             responsible_person,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .eq("feeding_date", today);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .eq("feeding_date", todayString);
 
     if (error) {
-        console.error(
-            `Platform Feeding error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform Feeding error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
+
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
+
 
         if (record.morning_feeding) {
 
@@ -853,12 +813,12 @@ async function loadPlatformFeedingAlerts(farm) {
                 type: "Feeding",
                 title: "Morning Feeding",
                 message:
-                    `Morning feeding is scheduled for Pen ${record.pen_number || "N/A"}.`,
-                priority: "Important",
-                details:
-                    `Pen: ${record.pen_number || "N/A"} | Feed: ${record.feed_type || "N/A"} | Quantity: ${record.quantity ?? "N/A"} | Time: ${record.morning_feeding}`
+                    `Pen ${record.pen_number || "N/A"} — ${record.feed_type || "Feed"} — Quantity: ${record.quantity ?? 0}. Morning feeding scheduled for ${record.morning_feeding}.`,
+                date: record.feeding_date,
+                priority: "Important"
             });
         }
+
 
         if (record.evening_feeding) {
 
@@ -868,23 +828,22 @@ async function loadPlatformFeedingAlerts(farm) {
                 type: "Feeding",
                 title: "Evening Feeding",
                 message:
-                    `Evening feeding is scheduled for Pen ${record.pen_number || "N/A"}.`,
-                priority: "Important",
-                details:
-                    `Pen: ${record.pen_number || "N/A"} | Feed: ${record.feed_type || "N/A"} | Quantity: ${record.quantity ?? "N/A"} | Time: ${record.evening_feeding}`
+                    `Pen ${record.pen_number || "N/A"} — ${record.feed_type || "Feed"} — Quantity: ${record.quantity ?? 0}. Evening feeding scheduled for ${record.evening_feeding}.`,
+                date: record.feeding_date,
+                priority: "Important"
             });
         }
     });
 }
 
 
-/* ============================================================
-   WATER ALERTS
-   ============================================================ */
+/* ==========================================================
+   WATER
+   ========================================================== */
 
-async function loadPlatformWaterAlerts(farm) {
+async function loadPlatformWaterAlerts(farms) {
 
-    const today = getPlatformToday();
+    const todayString = platformDateString(new Date());
 
     const { data, error } = await supabaseClient
         .from("feeding_records")
@@ -896,255 +855,116 @@ async function loadPlatformWaterAlerts(farm) {
             water_available,
             farm_id
         `)
-        .eq("farm_id", farm.id)
-        .eq("feeding_date", today);
+        .in(
+            "farm_id",
+            farms.map(f => f.id)
+        )
+        .eq("feeding_date", todayString);
 
     if (error) {
-        console.error(
-            `Platform Water error for ${farm.farm_name}:`,
-            error
-        );
+        console.error("Platform Water error:", error);
         return;
     }
 
-    (data || []).forEach(record => {
+    data.forEach(record => {
 
-        const waterValue =
+        const water =
             String(record.water_available || "")
                 .trim()
                 .toLowerCase();
 
         const waterIsAvailable =
-            waterValue === "yes" ||
-            waterValue === "available" ||
-            waterValue === "true";
+            water === "yes" ||
+            water === "available" ||
+            water === "true";
 
-        if (!waterIsAvailable) {
+        if (waterIsAvailable) return;
 
-            addPlatformFarmAlert({
-                farmId: farm.id,
-                farmName: farm.farm_name,
-                type: "Water",
-                title: "Water Availability Check",
-                message:
-                    `Water availability requires attention for Pen ${record.pen_number || "N/A"}.`,
-                priority: "Urgent",
-                details:
-                    `Pen: ${record.pen_number || "N/A"} | Water Available: ${record.water_available || "Not Recorded"}`
-            });
-        }
+        const farm = farms.find(
+            f => Number(f.id) === Number(record.farm_id)
+        );
+
+        if (!farm) return;
+
+        addPlatformFarmAlert({
+            farmId: farm.id,
+            farmName: farm.farm_name,
+            type: "Water",
+            title: "Water Availability Check",
+            message:
+                `Water availability needs attention in ${record.pen_number || "the feeding area"}.`,
+            date: record.feeding_date,
+            priority: "Urgent"
+        });
     });
 }
 
 
-/* ============================================================
-   LOAD ALERTS FOR ONE FARM
-   ============================================================ */
+/* ==========================================================
+   SORT
+   ========================================================== */
 
-async function loadAlertsForPlatformFarm(farm) {
+function sortPlatformFarmAlerts() {
 
-    await loadPlatform21DayCheckAlerts(farm);
+    platformFarmAlerts.sort((a, b) => {
 
-    await loadPlatform90DayFeedAlerts(farm);
+        const priorityDifference =
+            platformPriorityRank(a.priority) -
+            platformPriorityRank(b.priority);
 
-    await loadPlatform101DayDewormerAlerts(farm);
+        if (priorityDifference !== 0) {
+            return priorityDifference;
+        }
 
-    await loadPlatform101DayLitterGuardAlerts(farm);
+        const farmDifference =
+            String(a.farmName || "")
+                .localeCompare(String(b.farmName || ""));
 
-    await loadPlatformActionDayAlerts(farm);
+        if (farmDifference !== 0) {
+            return farmDifference;
+        }
 
-    await loadPlatform114DayAlerts(farm);
-
-    await loadPlatformDeliveryAlerts(farm);
-
-    await loadPlatformFarrowingInterventionAlerts(farm);
-
-    await loadPlatformWeaningAlerts(farm);
-
-    await loadPlatformNotServicedAlerts(farm);
-
-    await loadPlatformFeedingAlerts(farm);
-
-    await loadPlatformWaterAlerts(farm);
+        return String(a.title || "")
+            .localeCompare(String(b.title || ""));
+    });
 }
 
 
-/* ============================================================
-   LOAD ALL PLATFORM FARM ALERTS
-   ============================================================ */
-
-async function loadPlatformFarmAlerts() {
-
-    console.log("==============================================");
-    console.log("MUNKA PIGGERY - PLATFORM FARM ALERTS");
-    console.log("Loading alerts for all farms...");
-    console.log("==============================================");
-
-    platformFarmAlerts = [];
-
-    if (typeof supabaseClient === "undefined" || !supabaseClient) {
-
-        console.error(
-            "Supabase client is not available."
-        );
-
-        renderPlatformFarmAlerts();
-
-        return;
-    }
-
-    try {
-
-        const { data: farms, error: farmsError } =
-            await supabaseClient
-                .from("farms")
-                .select(`
-                    id,
-                    farm_name,
-                    status
-                `)
-                .order("farm_name", {
-                    ascending: true
-                });
-
-        if (farmsError) {
-
-            console.error(
-                "Could not load farms for platform alerts:",
-                farmsError
-            );
-
-            renderPlatformFarmAlerts();
-
-            return;
-        }
-
-        if (!farms || farms.length === 0) {
-
-            console.log(
-                "No farms found."
-            );
-
-            renderPlatformFarmAlerts();
-
-            return;
-        }
-
-        console.log(
-            `Found ${farms.length} farm(s).`
-        );
-
-
-        for (const farm of farms) {
-
-            console.log(
-                `Loading alerts for Farm ${farm.id}: ${farm.farm_name}`
-            );
-
-            try {
-
-                await loadAlertsForPlatformFarm(farm);
-
-            } catch (farmError) {
-
-                console.error(
-                    `Error loading alerts for Farm ${farm.id} - ${farm.farm_name}:`,
-                    farmError
-                );
-            }
-        }
-
-
-        /* ====================================================
-           SORT
-           ==================================================== */
-
-        platformFarmAlerts.sort((a, b) => {
-
-            const priorityDifference =
-                platformPriorityRank(a.priority) -
-                platformPriorityRank(b.priority);
-
-            if (priorityDifference !== 0) {
-                return priorityDifference;
-            }
-
-            const farmDifference =
-                String(a.farmName || "")
-                    .localeCompare(
-                        String(b.farmName || "")
-                    );
-
-            if (farmDifference !== 0) {
-                return farmDifference;
-            }
-
-            return String(a.title || "")
-                .localeCompare(
-                    String(b.title || "")
-                );
-        });
-
-
-        console.log(
-            `Platform alerts loaded: ${platformFarmAlerts.length}`
-        );
-
-        renderPlatformFarmAlerts();
-
-    } catch (error) {
-
-        console.error(
-            "Unexpected error loading platform farm alerts:",
-            error
-        );
-
-        renderPlatformFarmAlerts();
-    }
-}
-
-
-/* ============================================================
-   RENDER PLATFORM FARM ALERTS
-   ============================================================ */
+/* ==========================================================
+   RENDER
+   ========================================================== */
 
 function renderPlatformFarmAlerts() {
 
     const container =
-        document.getElementById("platformFarmAlerts");
+        document.getElementById("platformFarmAlertsContainer") ||
+        document.querySelector(".platform-farm-alerts-container");
 
     if (!container) {
-
         console.warn(
-            "Element #platformFarmAlerts was not found."
+            "Platform Farm Alerts container was not found."
         );
-
         return;
     }
 
 
-    /* ========================================================
-       NO ALERTS
-       ======================================================== */
+    const countElement =
+        document.getElementById("platformFarmAlertsCount") ||
+        document.querySelector(".platform-farm-alerts-count");
 
-    if (
-        !platformFarmAlerts ||
-        platformFarmAlerts.length === 0
-    ) {
+
+    if (countElement) {
+        countElement.textContent = platformFarmAlerts.length;
+    }
+
+
+    if (platformFarmAlerts.length === 0) {
 
         container.innerHTML = `
-            <div class="platform-no-alerts">
-                <div class="platform-no-alerts-icon">
-                    ✅
-                </div>
-
-                <div class="platform-no-alerts-title">
-                    No Farm Alerts
-                </div>
-
-                <div class="platform-no-alerts-text">
-                    There are currently no farm alerts requiring attention.
-                </div>
+            <div class="platform-alert-empty">
+                <div class="platform-alert-empty-icon">✓</div>
+                <h3>No Farm Alerts</h3>
+                <p>No current alerts were found across the active farms.</p>
             </div>
         `;
 
@@ -1152,186 +972,363 @@ function renderPlatformFarmAlerts() {
     }
 
 
-    /* ========================================================
-       ALERT COUNT
-       ======================================================== */
+    container.innerHTML =
+        platformFarmAlerts.map(alert => {
 
-    const urgentCount =
-        platformFarmAlerts.filter(
-            alert => alert.priority === "Urgent"
-        ).length;
+            const priorityClass =
+                String(alert.priority || "Important")
+                    .toLowerCase();
 
-    const importantCount =
-        platformFarmAlerts.filter(
-            alert => alert.priority === "Important"
-        ).length;
+            return `
+                <div class="platform-alert-card ${platformEscapeHTML(priorityClass)}">
 
+                    <div class="platform-alert-top">
 
-    let html = `
-        <div class="platform-alert-summary">
+                        <div class="platform-alert-farm">
+                            🏠
+                            ${platformEscapeHTML(alert.farmName)}
+                        </div>
 
-            <div class="platform-alert-summary-item">
-                <strong>${platformFarmAlerts.length}</strong>
-                <span>Total Alerts</span>
-            </div>
+                        <div class="platform-alert-priority ${platformEscapeHTML(priorityClass)}">
+                            ${platformEscapeHTML(alert.priority)}
+                        </div>
 
-            <div class="platform-alert-summary-item urgent">
-                <strong>${urgentCount}</strong>
-                <span>Urgent</span>
-            </div>
-
-            <div class="platform-alert-summary-item important">
-                <strong>${importantCount}</strong>
-                <span>Important</span>
-            </div>
-
-        </div>
-
-        <div class="platform-farm-alert-list">
-    `;
-
-
-    /* ========================================================
-       ALERT CARDS
-       ======================================================== */
-
-    platformFarmAlerts.forEach(alert => {
-
-        const priorityClass =
-            String(alert.priority || "Important")
-                .toLowerCase()
-                .replace(/\s+/g, "-");
-
-
-        html += `
-            <div class="platform-farm-alert-card ${priorityClass}">
-
-                <div class="platform-farm-alert-header">
-
-                    <div class="platform-farm-alert-priority">
-                        ${alert.priority === "Urgent" ? "🔴" : "🟡"}
-                        ${escapePlatformAlertHTML(alert.priority)}
                     </div>
 
-                    <div class="platform-farm-alert-type">
-                        ${escapePlatformAlertHTML(alert.type)}
+
+                    <div class="platform-alert-title">
+                        ${platformEscapeHTML(alert.title)}
+                    </div>
+
+
+                    <div class="platform-alert-message">
+                        ${platformEscapeHTML(alert.message)}
+                    </div>
+
+
+                    <div class="platform-alert-meta">
+
+                        <span>
+                            📌 ${platformEscapeHTML(alert.type)}
+                        </span>
+
+                        ${
+                            alert.date
+                                ? `
+                                    <span>
+                                        📅 ${platformFormatDate(alert.date)}
+                                    </span>
+                                  `
+                                : ""
+                        }
+
+                        <span>
+                            Farm ID: ${platformEscapeHTML(alert.farmId)}
+                        </span>
+
                     </div>
 
                 </div>
-
-
-                <div class="platform-farm-alert-farm">
-
-                    🐖
-                    <strong>
-                        ${escapePlatformAlertHTML(alert.farmName)}
-                    </strong>
-
-                    <span>
-                        Farm ID:
-                        ${escapePlatformAlertHTML(alert.farmId)}
-                    </span>
-
-                </div>
-
-
-                <div class="platform-farm-alert-title">
-                    ${escapePlatformAlertHTML(alert.title)}
-                </div>
-
-
-                <div class="platform-farm-alert-message">
-                    ${escapePlatformAlertHTML(alert.message)}
-                </div>
-
-
-                ${
-                    alert.details
-                        ? `
-                            <div class="platform-farm-alert-details">
-                                ${escapePlatformAlertHTML(alert.details)}
-                            </div>
-                          `
-                        : ""
-                }
-
-            </div>
-        `;
-    });
-
-
-    html += `
-        </div>
-    `;
-
-
-    container.innerHTML = html;
+            `;
+        }).join("");
 }
 
 
-/* ============================================================
-   REFRESH BUTTON
-   ============================================================ */
+/* ==========================================================
+   MAIN LOADER
+   ========================================================== */
 
-async function refreshPlatformFarmAlerts() {
+async function loadPlatformFarmAlerts() {
 
-    const button =
-        document.getElementById("refreshPlatformFarmAlerts");
+    console.log(
+        "=================================================="
+    );
 
-    if (button) {
+    console.log(
+        "MUNKA PIGGERY PLATFORM FARM ALERTS"
+    );
 
-        button.disabled = true;
+    console.log(
+        "Checking active farms..."
+    );
 
-        button.dataset.originalText =
-            button.textContent;
 
-        button.textContent =
-            "⏳ Refreshing...";
+    platformFarmAlerts = [];
+
+
+    const statusElement =
+        document.getElementById("platformFarmAlertsStatus") ||
+        document.querySelector(".platform-farm-alerts-status");
+
+
+    const container =
+        document.getElementById("platformFarmAlertsContainer") ||
+        document.querySelector(".platform-farm-alerts-container");
+
+
+    if (statusElement) {
+        statusElement.textContent =
+            "Checking farm alerts...";
+    }
+
+
+    if (container) {
+
+        container.innerHTML = `
+            <div class="platform-alert-loading">
+                <div class="platform-alert-loading-spinner"></div>
+                <p>Checking farm alerts...</p>
+            </div>
+        `;
     }
 
 
     try {
 
-        await loadPlatformFarmAlerts();
+        /* ==================================================
+           GET ALL ACTIVE FARMS
+           ================================================== */
 
-    } finally {
+        const {
+            data: farms,
+            error: farmsError
+        } = await supabaseClient
+            .from("farms")
+            .select(`
+                id,
+                farm_name,
+                status
+            `)
+            .eq("status", "Active")
+            .order("farm_name", {
+                ascending: true
+            });
 
-        if (button) {
 
-            button.disabled = false;
+        if (farmsError) {
+            throw farmsError;
+        }
 
-            button.textContent =
-                button.dataset.originalText ||
-                "🔄 Refresh Alerts";
+
+        if (!farms || farms.length === 0) {
+
+            console.log(
+                "No active farms found."
+            );
+
+            renderPlatformFarmAlerts();
+
+            if (statusElement) {
+                statusElement.textContent =
+                    "0 active farms";
+            }
+
+            return;
+        }
+
+
+        console.log(
+            `Active farms found: ${farms.length}`
+        );
+
+
+        console.table(
+            farms.map(farm => ({
+                "Farm ID": farm.id,
+                "Farm Name": farm.farm_name,
+                "Status": farm.status
+            }))
+        );
+
+
+        /* ==================================================
+           IMPORTANT:
+           WE CHECK THE ALERT TABLES USING farm_id IN (...)
+           RATHER THAN REPEATING THE SAME QUERY FOR EACH FARM.
+           ================================================== */
+
+        await Promise.all([
+
+            loadPlatform21DayAlerts(farms),
+
+            loadPlatform90DayAlerts(farms),
+
+            loadPlatformDewormerAlerts(farms),
+
+            loadPlatformLitterGuardAlerts(farms),
+
+            loadPlatformActionDayAlerts(farms),
+
+            loadPlatformFarrowSureAlerts(farms),
+
+            loadPlatformDeliveryAlerts(farms),
+
+            loadPlatformNotServicedAlerts(farms),
+
+            loadPlatformFarrowingAlerts(farms),
+
+            loadPlatformWeaningAlerts(farms),
+
+            loadPlatformFeedingAlerts(farms),
+
+            loadPlatformWaterAlerts(farms)
+
+        ]);
+
+
+        sortPlatformFarmAlerts();
+
+
+        console.log(
+            `Platform alerts found: ${platformFarmAlerts.length}`
+        );
+
+
+        console.table(
+            platformFarmAlerts.map(alert => ({
+                "Farm": alert.farmName,
+                "Farm ID": alert.farmId,
+                "Type": alert.type,
+                "Alert": alert.title,
+                "Priority": alert.priority,
+                "Date": alert.date
+            }))
+        );
+
+
+        renderPlatformFarmAlerts();
+
+
+        if (statusElement) {
+
+            statusElement.textContent =
+                `${platformFarmAlerts.length} alert(s) across ${farms.length} active farm(s)`;
+        }
+
+    } catch (error) {
+
+        console.error(
+            "PLATFORM FARM ALERTS FAILED:",
+            error
+        );
+
+
+        if (statusElement) {
+            statusElement.textContent =
+                "Unable to load farm alerts";
+        }
+
+
+        if (container) {
+
+            container.innerHTML = `
+                <div class="platform-alert-error">
+
+                    <div class="platform-alert-error-icon">
+                        ⚠️
+                    </div>
+
+                    <h3>Farm Alerts Could Not Be Loaded</h3>
+
+                    <p>
+                        The platform could not retrieve farm alert information.
+                    </p>
+
+                    <small>
+                        ${platformEscapeHTML(
+                            error?.message || "Unknown database error"
+                        )}
+                    </small>
+
+                </div>
+            `;
         }
     }
 }
 
 
-/* ============================================================
-   GLOBAL FUNCTIONS
-   ============================================================ */
+/* ==========================================================
+   REFRESH BUTTON
+   ========================================================== */
 
-window.loadPlatformFarmAlerts =
-    loadPlatformFarmAlerts;
+function initializePlatformFarmAlerts() {
 
-window.refreshPlatformFarmAlerts =
-    refreshPlatformFarmAlerts;
+    const refreshButton =
+        document.getElementById("refreshPlatformFarmAlerts") ||
+        document.getElementById("refreshFarmAlerts") ||
+        document.querySelector(".platform-refresh-alerts-btn");
 
 
-/* ============================================================
-   INITIALIZATION
-   ============================================================ */
+    if (refreshButton) {
+
+        refreshButton.addEventListener(
+            "click",
+            async function () {
+
+                refreshButton.disabled = true;
+
+                const originalText =
+                    refreshButton.innerHTML;
+
+                refreshButton.innerHTML =
+                    "⏳ Checking...";
+
+
+                try {
+
+                    await loadPlatformFarmAlerts();
+
+                } finally {
+
+                    refreshButton.disabled = false;
+
+                    refreshButton.innerHTML =
+                        originalText;
+                }
+            }
+        );
+    }
+
+
+    /*
+       INITIAL CHECK ONLY.
+
+       The dashboard does NOT continuously check farms.
+       It checks once when the page loads.
+       The Super Admin can manually refresh.
+    */
+
+    loadPlatformFarmAlerts();
+}
+
+
+/* ==========================================================
+   DOM READY
+   ========================================================== */
 
 document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-        console.log(
-            "Platform Farm Alerts initialized."
+        /*
+           Give the dashboard a moment to create its sections
+           before loading the alerts.
+        */
+
+        setTimeout(
+            initializePlatformFarmAlerts,
+            100
         );
-
-        loadPlatformFarmAlerts();
-
     }
 );
+
+
+/* ==========================================================
+   GLOBAL ACCESS
+   ========================================================== */
+
+window.loadPlatformFarmAlerts =
+    loadPlatformFarmAlerts;
+
+window.renderPlatformFarmAlerts =
+    renderPlatformFarmAlerts;
