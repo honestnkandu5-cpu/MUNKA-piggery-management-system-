@@ -3453,4 +3453,403 @@ html {
         min-height: 44px;
         font-size: 15px;
     }
+}/* ==========================================================
+   MUNKA PIGGERY TECHNOLOGY
+   PROFESSIONAL DASHBOARD NIGHT MODE
+========================================================== */
+
+
+/* ==========================================================
+   THEME BUTTON
+========================================================== */
+
+.theme-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 44px;
+    padding: 10px 16px;
+
+    border: 1px solid #2e7d32;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #1b5e20;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    transform: translateY(-1px);
+}
+
+.theme-toggle-btn:active {
+    transform: translateY(0);
+}
+
+.theme-toggle-btn span:first-child {
+    font-size: 19px;
+}
+
+
+/* ==========================================================
+   DARK MODE — MAIN PAGE
+========================================================== */
+
+body.dark-mode {
+    background: #0d1511 !important;
+    color: #e8f1eb !important;
+}
+
+
+/* ==========================================================
+   TOP BAR
+========================================================== */
+
+body.dark-mode .topbar {
+    background: #102319 !important;
+    border-bottom-color: #294235 !important;
+}
+
+body.dark-mode .brand h1 {
+    color: #ffffff !important;
+}
+
+body.dark-mode .brand span {
+    color: #b9c9bf !important;
+}
+
+
+/* ==========================================================
+   THEME BUTTON IN DARK MODE
+========================================================== */
+
+body.dark-mode .theme-toggle-btn {
+    background: #1c3024 !important;
+    color: #e8f5ec !important;
+    border-color: #4c8f62 !important;
+}
+
+
+/* ==========================================================
+   WELCOME SECTION
+========================================================== */
+
+body.dark-mode .welcome-section {
+    background: #16251c !important;
+    color: #e8f1eb !important;
+    border-color: #2b4033 !important;
+}
+
+body.dark-mode .welcome-section h2,
+body.dark-mode .welcome-section h3 {
+    color: #ffffff !important;
+}
+
+body.dark-mode .welcome-section p,
+body.dark-mode .welcome-section span {
+    color: #c7d5cc !important;
+}
+
+
+/* ==========================================================
+   ANNOUNCEMENTS
+========================================================== */
+
+body.dark-mode .announcements-section,
+body.dark-mode .announcement-management-section {
+    background: #16251c !important;
+    color: #e8f1eb !important;
+    border-color: #2b4033 !important;
+}
+
+body.dark-mode .announcements-section h2,
+body.dark-mode .announcement-management-section h2 {
+    color: #ffffff !important;
+}
+
+body.dark-mode .announcement-card,
+body.dark-mode .managed-announcement-card {
+    background: #1b2b22 !important;
+    color: #e7f0ea !important;
+    border-color: #31483a !important;
+}
+
+body.dark-mode .announcement-title,
+body.dark-mode .announcement-card h3 {
+    color: #ffffff !important;
+}
+
+body.dark-mode .announcement-message,
+body.dark-mode .announcement-card p {
+    color: #c9d7cf !important;
+}
+
+
+/* ==========================================================
+   DASHBOARD STATISTICS
+========================================================== */
+
+body.dark-mode #dashboardFarmStatistics {
+    background: #16251c !important;
+    border-color: #2b4033 !important;
+    color: #e8f1eb !important;
+}
+
+body.dark-mode #dashboardFarmStatistics > div {
+    background: #16251c !important;
+    border-color: #2b4033 !important;
+    color: #e8f1eb !important;
+}
+
+body.dark-mode #dashboardFarmStatistics .dashboard-stat-card {
+    background: #1b2b22 !important;
+    border-color: #31483a !important;
+    color: #e8f1eb !important;
+}
+
+body.dark-mode #dashboardFarmStatistics .dashboard-stat-card h3,
+body.dark-mode #dashboardFarmStatistics .dashboard-stat-card strong,
+body.dark-mode #dashboardFarmStatistics .dashboard-stat-card span {
+    color: #e8f1eb !important;
+}
+
+body.dark-mode #farmStatisticsStatus {
+    background: #213329 !important;
+    color: #cfe0d5 !important;
+}
+
+body.dark-mode #refreshFarmStatisticsButton {
+    background: #2e7d4b !important;
+    color: #ffffff !important;
+}
+
+
+/* ==========================================================
+   OVERVIEW
+========================================================== */
+
+body.dark-mode .overview-section {
+    background: #16251c !important;
+    color: #e8f1eb !important;
+    border-color: #2b4033 !important;
+}
+
+body.dark-mode .overview-section h2,
+body.dark-mode .overview-section h3 {
+    color: #ffffff !important;
+}
+
+body.dark-mode .overview-card {
+    background: #1b2b22 !important;
+    color: #e8f1eb !important;
+    border-color: #31483a !important;
+}
+
+
+/* ==========================================================
+   SYSTEM MODULES
+========================================================== */
+
+body.dark-mode .modules-section {
+    background: #16251c !important;
+    color: #e8f1eb !important;
+    border-color: #2b4033 !important;
+}
+
+body.dark-mode .modules-section h2 {
+    color: #ffffff !important;
+}
+
+body.dark-mode .module-card {
+    background: #1b2b22 !important;
+    color: #e8f1eb !important;
+    border-color: #31483a !important;
+}
+
+body.dark-mode .module-card h3 {
+    color: #ffffff !important;
+}
+
+body.dark-mode .module-card p {
+    color: #c6d4cb !important;
+}
+
+
+/* ==========================================================
+   FORMS
+========================================================== */
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background: #111d16 !important;
+    color: #edf5ef !important;
+    border-color: #3b5344 !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #91a399 !important;
+}
+
+body.dark-mode label {
+    color: #d9e5dd !important;
+}
+
+
+/* ==========================================================
+   TABLES
+========================================================== */
+
+body.dark-mode table {
+    background: #16251c !important;
+    color: #e8f1eb !important;
+}
+
+body.dark-mode th {
+    background: #1d3325 !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode td {
+    background: #16251c !important;
+    color: #dce8e0 !important;
+    border-color: #304539 !important;
+}
+
+body.dark-mode tr:hover td {
+    background: #1c3024 !important;
+}
+
+
+/* ==========================================================
+   MODALS
+========================================================== */
+
+body.dark-mode .modal,
+body.dark-mode .modal-content,
+body.dark-mode .announcement-modal,
+body.dark-mode .notification-modal {
+    color: #e8f1eb !important;
+}
+
+body.dark-mode .modal-content {
+    background: #16251c !important;
+    border-color: #31483a !important;
+}
+
+body.dark-mode .modal-content h2,
+body.dark-mode .modal-content h3 {
+    color: #ffffff !important;
+}
+
+
+/* ==========================================================
+   NOTIFICATION CENTRE
+========================================================== */
+
+body.dark-mode .notification-centre,
+body.dark-mode .notification-center,
+body.dark-mode .notification-panel {
+    background: #16251c !important;
+    color: #e8f1eb !important;
+}
+
+body.dark-mode .notification-item {
+    background: #1b2b22 !important;
+    color: #e8f1eb !important;
+    border-color: #31483a !important;
+}
+
+body.dark-mode .notification-item:hover {
+    background: #22372a !important;
+}
+
+body.dark-mode .notification-item h3,
+body.dark-mode .notification-item strong {
+    color: #ffffff !important;
+}
+
+body.dark-mode .notification-item p {
+    color: #c8d6ce !important;
+}
+
+
+/* ==========================================================
+   FOOTER
+========================================================== */
+
+body.dark-mode footer {
+    background: #0f1c14 !important;
+    color: #aebeb5 !important;
+    border-top-color: #293d31 !important;
+}
+
+
+/* ==========================================================
+   GENERAL TEXT
+========================================================== */
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5 {
+    color: #ffffff !important;
+}
+
+body.dark-mode p {
+    color: #cbd8d0;
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width: 768px) {
+
+    .theme-toggle-btn {
+        min-width: 44px;
+        width: 44px;
+        height: 44px;
+
+        padding: 0;
+
+        border-radius: 10px;
+    }
+
+    .theme-toggle-btn #themeToggleText {
+        display: none;
+    }
+
+    .theme-toggle-btn span:first-child {
+        font-size: 20px;
+    }
+}
+
+
+/* ==========================================================
+   SMALL MOBILE
+========================================================== */
+
+@media (max-width: 480px) {
+
+    .theme-toggle-btn {
+        width: 42px;
+        min-width: 42px;
+        height: 42px;
+    }
 }
