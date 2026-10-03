@@ -1,6 +1,7 @@
 /* =========================================================
    MUNKA PIGGERY
    SUPER ADMIN — FINAL MFA ENROLLMENT
+   QR CODE FIXED VERSION
    ========================================================= */
 
 let activeFactorId = null;
@@ -70,9 +71,11 @@ async function checkSuperAdmin() {
     } =
         await supabaseClient.auth.getSession();
 
+
     if (error) {
         throw error;
     }
+
 
     if (
         !data ||
@@ -160,12 +163,6 @@ async function getFactors() {
     }
 
 
-    console.log(
-        "CURRENT MFA FACTORS:",
-        data
-    );
-
-
     return data || {
         all: [],
         totp: [],
@@ -175,80 +172,119 @@ async function getFactors() {
 
 
 /* =========================================================
-   REMOVE ONLY THE TEST FACTOR
+   LOAD QR CODE LIBRARY
    ========================================================= */
 
-async function removeTestFactor() {
+function loadQRCodeLibrary() {
 
-    const factors =
-        await getFactors();
+    return new Promise(
+        (resolve, reject) => {
 
+            if (
+                typeof QRCode !== "undefined"
+            ) {
 
-    const totpFactors =
-        Array.isArray(factors.totp)
-            ? factors.totp
-            : [];
+                resolve();
 
-
-    const testFactors =
-        totpFactors.filter(
-            factor =>
-                String(
-                    factor.friendly_name || ""
-                ).trim() ===
-                "MUNKA PIGGERY MFA TEST"
-        );
+                return;
+            }
 
 
-    if (testFactors.length === 0) {
-
-        console.log(
-            "No temporary test factor found."
-        );
-
-        return;
-    }
+            const script =
+                document.createElement("script");
 
 
-    showMessage(
-        "Removing the temporary MFA test factor...",
-        "success"
-    );
+            script.src =
+                "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js";
 
 
-    for (const factor of testFactors) {
+            script.onload =
+                () => resolve();
 
-        if (!factor.id) {
-            continue;
+
+            script.onerror =
+                () =>
+                    reject(
+                        new Error(
+                            "The QR code library could not be loaded. Check your internet connection."
+                        )
+                    );
+
+
+            document.head.appendChild(script);
         }
-
-
-        const {
-            error
-        } =
-            await supabaseClient.auth.mfa.unenroll({
-                factorId: factor.id
-            });
-
-
-        if (error) {
-
-            throw new Error(
-                "Could not remove the temporary test factor: " +
-                error.message
-            );
-        }
-    }
-
-
-    console.log(
-        "Temporary test factor removed."
     );
 }
 
 
 /* =========================================================
-   CREATE REAL MFA FACTOR
+   GENERATE QR CODE
+   ========================================================= */
+
+async function generateQRCode(uri) {
+
+    if (!uri) {
+
+        throw new Error(
+            "Supabase did not return the MFA setup URI."
+        );
+    }
+
+
+    if (!qrCode) {
+
+        throw new Error(
+            "QR code image element was not found."
+        );
+    }
+
+
+    await loadQRCodeLibrary();
+
+
+    const generatedQR =
+        await QRCode.toDataURL(
+            uri,
+            {
+                width: 300,
+                margin: 2,
+                errorCorrectionLevel: "M"
+            }
+        );
+
+
+    qrCode.src =
+        generatedQR;
+
+
+    qrCode.style.display =
+        "block";
+
+
+    qrCode.style.width =
+        "300px";
+
+
+    qrCode.style.height =
+        "300px";
+
+
+    qrCode.style.objectFit =
+        "contain";
+
+
+    qrCode.alt =
+        "MUNKA PIGGERY Super Admin MFA QR Code";
+
+
+    console.log(
+        "QR code generated successfully."
+    );
+}
+
+
+/* =========================================================
+   CREATE REAL MFA
    ========================================================= */
 
 async function createRealMFA() {
@@ -278,7 +314,7 @@ async function createRealMFA() {
     if (error) {
 
         console.error(
-            "REAL MFA ENROLLMENT ERROR:",
+            "MFA ENROLLMENT ERROR:",
             error
         );
 
@@ -318,8 +354,9 @@ async function createRealMFA() {
 
     } else {
 
-        secretElement.textContent =
-            "Secret was not returned.";
+        throw new Error(
+            "Supabase did not return the MFA setup secret."
+        );
     }
 
 
@@ -329,32 +366,51 @@ async function createRealMFA() {
 
     if (
         data.totp &&
-        data.totp.qr_code
+        data.totp.uri
     ) {
 
-        const svg =
-            data.totp.qr_code;
-
-
-        const dataUrl =
-            "data:image/svg+xml;charset=utf-8," +
-            encodeURIComponent(svg);
-
-
-        qrCode.src =
-            dataUrl;
-
-
-        qrCode.style.display =
-            "block";
+        await generateQRCode(
+            data.totp.uri
+        );
 
     } else {
 
-        throw new Error(
-            "Supabase did not return the QR code."
-        );
+        /*
+           Some Supabase responses may provide
+           qr_code instead of uri.
+
+           Try the returned QR SVG as a fallback.
+        */
+
+        if (
+            data.totp &&
+            data.totp.qr_code
+        ) {
+
+            const svg =
+                data.totp.qr_code;
+
+
+            qrCode.src =
+                "data:image/svg+xml;charset=utf-8," +
+                encodeURIComponent(svg);
+
+
+            qrCode.style.display =
+                "block";
+
+        } else {
+
+            throw new Error(
+                "Supabase did not return an MFA QR code or setup URI."
+            );
+        }
     }
 
+
+    /* =====================================================
+       SHOW SETUP
+       ===================================================== */
 
     stopLoading();
 
@@ -384,7 +440,7 @@ async function createRealMFA() {
 
 
     showMessage(
-        "NEW MFA CREATED. Scan this NEW QR code with Google Authenticator, then enter the current 6-digit code.",
+        "Your NEW MFA has been created. Scan the QR code with Google Authenticator, then enter the current 6-digit code.",
         "success"
     );
 }
@@ -459,7 +515,7 @@ async function verifyMFA() {
     if (!/^\d{6}$/.test(code)) {
 
         showMessage(
-            "Enter the current 6-digit Google Authenticator code.",
+            "Enter the current 6-digit code from Google Authenticator.",
             "error"
         );
 
@@ -472,6 +528,7 @@ async function verifyMFA() {
     verifyButton.disabled =
         true;
 
+
     verifyButton.textContent =
         "VERIFYING...";
 
@@ -482,6 +539,7 @@ async function verifyMFA() {
 
 
         const {
+            data,
             error
         } =
             await supabaseClient.auth.mfa.verify({
@@ -502,8 +560,17 @@ async function verifyMFA() {
         }
 
 
-        verificationCode.disabled =
-            true;
+        console.log(
+            "MFA VERIFICATION SUCCESS:",
+            data
+        );
+
+
+        if (verificationCode) {
+
+            verificationCode.disabled =
+                true;
+        }
 
 
         verifyButton.disabled =
@@ -515,20 +582,32 @@ async function verifyMFA() {
 
 
         showMessage(
-            "MFA has been successfully enabled for the Super Admin account.",
+            "MFA has been successfully enabled for your Super Admin account.",
             "success"
         );
 
 
-        console.log(
-            "SUPER ADMIN MFA ENABLED."
-        );
+        const {
+            data: assurance,
+            error: assuranceError
+        } =
+            await supabaseClient.auth.mfa
+                .getAuthenticatorAssuranceLevel();
+
+
+        if (!assuranceError) {
+
+            console.log(
+                "AUTHENTICATOR ASSURANCE LEVEL:",
+                assurance
+            );
+        }
 
 
     } catch (error) {
 
         console.error(
-            "MFA verification error:",
+            "MFA VERIFICATION ERROR:",
             error
         );
 
@@ -574,7 +653,7 @@ if (verificationCode) {
 
 
 /* =========================================================
-   BUTTON
+   VERIFY BUTTON
    ========================================================= */
 
 if (verifyButton) {
@@ -613,14 +692,7 @@ async function initializeMFA() {
 
 
         /* -------------------------------------------------
-           REMOVE ONLY TEST FACTOR
-           ------------------------------------------------- */
-
-        await removeTestFactor();
-
-
-        /* -------------------------------------------------
-           CHECK AGAIN
+           CHECK EXISTING FACTORS
            ------------------------------------------------- */
 
         const factors =
@@ -634,8 +706,8 @@ async function initializeMFA() {
 
 
         /*
-           If another TOTP factor exists, stop.
-           We don't want to accidentally create duplicates.
+           We expect no TOTP here because the test factor
+           should have been removed before final enrollment.
         */
 
         if (totpFactors.length > 0) {
@@ -649,7 +721,7 @@ async function initializeMFA() {
 
 
             showMessage(
-                "A TOTP MFA factor already exists. No new factor was created.",
+                "A TOTP MFA factor already exists. No additional factor was created.",
                 "error"
             );
 
@@ -659,7 +731,7 @@ async function initializeMFA() {
 
 
         /* -------------------------------------------------
-           CREATE REAL MFA
+           CREATE REAL FACTOR
            ------------------------------------------------- */
 
         await createRealMFA();
