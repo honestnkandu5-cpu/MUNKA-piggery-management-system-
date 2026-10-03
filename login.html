@@ -12,6 +12,13 @@
 
 <title>MUNKA PIGGERY - Login</title>
 
+<!-- CLOUDFLARE TURNSTILE -->
+<script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    async
+    defer
+></script>
+
 <style>
 
 /* =========================================================
@@ -77,13 +84,7 @@ body {
         );
 
     background-attachment: fixed;
-
 }
-
-
-/* =========================================================
-   LOGIN CONTAINER
-========================================================= */
 
 .login-container {
 
@@ -109,13 +110,7 @@ body {
     box-shadow:
         0 30px 80px
         rgba(0, 0, 0, 0.30);
-
 }
-
-
-/* =========================================================
-   MULTICOLOUR TOP STRIPE
-========================================================= */
 
 .login-container::before {
 
@@ -135,28 +130,18 @@ body {
             90deg,
 
             #c62828 0%,
-
             #c62828 20%,
 
             #087f4b 20%,
-
             #087f4b 50%,
 
             #0d6efd 50%,
-
             #0d6efd 75%,
 
             #d4af37 75%,
-
             #d4af37 100%
         );
-
 }
-
-
-/* =========================================================
-   SUBTLE BACKGROUND DECORATION
-========================================================= */
 
 .login-container::after {
 
@@ -176,13 +161,7 @@ body {
         rgba(8, 127, 75, 0.07);
 
     pointer-events: none;
-
 }
-
-
-/* =========================================================
-   LOGO
-========================================================= */
 
 .brand-icon {
 
@@ -200,9 +179,7 @@ body {
     position: relative;
 
     z-index: 2;
-
 }
-
 
 .brand-logo {
 
@@ -218,13 +195,7 @@ body {
             0 6px 10px
             rgba(0, 0, 0, 0.12)
         );
-
 }
-
-
-/* =========================================================
-   BRAND NAME
-========================================================= */
 
 .login-container h1 {
 
@@ -240,9 +211,7 @@ body {
     letter-spacing: 2px;
 
     color: #075e3b;
-
 }
-
 
 .login-container h3 {
 
@@ -261,13 +230,7 @@ body {
     text-transform: uppercase;
 
     color: #0d6efd;
-
 }
-
-
-/* =========================================================
-   GOLD DIVIDER
-========================================================= */
 
 .login-container h3::after {
 
@@ -285,13 +248,7 @@ body {
     border-radius: 10px;
 
     background: #d4af37;
-
 }
-
-
-/* =========================================================
-   WELCOME
-========================================================= */
 
 .welcome {
 
@@ -306,9 +263,7 @@ body {
     font-weight: 850;
 
     color: #17231c;
-
 }
-
 
 .login-instruction {
 
@@ -320,13 +275,7 @@ body {
     font-size: 15px;
 
     color: #68756e;
-
 }
-
-
-/* =========================================================
-   FORM
-========================================================= */
 
 #loginForm {
 
@@ -339,13 +288,7 @@ body {
     position: relative;
 
     z-index: 3;
-
 }
-
-
-/* =========================================================
-   ROLE TITLE
-========================================================= */
 
 .role-title {
 
@@ -360,13 +303,7 @@ body {
     text-transform: uppercase;
 
     letter-spacing: 1px;
-
 }
-
-
-/* =========================================================
-   ROLE GRID
-========================================================= */
 
 .roles-container {
 
@@ -380,13 +317,7 @@ body {
     gap: 13px;
 
     margin-bottom: 10px;
-
 }
-
-
-/* =========================================================
-   ROLE BUTTON
-========================================================= */
 
 .role-button {
 
@@ -419,9 +350,7 @@ body {
     box-shadow:
         0 4px 12px
         rgba(0, 70, 45, 0.07);
-
 }
-
 
 .role-button:hover {
 
@@ -440,11 +369,7 @@ body {
     box-shadow:
         0 9px 20px
         rgba(13, 110, 253, 0.15);
-
 }
-
-
-/* SELECTED ROLE */
 
 .role-button.selected {
 
@@ -468,13 +393,7 @@ body {
 
     transform:
         translateY(-3px);
-
 }
-
-
-/* =========================================================
-   SELECTED ROLE TEXT
-========================================================= */
 
 .selected-role {
 
@@ -491,13 +410,7 @@ body {
 
     font-weight:
         800;
-
 }
-
-
-/* =========================================================
-   INPUTS
-========================================================= */
 
 .login-container input {
 
@@ -528,25 +441,19 @@ body {
 
     transition:
         all 0.2s ease;
-
 }
-
 
 .login-container input::placeholder {
 
     color:
         #9aa59f;
-
 }
-
 
 .login-container input:hover {
 
     border-color:
         #9bbcaf;
-
 }
-
 
 .login-container input:focus {
 
@@ -559,30 +466,20 @@ body {
     box-shadow:
         0 0 0 4px
         rgba(8, 127, 75, 0.10);
-
 }
-
-
-/* =========================================================
-   PASSWORD
-========================================================= */
 
 .password-container {
 
     position: relative;
 
     width: 100%;
-
 }
-
 
 .password-container input {
 
     padding-right:
         85px;
-
 }
-
 
 #togglePassword {
 
@@ -622,9 +519,7 @@ body {
 
     cursor:
         pointer;
-
 }
-
 
 #togglePassword:hover {
 
@@ -633,13 +528,7 @@ body {
 
     color:
         #075e3b;
-
 }
-
-
-/* =========================================================
-   FORGOT PASSWORD
-========================================================= */
 
 .forgot-password {
 
@@ -648,9 +537,7 @@ body {
 
     margin:
         0 0 20px;
-
 }
-
 
 .forgot-password a {
 
@@ -665,9 +552,7 @@ body {
 
     text-decoration:
         none;
-
 }
-
 
 .forgot-password a:hover {
 
@@ -676,7 +561,27 @@ body {
 
     text-decoration:
         underline;
+}
 
+
+/* =========================================================
+   CLOUDFLARE TURNSTILE
+========================================================= */
+
+.turnstile-container {
+
+    width: 100%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    margin:
+        4px 0 20px;
+
+    min-height: 65px;
 }
 
 
@@ -725,9 +630,7 @@ body {
 
     transition:
         all 0.2s ease;
-
 }
-
 
 .login-button:hover {
 
@@ -740,21 +643,13 @@ body {
     box-shadow:
         0 15px 30px
         rgba(7, 94, 59, 0.35);
-
 }
-
 
 .login-button:active {
 
     transform:
         translateY(0);
-
 }
-
-
-/* =========================================================
-   LOGIN MESSAGE
-========================================================= */
 
 #message {
 
@@ -777,13 +672,7 @@ body {
 
     color:
         #c62828;
-
 }
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
 
 .farm-footer {
 
@@ -811,9 +700,7 @@ body {
 
     color:
         #7b857f;
-
 }
-
 
 .farm-footer strong {
 
@@ -822,13 +709,7 @@ body {
 
     font-size:
         14px;
-
 }
-
-
-/* =========================================================
-   TABLET
-========================================================= */
 
 @media (max-width: 900px) {
 
@@ -838,22 +719,14 @@ body {
 
         padding:
             45px 35px 32px;
-
     }
 
     .roles-container {
 
         grid-template-columns:
             repeat(3, minmax(0, 1fr));
-
     }
-
 }
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
 
 @media (max-width: 600px) {
 
@@ -869,9 +742,7 @@ body {
                 #087f4b,
                 #075e9b
             );
-
     }
-
 
     .login-container {
 
@@ -889,9 +760,7 @@ body {
 
         box-shadow:
             none;
-
     }
-
 
     .brand-icon {
 
@@ -903,9 +772,7 @@ body {
 
         margin-bottom:
             12px;
-
     }
-
 
     .login-container h1 {
 
@@ -914,9 +781,7 @@ body {
 
         letter-spacing:
             1.5px;
-
     }
-
 
     .login-container h3 {
 
@@ -925,9 +790,7 @@ body {
 
         letter-spacing:
             1.5px;
-
     }
-
 
     .welcome {
 
@@ -936,9 +799,7 @@ body {
 
         font-size:
             23px;
-
     }
-
 
     .login-instruction {
 
@@ -947,9 +808,7 @@ body {
 
         margin-bottom:
             24px;
-
     }
-
 
     .roles-container {
 
@@ -958,9 +817,7 @@ body {
 
         gap:
             9px;
-
     }
-
 
     .role-button {
 
@@ -972,9 +829,7 @@ body {
 
         font-size:
             11.5px;
-
     }
-
 
     .login-container input {
 
@@ -983,9 +838,7 @@ body {
 
         font-size:
             15px;
-
     }
-
 
     .login-button {
 
@@ -994,23 +847,14 @@ body {
 
         font-size:
             15px;
-
     }
-
 
     .farm-footer {
 
         font-size:
             12px;
-
     }
-
 }
-
-
-/* =========================================================
-   VERY SMALL PHONES
-========================================================= */
 
 @media (max-width: 380px) {
 
@@ -1018,9 +862,7 @@ body {
 
         padding:
             32px 13px 20px;
-
     }
-
 
     .brand-icon {
 
@@ -1029,25 +871,19 @@ body {
 
         height:
             78px;
-
     }
-
 
     .login-container h1 {
 
         font-size:
             24px;
-
     }
-
 
     .welcome {
 
         font-size:
             20px;
-
     }
-
 
     .role-button {
 
@@ -1056,15 +892,8 @@ body {
 
         font-size:
             10.5px;
-
     }
-
 }
-
-
-/* =========================================================
-   ACCESSIBILITY
-========================================================= */
 
 button:focus-visible,
 input:focus-visible,
@@ -1076,23 +905,15 @@ a:focus-visible {
 
     outline-offset:
         2px;
-
 }
 
 </style>
 
 </head>
 
-
 <body>
 
-
 <div class="login-container">
-
-
-    <!-- =====================================================
-         MUNKA PIGGERY LOGO
-    ====================================================== -->
 
     <div class="brand-icon">
 
@@ -1104,51 +925,29 @@ a:focus-visible {
 
     </div>
 
-
-    <!-- =====================================================
-         BRAND
-    ====================================================== -->
-
     <h1>
         MUNKA PIGGERY
     </h1>
-
 
     <h3>
         Farm Management System
     </h3>
 
-
-    <!-- =====================================================
-         WELCOME
-    ====================================================== -->
-
     <div class="welcome">
         Welcome Back
     </div>
-
 
     <p class="login-instruction">
         Sign in to manage your farm operations
     </p>
 
-
-    <!-- =====================================================
-         LOGIN FORM
-    ====================================================== -->
-
     <form id="loginForm">
-
-
-        <!-- ROLE -->
 
         <div class="role-title">
             Select Your Role
         </div>
 
-
         <div class="roles-container">
-
 
             <button
                 type="button"
@@ -1158,7 +957,6 @@ a:focus-visible {
                 Owner / Admin
             </button>
 
-
             <button
                 type="button"
                 class="role-button"
@@ -1166,7 +964,6 @@ a:focus-visible {
             >
                 Farm Manager
             </button>
-
 
             <button
                 type="button"
@@ -1177,7 +974,6 @@ a:focus-visible {
                 (Gestation Pen)
             </button>
 
-
             <button
                 type="button"
                 class="role-button"
@@ -1187,7 +983,6 @@ a:focus-visible {
                 (Farrowing Pen)
             </button>
 
-
             <button
                 type="button"
                 class="role-button"
@@ -1195,7 +990,6 @@ a:focus-visible {
             >
                 Sales Officer
             </button>
-
 
             <button
                 type="button"
@@ -1205,7 +999,6 @@ a:focus-visible {
                 Veterinary Officer
             </button>
 
-
             <button
                 type="button"
                 class="role-button"
@@ -1214,17 +1007,12 @@ a:focus-visible {
                 Farm Worker
             </button>
 
-
         </div>
-
 
         <div
             id="selectedRole"
             class="selected-role"
         ></div>
-
-
-        <!-- EMAIL -->
 
         <input
             type="email"
@@ -1233,9 +1021,6 @@ a:focus-visible {
             autocomplete="email"
             required
         >
-
-
-        <!-- PASSWORD -->
 
         <div class="password-container">
 
@@ -1247,7 +1032,6 @@ a:focus-visible {
                 required
             >
 
-
             <button
                 type="button"
                 id="togglePassword"
@@ -1257,9 +1041,6 @@ a:focus-visible {
 
         </div>
 
-
-        <!-- FORGOT PASSWORD -->
-
         <div class="forgot-password">
 
             <a href="forgot_password.html">
@@ -1268,8 +1049,19 @@ a:focus-visible {
 
         </div>
 
+        <!-- =================================================
+             CLOUDFLARE TURNSTILE
+        ================================================== -->
 
-        <!-- LOGIN -->
+        <div class="turnstile-container">
+
+            <div
+                class="cf-turnstile"
+                data-sitekey="0x4AAAAAAFMo7xO_ThI6laYl"
+                data-theme="light"
+            ></div>
+
+        </div>
 
         <button
             type="submit"
@@ -1278,18 +1070,9 @@ a:focus-visible {
             🌿 LOGIN TO FARM
         </button>
 
-
-        <!-- LOGIN MESSAGE -->
-
         <p id="message"></p>
 
-
     </form>
-
-
-    <!-- =====================================================
-         FOOTER
-    ====================================================== -->
 
     <div class="farm-footer">
 
@@ -1303,13 +1086,9 @@ a:focus-visible {
 
     </div>
 
-
 </div>
 
-
-<!-- =========================================================
-     SUPABASE
-========================================================= -->
+<!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -1319,45 +1098,30 @@ a:focus-visible {
 
 <script src="login.js"></script>
 
-
-<!-- =========================================================
-     ROLE + PASSWORD UI
-========================================================= -->
+<!-- ROLE + PASSWORD UI -->
 
 <script>
 
 const roleButtons =
     document.querySelectorAll(".role-button");
 
-
 const selectedRole =
     document.getElementById("selectedRole");
 
-
 let selectedRoleValue = "";
-
-
-/* =========================================================
-   ROLE SELECTION
-========================================================= */
 
 roleButtons.forEach(button => {
 
     button.addEventListener("click", () => {
 
         roleButtons.forEach(btn => {
-
             btn.classList.remove("selected");
-
         });
-
 
         button.classList.add("selected");
 
-
         selectedRoleValue =
             button.dataset.role;
-
 
         selectedRole.textContent =
             "Selected role: " +
@@ -1369,18 +1133,11 @@ roleButtons.forEach(button => {
 
 });
 
-
-/* =========================================================
-   PASSWORD SHOW / HIDE
-========================================================= */
-
 const password =
     document.getElementById("password");
 
-
 const togglePassword =
     document.getElementById("togglePassword");
-
 
 togglePassword.addEventListener(
     "click",
@@ -1396,9 +1153,7 @@ togglePassword.addEventListener(
             togglePassword.textContent =
                 "Hide";
 
-        }
-
-        else {
+        } else {
 
             password.type =
                 "password";
@@ -1412,7 +1167,6 @@ togglePassword.addEventListener(
 );
 
 </script>
-
 
 </body>
 </html>

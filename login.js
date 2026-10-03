@@ -1,6 +1,7 @@
 // =====================================
 // MUNKA PIGGERY TECHNOLOGY
 // SUPABASE AUTH LOGIN SYSTEM
+// CLOUDFLARE TURNSTILE CAPTCHA
 // SUPER ADMIN LOGIN WITHOUT ROLE SELECTION
 // NORMAL USERS REQUIRE ROLE SELECTION
 // AUTOMATIC ROLE IDENTIFICATION
@@ -41,6 +42,63 @@ document
                 document.getElementById(
                     "message"
                 );
+
+
+            // =====================================
+            // CLOUDFLARE TURNSTILE
+            // =====================================
+
+            let captchaToken = "";
+
+
+            try{
+
+                if(
+                    typeof window.turnstile ===
+                    "undefined"
+                ){
+
+                    message.textContent =
+                        "Security verification is not ready. Please wait a moment and try again.";
+
+                    return;
+
+                }
+
+
+                captchaToken =
+                    window.turnstile.getResponse();
+
+            }
+
+            catch(captchaError){
+
+                console.error(
+                    "TURNSTILE ERROR:",
+                    captchaError
+                );
+
+
+                message.textContent =
+                    "Security verification could not be completed.";
+
+                return;
+
+            }
+
+
+            // =====================================
+            // CAPTCHA MUST BE COMPLETED
+            // =====================================
+
+            if(!captchaToken){
+
+                message.textContent =
+                    "Please complete the security check.";
+
+                return;
+
+            }
 
 
             // =====================================
@@ -91,15 +149,53 @@ document
 
                             email: email,
 
-                            password: password
+                            password: password,
+
+                            options: {
+
+                                captchaToken:
+                                    captchaToken
+
+                            }
 
                         });
 
 
                 if(authError){
 
+                    console.error(
+                        "AUTH LOGIN ERROR:",
+                        authError
+                    );
+
+
                     message.textContent =
                         "Invalid email or password.";
+
+
+                    // Reset CAPTCHA
+                    if(
+                        typeof window.turnstile !==
+                        "undefined"
+                    ){
+
+                        try{
+
+                            window.turnstile.reset();
+
+                        }
+
+                        catch(resetError){
+
+                            console.error(
+                                "TURNSTILE RESET ERROR:",
+                                resetError
+                            );
+
+                        }
+
+                    }
+
 
                     return;
 
@@ -216,6 +312,7 @@ document
                     SUPER ADMIN DOES NOT NEED
                     TO SELECT A ROLE.
                 */
+
 
                 if(!isSuperAdmin){
 
@@ -596,6 +693,30 @@ document
 
                 message.textContent =
                     "System error. Please try again.";
+
+
+                // Reset CAPTCHA
+                if(
+                    typeof window.turnstile !==
+                    "undefined"
+                ){
+
+                    try{
+
+                        window.turnstile.reset();
+
+                    }
+
+                    catch(resetError){
+
+                        console.error(
+                            "TURNSTILE RESET ERROR:",
+                            resetError
+                        );
+
+                    }
+
+                }
 
             }
 
