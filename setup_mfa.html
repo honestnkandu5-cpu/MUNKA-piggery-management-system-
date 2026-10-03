@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>MUNKA PIGGERY - Set Up MFA</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+
+            font-family:
+                "Segoe UI",
+                Arial,
+                sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #063d29,
+                    #087f4b,
+                    #075e9b
+                );
+
+            color: #17231c;
+        }
+
+        .mfa-container {
+            width: min(520px, 100%);
+
+            background: #ffffff;
+
+            border-radius: 22px;
+
+            padding: 35px 28px;
+
+            text-align: center;
+
+            box-shadow:
+                0 25px 70px
+                rgba(0, 0, 0, 0.30);
+        }
+
+        .logo {
+            width: 90px;
+            height: 90px;
+
+            object-fit: contain;
+
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            margin: 0;
+
+            color: #075e3b;
+
+            font-size: 28px;
+        }
+
+        h2 {
+            margin:
+                8px 0 20px;
+
+            color: #0d6efd;
+
+            font-size: 20px;
+        }
+
+        .instruction {
+            line-height: 1.6;
+
+            color: #5d6962;
+
+            font-size: 15px;
+        }
+
+        #qrCode {
+            width: 260px;
+            max-width: 100%;
+
+            margin: 20px auto;
+
+            display: block;
+        }
+
+        .secret-box {
+            padding: 12px;
+
+            margin:
+                15px 0;
+
+            background: #f3f7f5;
+
+            border-radius: 10px;
+
+            word-break: break-all;
+
+            font-family: monospace;
+
+            font-size: 14px;
+        }
+
+        .code-input {
+            width: 100%;
+
+            height: 58px;
+
+            padding: 0 15px;
+
+            border:
+                1px solid #ccd9d2;
+
+            border-radius: 10px;
+
+            font-size: 22px;
+
+            text-align: center;
+
+            letter-spacing: 5px;
+
+            outline: none;
+        }
+
+        .code-input:focus {
+            border:
+                2px solid #087f4b;
+
+            box-shadow:
+                0 0 0 4px
+                rgba(8, 127, 75, 0.10);
+        }
+
+        .verify-button {
+            width: 100%;
+
+            height: 56px;
+
+            margin-top: 18px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    100deg,
+                    #075e3b,
+                    #087f4b,
+                    #0d6efd
+                );
+
+            color: #ffffff;
+
+            font-size: 16px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+        }
+
+        .verify-button:hover {
+            filter: brightness(1.07);
+        }
+
+        #message {
+            min-height: 22px;
+
+            margin-top: 15px;
+
+            font-size: 14px;
+
+            font-weight: 700;
+        }
+
+        .success {
+            color: #087f4b;
+        }
+
+        .error {
+            color: #c62828;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="mfa-container">
+
+    <img
+        src="munka-logo.png"
+        alt="MUNKA PIGGERY"
+        class="logo"
+    >
+
+    <h1>MUNKA PIGGERY</h1>
+
+    <h2>Super Admin MFA Setup</h2>
+
+    <p class="instruction">
+        Scan the QR code below with your authenticator app.
+        Then enter the 6-digit verification code generated
+        by the app.
+    </p>
+
+    <img
+        id="qrCode"
+        alt="MFA QR Code"
+    >
+
+    <div class="secret-box">
+        <strong>Setup Secret:</strong>
+        <br>
+        <span id="secret"></span>
+    </div>
+
+    <input
+        type="text"
+        id="verificationCode"
+        class="code-input"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        maxlength="6"
+        placeholder="000000"
+    >
+
+    <button
+        type="button"
+        id="verifyButton"
+        class="verify-button"
+    >
+        ENABLE MFA
+    </button>
+
+    <div id="message"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase.js"></script>
+
+<script src="setup_mfa.js"></script>
+
+</body>
+</html>
