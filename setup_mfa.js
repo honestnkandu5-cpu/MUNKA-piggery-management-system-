@@ -1,9 +1,9 @@
 /* =========================================================
    MUNKA PIGGERY
-   MFA DIAGNOSTIC — READ ONLY
+   MFA ENROLLMENT DIAGNOSTIC TEST
    ========================================================= */
 
-async function runMFADiagnostic() {
+async function testMFAEnrollment() {
 
     const message =
         document.getElementById("message");
@@ -19,7 +19,7 @@ async function runMFADiagnostic() {
     try {
 
         show(
-            "Checking your Supabase MFA configuration...",
+            "Testing MFA enrollment...",
             "success"
         );
 
@@ -61,57 +61,13 @@ async function runMFADiagnostic() {
         ) {
 
             throw new Error(
-                "No active login session was found. Please log in as Super Admin first."
-            );
-        }
-
-
-        const authUserId =
-            sessionData.session.user.id;
-
-
-        /* =================================================
-           CHECK USER
-           ================================================= */
-
-        const {
-            data: user,
-            error: userError
-        } =
-            await supabaseClient
-                .from("users")
-                .select("full_name, role, status, auth_user_id")
-                .eq("auth_user_id", authUserId)
-                .single();
-
-
-        if (userError) {
-            throw userError;
-        }
-
-
-        if (!user) {
-
-            throw new Error(
-                "Super Admin profile was not found."
-            );
-        }
-
-
-        if (
-            String(user.role || "")
-                .trim()
-                .toLowerCase() !== "super admin"
-        ) {
-
-            throw new Error(
-                "The logged-in account is not Super Admin."
+                "No active Super Admin session was found."
             );
         }
 
 
         /* =================================================
-           GET MFA FACTORS
+           CHECK FACTORS AGAIN
            ================================================= */
 
         const {
@@ -126,107 +82,89 @@ async function runMFADiagnostic() {
         }
 
 
-        console.log(
-            "MFA FACTOR DATA:",
-            factors
-        );
-
-
-        /* =================================================
-           SAFE DISPLAY
-           ================================================= */
-
         const totp =
             Array.isArray(factors?.totp)
                 ? factors.totp
                 : [];
 
 
-        const phone =
-            Array.isArray(factors?.phone)
-                ? factors.phone
-                : [];
-
-
-        let result = "";
-
-
-        result +=
-            "MFA DIAGNOSTIC RESULT\n\n";
-
-
-        result +=
-            "Super Admin: " +
-            (user.full_name || "Yes") +
-            "\n";
-
-
-        result +=
-            "Role: " +
-            user.role +
-            "\n\n";
-
-
-        result +=
-            "TOTP FACTORS FOUND: " +
-            totp.length +
-            "\n";
-
-
-        result +=
-            "PHONE FACTORS FOUND: " +
-            phone.length +
-            "\n\n";
-
-
         if (totp.length > 0) {
 
-            result +=
-                "Existing TOTP information:\n\n";
+            show(
+                "A TOTP factor is now visible. Do not create another factor.",
+                "error"
+            );
+
+            return;
+        }
 
 
-            totp.forEach(
-                (factor, index) => {
+        /* =================================================
+           TEST ENROLLMENT
+           ================================================= */
 
-                    result +=
-                        "Factor " +
-                        (index + 1) +
-                        "\n";
+        show(
+            "No TOTP factor is visible. Testing enrollment with a temporary name...",
+            "success"
+        );
 
-                    result +=
-                        "ID: " +
-                        (factor.id || "not returned") +
-                        "\n";
 
-                    result +=
-                        "Friendly name: " +
-                        (factor.friendly_name || "not returned") +
-                        "\n";
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.mfa.enroll({
 
-                    result +=
-                        "Status: " +
-                        (factor.status || "not returned") +
-                        "\n\n";
-                }
+                factorType: "totp",
+
+                friendlyName:
+                    "MUNKA PIGGERY MFA TEST",
+
+                issuer:
+                    "MUNKA PIGGERY"
+            });
+
+
+        if (error) {
+
+            console.error(
+                "MFA TEST ENROLLMENT ERROR:",
+                error
             );
 
 
-            result +=
-                "IMPORTANT: Do NOT create another factor yet.";
+            show(
+                "MFA ENROLLMENT TEST FAILED:\n\n" +
+                error.message,
+                "error"
+            );
+
+            return;
         }
 
-        else {
 
-            result +=
-                "No TOTP factor is being returned by listFactors().\n\n";
+        console.log(
+            "MFA TEST ENROLLMENT RESULT:",
+            data
+        );
 
-            result +=
-                "We need to investigate why Supabase is rejecting the new enrollment.";
+
+        if (!data || !data.id) {
+
+            show(
+                "Supabase accepted the request but did not return a factor.",
+                "error"
+            );
+
+            return;
         }
 
 
         show(
-            result,
+            "SUCCESS!\n\n" +
+            "Supabase created a TOTP factor using the temporary test name.\n\n" +
+            "This proves the original friendly name was the problem.\n\n" +
+            "DO NOT scan the QR code or use this test factor yet.",
             "success"
         );
 
@@ -234,13 +172,13 @@ async function runMFADiagnostic() {
     } catch (error) {
 
         console.error(
-            "MFA diagnostic error:",
+            "MFA TEST ERROR:",
             error
         );
 
 
         show(
-            "MFA DIAGNOSTIC ERROR:\n\n" +
+            "ERROR:\n\n" +
             (error.message || error),
             "error"
         );
@@ -258,10 +196,10 @@ if (
 
     document.addEventListener(
         "DOMContentLoaded",
-        runMFADiagnostic
+        testMFAEnrollment
     );
 
 } else {
 
-    runMFADiagnostic();
+    testMFAEnrollment();
 }
