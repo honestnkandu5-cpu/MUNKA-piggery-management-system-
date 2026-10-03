@@ -1,305 +1,302 @@
-/* =========================================================
-   MUNKA PIGGERY
-   SUPER ADMIN — FINAL MFA ENROLLMENT
-   QR CODE FIXED VERSION
-   ========================================================= */
+// =====================================================
+// MUNKA PIGGERY - SUPER ADMIN MFA SETUP
+// Uses Supabase's own QR code - NO external QR library
+// =====================================================
 
-let activeFactorId = null;
-let currentChallengeId = null;
+let enrolledFactorId = null;
 
-
-/* =========================================================
-   ELEMENTS
-   ========================================================= */
-
-const loadingMessage =
-    document.getElementById("loadingMessage");
-
-const setupContent =
-    document.getElementById("setupContent");
-
-const qrCode =
-    document.getElementById("qrCode");
-
-const secretElement =
-    document.getElementById("secret");
-
-const verificationCode =
-    document.getElementById("verificationCode");
-
-const verifyButton =
-    document.getElementById("verifyButton");
-
-const message =
-    document.getElementById("message");
-
-
-/* =========================================================
-   MESSAGE
-   ========================================================= */
-
-function showMessage(text, type = "success") {
-
-    if (!message) return;
-
-    message.textContent = text;
-    message.className = "message " + type;
-}
-
-
-/* =========================================================
-   LOADING
-   ========================================================= */
-
-function stopLoading() {
-
-    if (loadingMessage) {
-        loadingMessage.style.display = "none";
-    }
-}
-
-
-/* =========================================================
-   CHECK SUPER ADMIN
-   ========================================================= */
-
-async function checkSuperAdmin() {
+// -----------------------------------------------------
+// GET CURRENT SUPER ADMIN
+// -----------------------------------------------------
+async function getSuperAdmin() {
 
     const {
-        data,
-        error
-    } =
-        await supabaseClient.auth.getSession();
+        data: sessionData,
+        error: sessionError
+    } = await supabaseClient.auth.getSession();
 
-
-    if (error) {
-        throw error;
+    if (sessionError || !sessionData.session) {
+        throw new Error("Please log in as Super Admin first.");
     }
 
-
-    if (
-        !data ||
-        !data.session ||
-        !data.session.user
-    ) {
-
-        throw new Error(
-            "You must be logged in as Super Admin."
-        );
-    }
-
-
-    const authUserId =
-        data.session.user.id;
-
+    const authUserId = sessionData.session.user.id;
 
     const {
         data: user,
-        error: userError
-    } =
-        await supabaseClient
-            .from("users")
-            .select("full_name, role, status, auth_user_id")
-            .eq("auth_user_id", authUserId)
-            .single();
+        error
+    } = await supabaseClient
+        .from("users")
+        .select("*")
+        .eq("auth_user_id", authUserId)
+        .single();
 
-
-    if (userError) {
-        throw userError;
+    if (error || !user) {
+        throw new Error("Super Admin profile was not found.");
     }
 
-
-    if (!user) {
-
-        throw new Error(
-            "Super Admin profile could not be found."
-        );
+    if (String(user.role).toLowerCase() !== "super admin") {
+        throw new Error("Only the Super Admin can set up MFA.");
     }
 
-
-    if (
-        String(user.role || "")
-            .trim()
-            .toLowerCase() !== "super admin"
-    ) {
-
-        throw new Error(
-            "Only the Super Admin can set up MFA."
-        );
+    if (String(user.status).toLowerCase() !== "active") {
+        throw new Error("The Super Admin account is not active.");
     }
-
-
-    if (
-        String(user.status || "")
-            .trim()
-            .toLowerCase() !== "active"
-    ) {
-
-        throw new Error(
-            "The Super Admin account is not active."
-        );
-    }
-
 
     return user;
 }
 
 
-/* =========================================================
-   GET MFA FACTORS
-   ========================================================= */
+// -----------------------------------------------------
+// SHOW MESSAGE
+// -----------------------------------------------------
+function showMessage(message, type = "info") {
 
-async function getFactors() {
+    const messageBox = document.getElementById("message");
 
-    const {
-        data,
-        error
-    } =
-        await supabaseClient.auth.mfa.listFactors();
+    if (!messageBox) return;
+
+    messageBox.textContent = message;
+
+    messageBox.style.display = "block";
+
+    if (type === "error") {
+        messageBox.style.color = "#b91c1c";
+    } else if (type === "success") {
+        messageBox.style.color = "#15803d";
+    } else {
+        messageBox.style.color = "#1f2937";
+    }
+}
 
 
-    if (error) {
-        throw error;
+// -----------------------------------------------------
+// DISPLAY QR CODE FROM SUPABASE
+// -----------------------------------------------------
+function displaySupabaseQRCode(qrCodeValue) {
+
+    const qrImage = document.getElementById("qrCode");
+
+    if (!qrImage) {
+        throw new Error("QR code image element was not found.");
     }
 
+    if (!qrCodeValue) {
+        throw new Error("Supabase did not provide a QR code.");
+    }
 
-    return data || {
-        all: [],
-        totp: [],
-        phone: []
+    /*
+       Supabase returns the QR code as an SVG string.
+
+       We convert the SVG directly into a browser data URL.
+       No QR library is required.
+    */
+
+    let svg = qrCodeValue;
+
+    if (!svg.trim().startsWith("<svg")) {
+        throw new Error("The QR code returned by Supabase is not a valid SVG.");
+    }
+
+    const svgDataUrl =
+        "data:image/svg+xml;charset=utf-8," +
+        encodeURIComponent(svg);
+
+    qrImage.src = svgDataUrl;
+
+    qrImage.style.display = "block";
+
+    qrImage.onerror = function () {
+        showMessage(
+            "The QR code could not be displayed. Please refresh the page.",
+            "error"
+        );
     };
 }
 
 
-/* =========================================================
-   LOAD QR CODE LIBRARY
-   ========================================================= */
+// -----------------------------------------------------
+// DISPLAY MFA DETAILS
+// -----------------------------------------------------
+function displayMFASetup(enrollData) {
 
-function loadQRCodeLibrary() {
+    const secretElement =
+        document.getElementById("secret");
 
-    return new Promise(
-        (resolve, reject) => {
+    const qrImage =
+        document.getElementById("qrCode");
 
-            if (
-                typeof QRCode !== "undefined"
-            ) {
+    const verifyButton =
+        document.getElementById("verifyButton");
 
-                resolve();
-
-                return;
-            }
-
-
-            const script =
-                document.createElement("script");
+    const verificationInput =
+        document.getElementById("verificationCode");
 
 
-            script.src =
-                "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js";
+    // -----------------------------
+    // SECRET
+    // -----------------------------
+    if (secretElement && enrollData.totp.secret) {
+
+        secretElement.textContent =
+            enrollData.totp.secret;
+
+        secretElement.style.display = "inline";
+    }
 
 
-            script.onload =
-                () => resolve();
+    // -----------------------------
+    // QR CODE
+    // -----------------------------
+    if (qrImage && enrollData.totp.qr_code) {
 
+        displaySupabaseQRCode(
+            enrollData.totp.qr_code
+        );
 
-            script.onerror =
-                () =>
-                    reject(
-                        new Error(
-                            "The QR code library could not be loaded. Check your internet connection."
-                        )
-                    );
+    } else {
 
+        /*
+           If qr_code is unavailable, use the URI
+           as a fallback message.
+        */
 
-            document.head.appendChild(script);
+        if (qrImage) {
+            qrImage.style.display = "none";
         }
-    );
+
+        showMessage(
+            "Supabase did not provide a QR image. Use the setup secret shown below in your authenticator app.",
+            "info"
+        );
+    }
+
+
+    // -----------------------------
+    // ENABLE VERIFICATION
+    // -----------------------------
+    if (verifyButton) {
+        verifyButton.disabled = false;
+        verifyButton.style.display = "block";
+    }
+
+    if (verificationInput) {
+        verificationInput.disabled = false;
+        verificationInput.style.display = "block";
+        verificationInput.focus();
+    }
 }
 
 
-/* =========================================================
-   GENERATE QR CODE
-   ========================================================= */
+// -----------------------------------------------------
+// CREATE FRESH MFA FACTOR
+// -----------------------------------------------------
+async function createMFAFactor() {
 
-async function generateQRCode(uri) {
+    try {
 
-    if (!uri) {
-
-        throw new Error(
-            "Supabase did not return the MFA setup URI."
+        showMessage(
+            "Preparing Super Admin MFA setup..."
         );
-    }
 
 
-    if (!qrCode) {
-
-        throw new Error(
-            "QR code image element was not found."
-        );
-    }
+        // Check Super Admin
+        await getSuperAdmin();
 
 
-    await loadQRCodeLibrary();
+        // ---------------------------------------------
+        // CHECK EXISTING FACTORS
+        // ---------------------------------------------
+        const {
+            data: factorsData,
+            error: factorsError
+        } = await supabaseClient.auth.mfa.listFactors();
 
 
-    const generatedQR =
-        await QRCode.toDataURL(
-            uri,
-            {
-                width: 300,
-                margin: 2,
-                errorCorrectionLevel: "M"
+        if (factorsError) {
+
+            throw factorsError;
+        }
+
+
+        const totpFactors =
+            factorsData?.totp || [];
+
+
+        /*
+           If a verified TOTP already exists,
+           do NOT create another one.
+        */
+
+        const verifiedFactor =
+            totpFactors.find(
+                factor =>
+                    factor.status === "verified"
+            );
+
+
+        if (verifiedFactor) {
+
+            enrolledFactorId =
+                verifiedFactor.id;
+
+            showMessage(
+                "MFA is already enabled for this Super Admin account.",
+                "success"
+            );
+
+            const verifyButton =
+                document.getElementById(
+                    "verifyButton"
+                );
+
+            if (verifyButton) {
+                verifyButton.style.display =
+                    "none";
             }
+
+            return;
+        }
+
+
+        /*
+           If an unverified factor exists,
+           use that factor rather than creating
+           another duplicate.
+        */
+
+        const unverifiedFactor =
+            totpFactors.find(
+                factor =>
+                    factor.status !== "verified"
+            );
+
+
+        if (unverifiedFactor) {
+
+            enrolledFactorId =
+                unverifiedFactor.id;
+
+            showMessage(
+                "An MFA setup is already in progress. Use the QR code or secret already provided.",
+                "info"
+            );
+
+            return;
+        }
+
+
+        // ---------------------------------------------
+        // ENROLL NEW TOTP
+        // ---------------------------------------------
+        showMessage(
+            "Creating your Super Admin MFA setup..."
         );
 
 
-    qrCode.src =
-        generatedQR;
-
-
-    qrCode.style.display =
-        "block";
-
-
-    qrCode.style.width =
-        "300px";
-
-
-    qrCode.style.height =
-        "300px";
-
-
-    qrCode.style.objectFit =
-        "contain";
-
-
-    qrCode.alt =
-        "MUNKA PIGGERY Super Admin MFA QR Code";
-
-
-    console.log(
-        "QR code generated successfully."
-    );
-}
-
-
-/* =========================================================
-   CREATE REAL MFA
-   ========================================================= */
-
-async function createRealMFA() {
-
-    showMessage(
-        "Creating the real MUNKA PIGGERY Super Admin MFA factor...",
-        "success"
-    );
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient.auth.mfa.enroll({
+        const {
+            data: enrollData,
+            error: enrollError
+        } = await supabaseClient.auth.mfa.enroll({
 
             factorType: "totp",
 
@@ -311,200 +308,80 @@ async function createRealMFA() {
         });
 
 
-    if (error) {
+        if (enrollError) {
+
+            throw enrollError;
+        }
+
+
+        if (!enrollData ||
+            !enrollData.id ||
+            !enrollData.totp) {
+
+            throw new Error(
+                "Supabase did not return the MFA setup information."
+            );
+        }
+
+
+        enrolledFactorId =
+            enrollData.id;
+
+
+        // ---------------------------------------------
+        // DISPLAY QR + SECRET
+        // ---------------------------------------------
+        displayMFASetup(
+            enrollData
+        );
+
+
+        showMessage(
+            "MFA setup created. Scan the QR code with Google Authenticator, or use the setup secret.",
+            "success"
+        );
+
+
+    } catch (error) {
 
         console.error(
-            "MFA ENROLLMENT ERROR:",
+            "MFA SETUP ERROR:",
             error
         );
 
-        throw error;
-    }
-
-
-    if (!data || !data.id) {
-
-        throw new Error(
-            "Supabase did not return the new MFA factor."
+        showMessage(
+            error.message ||
+            "Unable to set up MFA.",
+            "error"
         );
     }
-
-
-    activeFactorId =
-        data.id;
-
-
-    console.log(
-        "REAL MFA FACTOR CREATED:",
-        data
-    );
-
-
-    /* =====================================================
-       SECRET
-       ===================================================== */
-
-    if (
-        data.totp &&
-        data.totp.secret
-    ) {
-
-        secretElement.textContent =
-            data.totp.secret;
-
-    } else {
-
-        throw new Error(
-            "Supabase did not return the MFA setup secret."
-        );
-    }
-
-
-    /* =====================================================
-       QR CODE
-       ===================================================== */
-
-    if (
-        data.totp &&
-        data.totp.uri
-    ) {
-
-        await generateQRCode(
-            data.totp.uri
-        );
-
-    } else {
-
-        /*
-           Some Supabase responses may provide
-           qr_code instead of uri.
-
-           Try the returned QR SVG as a fallback.
-        */
-
-        if (
-            data.totp &&
-            data.totp.qr_code
-        ) {
-
-            const svg =
-                data.totp.qr_code;
-
-
-            qrCode.src =
-                "data:image/svg+xml;charset=utf-8," +
-                encodeURIComponent(svg);
-
-
-            qrCode.style.display =
-                "block";
-
-        } else {
-
-            throw new Error(
-                "Supabase did not return an MFA QR code or setup URI."
-            );
-        }
-    }
-
-
-    /* =====================================================
-       SHOW SETUP
-       ===================================================== */
-
-    stopLoading();
-
-
-    if (setupContent) {
-
-        setupContent.style.display =
-            "block";
-    }
-
-
-    if (verificationCode) {
-
-        verificationCode.disabled =
-            false;
-    }
-
-
-    if (verifyButton) {
-
-        verifyButton.disabled =
-            false;
-
-        verifyButton.textContent =
-            "VERIFY & ENABLE MFA";
-    }
-
-
-    showMessage(
-        "Your NEW MFA has been created. Scan the QR code with Google Authenticator, then enter the current 6-digit code.",
-        "success"
-    );
 }
 
 
-/* =========================================================
-   CREATE CHALLENGE
-   ========================================================= */
-
-async function createChallenge() {
-
-    if (!activeFactorId) {
-
-        throw new Error(
-            "No MFA factor is available."
-        );
-    }
-
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient.auth.mfa.challenge({
-
-            factorId:
-                activeFactorId
-        });
-
-
-    if (error) {
-        throw error;
-    }
-
-
-    if (!data || !data.id) {
-
-        throw new Error(
-            "MFA challenge could not be created."
-        );
-    }
-
-
-    currentChallengeId =
-        data.id;
-}
-
-
-/* =========================================================
-   VERIFY MFA
-   ========================================================= */
-
+// -----------------------------------------------------
+// VERIFY MFA CODE
+// -----------------------------------------------------
 async function verifyMFA() {
 
+    const codeInput =
+        document.getElementById(
+            "verificationCode"
+        );
+
+    const verifyButton =
+        document.getElementById(
+            "verifyButton"
+        );
+
+
     const code =
-        verificationCode.value
-            .replace(/\D/g, "")
-            .slice(0, 6);
+        codeInput?.value.trim();
 
 
-    if (!activeFactorId) {
+    if (!enrolledFactorId) {
 
         showMessage(
-            "No MFA factor is available.",
+            "No MFA factor is available for verification.",
             "error"
         );
 
@@ -515,93 +392,82 @@ async function verifyMFA() {
     if (!/^\d{6}$/.test(code)) {
 
         showMessage(
-            "Enter the current 6-digit code from Google Authenticator.",
+            "Please enter the 6-digit code from your authenticator app.",
             "error"
         );
-
-        verificationCode.focus();
 
         return;
     }
 
 
-    verifyButton.disabled =
-        true;
-
-
-    verifyButton.textContent =
-        "VERIFYING...";
-
-
     try {
 
-        await createChallenge();
+        verifyButton.disabled = true;
+
+        verifyButton.textContent =
+            "Verifying...";
 
 
+        // ---------------------------------------------
+        // CREATE CHALLENGE
+        // ---------------------------------------------
         const {
-            data,
-            error
+            data: challengeData,
+            error: challengeError
+        } =
+            await supabaseClient.auth.mfa.challenge({
+
+                factorId:
+                    enrolledFactorId
+            });
+
+
+        if (challengeError) {
+
+            throw challengeError;
+        }
+
+
+        // ---------------------------------------------
+        // VERIFY CODE
+        // ---------------------------------------------
+        const {
+            error: verifyError
         } =
             await supabaseClient.auth.mfa.verify({
 
                 factorId:
-                    activeFactorId,
+                    enrolledFactorId,
 
                 challengeId:
-                    currentChallengeId,
+                    challengeData.id,
 
                 code:
                     code
             });
 
 
-        if (error) {
-            throw error;
+        if (verifyError) {
+
+            throw verifyError;
         }
 
 
-        console.log(
-            "MFA VERIFICATION SUCCESS:",
-            data
-        );
-
-
-        if (verificationCode) {
-
-            verificationCode.disabled =
-                true;
-        }
-
-
-        verifyButton.disabled =
-            true;
-
-
-        verifyButton.textContent =
-            "MFA ENABLED ✓";
-
-
+        // ---------------------------------------------
+        // SUCCESS
+        // ---------------------------------------------
         showMessage(
-            "MFA has been successfully enabled for your Super Admin account.",
+            "MFA ENABLED SUCCESSFULLY ✓ Your Super Admin account is now protected with MFA.",
             "success"
         );
 
 
-        const {
-            data: assurance,
-            error: assuranceError
-        } =
-            await supabaseClient.auth.mfa
-                .getAuthenticatorAssuranceLevel();
+        codeInput.disabled = true;
 
+        verifyButton.disabled = true;
 
-        if (!assuranceError) {
-
-            console.log(
-                "AUTHENTICATOR ASSURANCE LEVEL:",
-                assurance
-            );
-        }
+        verifyButton.textContent =
+            "MFA Enabled ✓";
 
 
     } catch (error) {
@@ -612,51 +478,33 @@ async function verifyMFA() {
         );
 
 
-        currentChallengeId =
-            null;
+        showMessage(
+            error.message ||
+            "The verification code was not accepted.",
+            "error"
+        );
 
 
         verifyButton.disabled =
             false;
 
-
         verifyButton.textContent =
-            "VERIFY & ENABLE MFA";
-
-
-        showMessage(
-            error.message ||
-            "The MFA code could not be verified.",
-            "error"
-        );
+            "Verify & Enable MFA";
     }
 }
 
 
-/* =========================================================
-   CODE INPUT
-   ========================================================= */
+// -----------------------------------------------------
+// BUTTON
+// -----------------------------------------------------
+function setupMFAButton() {
 
-if (verificationCode) {
+    const verifyButton =
+        document.getElementById(
+            "verifyButton"
+        );
 
-    verificationCode.addEventListener(
-        "input",
-        function () {
-
-            this.value =
-                this.value
-                    .replace(/\D/g, "")
-                    .slice(0, 6);
-        }
-    );
-}
-
-
-/* =========================================================
-   VERIFY BUTTON
-   ========================================================= */
-
-if (verifyButton) {
+    if (!verifyButton) return;
 
     verifyButton.addEventListener(
         "click",
@@ -665,112 +513,37 @@ if (verifyButton) {
 }
 
 
-/* =========================================================
-   INITIALIZATION
-   ========================================================= */
-
+// -----------------------------------------------------
+// INITIALIZE
+// -----------------------------------------------------
 async function initializeMFA() {
 
     try {
 
-        if (
-            typeof supabaseClient === "undefined" ||
-            !supabaseClient
-        ) {
+        setupMFAButton();
 
-            throw new Error(
-                "Supabase client is not available."
-            );
-        }
-
-
-        /* -------------------------------------------------
-           CHECK SUPER ADMIN
-           ------------------------------------------------- */
-
-        await checkSuperAdmin();
-
-
-        /* -------------------------------------------------
-           CHECK EXISTING FACTORS
-           ------------------------------------------------- */
-
-        const factors =
-            await getFactors();
-
-
-        const totpFactors =
-            Array.isArray(factors.totp)
-                ? factors.totp
-                : [];
-
-
-        /*
-           We expect no TOTP here because the test factor
-           should have been removed before final enrollment.
-        */
-
-        if (totpFactors.length > 0) {
-
-            stopLoading();
-
-
-            if (setupContent) {
-                setupContent.style.display = "block";
-            }
-
-
-            showMessage(
-                "A TOTP MFA factor already exists. No additional factor was created.",
-                "error"
-            );
-
-
-            return;
-        }
-
-
-        /* -------------------------------------------------
-           CREATE REAL FACTOR
-           ------------------------------------------------- */
-
-        await createRealMFA();
-
+        await createMFAFactor();
 
     } catch (error) {
 
         console.error(
-            "FINAL MFA SETUP ERROR:",
+            "MFA INITIALIZATION ERROR:",
             error
         );
 
-
-        stopLoading();
-
-
         showMessage(
             error.message ||
-            "Unable to complete MFA setup.",
+            "Unable to initialize MFA.",
             "error"
         );
     }
 }
 
 
-/* =========================================================
-   START
-   ========================================================= */
-
-if (
-    document.readyState === "loading"
-) {
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        initializeMFA
-    );
-
-} else {
-
-    initializeMFA();
-}
+// -----------------------------------------------------
+// START
+// -----------------------------------------------------
+document.addEventListener(
+    "DOMContentLoaded",
+    initializeMFA
+);
