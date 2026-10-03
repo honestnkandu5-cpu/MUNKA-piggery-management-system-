@@ -1,7 +1,6 @@
 /* =========================================================
    MUNKA PIGGERY
-   SUPER ADMIN MFA SETUP
-   EXISTING TOTP FACTOR SUPPORT
+   SUPER ADMIN MFA RESET + FRESH TOTP ENROLLMENT
    ========================================================= */
 
 let activeFactorId = null;
@@ -43,9 +42,7 @@ function showMessage(text, type = "success") {
     if (!message) return;
 
     message.textContent = text;
-
-    message.className =
-        "message " + type;
+    message.className = "message " + type;
 }
 
 
@@ -81,12 +78,10 @@ async function getSuperAdmin() {
         !data.session ||
         !data.session.user
     ) {
-
         throw new Error(
             "You must be logged in as Super Admin."
         );
     }
-
 
     const authUserId =
         data.session.user.id;
@@ -108,35 +103,28 @@ async function getSuperAdmin() {
 
 
     if (!user) {
-
         throw new Error(
-            "MUNKA Super Admin profile could not be found."
+            "Super Admin profile could not be found."
         );
     }
 
 
-    const role =
+    if (
         String(user.role || "")
             .trim()
-            .toLowerCase();
-
-
-    if (role !== "super admin") {
-
+            .toLowerCase() !== "super admin"
+    ) {
         throw new Error(
-            "Only the Super Admin can access MFA setup."
+            "Only the Super Admin can manage MFA."
         );
     }
 
 
-    const status =
+    if (
         String(user.status || "")
             .trim()
-            .toLowerCase();
-
-
-    if (status !== "active") {
-
+            .toLowerCase() !== "active"
+    ) {
         throw new Error(
             "The Super Admin account is not active."
         );
@@ -148,30 +136,26 @@ async function getSuperAdmin() {
 
 
 /* =========================================================
-   GET MFA FACTORS
+   GET FACTORS
    ========================================================= */
 
-async function getMFAFactors() {
+async function getFactors() {
 
     const {
         data,
         error
     } = await supabaseClient.auth.mfa.listFactors();
 
-
     if (error) {
         throw error;
     }
 
-
     console.log(
-        "MUNKA MFA factors:",
+        "Current MFA factors:",
         data
     );
 
-
     return data || {
-        all: [],
         totp: [],
         phone: []
     };
@@ -179,156 +163,84 @@ async function getMFAFactors() {
 
 
 /* =========================================================
-   FIND EXISTING TOTP
+   REMOVE EXISTING TOTP FACTORS
    ========================================================= */
 
-function getExistingTOTP(factors) {
+async function removeExistingTOTPFactors() {
 
-    if (!factors) {
-        return null;
-    }
+    const factors =
+        await getFactors();
 
 
-    /*
-       Supabase normally provides:
+    const totpFactors =
+        Array.isArray(factors.totp)
+            ? factors.totp
+            : [];
 
-       factors.totp
-    */
 
-    if (
-        Array.isArray(factors.totp) &&
-        factors.totp.length > 0
-    ) {
+    if (totpFactors.length === 0) {
 
         console.log(
-            "Existing TOTP factor found:",
-            factors.totp[0]
+            "No existing TOTP factor found."
         );
 
-        return factors.totp[0];
+        return;
     }
 
 
-    /*
-       Backup check using factors.all.
-    */
+    console.log(
+        "Existing TOTP factors found:",
+        totpFactors
+    );
 
-    if (Array.isArray(factors.all)) {
 
-        const totp =
-            factors.all.find(
-                factor =>
-                    String(
-                        factor.factor_type || ""
-                    ).toLowerCase() === "totp"
+    for (const factor of totpFactors) {
+
+        if (!factor.id) {
+            continue;
+        }
+
+
+        console.log(
+            "Removing old TOTP factor:",
+            factor.id
+        );
+
+
+        const {
+            error
+        } =
+            await supabaseClient.auth.mfa.unenroll({
+                factorId: factor.id
+            });
+
+
+        if (error) {
+
+            throw new Error(
+                "Could not remove the old MFA factor: " +
+                error.message
             );
-
-
-        if (totp) {
-
-            console.log(
-                "Existing TOTP found in all factors:",
-                totp
-            );
-
-            return totp;
         }
     }
 
 
-    return null;
-}
-
-
-/* =========================================================
-   SHOW EXISTING FACTOR
-   ========================================================= */
-
-function showExistingFactor(factor) {
-
-    activeFactorId =
-        factor.id;
-
-
-    stopLoading();
-
-
-    if (setupContent) {
-
-        setupContent.style.display =
-            "block";
-    }
-
-
-    /*
-       Hide QR because this factor
-       already exists.
-    */
-
-    if (qrCode) {
-
-        qrCode.style.display =
-            "none";
-
-        qrCode.removeAttribute("src");
-    }
-
-
-    /*
-       Tell the user to use the
-       existing Google Authenticator.
-    */
-
-    if (secretElement) {
-
-        secretElement.textContent =
-            "Existing MFA is connected. Use the current 6-digit code shown in Google Authenticator.";
-    }
-
-
-    if (verificationCode) {
-
-        verificationCode.value = "";
-
-        verificationCode.disabled = false;
-
-        verificationCode.focus();
-    }
-
-
-    if (verifyButton) {
-
-        verifyButton.disabled = false;
-
-        verifyButton.textContent =
-            "VERIFY MFA";
-    }
-
-
-    showMessage(
-        "Your existing MFA factor was found. Enter the current 6-digit code from Google Authenticator.",
-        "success"
+    console.log(
+        "Old TOTP factor(s) removed successfully."
     );
 }
 
 
 /* =========================================================
-   CREATE NEW TOTP
+   ENROLL FRESH TOTP
    ========================================================= */
 
-async function createNewTOTP() {
+async function enrollFreshTOTP() {
 
     console.log(
-        "No existing TOTP factor found."
+        "Creating fresh MUNKA PIGGERY TOTP factor..."
     );
 
-
-    /*
-       ONLY HERE do we enroll.
-
-       This function is NOT called when
-       an existing TOTP factor exists.
-    */
 
     const {
         data,
@@ -339,7 +251,10 @@ async function createNewTOTP() {
             factorType: "totp",
 
             friendlyName:
-                "MUNKA PIGGERY Super Admin"
+                "MUNKA PIGGERY Super Admin",
+
+            issuer:
+                "MUNKA PIGGERY"
         });
 
 
@@ -351,7 +266,7 @@ async function createNewTOTP() {
     if (!data || !data.id) {
 
         throw new Error(
-            "Supabase did not return a new MFA factor."
+            "Supabase did not return the new MFA factor."
         );
     }
 
@@ -361,39 +276,33 @@ async function createNewTOTP() {
 
 
     console.log(
-        "New MFA factor created:",
+        "New factor:",
         data
     );
 
 
-    /* -----------------------------------------------------
+    /* =====================================================
        SECRET
-       ----------------------------------------------------- */
+       ===================================================== */
 
     if (
         data.totp &&
         data.totp.secret
     ) {
 
-        if (secretElement) {
-
-            secretElement.textContent =
-                data.totp.secret;
-        }
+        secretElement.textContent =
+            data.totp.secret;
 
     } else {
 
-        if (secretElement) {
-
-            secretElement.textContent =
-                "Secret unavailable.";
-        }
+        secretElement.textContent =
+            "Secret was not returned.";
     }
 
 
-    /* -----------------------------------------------------
+    /* =====================================================
        QR CODE
-       ----------------------------------------------------- */
+       ===================================================== */
 
     if (
         data.totp &&
@@ -409,19 +318,17 @@ async function createNewTOTP() {
             encodeURIComponent(svg);
 
 
-        if (qrCode) {
+        qrCode.src =
+            dataUrl;
 
-            qrCode.src =
-                dataUrl;
 
-            qrCode.style.display =
-                "block";
-        }
+        qrCode.style.display =
+            "block";
 
     } else {
 
         throw new Error(
-            "Supabase did not return the MFA QR code."
+            "Supabase did not return a QR code."
         );
     }
 
@@ -429,39 +336,31 @@ async function createNewTOTP() {
     stopLoading();
 
 
-    if (setupContent) {
-
-        setupContent.style.display =
-            "block";
-    }
+    setupContent.style.display =
+        "block";
 
 
-    if (verificationCode) {
-
-        verificationCode.disabled =
-            false;
-    }
+    verificationCode.disabled =
+        false;
 
 
-    if (verifyButton) {
+    verifyButton.disabled =
+        false;
 
-        verifyButton.disabled =
-            false;
 
-        verifyButton.textContent =
-            "ENABLE MFA";
-    }
+    verifyButton.textContent =
+        "VERIFY & ENABLE MFA";
 
 
     showMessage(
-        "Scan the QR code with your authenticator app, then enter the 6-digit code.",
+        "A fresh MFA factor has been created. Scan the new QR code with Google Authenticator, then enter the 6-digit code.",
         "success"
     );
 }
 
 
 /* =========================================================
-   CREATE MFA CHALLENGE
+   CREATE CHALLENGE
    ========================================================= */
 
 async function createChallenge() {
@@ -472,12 +371,6 @@ async function createChallenge() {
             "No MFA factor is available."
         );
     }
-
-
-    console.log(
-        "Creating MFA challenge for factor:",
-        activeFactorId
-    );
 
 
     const {
@@ -513,15 +406,10 @@ async function createChallenge() {
 
 
 /* =========================================================
-   VERIFY CODE
+   VERIFY NEW MFA
    ========================================================= */
 
 async function verifyMFA() {
-
-    if (!verificationCode) {
-        return;
-    }
-
 
     const code =
         verificationCode.value
@@ -543,7 +431,7 @@ async function verifyMFA() {
     if (!/^\d{6}$/.test(code)) {
 
         showMessage(
-            "Please enter the current 6-digit code from Google Authenticator.",
+            "Enter the current 6-digit code from Google Authenticator.",
             "error"
         );
 
@@ -553,20 +441,18 @@ async function verifyMFA() {
     }
 
 
-    if (verifyButton) {
+    verifyButton.disabled =
+        true;
 
-        verifyButton.disabled =
-            true;
 
-        verifyButton.textContent =
-            "VERIFYING...";
-    }
+    verifyButton.textContent =
+        "VERIFYING...";
 
 
     try {
 
         /* -------------------------------------------------
-           CHALLENGE
+           CREATE CHALLENGE
            ------------------------------------------------- */
 
         await createChallenge();
@@ -604,57 +490,41 @@ async function verifyMFA() {
         );
 
 
-        /* -------------------------------------------------
-           SUCCESS
-           ------------------------------------------------- */
-
         verificationCode.disabled =
             true;
 
 
-        if (verifyButton) {
+        verifyButton.disabled =
+            true;
 
-            verifyButton.disabled =
-                true;
 
-            verifyButton.textContent =
-                "MFA VERIFIED ✓";
-        }
+        verifyButton.textContent =
+            "MFA ENABLED ✓";
 
 
         showMessage(
-            "MFA has been successfully verified for your Super Admin account.",
+            "MFA has been successfully enabled for your Super Admin account.",
             "success"
         );
 
 
-        /* -------------------------------------------------
-           CHECK ASSURANCE LEVEL
-           ------------------------------------------------- */
+        /*
+           Check the current assurance level.
+        */
 
-        try {
-
-            const {
-                data: assurance,
-                error: assuranceError
-            } =
-                await supabaseClient.auth.mfa
-                    .getAuthenticatorAssuranceLevel();
+        const {
+            data: assurance,
+            error: assuranceError
+        } =
+            await supabaseClient.auth.mfa
+                .getAuthenticatorAssuranceLevel();
 
 
-            if (!assuranceError) {
+        if (!assuranceError) {
 
-                console.log(
-                    "MFA assurance level:",
-                    assurance
-                );
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "Could not read assurance level:",
-                error
+            console.log(
+                "MFA assurance level:",
+                assurance
             );
         }
 
@@ -662,7 +532,7 @@ async function verifyMFA() {
     } catch (error) {
 
         console.error(
-            "MFA verification failed:",
+            "MFA verification error:",
             error
         );
 
@@ -671,19 +541,17 @@ async function verifyMFA() {
             null;
 
 
-        if (verifyButton) {
+        verifyButton.disabled =
+            false;
 
-            verifyButton.disabled =
-                false;
 
-            verifyButton.textContent =
-                "VERIFY MFA";
-        }
+        verifyButton.textContent =
+            "VERIFY & ENABLE MFA";
 
 
         showMessage(
             error.message ||
-            "The MFA code could not be verified. Please enter the current code from Google Authenticator.",
+            "The code could not be verified. Make sure you are entering the current code generated from the NEW QR code.",
             "error"
         );
     }
@@ -723,16 +591,12 @@ if (verifyButton) {
 
 
 /* =========================================================
-   INITIALIZE
+   INITIALIZATION
    ========================================================= */
 
-async function initializeMFA() {
+async function initializeMFAReset() {
 
     try {
-
-        /* -------------------------------------------------
-           SUPABASE CHECK
-           ------------------------------------------------- */
 
         if (
             typeof supabaseClient === "undefined" ||
@@ -746,69 +610,53 @@ async function initializeMFA() {
 
 
         /* -------------------------------------------------
-           SUPER ADMIN CHECK
+           VERIFY SUPER ADMIN
            ------------------------------------------------- */
 
         await getSuperAdmin();
 
 
-        /* -------------------------------------------------
-           GET EXISTING FACTORS
-           ------------------------------------------------- */
-
-        const factors =
-            await getMFAFactors();
+        stopLoading();
 
 
-        /* -------------------------------------------------
-           FIND TOTP
-           ------------------------------------------------- */
+        /*
+           IMPORTANT:
 
-        const existingTOTP =
-            getExistingTOTP(factors);
+           Remove the old factor first.
+           Then create a completely fresh one.
+        */
 
-
-        /* =================================================
-           IMPORTANT
-           =================================================
-
-           IF A TOTP FACTOR EXISTS:
-
-           DO NOT CALL enroll().
-
-           USE THE EXISTING FACTOR.
-           ================================================= */
-
-        if (existingTOTP) {
-
-            console.log(
-                "USING EXISTING MFA FACTOR:",
-                existingTOTP.id
-            );
+        showMessage(
+            "Checking the existing MFA configuration...",
+            "success"
+        );
 
 
-            showExistingFactor(
-                existingTOTP
-            );
+        await removeExistingTOTPFactors();
 
 
-            return;
-        }
+        /*
+           Give Supabase a moment before
+           creating the new factor.
+        */
+
+        await new Promise(
+            resolve =>
+                setTimeout(resolve, 500)
+        );
 
 
-        /* =================================================
-           NO TOTP EXISTS
+        /*
+           CREATE NEW FACTOR
+        */
 
-           Only now can we create one.
-           ================================================= */
-
-        await createNewTOTP();
+        await enrollFreshTOTP();
 
 
     } catch (error) {
 
         console.error(
-            "MUNKA MFA initialization error:",
+            "MFA reset/setup error:",
             error
         );
 
@@ -818,7 +666,7 @@ async function initializeMFA() {
 
         showMessage(
             error.message ||
-            "Unable to prepare MFA.",
+            "Unable to reset MFA.",
             "error"
         );
     }
@@ -835,10 +683,10 @@ if (
 
     document.addEventListener(
         "DOMContentLoaded",
-        initializeMFA
+        initializeMFAReset
     );
 
 } else {
 
-    initializeMFA();
+    initializeMFAReset();
 }
