@@ -1,18 +1,81 @@
 /* ==========================================================
    MUNKA PIGGERY
    SUPER ADMIN - RECORD SUBSCRIPTION PAYMENT
+   MFA PROTECTED VERSION
    ========================================================== */
 
 let currentUser = null;
 let farms = [];
 let plans = [];
 
+/*
+   SECURITY FLAG
+
+   This becomes true only after:
+   - Valid Supabase session
+   - Super Admin role
+   - Active account
+   - MFA AAL2 verification
+*/
+let paymentManagementSecurityVerified = false;
+
 
 /* ==========================================================
-   CHECK SUPER ADMIN
+   SECURITY - REDIRECT TO LOGIN
+========================================================== */
+
+function redirectToLogin() {
+
+    window.location.replace(
+        "login.html"
+    );
+}
+
+
+/* ==========================================================
+   SECURITY - SAFE SIGN OUT
+========================================================== */
+
+async function safePaymentManagementSignOut() {
+
+    try {
+
+        await supabaseClient
+            .auth
+            .signOut();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "SECURE SIGN OUT ERROR:",
+            error
+        );
+
+    }
+
+    localStorage.removeItem(
+        "loggedInUser"
+    );
+
+    redirectToLogin();
+}
+
+
+/* ==========================================================
+   SECURITY - CHECK SUPER ADMIN + MFA
 ========================================================== */
 
 async function checkSuperAdmin() {
+
+    paymentManagementSecurityVerified =
+        false;
+
+
+    /* ======================================================
+       CHECK SESSION
+    ====================================================== */
 
     const {
         data: { session },
@@ -20,19 +83,25 @@ async function checkSuperAdmin() {
     } = await supabaseClient.auth.getSession();
 
 
-    if (error || !session) {
+    if (
+        error ||
+        !session
+    ) {
 
         console.error(
             "SESSION ERROR:",
             error
         );
 
-        window.location.href =
-            "login.html";
+        redirectToLogin();
 
         return false;
     }
 
+
+    /* ======================================================
+       LOAD USER PROFILE
+    ====================================================== */
 
     const {
         data: user,
@@ -58,28 +127,154 @@ async function checkSuperAdmin() {
             "Unable to load Super Admin profile."
         );
 
+        await safePaymentManagementSignOut();
+
         return false;
     }
 
+
+    /* ======================================================
+       CHECK ROLE
+    ====================================================== */
 
     if (
         !user ||
-        user.role !== "Super Admin" ||
-        user.status !== "Active"
+        String(user.role || "")
+            .trim()
+            .toLowerCase() !==
+            "super admin"
     ) {
 
         alert(
-            "Access denied."
+            "Access denied. Super Admin privileges are required."
         );
 
-        window.location.href =
-            "login.html";
+        await safePaymentManagementSignOut();
 
         return false;
     }
 
 
-    currentUser = user;
+    /* ======================================================
+       CHECK ACCOUNT STATUS
+    ====================================================== */
+
+    if (
+        String(user.status || "")
+            .trim()
+            .toLowerCase() !==
+            "active"
+    ) {
+
+        alert(
+            "Your Super Admin account is not active."
+        );
+
+        await safePaymentManagementSignOut();
+
+        return false;
+    }
+
+
+    /* ======================================================
+       CHECK MFA AAL2
+    ====================================================== */
+
+    const {
+        data: aalData,
+        error: aalError
+    } =
+        await supabaseClient
+            .auth
+            .mfa
+            .getAuthenticatorAssuranceLevel();
+
+
+    if (aalError) {
+
+        console.error(
+            "MFA AAL ERROR:",
+            aalError
+        );
+
+        alert(
+            "Unable to verify Multi-Factor Authentication."
+        );
+
+        await safePaymentManagementSignOut();
+
+        return false;
+    }
+
+
+    const currentLevel =
+        aalData?.currentLevel;
+
+
+    console.log(
+        "RECORD PAYMENT MFA LEVEL:",
+        currentLevel
+    );
+
+
+    if (
+        currentLevel !==
+        "aal2"
+    ) {
+
+        alert(
+            "Multi-Factor Authentication is required to access subscription payment management."
+        );
+
+        await safePaymentManagementSignOut();
+
+        return false;
+    }
+
+
+    /* ======================================================
+       SECURITY VERIFIED
+    ====================================================== */
+
+    currentUser =
+        user;
+
+    paymentManagementSecurityVerified =
+        true;
+
+
+    console.log(
+        "RECORD PAYMENT SECURITY: Super Admin + MFA AAL2 verified."
+    );
+
+
+    return true;
+}
+
+
+/* ==========================================================
+   SECURITY GUARD
+========================================================== */
+
+async function ensurePaymentManagementSecurity() {
+
+    if (
+        paymentManagementSecurityVerified
+    ) {
+
+        return true;
+    }
+
+
+    const verified =
+        await checkSuperAdmin();
+
+
+    if (!verified) {
+
+        return false;
+    }
+
 
     return true;
 }
@@ -90,6 +285,14 @@ async function checkSuperAdmin() {
 ========================================================== */
 
 async function loadFarms() {
+
+    if (
+        !paymentManagementSecurityVerified
+    ) {
+
+        return;
+    }
+
 
     const {
         data,
@@ -178,6 +381,14 @@ async function loadFarms() {
 ========================================================== */
 
 async function loadPlans() {
+
+    if (
+        !paymentManagementSecurityVerified
+    ) {
+
+        return;
+    }
+
 
     const {
         data,
@@ -287,6 +498,7 @@ function updateAmount() {
         !planSelect ||
         !amountInput
     ) {
+
         return;
     }
 
@@ -388,6 +600,20 @@ async function recordPayment(
 ) {
 
     event.preventDefault();
+
+
+    /* ======================================================
+       SECURITY CHECK BEFORE PAYMENT OPERATION
+    ====================================================== */
+
+    const securityOK =
+        await ensurePaymentManagementSecurity();
+
+
+    if (!securityOK) {
+
+        return;
+    }
 
 
     const saveButton =
@@ -592,17 +818,6 @@ async function recordPayment(
             now;
 
 
-        /*
-           IMPORTANT:
-
-           We only extend an existing subscription when
-           that subscription has ALREADY STARTED and is
-           currently active.
-
-           A future subscription must NOT be treated as
-           an active subscription.
-        */
-
         const existingStart =
             farm.subscription_start
                 ? new Date(
@@ -637,29 +852,10 @@ async function recordPayment(
             hasCurrentlyActiveSubscription
         ) {
 
-            /*
-               Existing subscription is currently active.
-
-               Continue from the existing expiry date so
-               unused subscription time is not lost.
-            */
-
             subscriptionStart =
                 existingEnd;
 
         } else {
-
-            /*
-               No currently active subscription.
-
-               This includes:
-
-               - No previous subscription
-               - Expired subscription
-               - Future subscription
-
-               Therefore the new payment starts NOW.
-            */
 
             subscriptionStart =
                 now;
@@ -1060,31 +1256,8 @@ function formatCurrency(
 
 async function logout() {
 
-    try {
+    await safePaymentManagementSignOut();
 
-        await supabaseClient
-            .auth
-            .signOut();
-
-    }
-
-    catch(error) {
-
-        console.error(
-            "LOGOUT ERROR:",
-            error
-        );
-
-    }
-
-
-    localStorage.removeItem(
-        "loggedInUser"
-    );
-
-
-    window.location.href =
-        "login.html";
 }
 
 
@@ -1101,12 +1274,23 @@ document.addEventListener(
         );
 
 
+        /* ==================================================
+           SECURITY FIRST
+        ================================================== */
+
         const allowed =
             await checkSuperAdmin();
 
 
-        if (!allowed) return;
+        if (!allowed) {
 
+            return;
+        }
+
+
+        /* ==================================================
+           NORMAL INITIALIZATION
+        ================================================== */
 
         setTodayDate();
 
