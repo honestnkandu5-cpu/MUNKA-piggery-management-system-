@@ -1,12 +1,19 @@
 /* ============================================================
    MUNKA PIGGERY TECHNOLOGY
-   ANNOUNCEMENTS - DIRECT LOADING VERSION
+   ANNOUNCEMENTS MODULE
+   PHASE 1 - SUPER ADMIN TARGETING
 ============================================================ */
-alert("ANNOUNCEMENTS JS IS LOADING");
+
 let currentUser = null;
 let currentProfile = null;
+
 let allAnnouncements = [];
 let editingAnnouncementId = null;
+
+let availableFarms = [];
+let availableUsers = [];
+
+let isSuperAdmin = false;
 
 
 /* ============================================================
@@ -17,17 +24,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log("ANNOUNCEMENTS: DOM READY");
 
-    // Start the page immediately.
     setDefaultFarmName();
 
     setupFormEvents();
 
-    // Load announcements independently.
     loadAnnouncements();
 
-    // Load profile information separately.
     loadProfileInBackground();
-
 });
 
 
@@ -41,6 +44,7 @@ function setDefaultFarmName() {
         document.getElementById("farmName");
 
     if (farmName) {
+
         farmName.textContent =
             "MUNKA PIGGERY TECHNOLOGY";
     }
@@ -48,7 +52,7 @@ function setDefaultFarmName() {
 
 
 /* ============================================================
-   GET LOCAL USER
+   GET LOGGED-IN USER
 ============================================================ */
 
 function getLoggedInUser() {
@@ -77,9 +81,7 @@ function getLoggedInUser() {
 
 
 /* ============================================================
-   LOAD PROFILE IN BACKGROUND
-   IMPORTANT:
-   This does NOT block announcements.
+   LOAD PROFILE
 ============================================================ */
 
 async function loadProfileInBackground() {
@@ -103,13 +105,17 @@ async function loadProfileInBackground() {
             currentUser
         );
 
-        /*
-         * If auth_user_id exists, get the latest
-         * profile from Supabase.
-         */
+
+        /* ====================================================
+           GET FRESH PROFILE FROM SUPABASE
+        ==================================================== */
+
         if (currentUser.auth_user_id) {
 
-            const { data, error } =
+            const {
+                data,
+                error
+            } =
                 await supabaseClient
                     .from("users")
                     .select("*")
@@ -121,33 +127,56 @@ async function loadProfileInBackground() {
 
             if (!error && data) {
 
-                currentProfile = data;
+                currentProfile =
+                    data;
 
-                console.log(
-                    "Profile loaded:",
-                    currentProfile
+            } else {
+
+                console.warn(
+                    "Could not retrieve full profile:",
+                    error
                 );
 
-                updateFarmName();
-
-                loadTargetData();
-
-                return;
+                currentProfile =
+                    currentUser;
             }
 
-            console.warn(
-                "Could not retrieve full profile:",
-                error
-            );
+        } else {
+
+            currentProfile =
+                currentUser;
         }
 
-        // Use localStorage profile as fallback.
-        currentProfile =
-            currentUser;
+
+        /* ====================================================
+           IDENTIFY ROLE
+        ==================================================== */
+
+        const role =
+            String(
+                currentProfile?.role || ""
+            )
+                .trim()
+                .toLowerCase();
+
+        isSuperAdmin =
+            role === "super admin";
+
+
+        console.log(
+            "CURRENT PROFILE:",
+            currentProfile
+        );
+
+        console.log(
+            "IS SUPER ADMIN:",
+            isSuperAdmin
+        );
+
 
         updateFarmName();
 
-        loadTargetData();
+        await loadTargetData();
 
     } catch (error) {
 
@@ -155,11 +184,6 @@ async function loadProfileInBackground() {
             "Background profile loading error:",
             error
         );
-
-        /*
-         * IMPORTANT:
-         * We deliberately do NOT stop the announcements page.
-         */
     }
 }
 
@@ -178,9 +202,16 @@ async function updateFarmName() {
     }
 
     const role =
-        String(currentProfile.role || "")
+        String(
+            currentProfile.role || ""
+        )
             .trim()
             .toLowerCase();
+
+
+    /* ========================================================
+       SUPER ADMIN
+    ======================================================== */
 
     if (
         role === "super admin" &&
@@ -193,13 +224,22 @@ async function updateFarmName() {
         return;
     }
 
+
+    /* ========================================================
+       FARM USER
+    ======================================================== */
+
     if (!currentProfile.farm_id) {
         return;
     }
 
+
     try {
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
                 .from("farms")
                 .select("farm_name")
@@ -231,7 +271,6 @@ async function updateFarmName() {
 
 /* ============================================================
    LOAD ANNOUNCEMENTS
-   THIS IS NOW INDEPENDENT
 ============================================================ */
 
 async function loadAnnouncements() {
@@ -244,11 +283,10 @@ async function loadAnnouncements() {
 
     try {
 
-        /*
-         * First perform the same simple query
-         * that we already proved works.
-         */
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
                 .from("announcements")
                 .select("*")
@@ -260,12 +298,6 @@ async function loadAnnouncements() {
                 );
 
         if (error) {
-
-            console.error(
-                "Announcement query error:",
-                error
-            );
-
             throw error;
         }
 
@@ -330,6 +362,7 @@ function renderAnnouncements() {
 
     body.innerHTML = "";
 
+
     if (!allAnnouncements.length) {
 
         if (wrapper) {
@@ -343,6 +376,7 @@ function renderAnnouncements() {
         return;
     }
 
+
     if (wrapper) {
         wrapper.style.display = "";
     }
@@ -351,13 +385,16 @@ function renderAnnouncements() {
         empty.style.display = "none";
     }
 
+
     allAnnouncements.forEach(
         function (announcement) {
 
             const row =
                 document.createElement("tr");
 
+
             row.innerHTML = `
+
                 <td>
                     ${escapeHtml(
                         announcement.title || ""
@@ -372,13 +409,22 @@ function renderAnnouncements() {
 
                 <td>
                     ${escapeHtml(
-                        announcement.target_type || ""
+                        getTargetDisplayText(
+                            announcement
+                        )
                     )}
                 </td>
 
                 <td>
                     ${formatDate(
+                        announcement.start_at ||
                         announcement.created_at
+                    )}
+                </td>
+
+                <td>
+                    ${formatDate(
+                        announcement.expires_at
                     )}
                 </td>
 
@@ -394,34 +440,38 @@ function renderAnnouncements() {
 
                     <button
                         type="button"
-                        onclick="viewAnnouncement(${announcement.id})"
-                    >
+                        onclick="viewAnnouncement(${announcement.id})">
+
                         View
+
                     </button>
 
                     <button
                         type="button"
-                        onclick="editAnnouncement(${announcement.id})"
-                    >
+                        onclick="editAnnouncement(${announcement.id})">
+
                         Edit
+
                     </button>
 
                     <button
                         type="button"
-                        onclick="toggleAnnouncement(${announcement.id})"
-                    >
+                        onclick="toggleAnnouncement(${announcement.id})">
+
                         ${
                             announcement.is_active
                                 ? "Deactivate"
                                 : "Activate"
                         }
+
                     </button>
 
                     <button
                         type="button"
-                        onclick="deleteAnnouncement(${announcement.id})"
-                    >
+                        onclick="deleteAnnouncement(${announcement.id})">
+
                         Delete
+
                     </button>
 
                 </td>
@@ -430,6 +480,88 @@ function renderAnnouncements() {
             body.appendChild(row);
         }
     );
+}
+
+
+/* ============================================================
+   TARGET DISPLAY
+============================================================ */
+
+function getTargetDisplayText(announcement) {
+
+    const type =
+        announcement.target_type;
+
+
+    if (type === "Platform") {
+
+        return "Entire Platform";
+    }
+
+
+    if (type === "Farm") {
+
+        return (
+            getFarmName(
+                announcement.farm_id
+            ) ||
+            "Whole Farm"
+        );
+    }
+
+
+    if (type === "Role") {
+
+        return (
+            getFarmName(
+                announcement.farm_id
+            ) +
+            " • " +
+            (
+                announcement.target_role ||
+                "Specific Role"
+            )
+        );
+    }
+
+
+    if (type === "User") {
+
+        const user =
+            availableUsers.find(
+                u =>
+                    Number(u.id) ===
+                    Number(
+                        announcement.target_user_id
+                    )
+            );
+
+        if (user) {
+
+            return (
+                getFarmName(
+                    user.farm_id
+                ) +
+                " • " +
+                (
+                    user.full_name ||
+                    user.username ||
+                    "User"
+                )
+            );
+        }
+
+        return (
+            "Specific User • ID " +
+            (
+                announcement.target_user_id ||
+                "Unknown"
+            )
+        );
+    }
+
+
+    return type || "Unknown";
 }
 
 
@@ -452,6 +584,7 @@ function setupFormEvents() {
         );
     }
 
+
     const refresh =
         document.getElementById(
             "refreshButton"
@@ -461,12 +594,10 @@ function setupFormEvents() {
 
         refresh.addEventListener(
             "click",
-            function () {
-
-                loadAnnouncements();
-            }
+            loadAnnouncements
         );
     }
+
 
     const targetType =
         document.getElementById(
@@ -481,6 +612,21 @@ function setupFormEvents() {
         );
     }
 
+
+    const targetFarm =
+        document.getElementById(
+            "targetFarm"
+        );
+
+    if (targetFarm) {
+
+        targetFarm.addEventListener(
+            "change",
+            handleTargetFarmChange
+        );
+    }
+
+
     const clear =
         document.getElementById(
             "clearFormButton"
@@ -494,6 +640,7 @@ function setupFormEvents() {
         );
     }
 
+
     const cancel =
         document.getElementById(
             "cancelEditButton"
@@ -506,11 +653,25 @@ function setupFormEvents() {
             clearForm
         );
     }
+
+
+    const closeModal =
+        document.getElementById(
+            "closeModal"
+        );
+
+    if (closeModal) {
+
+        closeModal.addEventListener(
+            "click",
+            closeMessageModal
+        );
+    }
 }
 
 
 /* ============================================================
-   TARGET TYPE
+   TARGET TYPE CHANGE
 ============================================================ */
 
 function handleTargetTypeChange() {
@@ -520,40 +681,134 @@ function handleTargetTypeChange() {
             "targetType"
         )?.value;
 
-    const farm =
+
+    const farmGroup =
         document.getElementById(
             "farmTargetGroup"
         );
 
-    const role =
+    const roleGroup =
         document.getElementById(
             "roleTargetGroup"
         );
 
-    const user =
+    const userGroup =
         document.getElementById(
             "userTargetGroup"
         );
 
-    if (farm) {
-        farm.style.display =
-            type === "Farm" ? "" : "none";
+
+    /* ========================================================
+       HIDE EVERYTHING FIRST
+    ======================================================== */
+
+    if (farmGroup) {
+        farmGroup.style.display = "none";
     }
 
-    if (role) {
-        role.style.display =
-            type === "Role" ? "" : "none";
+    if (roleGroup) {
+        roleGroup.style.display = "none";
     }
 
-    if (user) {
-        user.style.display =
-            type === "User" ? "" : "none";
+    if (userGroup) {
+        userGroup.style.display = "none";
+    }
+
+
+    /* ========================================================
+       ENTIRE PLATFORM
+    ======================================================== */
+
+    if (type === "Platform") {
+
+        return;
+    }
+
+
+    /* ========================================================
+       WHOLE FARM
+    ======================================================== */
+
+    if (type === "Farm") {
+
+        if (farmGroup) {
+            farmGroup.style.display = "";
+        }
+
+        return;
+    }
+
+
+    /* ========================================================
+       SPECIFIC ROLE
+       Farm + Role
+    ======================================================== */
+
+    if (type === "Role") {
+
+        if (farmGroup) {
+            farmGroup.style.display = "";
+        }
+
+        if (roleGroup) {
+            roleGroup.style.display = "";
+        }
+
+        populateRolesForSelectedFarm();
+
+        return;
+    }
+
+
+    /* ========================================================
+       SPECIFIC USER
+       Farm + User
+    ======================================================== */
+
+    if (type === "User") {
+
+        if (farmGroup) {
+            farmGroup.style.display = "";
+        }
+
+        if (userGroup) {
+            userGroup.style.display = "";
+        }
+
+        populateUsersForSelectedFarm();
+
+        return;
     }
 }
 
 
 /* ============================================================
-   TARGET DATA
+   FARM CHANGE
+============================================================ */
+
+function handleTargetFarmChange() {
+
+    const type =
+        document.getElementById(
+            "targetType"
+        )?.value;
+
+
+    if (type === "Role") {
+
+        populateRolesForSelectedFarm();
+    }
+
+
+    if (type === "User") {
+
+        populateUsersForSelectedFarm();
+    }
+}
+
+
+/* ============================================================
+   LOAD TARGET DATA
 ============================================================ */
 
 async function loadTargetData() {
@@ -563,6 +818,8 @@ async function loadTargetData() {
         await loadFarms();
 
         await loadUsers();
+
+        configureTargetPermissions();
 
         handleTargetTypeChange();
 
@@ -577,7 +834,109 @@ async function loadTargetData() {
 
 
 /* ============================================================
-   FARMS
+   CONFIGURE TARGET PERMISSIONS
+============================================================ */
+
+function configureTargetPermissions() {
+
+    const targetType =
+        document.getElementById(
+            "targetType"
+        );
+
+    if (!targetType) {
+        return;
+    }
+
+
+    /* ========================================================
+       SUPER ADMIN
+    ======================================================== */
+
+    if (isSuperAdmin) {
+
+        targetType.innerHTML = `
+
+            <option value="Platform">
+                Entire Platform
+            </option>
+
+            <option value="Farm">
+                Whole Farm
+            </option>
+
+            <option value="Role">
+                Specific Role
+            </option>
+
+            <option value="User">
+                Specific User
+            </option>
+
+        `;
+
+        console.log(
+            "Super Admin announcement targeting enabled."
+        );
+
+        return;
+    }
+
+
+    /* ========================================================
+       OWNER / ADMIN
+    ======================================================== */
+
+    const role =
+        String(
+            currentProfile?.role || ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    if (role === "owner/admin") {
+
+        targetType.innerHTML = `
+
+            <option value="Farm">
+                Whole Farm
+            </option>
+
+            <option value="Role">
+                Specific Role
+            </option>
+
+            <option value="User">
+                Specific User
+            </option>
+
+        `;
+
+        console.log(
+            "Owner/Admin announcement targeting enabled."
+        );
+
+        return;
+    }
+
+
+    /* ========================================================
+       OTHER ROLES
+    ======================================================== */
+
+    targetType.innerHTML = `
+
+        <option value="Farm">
+            Whole Farm
+        </option>
+
+    `;
+}
+
+
+/* ============================================================
+   LOAD FARMS
 ============================================================ */
 
 async function loadFarms() {
@@ -591,24 +950,69 @@ async function loadFarms() {
         return;
     }
 
+
     select.innerHTML =
         '<option value="">Select farm</option>';
 
+
     try {
 
-        const { data, error } =
-            await supabaseClient
+        let query =
+            supabaseClient
                 .from("farms")
                 .select(
-                    "id, farm_name"
+                    "id, farm_name, status"
                 )
-                .order("farm_name");
+                .order(
+                    "farm_name",
+                    {
+                        ascending: true
+                    }
+                );
+
+
+        /* ====================================================
+           OWNER/ADMIN = ONLY THEIR OWN FARM
+        ==================================================== */
+
+        const role =
+            String(
+                currentProfile?.role || ""
+            )
+                .trim()
+                .toLowerCase();
+
+
+        if (
+            role === "owner/admin" &&
+            currentProfile?.farm_id
+        ) {
+
+            query =
+                query.eq(
+                    "id",
+                    currentProfile.farm_id
+                );
+        }
+
+
+        const {
+            data,
+            error
+        } =
+            await query;
+
 
         if (error) {
             throw error;
         }
 
-        (data || []).forEach(
+
+        availableFarms =
+            data || [];
+
+
+        availableFarms.forEach(
             function (farm) {
 
                 const option =
@@ -620,12 +1024,38 @@ async function loadFarms() {
                     farm.id;
 
                 option.textContent =
-                    farm.farm_name;
+                    farm.farm_name ||
+                    `Farm ${farm.id}`;
 
                 select.appendChild(
                     option
                 );
             }
+        );
+
+
+        /* ====================================================
+           SUPER ADMIN
+           Leave farm blank until selected.
+        ==================================================== */
+
+        if (!isSuperAdmin) {
+
+            if (
+                currentProfile?.farm_id
+            ) {
+
+                select.value =
+                    String(
+                        currentProfile.farm_id
+                    );
+            }
+        }
+
+
+        console.log(
+            "Available farms:",
+            availableFarms
         );
 
     } catch (error) {
@@ -639,56 +1069,44 @@ async function loadFarms() {
 
 
 /* ============================================================
-   USERS
+   LOAD USERS
 ============================================================ */
 
 async function loadUsers() {
 
-    const select =
-        document.getElementById(
-            "targetUser"
-        );
-
-    if (!select) {
-        return;
-    }
-
-    select.innerHTML =
-        '<option value="">Select user</option>';
-
     try {
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabaseClient
                 .from("users")
                 .select(
-                    "id, full_name, username, role, farm_id"
+                    "id, full_name, username, role, farm_id, status"
                 )
-                .order("full_name");
+                .order(
+                    "full_name",
+                    {
+                        ascending: true
+                    }
+                );
+
 
         if (error) {
             throw error;
         }
 
-        (data || []).forEach(
-            function (user) {
 
-                const option =
-                    document.createElement(
-                        "option"
-                    );
+        availableUsers =
+            data || [];
 
-                option.value =
-                    user.id;
 
-                option.textContent =
-                    `${user.full_name || user.username || "User"} — ${user.role || ""}`;
-
-                select.appendChild(
-                    option
-                );
-            }
+        console.log(
+            "Users loaded:",
+            availableUsers
         );
+
 
     } catch (error) {
 
@@ -696,36 +1114,287 @@ async function loadUsers() {
             "Users could not be loaded:",
             error
         );
+
+        availableUsers = [];
     }
 }
 
+
 /* ============================================================
-   SAVE ANNOUNCEMENT + CREATE SECURE NOTIFICATIONS
+   POPULATE ROLES FOR SELECTED FARM
+============================================================ */
+
+function populateRolesForSelectedFarm() {
+
+    const roleSelect =
+        document.getElementById(
+            "targetRole"
+        );
+
+    const farmSelect =
+        document.getElementById(
+            "targetFarm"
+        );
+
+
+    if (!roleSelect || !farmSelect) {
+        return;
+    }
+
+
+    const farmId =
+        farmSelect.value;
+
+
+    roleSelect.innerHTML =
+        '<option value="">Select role</option>';
+
+
+    if (!farmId) {
+        return;
+    }
+
+
+    const roles =
+        [
+            ...new Set(
+                availableUsers
+                    .filter(
+                        user =>
+                            String(
+                                user.farm_id
+                            ) ===
+                            String(farmId) &&
+                            String(
+                                user.status || ""
+                            )
+                                .toLowerCase() ===
+                            "active"
+                    )
+                    .map(
+                        user =>
+                            user.role
+                    )
+                    .filter(
+                        role =>
+                            role &&
+                            String(
+                                role
+                            ).trim() !== ""
+                    )
+            )
+        ]
+            .sort();
+
+
+    roles.forEach(
+        function (role) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                role;
+
+            option.textContent =
+                role;
+
+            roleSelect.appendChild(
+                option
+            );
+        }
+    );
+
+
+    console.log(
+        "Roles for farm " +
+        farmId +
+        ":",
+        roles
+    );
+}
+
+
+/* ============================================================
+   POPULATE USERS FOR SELECTED FARM
+============================================================ */
+
+function populateUsersForSelectedFarm() {
+
+    const userSelect =
+        document.getElementById(
+            "targetUser"
+        );
+
+    const farmSelect =
+        document.getElementById(
+            "targetFarm"
+        );
+
+
+    if (!userSelect || !farmSelect) {
+        return;
+    }
+
+
+    const farmId =
+        farmSelect.value;
+
+
+    userSelect.innerHTML =
+        '<option value="">Select user</option>';
+
+
+    if (!farmId) {
+        return;
+    }
+
+
+    const users =
+        availableUsers
+            .filter(
+                user =>
+                    String(
+                        user.farm_id
+                    ) ===
+                    String(farmId) &&
+                    String(
+                        user.status || ""
+                    )
+                        .toLowerCase() ===
+                    "active"
+            )
+            .sort(
+                function (a, b) {
+
+                    const nameA =
+                        String(
+                            a.full_name ||
+                            a.username ||
+                            ""
+                        ).toLowerCase();
+
+                    const nameB =
+                        String(
+                            b.full_name ||
+                            b.username ||
+                            ""
+                        ).toLowerCase();
+
+                    return nameA.localeCompare(
+                        nameB
+                    );
+                }
+            );
+
+
+    users.forEach(
+        function (user) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                user.id;
+
+            option.textContent =
+                `${user.full_name || user.username || "User"} — ${user.role || ""}`;
+
+            userSelect.appendChild(
+                option
+            );
+        }
+    );
+
+
+    console.log(
+        "Users for farm " +
+        farmId +
+        ":",
+        users
+    );
+}
+
+
+/* ============================================================
+   SAVE ANNOUNCEMENT
 ============================================================ */
 
 async function handleSubmit(event) {
 
     event.preventDefault();
 
+
     const title =
         document.getElementById(
             "title"
         )?.value.trim();
+
 
     const message =
         document.getElementById(
             "message"
         )?.value.trim();
 
+
     const priority =
         document.getElementById(
             "priority"
-        )?.value || "Normal";
+        )?.value ||
+        "Normal";
+
 
     const targetType =
         document.getElementById(
             "targetType"
-        )?.value || "Farm";
+        )?.value ||
+        "Farm";
+
+
+    const farmValue =
+        document.getElementById(
+            "targetFarm"
+        )?.value;
+
+
+    const roleValue =
+        document.getElementById(
+            "targetRole"
+        )?.value;
+
+
+    const userValue =
+        document.getElementById(
+            "targetUser"
+        )?.value;
+
+
+    const startValue =
+        document.getElementById(
+            "startAt"
+        )?.value;
+
+
+    const expiryValue =
+        document.getElementById(
+            "expiresAt"
+        )?.value;
+
+
+    const active =
+        document.getElementById(
+            "isActive"
+        )?.checked ??
+        true;
+
+
+    /* ========================================================
+       BASIC VALIDATION
+    ======================================================== */
 
     if (!title) {
 
@@ -736,6 +1405,7 @@ async function handleSubmit(event) {
         return;
     }
 
+
     if (!message) {
 
         alert(
@@ -745,39 +1415,140 @@ async function handleSubmit(event) {
         return;
     }
 
-    const farmValue =
-        document.getElementById(
-            "targetFarm"
-        )?.value;
 
-    const roleValue =
-        document.getElementById(
-            "targetRole"
-        )?.value;
+    /* ========================================================
+       PLATFORM
+    ======================================================== */
 
-    const userValue =
-        document.getElementById(
-            "targetUser"
-        )?.value;
+    if (
+        targetType === "Platform"
+    ) {
 
-    const startValue =
-        document.getElementById(
-            "startAt"
-        )?.value;
+        if (!isSuperAdmin) {
 
-    const expiryValue =
-        document.getElementById(
-            "expiresAt"
-        )?.value;
+            alert(
+                "Only Super Admin can publish platform-wide announcements."
+            );
 
-    const active =
-        document.getElementById(
-            "isActive"
-        )?.checked ?? true;
+            return;
+        }
+    }
 
 
     /* ========================================================
-       PREPARE ANNOUNCEMENT
+       FARM TARGET VALIDATION
+    ======================================================== */
+
+    if (
+        targetType === "Farm" ||
+        targetType === "Role" ||
+        targetType === "User"
+    ) {
+
+        if (!farmValue) {
+
+            alert(
+                "Please select the target farm."
+            );
+
+            return;
+        }
+    }
+
+
+    /* ========================================================
+       ROLE TARGET VALIDATION
+    ======================================================== */
+
+    if (
+        targetType === "Role"
+    ) {
+
+        if (!roleValue) {
+
+            alert(
+                "Please select the target role."
+            );
+
+            return;
+        }
+
+
+        const roleExists =
+            availableUsers.some(
+                user =>
+                    String(
+                        user.farm_id
+                    ) ===
+                    String(farmValue) &&
+                    String(
+                        user.role || ""
+                    ) ===
+                    String(roleValue) &&
+                    String(
+                        user.status || ""
+                    )
+                        .toLowerCase() ===
+                    "active"
+            );
+
+
+        if (!roleExists) {
+
+            alert(
+                "The selected role does not currently exist in the selected farm."
+            );
+
+            return;
+        }
+    }
+
+
+    /* ========================================================
+       USER TARGET VALIDATION
+    ======================================================== */
+
+    if (
+        targetType === "User"
+    ) {
+
+        if (!userValue) {
+
+            alert(
+                "Please select the target user."
+            );
+
+            return;
+        }
+
+
+        const selectedUser =
+            availableUsers.find(
+                user =>
+                    Number(user.id) ===
+                    Number(userValue)
+            );
+
+
+        if (
+            !selectedUser ||
+            String(
+                selectedUser.farm_id
+            ) !==
+            String(farmValue)
+        ) {
+
+            alert(
+                "The selected user does not belong to the selected farm."
+            );
+
+            return;
+        }
+    }
+
+
+    /* ========================================================
+       PREPARE PAYLOAD
     ======================================================== */
 
     const payload = {
@@ -791,22 +1562,22 @@ async function handleSubmit(event) {
         target_type: targetType,
 
         farm_id:
-            farmValue
-                ? Number(farmValue)
-                : null,
+            targetType === "Platform"
+                ? null
+                : (
+                    farmValue
+                        ? Number(farmValue)
+                        : null
+                ),
 
         target_role:
             targetType === "Role"
-                ? roleValue || null
+                ? roleValue
                 : null,
 
         target_user_id:
             targetType === "User"
-                ? (
-                    userValue
-                        ? Number(userValue)
-                        : null
-                )
+                ? Number(userValue)
                 : null,
 
         created_by:
@@ -828,20 +1599,22 @@ async function handleSubmit(event) {
                 ).toISOString()
                 : null,
 
-        is_active: active
+        is_active:
+            active
     };
-console.log(
-    "C3 DEBUG PAYLOAD:",
-    JSON.stringify(payload, null, 2)
-);
-alert(
-    "DEBUG PAYLOAD:\n\n" +
-    JSON.stringify(payload, null, 2)
-);
+
+
+    console.log(
+        "ANNOUNCEMENT PAYLOAD:",
+        payload
+    );
+
+
     try {
 
+
         /* ====================================================
-           UPDATE EXISTING ANNOUNCEMENT
+           UPDATE EXISTING
         ==================================================== */
 
         if (editingAnnouncementId) {
@@ -857,13 +1630,16 @@ alert(
                         editingAnnouncementId
                     );
 
+
             if (error) {
                 throw error;
             }
 
+
             alert(
                 "Announcement updated successfully."
             );
+
 
             clearForm();
 
@@ -874,10 +1650,7 @@ alert(
 
 
         /* ====================================================
-           CREATE NEW ANNOUNCEMENT
-           IMPORTANT:
-           We request the inserted row back so that we get
-           the announcement ID required by the RPC.
+           CREATE NEW
         ==================================================== */
 
         const {
@@ -899,7 +1672,7 @@ alert(
         if (!announcement) {
 
             throw new Error(
-                "Announcement was saved, but its database record could not be returned."
+                "Announcement was saved, but the database record could not be returned."
             );
         }
 
@@ -911,31 +1684,34 @@ alert(
 
 
         /* ====================================================
-           SECURE NOTIFICATION RPC
+           CREATE SECURE NOTIFICATIONS
         ==================================================== */
 
         let notificationResult = {
+
             success: true,
+
             created: 0
         };
 
 
-        /*
-         * Only active announcements that have already started
-         * should immediately create notifications.
-         */
+        if (
+            announcement.is_active === true
+        ) {
 
-        if (announcement.is_active === true) {
-
-            let shouldCreateNotifications = true;
+            let shouldCreateNotifications =
+                true;
 
 
-            if (announcement.start_at) {
+            if (
+                announcement.start_at
+            ) {
 
                 const start =
                     new Date(
                         announcement.start_at
                     );
+
 
                 if (
                     !isNaN(
@@ -948,13 +1724,15 @@ alert(
                         false;
 
                     console.log(
-                        "Announcement is scheduled for later. Notifications will not be created yet."
+                        "Announcement is scheduled for later."
                     );
                 }
             }
 
 
-            if (shouldCreateNotifications) {
+            if (
+                shouldCreateNotifications
+            ) {
 
                 console.log(
                     "Calling secure notification RPC..."
@@ -981,16 +1759,13 @@ alert(
                         error
                     );
 
-                    /*
-                     * The announcement itself was successfully
-                     * created. Therefore we don't delete it.
-                     * We clearly inform the administrator that
-                     * notification creation failed.
-                     */
 
                     notificationResult = {
+
                         success: false,
+
                         created: 0,
+
                         error:
                             error.message ||
                             "Notification creation failed."
@@ -998,7 +1773,8 @@ alert(
 
                 } else {
 
-                    let createdCount = 0;
+                    let createdCount =
+                        0;
 
 
                     if (
@@ -1015,7 +1791,8 @@ alert(
                     ) {
 
                         createdCount =
-                            Number(data) || 0;
+                            Number(data) ||
+                            0;
 
                     } else if (
                         Array.isArray(data)
@@ -1062,7 +1839,8 @@ alert(
                         createdCount < 0
                     ) {
 
-                        createdCount = 0;
+                        createdCount =
+                            0;
                     }
 
 
@@ -1073,7 +1851,9 @@ alert(
 
 
                     notificationResult = {
+
                         success: true,
+
                         created:
                             createdCount
                     };
@@ -1089,7 +1869,7 @@ alert(
 
 
         /* ====================================================
-           FINAL RESULT MESSAGE
+           FINAL MESSAGE
         ==================================================== */
 
         if (
@@ -1137,6 +1917,7 @@ alert(
             error
         );
 
+
         alert(
             "Unable to save announcement:\n\n" +
             (
@@ -1149,7 +1930,7 @@ alert(
 
 
 /* ============================================================
-   VIEW
+   VIEW ANNOUNCEMENT
 ============================================================ */
 
 function viewAnnouncement(id) {
@@ -1157,42 +1938,73 @@ function viewAnnouncement(id) {
     const item =
         allAnnouncements.find(
             announcement =>
-                Number(announcement.id) ===
+                Number(
+                    announcement.id
+                ) ===
                 Number(id)
         );
+
 
     if (!item) {
         return;
     }
+
 
     const modal =
         document.getElementById(
             "messageModal"
         );
 
+
     const title =
         document.getElementById(
             "modalTitle"
         );
+
 
     const message =
         document.getElementById(
             "modalMessage"
         );
 
+
     if (title) {
+
         title.textContent =
             item.title;
     }
 
+
     if (message) {
+
         message.textContent =
             item.message;
     }
 
+
     if (modal) {
+
         modal.style.display =
             "flex";
+    }
+}
+
+
+/* ============================================================
+   CLOSE MESSAGE MODAL
+============================================================ */
+
+function closeMessageModal() {
+
+    const modal =
+        document.getElementById(
+            "messageModal"
+        );
+
+    if (modal) {
+
+        modal.style.display =
+            "none";
     }
 }
 
@@ -1206,82 +2018,142 @@ function editAnnouncement(id) {
     const item =
         allAnnouncements.find(
             announcement =>
-                Number(announcement.id) ===
+                Number(
+                    announcement.id
+                ) ===
                 Number(id)
         );
+
 
     if (!item) {
         return;
     }
 
+
     editingAnnouncementId =
         item.id;
 
+
     document.getElementById(
         "announcementId"
-    ).value = item.id;
+    ).value =
+        item.id;
+
 
     document.getElementById(
         "title"
-    ).value = item.title || "";
+    ).value =
+        item.title || "";
+
 
     document.getElementById(
         "message"
-    ).value = item.message || "";
+    ).value =
+        item.message || "";
+
 
     document.getElementById(
         "priority"
     ).value =
-        item.priority || "Normal";
+        item.priority ||
+        "Normal";
+
 
     document.getElementById(
         "targetType"
     ).value =
-        item.target_type || "Farm";
+        item.target_type ||
+        "Farm";
 
-    document.getElementById(
-        "targetFarm"
-    ).value =
-        item.farm_id || "";
 
-    document.getElementById(
-        "targetRole"
-    ).value =
-        item.target_role || "";
+    /* ========================================================
+       SET FARM FIRST
+    ======================================================== */
 
-    document.getElementById(
-        "targetUser"
-    ).value =
-        item.target_user_id || "";
+    const farmSelect =
+        document.getElementById(
+            "targetFarm"
+        );
+
+
+    if (farmSelect) {
+
+        farmSelect.value =
+            item.farm_id || "";
+    }
+
+
+    /* ========================================================
+       THEN POPULATE ROLE/USER
+    ======================================================== */
+
+    if (
+        item.target_type ===
+        "Role"
+    ) {
+
+        populateRolesForSelectedFarm();
+
+        document.getElementById(
+            "targetRole"
+        ).value =
+            item.target_role || "";
+    }
+
+
+    if (
+        item.target_type ===
+        "User"
+    ) {
+
+        populateUsersForSelectedFarm();
+
+        document.getElementById(
+            "targetUser"
+        ).value =
+            item.target_user_id || "";
+    }
+
 
     document.getElementById(
         "isActive"
     ).checked =
         item.is_active !== false;
 
+
     const save =
         document.getElementById(
             "saveButton"
         );
 
+
     if (save) {
+
         save.textContent =
             "Update Announcement";
     }
+
 
     const cancel =
         document.getElementById(
             "cancelEditButton"
         );
 
+
     if (cancel) {
-        cancel.style.display = "";
+
+        cancel.style.display =
+            "";
     }
+
 
     handleTargetTypeChange();
 
+
     window.scrollTo({
+
         top: 0,
+
         behavior: "smooth"
     });
 }
@@ -1296,20 +2168,27 @@ async function toggleAnnouncement(id) {
     const item =
         allAnnouncements.find(
             announcement =>
-                Number(announcement.id) ===
+                Number(
+                    announcement.id
+                ) ===
                 Number(id)
         );
+
 
     if (!item) {
         return;
     }
 
+
     try {
 
-        const { error } =
+        const {
+            error
+        } =
             await supabaseClient
                 .from("announcements")
                 .update({
+
                     is_active:
                         !item.is_active
                 })
@@ -1318,11 +2197,14 @@ async function toggleAnnouncement(id) {
                     id
                 );
 
+
         if (error) {
             throw error;
         }
 
+
         await loadAnnouncements();
+
 
     } catch (error) {
 
@@ -1345,12 +2227,16 @@ async function deleteAnnouncement(id) {
             "Are you sure you want to delete this announcement?"
         )
     ) {
+
         return;
     }
 
+
     try {
 
-        const { error } =
+        const {
+            error
+        } =
             await supabaseClient
                 .from("announcements")
                 .delete()
@@ -1359,11 +2245,14 @@ async function deleteAnnouncement(id) {
                     id
                 );
 
+
         if (error) {
             throw error;
         }
 
+
         await loadAnnouncements();
+
 
     } catch (error) {
 
@@ -1386,42 +2275,111 @@ function clearForm() {
             "announcementForm"
         );
 
+
     if (form) {
+
         form.reset();
     }
 
-    editingAnnouncementId = null;
+
+    editingAnnouncementId =
+        null;
+
 
     const id =
         document.getElementById(
             "announcementId"
         );
 
+
     if (id) {
-        id.value = "";
+
+        id.value =
+            "";
     }
+
 
     const save =
         document.getElementById(
             "saveButton"
         );
 
+
     if (save) {
+
         save.textContent =
             "Publish Announcement";
     }
+
 
     const cancel =
         document.getElementById(
             "cancelEditButton"
         );
 
+
     if (cancel) {
+
         cancel.style.display =
             "none";
     }
 
+
+    /* ========================================================
+       RESTORE OWNER/ADMIN FARM
+    ======================================================== */
+
+    const farmSelect =
+        document.getElementById(
+            "targetFarm"
+        );
+
+
+    if (
+        farmSelect &&
+        !isSuperAdmin &&
+        currentProfile?.farm_id
+    ) {
+
+        farmSelect.value =
+            String(
+                currentProfile.farm_id
+            );
+    }
+
+
     handleTargetTypeChange();
+}
+
+
+/* ============================================================
+   FARM NAME
+============================================================ */
+
+function getFarmName(farmId) {
+
+    const farm =
+        availableFarms.find(
+            farm =>
+                Number(farm.id) ===
+                Number(farmId)
+        );
+
+
+    if (farm) {
+
+        return (
+            farm.farm_name ||
+            `Farm ${farm.id}`
+        );
+    }
+
+
+    return (
+        farmId
+            ? `Farm ${farmId}`
+            : "Platform"
+    );
 }
 
 
@@ -1436,10 +2394,13 @@ function showLoading(show) {
             "loadingAnnouncements"
         );
 
+
     if (loading) {
 
         loading.style.display =
-            show ? "" : "none";
+            show
+                ? ""
+                : "none";
     }
 }
 
@@ -1455,12 +2416,15 @@ function showSecurityMessage(message) {
             "securityMessage"
         );
 
+
     if (!element) {
         return;
     }
 
+
     element.textContent =
         message;
+
 
     element.style.display =
         "";
@@ -1477,6 +2441,7 @@ function formatDate(value) {
         return "-";
     }
 
+
     try {
 
         return new Intl.DateTimeFormat(
@@ -1489,6 +2454,7 @@ function formatDate(value) {
         ).format(
             new Date(value)
         );
+
 
     } catch (error) {
 
@@ -1503,7 +2469,9 @@ function formatDate(value) {
 
 function escapeHtml(value) {
 
-    return String(value ?? "")
+    return String(
+        value ?? ""
+    )
         .replace(
             /&/g,
             "&amp;"
@@ -1528,7 +2496,7 @@ function escapeHtml(value) {
 
 
 /* ============================================================
-   GLOBALS
+   GLOBAL FUNCTIONS
 ============================================================ */
 
 window.loadAnnouncements =
@@ -1549,6 +2517,10 @@ window.deleteAnnouncement =
 window.clearForm =
     clearForm;
 
+window.closeMessageModal =
+    closeMessageModal;
+
+
 console.log(
-    "MUNKA ANNOUNCEMENTS MODULE READY."
+    "MUNKA ANNOUNCEMENTS MODULE READY - PHASE 1"
 );
