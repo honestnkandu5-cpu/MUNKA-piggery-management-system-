@@ -446,46 +446,8 @@ async function verifySuperAdminMFA(){
 
 
                         // =====================================
-                        // CONFIRM AUTHENTICATOR
-                        // ASSURANCE LEVEL
+                        // MFA SUCCESS
                         // =====================================
-
-                        const {
-
-                            data: assuranceData,
-
-                            error:
-                                assuranceError
-
-                        } =
-                            await supabaseClient
-                                .auth
-                                .getAuthenticatorAssuranceLevel();
-
-
-                        if(assuranceError){
-
-                            console.error(
-                                "AAL CHECK ERROR:",
-                                assuranceError
-                            );
-
-                        }
-
-
-                        if(
-                            assuranceData &&
-                            assuranceData.currentLevel &&
-                            assuranceData.currentLevel !==
-                            "aal2"
-                        ){
-
-                            throw new Error(
-                                "MFA verification did not complete successfully."
-                            );
-
-                        }
-
 
                         mfaMessage.textContent =
                             "MFA verified successfully.";
@@ -879,7 +841,6 @@ document
 
                 if(!isSuperAdmin){
 
-
                     if(!selectedRole){
 
                         throw new Error(
@@ -1000,7 +961,6 @@ document
 
                     message.textContent =
                         "";
-
 
                 }
 
