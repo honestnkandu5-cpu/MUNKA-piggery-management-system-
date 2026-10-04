@@ -2,14 +2,58 @@
    MUNKA PIGGERY
    SUPER ADMIN - PLATFORM ACTIVITY LOGS
    platform_activity.js
+
+   PHASE 4F SECURITY:
+   Session + Super Admin + Active + MFA/AAL2
 ========================================================= */
 
 let allActivities = [];
 let allFarms = [];
 
+let platformActivitySecurityVerified = false;
+
+
+/* =========================================================
+   REDIRECT TO LOGIN
+========================================================= */
+
+function redirectToLogin() {
+
+    window.location.replace("login.html");
+}
+
+
+/* =========================================================
+   SAFE SIGN OUT
+========================================================= */
+
+async function safePlatformActivitySignOut() {
+
+    try {
+
+        await supabaseClient.auth.signOut();
+
+    } catch (error) {
+
+        console.error(
+            "Sign out error:",
+            error
+        );
+    }
+
+
+    localStorage.removeItem(
+        "loggedInUser"
+    );
+
+
+    redirectToLogin();
+}
+
 
 /* =========================================================
    GET LOGGED-IN SUPER ADMIN
+   SESSION + ROLE + STATUS + MFA/AAL2
 ========================================================= */
 
 async function getSuperAdmin() {
@@ -19,50 +63,156 @@ async function getSuperAdmin() {
         error: sessionError
     } = await supabaseClient.auth.getSession();
 
+
     if (sessionError) {
+
         throw new Error(
-            "Session error: " + sessionError.message
+            "Session error: " +
+            sessionError.message
         );
     }
 
+
     if (!session) {
-        window.location.href = "login.html";
+
+        redirectToLogin();
+
         return null;
     }
 
-    const { data: user, error: userError } =
-        await supabaseClient
-            .from("users")
-            .select("*")
-            .eq("auth_user_id", session.user.id)
-            .maybeSingle();
+
+    /* =====================================================
+       LOAD USER PROFILE
+    ===================================================== */
+
+    const {
+        data: user,
+        error: userError
+    } = await supabaseClient
+        .from("users")
+        .select("*")
+        .eq(
+            "auth_user_id",
+            session.user.id
+        )
+        .maybeSingle();
+
 
     if (userError) {
+
         throw new Error(
             "User profile error: " +
             userError.message
         );
     }
 
+
     if (!user) {
+
         throw new Error(
             "Super Admin profile was not found."
         );
     }
 
+
+    /* =====================================================
+       ROLE CHECK
+    ===================================================== */
+
     if (
         user.role !== "Super Admin" ||
         user.status !== "Active"
     ) {
+
         alert(
             "Access denied. Super Admin access is required."
         );
 
-        window.location.href = "login.html";
+
+        await safePlatformActivitySignOut();
+
         return null;
     }
 
+
+    /* =====================================================
+       MFA / AAL2 CHECK
+    ===================================================== */
+
+    const {
+        data: aalData,
+        error: aalError
+    } =
+        await supabaseClient.auth.mfa
+            .getAuthenticatorAssuranceLevel();
+
+
+    if (aalError) {
+
+        console.error(
+            "MFA assurance-level error:",
+            aalError
+        );
+
+
+        alert(
+            "Security verification could not be completed. Please log in again."
+        );
+
+
+        await safePlatformActivitySignOut();
+
+        return null;
+    }
+
+
+    const currentLevel =
+        aalData?.currentLevel;
+
+
+    if (
+        currentLevel !== "aal2"
+    ) {
+
+        alert(
+            "MFA verification is required to access Platform Activity Logs."
+        );
+
+
+        await safePlatformActivitySignOut();
+
+        return null;
+    }
+
+
+    /* =====================================================
+       SECURITY VERIFIED
+    ===================================================== */
+
+    platformActivitySecurityVerified = true;
+
+
     return user;
+}
+
+
+/* =========================================================
+   SECURITY GUARD
+========================================================= */
+
+function ensurePlatformActivitySecurity() {
+
+    if (
+        !platformActivitySecurityVerified
+    ) {
+
+        redirectToLogin();
+
+        return false;
+    }
+
+
+    return true;
 }
 
 
@@ -73,19 +223,28 @@ async function getSuperAdmin() {
 function displayAdminInfo(user) {
 
     const welcomeUser =
-        document.getElementById("welcomeUser");
+        document.getElementById(
+            "welcomeUser"
+        );
 
     const userDetails =
-        document.getElementById("userDetails");
+        document.getElementById(
+            "userDetails"
+        );
 
     const lastLogin =
-        document.getElementById("lastLogin");
+        document.getElementById(
+            "lastLogin"
+        );
 
 
     if (welcomeUser) {
 
         welcomeUser.textContent =
-            `Welcome, ${user.full_name || "Super Admin"}`;
+            `Welcome, ${
+                user.full_name ||
+                "Super Admin"
+            }`;
     }
 
 
@@ -119,32 +278,52 @@ function displayAdminInfo(user) {
    ZAMBIA DATE / TIME
 ========================================================= */
 
-function formatZambiaDateTime(dateValue) {
+function formatZambiaDateTime(
+    dateValue
+) {
 
     if (!dateValue) {
+
         return "—";
     }
 
-    const date = new Date(dateValue);
 
-    if (Number.isNaN(date.getTime())) {
+    const date =
+        new Date(dateValue);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
         return "—";
     }
 
-    return date.toLocaleString("en-ZM", {
 
-        timeZone: "Africa/Lusaka",
+    return date.toLocaleString(
+        "en-ZM",
+        {
 
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
+            timeZone:
+                "Africa/Lusaka",
 
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
+            day: "2-digit",
 
-        hour12: false
-    });
+            month: "short",
+
+            year: "numeric",
+
+            hour: "2-digit",
+
+            minute: "2-digit",
+
+            second: "2-digit",
+
+            hour12: false
+        }
+    );
 }
 
 
@@ -154,17 +333,33 @@ function formatZambiaDateTime(dateValue) {
 
 async function loadFarms() {
 
-    console.log("Loading farms...");
+    if (
+        !ensurePlatformActivitySecurity()
+    ) {
+
+        return;
+    }
+
+
+    console.log(
+        "Loading farms..."
+    );
+
 
     const {
         data,
         error
     } = await supabaseClient
         .from("farms")
-        .select("id, farm_name")
-        .order("farm_name", {
-            ascending: true
-        });
+        .select(
+            "id, farm_name"
+        )
+        .order(
+            "farm_name",
+            {
+                ascending: true
+            }
+        );
 
 
     if (error) {
@@ -174,6 +369,7 @@ async function loadFarms() {
             error
         );
 
+
         throw new Error(
             "Could not load farms: " +
             error.message
@@ -181,7 +377,8 @@ async function loadFarms() {
     }
 
 
-    allFarms = data || [];
+    allFarms =
+        data || [];
 
 
     console.log(
@@ -199,22 +396,26 @@ async function loadFarms() {
    FARM NAME LOOKUP
 ========================================================= */
 
-function getFarmName(farmID) {
+function getFarmName(
+    farmID
+) {
 
     if (
         farmID === null ||
         farmID === undefined ||
         farmID === ""
     ) {
+
         return "Unassigned";
     }
 
 
-    const farm = allFarms.find(
-        farm =>
-            String(farm.id) ===
-            String(farmID)
-    );
+    const farm =
+        allFarms.find(
+            farm =>
+                String(farm.id) ===
+                String(farmID)
+        );
 
 
     if (farm) {
@@ -234,10 +435,13 @@ function getFarmName(farmID) {
 function populateFarmFilter() {
 
     const filter =
-        document.getElementById("farmFilter");
+        document.getElementById(
+            "farmFilter"
+        );
 
 
     if (!filter) {
+
         return;
     }
 
@@ -246,16 +450,28 @@ function populateFarmFilter() {
         `<option value="">All Farms</option>`;
 
 
-    allFarms.forEach(farm => {
+    allFarms.forEach(
+        farm => {
 
-        const option =
-            document.createElement("option");
+            const option =
+                document.createElement(
+                    "option"
+                );
 
-        option.value = farm.id;
-        option.textContent = farm.farm_name;
 
-        filter.appendChild(option);
-    });
+            option.value =
+                farm.id;
+
+
+            option.textContent =
+                farm.farm_name;
+
+
+            filter.appendChild(
+                option
+            );
+        }
+    );
 }
 
 
@@ -264,6 +480,21 @@ function populateFarmFilter() {
 ========================================================= */
 
 async function loadActivityLogs() {
+
+    if (
+        !platformActivitySecurityVerified
+    ) {
+
+        const admin =
+            await getSuperAdmin();
+
+
+        if (!admin) {
+
+            return;
+        }
+    }
+
 
     const table =
         document.getElementById(
@@ -295,16 +526,53 @@ async function loadActivityLogs() {
         );
 
 
-        const admin =
-            await getSuperAdmin();
+        if (
+            !ensurePlatformActivitySecurity()
+        ) {
 
-
-        if (!admin) {
             return;
         }
 
 
-        displayAdminInfo(admin);
+        const {
+            data: admin,
+            error: adminError
+        } = await supabaseClient
+            .from("users")
+            .select("*")
+            .eq(
+                "auth_user_id",
+                (
+                    await supabaseClient.auth.getSession()
+                ).data.session?.user?.id
+            )
+            .maybeSingle();
+
+
+        if (adminError) {
+
+            throw new Error(
+                "Could not verify administrator: " +
+                adminError.message
+            );
+        }
+
+
+        if (
+            !admin ||
+            admin.role !== "Super Admin" ||
+            admin.status !== "Active"
+        ) {
+
+            await safePlatformActivitySignOut();
+
+            return;
+        }
+
+
+        displayAdminInfo(
+            admin
+        );
 
 
         await loadFarms();
@@ -330,9 +598,12 @@ async function loadActivityLogs() {
                 description,
                 created_at
             `)
-            .order("created_at", {
-                ascending: false
-            })
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            )
             .limit(500);
 
 
@@ -342,6 +613,7 @@ async function loadActivityLogs() {
                 "ACTIVITY LOG ERROR:",
                 error
             );
+
 
             throw new Error(
                 "Could not load activity logs: " +
@@ -357,11 +629,6 @@ async function loadActivityLogs() {
         console.log(
             "Activity logs successfully loaded:",
             allActivities.length
-        );
-
-
-        console.table(
-            allActivities
         );
 
 
@@ -442,6 +709,14 @@ async function loadActivityLogs() {
 ========================================================= */
 
 function updateStatistics() {
+
+    if (
+        !ensurePlatformActivitySecurity()
+    ) {
+
+        return;
+    }
+
 
     const totalActivities =
         document.getElementById(
@@ -564,7 +839,17 @@ function updateStatistics() {
    RENDER ACTIVITY TABLE
 ========================================================= */
 
-function renderActivityLogs(logs) {
+function renderActivityLogs(
+    logs
+) {
+
+    if (
+        !ensurePlatformActivitySecurity()
+    ) {
+
+        return;
+    }
+
 
     const table =
         document.getElementById(
@@ -578,6 +863,7 @@ function renderActivityLogs(logs) {
 
 
     if (!table) {
+
         return;
     }
 
@@ -637,56 +923,76 @@ function renderActivityLogs(logs) {
                 </td>
 
                 <td>
+
                     <span class="farm-badge">
+
                         ${escapeHTML(
                             farmName
                         )}
+
                     </span>
+
                 </td>
 
                 <td>
+
                     <strong>
+
                         ${escapeHTML(
                             activity.actor_name ||
                             "Unknown"
                         )}
+
                     </strong>
+
                 </td>
 
                 <td>
+
                     ${escapeHTML(
                         activity.actor_role ||
                         "—"
                     )}
+
                 </td>
 
                 <td>
+
                     <span class="action-badge">
+
                         ${escapeHTML(
                             activity.action ||
                             "—"
                         )}
+
                     </span>
+
                 </td>
 
                 <td>
+
                     ${escapeHTML(
                         activity.module ||
                         "—"
                     )}
+
                 </td>
 
                 <td>
+
                     ${escapeHTML(
                         activity.description ||
                         "—"
                     )}
+
                 </td>
 
             `;
 
 
-            table.appendChild(row);
+            table.appendChild(
+                row
+            );
         }
     );
 }
@@ -697,6 +1003,14 @@ function renderActivityLogs(logs) {
 ========================================================= */
 
 function filterActivityLogs() {
+
+    if (
+        !ensurePlatformActivitySecurity()
+    ) {
+
+        return;
+    }
+
 
     const farmFilter =
         document.getElementById(
@@ -756,16 +1070,21 @@ function filterActivityLogs() {
                     const searchableText = [
 
                         activity.actor_name,
+
                         activity.actor_role,
+
                         activity.action,
+
                         activity.module,
+
                         activity.description,
+
                         farmName
 
                     ]
-                    .filter(Boolean)
-                    .join(" ")
-                    .toLowerCase();
+                        .filter(Boolean)
+                        .join(" ")
+                        .toLowerCase();
 
 
                     if (
@@ -807,12 +1126,15 @@ function filterActivityLogs() {
    HTML SECURITY
 ========================================================= */
 
-function escapeHTML(value) {
+function escapeHTML(
+    value
+) {
 
     if (
         value === null ||
         value === undefined
     ) {
+
         return "";
     }
 
@@ -847,6 +1169,14 @@ function escapeHTML(value) {
 
 function goToDashboard() {
 
+    if (
+        !ensurePlatformActivitySecurity()
+    ) {
+
+        return;
+    }
+
+
     window.location.href =
         "platform_dashboard.html";
 }
@@ -858,26 +1188,7 @@ function goToDashboard() {
 
 async function logout() {
 
-    try {
-
-        await supabaseClient.auth.signOut();
-
-    } catch (error) {
-
-        console.error(
-            "Logout error:",
-            error
-        );
-    }
-
-
-    localStorage.removeItem(
-        "loggedInUser"
-    );
-
-
-    window.location.href =
-        "login.html";
+    await safePlatformActivitySignOut();
 }
 
 
@@ -887,13 +1198,129 @@ async function logout() {
 
 document.addEventListener(
     "DOMContentLoaded",
-    function () {
+    async function () {
 
         console.log(
             "Platform Activity page initialized."
         );
 
-        loadActivityLogs();
 
+        try {
+
+            const admin =
+                await getSuperAdmin();
+
+
+            if (!admin) {
+
+                return;
+            }
+
+
+            displayAdminInfo(
+                admin
+            );
+
+
+            await loadFarms();
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("activity_logs")
+                .select(`
+                    id,
+                    farm_id,
+                    actor_name,
+                    actor_role,
+                    action,
+                    module,
+                    description,
+                    created_at
+                `)
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                )
+                .limit(500);
+
+
+            if (error) {
+
+                throw new Error(
+                    "Could not load activity logs: " +
+                    error.message
+                );
+            }
+
+
+            allActivities =
+                data || [];
+
+
+            updateStatistics();
+
+
+            renderActivityLogs(
+                allActivities
+            );
+
+
+            const summary =
+                document.getElementById(
+                    "activitySummary"
+                );
+
+
+            if (summary) {
+
+                summary.textContent =
+                    `${allActivities.length} activity record(s) found`;
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Platform Activity initialization error:",
+                error
+            );
+
+
+            const table =
+                document.getElementById(
+                    "activityTable"
+                );
+
+
+            if (table) {
+
+                table.innerHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            style="
+                                text-align:center;
+                                padding:30px;
+                                color:#b42318;
+                            "
+                        >
+
+                            ${escapeHTML(
+                                error.message
+                            )}
+
+                        </td>
+
+                    </tr>
+
+                `;
+            }
+        }
     }
 );
