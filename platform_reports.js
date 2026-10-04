@@ -1,35 +1,107 @@
 /* ==========================================================
    MUNKA PIGGERY
    SUPER ADMIN - SUBSCRIPTION REPORTS
+   MFA PROTECTED VERSION
    ========================================================== */
 
 let currentUser = null;
 
+/*
+   SECURITY FLAG
+
+   Access is granted only after:
+   - Valid Supabase session
+   - Super Admin role
+   - Active account
+   - MFA AAL2
+*/
+let platformReportsSecurityVerified = false;
+
 
 /* ==========================================================
-   CHECK SUPER ADMIN
+   SECURITY - REDIRECT TO LOGIN
+========================================================== */
+
+function redirectToLogin() {
+
+    window.location.replace(
+        "login.html"
+    );
+}
+
+
+/* ==========================================================
+   SECURITY - SAFE SIGN OUT
+========================================================== */
+
+async function safePlatformReportsSignOut() {
+
+    try {
+
+        await supabaseClient
+            .auth
+            .signOut();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "SECURE SIGN OUT ERROR:",
+            error
+        );
+
+    }
+
+    localStorage.removeItem(
+        "loggedInUser"
+    );
+
+    redirectToLogin();
+}
+
+
+/* ==========================================================
+   CHECK SUPER ADMIN + MFA
 ========================================================== */
 
 async function checkSuperAdmin() {
 
+    platformReportsSecurityVerified =
+        false;
+
+
+    /* ======================================================
+       CHECK SESSION
+    ====================================================== */
+
     const {
         data: { session },
         error
-    } = await supabaseClient.auth.getSession();
+    } = await supabaseClient
+        .auth
+        .getSession();
 
 
-    if (error || !session) {
+    if (
+        error ||
+        !session
+    ) {
 
         console.error(
             "SESSION ERROR:",
             error
         );
 
-        window.location.href = "login.html";
+        redirectToLogin();
 
         return false;
     }
 
+
+    /* ======================================================
+       LOAD USER PROFILE
+    ====================================================== */
 
     const {
         data: user,
@@ -37,7 +109,10 @@ async function checkSuperAdmin() {
     } = await supabaseClient
         .from("users")
         .select("*")
-        .eq("auth_user_id", session.user.id)
+        .eq(
+            "auth_user_id",
+            session.user.id
+        )
         .single();
 
 
@@ -52,25 +127,154 @@ async function checkSuperAdmin() {
             "Unable to load Super Admin profile."
         );
 
+        await safePlatformReportsSignOut();
+
         return false;
     }
 
+
+    /* ======================================================
+       CHECK ROLE
+    ====================================================== */
 
     if (
         !user ||
-        user.role !== "Super Admin" ||
-        user.status !== "Active"
+        String(user.role || "")
+            .trim()
+            .toLowerCase() !==
+            "super admin"
     ) {
 
-        alert("Access denied.");
+        alert(
+            "Access denied. Super Admin privileges are required."
+        );
 
-        window.location.href = "login.html";
+        await safePlatformReportsSignOut();
 
         return false;
     }
 
 
-    currentUser = user;
+    /* ======================================================
+       CHECK ACCOUNT STATUS
+    ====================================================== */
+
+    if (
+        String(user.status || "")
+            .trim()
+            .toLowerCase() !==
+            "active"
+    ) {
+
+        alert(
+            "Your Super Admin account is not active."
+        );
+
+        await safePlatformReportsSignOut();
+
+        return false;
+    }
+
+
+    /* ======================================================
+       CHECK MFA AAL2
+    ====================================================== */
+
+    const {
+        data: aalData,
+        error: aalError
+    } =
+        await supabaseClient
+            .auth
+            .mfa
+            .getAuthenticatorAssuranceLevel();
+
+
+    if (aalError) {
+
+        console.error(
+            "MFA AAL ERROR:",
+            aalError
+        );
+
+        alert(
+            "Unable to verify Multi-Factor Authentication."
+        );
+
+        await safePlatformReportsSignOut();
+
+        return false;
+    }
+
+
+    const currentLevel =
+        aalData?.currentLevel;
+
+
+    console.log(
+        "PLATFORM REPORTS MFA LEVEL:",
+        currentLevel
+    );
+
+
+    if (
+        currentLevel !==
+        "aal2"
+    ) {
+
+        alert(
+            "Multi-Factor Authentication is required to access Platform Reports."
+        );
+
+        await safePlatformReportsSignOut();
+
+        return false;
+    }
+
+
+    /* ======================================================
+       SECURITY VERIFIED
+    ====================================================== */
+
+    currentUser =
+        user;
+
+    platformReportsSecurityVerified =
+        true;
+
+
+    console.log(
+        "PLATFORM REPORTS SECURITY: Super Admin + MFA AAL2 verified."
+    );
+
+
+    return true;
+}
+
+
+/* ==========================================================
+   SECURITY GUARD
+========================================================== */
+
+async function ensurePlatformReportsSecurity() {
+
+    if (
+        platformReportsSecurityVerified
+    ) {
+
+        return true;
+    }
+
+
+    const verified =
+        await checkSuperAdmin();
+
+
+    if (!verified) {
+
+        return false;
+    }
+
 
     return true;
 }
@@ -81,6 +285,20 @@ async function checkSuperAdmin() {
 ========================================================== */
 
 async function loadSubscriptionReports() {
+
+    /* ======================================================
+       SECURITY CHECK
+    ====================================================== */
+
+    const securityOK =
+        await ensurePlatformReportsSecurity();
+
+
+    if (!securityOK) {
+
+        return;
+    }
+
 
     console.log(
         "SUBSCRIPTION REPORTS: Loading..."
@@ -215,6 +433,7 @@ async function loadSubscriptionReports() {
                     farm.status !== "Active" ||
                     !farm.subscription_end
                 ) {
+
                     return false;
                 }
 
@@ -242,6 +461,7 @@ async function loadSubscriptionReports() {
                     farm.status !== "Active" ||
                     !farm.subscription_end
                 ) {
+
                     return false;
                 }
 
@@ -817,6 +1037,7 @@ function loadExpiringSubscriptions(
                     farm.status !== "Active" ||
                     !farm.subscription_end
                 ) {
+
                     return false;
                 }
 
@@ -993,8 +1214,7 @@ function loadPaymentReport(
 
             <tr>
 
-                <td
-                    colspan="8">
+                <td colspan="8">
 
                     No subscription payments found.
 
@@ -1342,7 +1562,6 @@ function setText(
 
         element.textContent =
             value;
-
     }
 }
 
@@ -1429,31 +1648,8 @@ function escapeHTML(
 
 async function logout() {
 
-    try {
+    await safePlatformReportsSignOut();
 
-        await supabaseClient
-            .auth
-            .signOut();
-
-    }
-
-    catch(error) {
-
-        console.error(
-            "LOGOUT ERROR:",
-            error
-        );
-
-    }
-
-
-    localStorage.removeItem(
-        "loggedInUser"
-    );
-
-
-    window.location.href =
-        "login.html";
 }
 
 
@@ -1470,12 +1666,23 @@ document.addEventListener(
         );
 
 
+        /* ==================================================
+           SECURITY FIRST
+        ================================================== */
+
         const allowed =
             await checkSuperAdmin();
 
 
-        if (!allowed) return;
+        if (!allowed) {
 
+            return;
+        }
+
+
+        /* ==================================================
+           LOAD REPORTS
+        ================================================== */
 
         await loadSubscriptionReports();
 
