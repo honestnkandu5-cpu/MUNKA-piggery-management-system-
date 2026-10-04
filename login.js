@@ -2,14 +2,568 @@
 // MUNKA PIGGERY TECHNOLOGY
 // SUPABASE AUTH LOGIN SYSTEM
 // CLOUDFLARE TURNSTILE CAPTCHA
-// SUPER ADMIN LOGIN WITHOUT ROLE SELECTION
+// SUPER ADMIN MFA LOGIN
 // NORMAL USERS REQUIRE ROLE SELECTION
 // AUTOMATIC ROLE IDENTIFICATION
 // FARM SUBSCRIPTION CHECKING
 // LAST LOGIN TRACKING
+// ACTIVITY LOGGING
 // DIRECT DASHBOARD REDIRECT
 // =====================================
 
+
+// =====================================
+// HELPER: RESET TURNSTILE
+// =====================================
+
+function resetTurnstile(){
+
+    if(
+        typeof window.turnstile !== "undefined"
+    ){
+
+        try{
+
+            window.turnstile.reset();
+
+        }
+        catch(error){
+
+            console.error(
+                "TURNSTILE RESET ERROR:",
+                error
+            );
+
+        }
+
+    }
+
+}
+
+
+// =====================================
+// HELPER: SHOW LOGIN MESSAGE
+// =====================================
+
+function showLoginMessage(message){
+
+    const messageElement =
+        document.getElementById("message");
+
+    if(messageElement){
+
+        messageElement.textContent =
+            message;
+
+    }
+
+}
+
+
+// =====================================
+// CREATE SUPER ADMIN MFA PANEL
+// =====================================
+
+function createSuperAdminMFAPanel(){
+
+    let panel =
+        document.getElementById(
+            "superAdminMFAPanel"
+        );
+
+
+    if(panel){
+
+        return panel;
+
+    }
+
+
+    panel =
+        document.createElement("div");
+
+
+    panel.id =
+        "superAdminMFAPanel";
+
+
+    panel.style.marginTop =
+        "20px";
+
+    panel.style.padding =
+        "20px";
+
+    panel.style.border =
+        "1px solid #d9d9d9";
+
+    panel.style.borderRadius =
+        "12px";
+
+    panel.style.background =
+        "#f8faf8";
+
+
+    panel.innerHTML = `
+
+        <h3 style="
+            text-align:center;
+            margin-top:0;
+            color:#14532d;
+        ">
+            Super Admin MFA Verification
+        </h3>
+
+        <p style="
+            text-align:center;
+            font-size:15px;
+        ">
+            Enter the 6-digit verification code
+            from your authenticator app.
+        </p>
+
+        <input
+            type="text"
+            id="superAdminMFACode"
+            inputmode="numeric"
+            maxlength="6"
+            autocomplete="one-time-code"
+            placeholder="6-digit MFA code"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                font-size:18px;
+                text-align:center;
+                letter-spacing:4px;
+                margin-bottom:10px;
+            "
+        >
+
+        <button
+            type="button"
+            id="verifySuperAdminMFA"
+            style="
+                width:100%;
+                padding:12px;
+                font-size:16px;
+                cursor:pointer;
+            "
+        >
+            Verify MFA
+        </button>
+
+        <p
+            id="mfaVerificationMessage"
+            style="
+                text-align:center;
+                margin-top:10px;
+            "
+        ></p>
+
+    `;
+
+
+    const form =
+        document.getElementById(
+            "loginForm"
+        );
+
+
+    if(form){
+
+        form.appendChild(panel);
+
+    }
+
+
+    return panel;
+
+}
+
+
+// =====================================
+// VERIFY SUPER ADMIN MFA
+// =====================================
+
+async function verifySuperAdminMFA(){
+
+    const panel =
+        createSuperAdminMFAPanel();
+
+
+    const codeInput =
+        document.getElementById(
+            "superAdminMFACode"
+        );
+
+
+    const verifyButton =
+        document.getElementById(
+            "verifySuperAdminMFA"
+        );
+
+
+    const mfaMessage =
+        document.getElementById(
+            "mfaVerificationMessage"
+        );
+
+
+    if(
+        !codeInput ||
+        !verifyButton ||
+        !mfaMessage
+    ){
+
+        throw new Error(
+            "MFA verification panel could not be created."
+        );
+
+    }
+
+
+    // =====================================
+    // GET VERIFIED TOTP FACTOR
+    // =====================================
+
+    const {
+
+        data: factorsData,
+
+        error: factorsError
+
+    } =
+        await supabaseClient
+            .auth
+            .mfa
+            .listFactors();
+
+
+    if(factorsError){
+
+        console.error(
+            "MFA FACTOR ERROR:",
+            factorsError
+        );
+
+        throw new Error(
+            "Could not load MFA settings."
+        );
+
+    }
+
+
+    const verifiedFactors =
+        (
+            factorsData &&
+            factorsData.totp
+        )
+        ?
+        factorsData.totp.filter(
+            factor =>
+                factor.status ===
+                "verified"
+        )
+        :
+        [];
+
+
+    if(
+        verifiedFactors.length === 0
+    ){
+
+        throw new Error(
+            "No verified Super Admin MFA factor was found. Please complete MFA setup first."
+        );
+
+    }
+
+
+    const factor =
+        verifiedFactors[0];
+
+
+    // =====================================
+    // CREATE MFA CHALLENGE
+    // =====================================
+
+    const {
+
+        data: challengeData,
+
+        error: challengeError
+
+    } =
+        await supabaseClient
+            .auth
+            .mfa
+            .challenge({
+
+                factorId:
+                    factor.id
+
+            });
+
+
+    if(challengeError){
+
+        console.error(
+            "MFA CHALLENGE ERROR:",
+            challengeError
+        );
+
+        throw new Error(
+            "Could not start MFA verification."
+        );
+
+    }
+
+
+    const challengeId =
+        challengeData.id;
+
+
+    // =====================================
+    // SHOW MFA PANEL
+    // =====================================
+
+    panel.style.display =
+        "block";
+
+
+    codeInput.focus();
+
+
+    // =====================================
+    // PREVENT MULTIPLE SUBMISSIONS
+    // =====================================
+
+    return new Promise(
+        (resolve, reject) => {
+
+
+            let verificationRunning =
+                false;
+
+
+            verifyButton.onclick =
+                async function(){
+
+
+                    if(
+                        verificationRunning
+                    ){
+
+                        return;
+
+                    }
+
+
+                    const code =
+                        codeInput
+                            .value
+                            .trim();
+
+
+                    // =====================================
+                    // CHECK CODE
+                    // =====================================
+
+                    if(
+                        !/^\d{6}$/.test(
+                            code
+                        )
+                    ){
+
+                        mfaMessage.textContent =
+                            "Please enter the 6-digit MFA code.";
+
+                        return;
+
+                    }
+
+
+                    verificationRunning =
+                        true;
+
+
+                    verifyButton.disabled =
+                        true;
+
+
+                    codeInput.disabled =
+                        true;
+
+
+                    mfaMessage.textContent =
+                        "Verifying MFA...";
+
+
+                    try{
+
+
+                        // =====================================
+                        // VERIFY MFA
+                        // =====================================
+
+                        const {
+
+                            data: verifyData,
+
+                            error: verifyError
+
+                        } =
+                            await supabaseClient
+                                .auth
+                                .mfa
+                                .verify({
+
+                                    factorId:
+                                        factor.id,
+
+                                    challengeId:
+                                        challengeId,
+
+                                    code:
+                                        code
+
+                                });
+
+
+                        if(verifyError){
+
+                            console.error(
+                                "MFA VERIFY ERROR:",
+                                verifyError
+                            );
+
+
+                            throw new Error(
+                                "Invalid MFA code. Please try again."
+                            );
+
+                        }
+
+
+                        // =====================================
+                        // CONFIRM AUTHENTICATOR
+                        // ASSURANCE LEVEL
+                        // =====================================
+
+                        const {
+
+                            data: assuranceData,
+
+                            error:
+                                assuranceError
+
+                        } =
+                            await supabaseClient
+                                .auth
+                                .getAuthenticatorAssuranceLevel();
+
+
+                        if(assuranceError){
+
+                            console.error(
+                                "AAL CHECK ERROR:",
+                                assuranceError
+                            );
+
+                        }
+
+
+                        if(
+                            assuranceData &&
+                            assuranceData.currentLevel &&
+                            assuranceData.currentLevel !==
+                            "aal2"
+                        ){
+
+                            throw new Error(
+                                "MFA verification did not complete successfully."
+                            );
+
+                        }
+
+
+                        mfaMessage.textContent =
+                            "MFA verified successfully.";
+
+
+                        resolve(
+                            verifyData
+                        );
+
+
+                    }
+                    catch(error){
+
+                        console.error(
+                            "MFA VERIFICATION ERROR:",
+                            error
+                        );
+
+
+                        verificationRunning =
+                            false;
+
+
+                        verifyButton.disabled =
+                            false;
+
+
+                        codeInput.disabled =
+                            false;
+
+
+                        codeInput.value =
+                            "";
+
+
+                        codeInput.focus();
+
+
+                        mfaMessage.textContent =
+                            error.message ||
+                            "Invalid MFA code. Please try again.";
+
+                    }
+
+                };
+
+
+            // =====================================
+            // ALLOW ENTER KEY
+            // =====================================
+
+            codeInput.addEventListener(
+                "keydown",
+                function(event){
+
+                    if(
+                        event.key ===
+                        "Enter"
+                    ){
+
+                        event.preventDefault();
+
+                        verifyButton.click();
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================
+// LOGIN FORM
+// =====================================
 
 document
     .getElementById("loginForm")
@@ -44,14 +598,39 @@ document
                 );
 
 
+            const loginButton =
+                document.querySelector(
+                    '#loginForm button[type="submit"]'
+                );
+
+
+            // =====================================
+            // HIDE OLD MFA PANEL
+            // =====================================
+
+            const oldMFAPanel =
+                document.getElementById(
+                    "superAdminMFAPanel"
+                );
+
+
+            if(oldMFAPanel){
+
+                oldMFAPanel.remove();
+
+            }
+
+
             // =====================================
             // CLOUDFLARE TURNSTILE
             // =====================================
 
-            let captchaToken = "";
+            let captchaToken =
+                "";
 
 
             try{
+
 
                 if(
                     typeof window.turnstile ===
@@ -69,8 +648,8 @@ document
                 captchaToken =
                     window.turnstile.getResponse();
 
-            }
 
+            }
             catch(captchaError){
 
                 console.error(
@@ -111,7 +690,8 @@ document
                 );
 
 
-            let selectedRole = "";
+            let selectedRole =
+                "";
 
 
             if(selectedRoleButton){
@@ -133,6 +713,21 @@ document
 
 
                 // =====================================
+                // DISABLE LOGIN BUTTON
+                // =====================================
+
+                if(loginButton){
+
+                    loginButton.disabled =
+                        true;
+
+                    loginButton.textContent =
+                        "Verifying...";
+
+                }
+
+
+                // =====================================
                 // 1. SUPABASE AUTHENTICATION
                 // =====================================
 
@@ -147,9 +742,11 @@ document
                         .auth
                         .signInWithPassword({
 
-                            email: email,
+                            email:
+                                email,
 
-                            password: password,
+                            password:
+                                password,
 
                             options: {
 
@@ -169,35 +766,21 @@ document
                     );
 
 
-                    message.textContent =
-                        "Invalid email or password.";
+                    throw new Error(
+                        "Invalid email or password."
+                    );
+
+                }
 
 
-                    // Reset CAPTCHA
-                    if(
-                        typeof window.turnstile !==
-                        "undefined"
-                    ){
+                if(
+                    !authData ||
+                    !authData.user
+                ){
 
-                        try{
-
-                            window.turnstile.reset();
-
-                        }
-
-                        catch(resetError){
-
-                            console.error(
-                                "TURNSTILE RESET ERROR:",
-                                resetError
-                            );
-
-                        }
-
-                    }
-
-
-                    return;
+                    throw new Error(
+                        "Login could not be completed."
+                    );
 
                 }
 
@@ -232,15 +815,9 @@ document
                     !userData
                 ){
 
-                    await supabaseClient
-                        .auth
-                        .signOut();
-
-
-                    message.textContent =
-                        "User profile not found.";
-
-                    return;
+                    throw new Error(
+                        "User profile not found."
+                    );
 
                 }
 
@@ -259,15 +836,9 @@ document
                     "active"
                 ){
 
-                    await supabaseClient
-                        .auth
-                        .signOut();
-
-
-                    message.textContent =
-                        "Your account is not active. Please contact the administrator.";
-
-                    return;
+                    throw new Error(
+                        "Your account is not active. Please contact the administrator."
+                    );
 
                 }
 
@@ -286,21 +857,15 @@ document
 
                 if(!userRole){
 
-                    await supabaseClient
-                        .auth
-                        .signOut();
-
-
-                    message.textContent =
-                        "User role is not assigned. Please contact the administrator.";
-
-                    return;
+                    throw new Error(
+                        "User role is not assigned. Please contact the administrator."
+                    );
 
                 }
 
 
                 // =====================================
-                // 5. SUPER ADMIN
+                // 5. CHECK SUPER ADMIN
                 // =====================================
 
                 const isSuperAdmin =
@@ -308,30 +873,18 @@ document
                     "super admin";
 
 
-                /*
-                    SUPER ADMIN DOES NOT NEED
-                    TO SELECT A ROLE.
-                */
-
+                // =====================================
+                // 6. NORMAL USER ROLE CHECK
+                // =====================================
 
                 if(!isSuperAdmin){
 
 
-                    // =====================================
-                    // NORMAL USER MUST SELECT ROLE
-                    // =====================================
-
                     if(!selectedRole){
 
-                        await supabaseClient
-                            .auth
-                            .signOut();
-
-
-                        message.textContent =
-                            "Please select your role before logging in.";
-
-                        return;
+                        throw new Error(
+                            "Please select your role before logging in."
+                        );
 
                     }
 
@@ -366,25 +919,15 @@ document
                     };
 
 
-                    // =====================================
-                    // GET EXPECTED DATABASE ROLE
-                    // =====================================
-
                     const expectedDatabaseRole =
                         roleMap[selectedRole];
 
 
                     if(!expectedDatabaseRole){
 
-                        await supabaseClient
-                            .auth
-                            .signOut();
-
-
-                        message.textContent =
-                            "Invalid role selection.";
-
-                        return;
+                        throw new Error(
+                            "Invalid role selection."
+                        );
 
                     }
 
@@ -398,15 +941,9 @@ document
                         expectedDatabaseRole
                     ){
 
-                        await supabaseClient
-                            .auth
-                            .signOut();
-
-
-                        message.textContent =
-                            "The selected role does not match your account role.";
-
-                        return;
+                        throw new Error(
+                            "The selected role does not match your account role."
+                        );
 
                     }
 
@@ -414,22 +951,71 @@ document
 
 
                 // =====================================
-                // 6. FARM SUBSCRIPTION CHECK
+                // 7. SUPER ADMIN MFA
+                // =====================================
+
+                if(isSuperAdmin){
+
+                    // Hide normal login controls
+                    // while MFA is being completed.
+
+                    if(loginButton){
+
+                        loginButton.style.display =
+                            "none";
+
+                    }
+
+
+                    const roleButtons =
+                        document.querySelectorAll(
+                            ".role-button"
+                        );
+
+
+                    roleButtons.forEach(
+                        button => {
+
+                            button.style.display =
+                                "none";
+
+                        }
+                    );
+
+
+                    message.textContent =
+                        "Password verified. MFA verification required.";
+
+
+                    // =====================================
+                    // WAIT FOR MFA
+                    // =====================================
+
+                    await verifySuperAdminMFA();
+
+
+                    // =====================================
+                    // MFA SUCCESS
+                    // =====================================
+
+                    message.textContent =
+                        "";
+
+
+                }
+
+
+                // =====================================
+                // 8. FARM SUBSCRIPTION CHECK
                 // =====================================
 
                 if(!isSuperAdmin){
 
                     if(!userData.farm_id){
 
-                        await supabaseClient
-                            .auth
-                            .signOut();
-
-
-                        message.textContent =
-                            "Your account is not linked to a farm. Please contact the administrator.";
-
-                        return;
+                        throw new Error(
+                            "Your account is not linked to a farm. Please contact the administrator."
+                        );
 
                     }
 
@@ -464,15 +1050,9 @@ document
                         );
 
 
-                        await supabaseClient
-                            .auth
-                            .signOut();
-
-
-                        message.textContent =
-                            "Your farm could not be found. Please contact the administrator.";
-
-                        return;
+                        throw new Error(
+                            "Your farm could not be found. Please contact the administrator."
+                        );
 
                     }
 
@@ -491,15 +1071,9 @@ document
                         "active"
                     ){
 
-                        await supabaseClient
-                            .auth
-                            .signOut();
-
-
-                        message.textContent =
-                            "Your farm subscription is inactive or expired. Please contact the administrator to renew your subscription.";
-
-                        return;
+                        throw new Error(
+                            "Your farm subscription is inactive or expired. Please contact the administrator to renew your subscription."
+                        );
 
                     }
 
@@ -515,15 +1089,9 @@ document
                         ) <= new Date()
                     ){
 
-                        await supabaseClient
-                            .auth
-                            .signOut();
-
-
-                        message.textContent =
-                            "Your farm subscription has expired. Please contact the administrator to renew your subscription.";
-
-                        return;
+                        throw new Error(
+                            "Your farm subscription has expired. Please contact the administrator to renew your subscription."
+                        );
 
                     }
 
@@ -539,15 +1107,9 @@ document
                         ) > new Date()
                     ){
 
-                        await supabaseClient
-                            .auth
-                            .signOut();
-
-
-                        message.textContent =
-                            "Your farm subscription has not started yet.";
-
-                        return;
+                        throw new Error(
+                            "Your farm subscription has not started yet."
+                        );
 
                     }
 
@@ -575,7 +1137,7 @@ document
 
 
                 // =====================================
-                // 7. UPDATE LAST LOGIN
+                // 9. UPDATE LAST LOGIN
                 // =====================================
 
                 const {
@@ -599,7 +1161,6 @@ document
                     );
 
                 }
-
                 else if(lastLoginTime){
 
                     userData.last_login =
@@ -609,7 +1170,7 @@ document
 
 
                 // =====================================
-                // 8. SAVE USER LOCALLY
+                // 10. SAVE USER LOCALLY
                 // =====================================
 
                 localStorage.setItem(
@@ -624,7 +1185,7 @@ document
 
 
                 // =====================================
-                // 9. SAVE ACTIVITY LOG
+                // 11. SAVE ACTIVITY LOG
                 // =====================================
 
                 try{
@@ -645,7 +1206,6 @@ document
                     );
 
                 }
-
                 catch(activityError){
 
                     console.error(
@@ -657,7 +1217,7 @@ document
 
 
                 // =====================================
-                // 10. DIRECT REDIRECT
+                // 12. DIRECT REDIRECT
                 // =====================================
 
                 if(isSuperAdmin){
@@ -667,7 +1227,6 @@ document
                     );
 
                 }
-
                 else{
 
                     window.location.replace(
@@ -680,7 +1239,7 @@ document
 
 
             // =====================================
-            // SYSTEM ERROR
+            // LOGIN ERROR
             // =====================================
 
             catch(error){
@@ -691,32 +1250,92 @@ document
                 );
 
 
+                // =====================================
+                // SIGN OUT AFTER FAILED LOGIN
+                // =====================================
+
+                try{
+
+                    await supabaseClient
+                        .auth
+                        .signOut();
+
+                }
+                catch(signOutError){
+
+                    console.error(
+                        "SIGN OUT ERROR:",
+                        signOutError
+                    );
+
+                }
+
+
                 message.textContent =
+                    error.message ||
                     "System error. Please try again.";
 
 
-                // Reset CAPTCHA
-                if(
-                    typeof window.turnstile !==
-                    "undefined"
-                ){
+                // =====================================
+                // RESTORE LOGIN BUTTON
+                // =====================================
 
-                    try{
+                if(loginButton){
 
-                        window.turnstile.reset();
+                    loginButton.disabled =
+                        false;
 
-                    }
+                    loginButton.style.display =
+                        "";
 
-                    catch(resetError){
-
-                        console.error(
-                            "TURNSTILE RESET ERROR:",
-                            resetError
-                        );
-
-                    }
+                    loginButton.textContent =
+                        "Login";
 
                 }
+
+
+                // =====================================
+                // RESTORE ROLE BUTTONS
+                // =====================================
+
+                const roleButtons =
+                    document.querySelectorAll(
+                        ".role-button"
+                    );
+
+
+                roleButtons.forEach(
+                    button => {
+
+                        button.style.display =
+                            "";
+
+                    }
+                );
+
+
+                // =====================================
+                // REMOVE MFA PANEL
+                // =====================================
+
+                const mfaPanel =
+                    document.getElementById(
+                        "superAdminMFAPanel"
+                    );
+
+
+                if(mfaPanel){
+
+                    mfaPanel.remove();
+
+                }
+
+
+                // =====================================
+                // RESET CAPTCHA
+                // =====================================
+
+                resetTurnstile();
 
             }
 
