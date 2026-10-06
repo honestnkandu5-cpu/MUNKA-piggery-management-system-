@@ -352,17 +352,9 @@
 
     <div class="section-heading">
 
-        <div>
-
-            <h2>
-                Quick Actions
-            </h2>
-
-            <p class="section-description">
-                Access important Super Admin platform functions quickly.
-            </p>
-
-        </div>
+        <h2>
+            Quick Actions
+        </h2>
 
     </div>
 
@@ -370,72 +362,7 @@
     <div class="quick-actions-grid">
 
 
-
-        <!-- ==================================================
-             CREATE ANNOUNCEMENT
-        ================================================== -->
-
-        <button
-            type="button"
-            class="quick-action-card"
-            onclick="window.location.href='announcements.html'">
-
-            <div class="quick-action-icon">
-                📢
-            </div>
-
-            <div>
-
-                <h3>
-                    Create Announcement
-                </h3>
-
-                <p>
-                    Create platform-wide announcements
-                    or send announcements to specific farms,
-                    roles or users.
-                </p>
-
-            </div>
-
-        </button>
-
-
-
-        <!-- ==================================================
-             MANAGE ANNOUNCEMENTS
-        ================================================== -->
-
-        <button
-            type="button"
-            class="quick-action-card"
-            onclick="window.location.href='announcements.html'">
-
-            <div class="quick-action-icon">
-                📋
-            </div>
-
-            <div>
-
-                <h3>
-                    Manage Announcements
-                </h3>
-
-                <p>
-                    View, edit, activate, deactivate
-                    and manage announcements across
-                    the platform.
-                </p>
-
-            </div>
-
-        </button>
-
-
-
-        <!-- ==================================================
-             RECORD PAYMENT
-        ================================================== -->
+        <!-- RECORD PAYMENT -->
 
         <button
             type="button"
@@ -463,9 +390,7 @@
 
 
 
-        <!-- ==================================================
-             SUBSCRIPTION REPORTS
-        ================================================== -->
+        <!-- SUBSCRIPTION REPORTS -->
 
         <button
             type="button"
@@ -493,9 +418,7 @@
 
 
 
-        <!-- ==================================================
-             FARM MANAGEMENT
-        ================================================== -->
+        <!-- FARM MANAGEMENT -->
 
         <button
             type="button"
@@ -523,9 +446,7 @@
 
 
 
-        <!-- ==================================================
-             USER MANAGEMENT
-        ================================================== -->
+        <!-- USER MANAGEMENT -->
 
         <button
             type="button"
@@ -687,29 +608,15 @@
         </div>
 
 
-        <div>
+        <button
+            type="button"
+            id="refreshPlatformAnnouncements">
 
-            <button
-                type="button"
-                onclick="window.location.href='announcements.html'">
+            🔄 Refresh
 
-                ➕ Create Announcement
-
-            </button>
-
-
-            <button
-                type="button"
-                id="refreshPlatformAnnouncements">
-
-                🔄 Refresh
-
-            </button>
-
-        </div>
+        </button>
 
     </div>
-
 
 
     <!-- ANNOUNCEMENT FILTERS -->
@@ -920,7 +827,6 @@
     </div>
 
 </section>
-
 
 
 </main>
