@@ -1,0 +1,1406 @@
+/* =========================================================
+   MUNKA PIGGERY TECHNOLOGY
+   SUPER ADMIN ANNOUNCEMENT CENTRE
+   PLATFORM ANNOUNCEMENTS CSS
+   ========================================================= */
+
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+html {
+    scroll-behavior: smooth;
+}
+
+
+body {
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        #f3f6f8;
+
+    color:
+        #1f2933;
+
+    min-height:
+        100vh;
+
+    line-height:
+        1.5;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.announcement-header {
+    width: 100%;
+
+    min-height: 78px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0b5d3b,
+            #087f5b
+        );
+
+    color: white;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding:
+        14px 28px;
+
+    box-shadow:
+        0 4px 15px
+        rgba(0, 0, 0, 0.12);
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 1000;
+}
+
+
+.header-left {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    min-width: 0;
+}
+
+
+.header-icon {
+    width: 48px;
+
+    height: 48px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.16);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 26px;
+
+    flex-shrink: 0;
+}
+
+
+.header-left h1 {
+    font-size: 22px;
+
+    font-weight: 800;
+
+    line-height: 1.15;
+}
+
+
+.header-left p {
+    font-size: 12px;
+
+    opacity: 0.82;
+
+    margin-top: 3px;
+
+    letter-spacing: 0.5px;
+}
+
+
+.header-right {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    gap: 9px;
+
+    flex-wrap: wrap;
+}
+
+
+#announcementUserName {
+    font-weight: 700;
+
+    font-size: 14px;
+
+    padding:
+        8px 12px;
+
+    background:
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 8px;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   HEADER BUTTONS
+   ========================================================= */
+
+.header-btn {
+    border: none;
+
+    background:
+        rgba(255, 255, 255, 0.14);
+
+    color: white;
+
+    padding:
+        9px 14px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        0.2s ease;
+}
+
+
+.header-btn:hover {
+    background:
+        rgba(255, 255, 255, 0.24);
+
+    transform:
+        translateY(-1px);
+}
+
+
+.logout-btn {
+    background:
+        #b42318;
+}
+
+
+.logout-btn:hover {
+    background:
+        #8f1d14;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+   ========================================================= */
+
+.announcement-container {
+    width: 100%;
+
+    max-width: 1250px;
+
+    margin:
+        0 auto;
+
+    padding:
+        30px 22px 60px;
+}
+
+
+/* =========================================================
+   PAGE INTRO
+   ========================================================= */
+
+.announcement-intro {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom:
+        24px;
+
+    background:
+        white;
+
+    border:
+        1px solid #e1e7eb;
+
+    border-radius:
+        14px;
+
+    padding:
+        22px;
+
+    box-shadow:
+        0 3px 12px
+        rgba(0, 0, 0, 0.05);
+}
+
+
+.announcement-intro h2 {
+    color:
+        #0b5d3b;
+
+    font-size:
+        25px;
+
+    margin-bottom:
+        5px;
+}
+
+
+.announcement-intro p {
+    color:
+        #65727e;
+
+    font-size:
+        14px;
+}
+
+
+/* =========================================================
+   ACCESS BADGE
+   ========================================================= */
+
+.access-badge {
+    background:
+        #fff4cc;
+
+    color:
+        #805b00;
+
+    border:
+        1px solid #ead48a;
+
+    padding:
+        9px 14px;
+
+    border-radius:
+        999px;
+
+    font-size:
+        12px;
+
+    font-weight:
+        800;
+
+    white-space:
+        nowrap;
+}
+
+
+.access-badge.active {
+    background:
+        #e8f7ef;
+
+    color:
+        #087443;
+
+    border-color:
+        #a9dfc1;
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.announcement-card {
+    background:
+        white;
+
+    border:
+        1px solid #e1e7eb;
+
+    border-radius:
+        14px;
+
+    padding:
+        25px;
+
+    margin-bottom:
+        24px;
+
+    box-shadow:
+        0 4px 14px
+        rgba(0, 0, 0, 0.05);
+}
+
+
+.card-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom:
+        22px;
+
+    padding-bottom:
+        16px;
+
+    border-bottom:
+        1px solid #e7ecef;
+}
+
+
+.card-header h2 {
+    color:
+        #164b36;
+
+    font-size:
+        21px;
+
+    margin-bottom:
+        4px;
+}
+
+
+.card-header p {
+    color:
+        #6b7782;
+
+    font-size:
+        13px;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.form-group {
+    margin-bottom:
+        18px;
+}
+
+
+.form-group label {
+    display: block;
+
+    font-size:
+        14px;
+
+    font-weight:
+        750;
+
+    color:
+        #25313b;
+
+    margin-bottom:
+        7px;
+}
+
+
+.form-group input[type="text"],
+.form-group input[type="datetime-local"],
+.form-group textarea,
+.form-group select,
+
+#announcementTitle,
+#announcementMessageText,
+#announcementPriority,
+#announcementFarm,
+#announcementRole,
+#announcementUser,
+#startAt,
+#expiresAt {
+    width: 100%;
+
+    border:
+        1px solid #cfd8df;
+
+    background:
+        #ffffff;
+
+    color:
+        #1f2933;
+
+    border-radius:
+        9px;
+
+    padding:
+        12px 13px;
+
+    font-size:
+        14px;
+
+    outline:
+        none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.form-group textarea,
+#announcementMessageText {
+    resize:
+        vertical;
+
+    min-height:
+        145px;
+}
+
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color:
+        #0b7a50;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(11, 122, 80, 0.12);
+}
+
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color:
+        #9aa6af;
+}
+
+
+/* =========================================================
+   FORM SECTION
+   ========================================================= */
+
+.form-section {
+    margin-top:
+        25px;
+
+    margin-bottom:
+        24px;
+
+    padding:
+        20px;
+
+    background:
+        #f7faf8;
+
+    border:
+        1px solid #dce9e2;
+
+    border-radius:
+        12px;
+}
+
+
+.section-title {
+    margin-bottom:
+        18px;
+}
+
+
+.section-title h3 {
+    color:
+        #164b36;
+
+    font-size:
+        18px;
+
+    margin-bottom:
+        3px;
+}
+
+
+.section-title p {
+    color:
+        #687780;
+
+    font-size:
+        13px;
+}
+
+
+/* =========================================================
+   TARGET OPTIONS
+   ========================================================= */
+
+.target-options {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap:
+        12px;
+}
+
+
+.target-option {
+    display:
+        flex;
+
+    align-items:
+        flex-start;
+
+    gap:
+        12px;
+
+    padding:
+        16px;
+
+    background:
+        white;
+
+    border:
+        1px solid #d6e0db;
+
+    border-radius:
+        11px;
+
+    cursor:
+        pointer;
+
+    transition:
+        0.2s ease;
+}
+
+
+.target-option:hover {
+    border-color:
+        #0b7a50;
+
+    box-shadow:
+        0 3px 10px
+        rgba(11, 122, 80, 0.08);
+}
+
+
+.target-option input {
+    width:
+        18px;
+
+    height:
+        18px;
+
+    margin-top:
+        2px;
+
+    accent-color:
+        #0b7a50;
+
+    flex-shrink:
+        0;
+}
+
+
+.target-option span {
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        3px;
+}
+
+
+.target-option strong {
+    color:
+        #17382b;
+
+    font-size:
+        14px;
+}
+
+
+.target-option small {
+    color:
+        #6d7880;
+
+    font-size:
+        12px;
+
+    line-height:
+        1.4;
+}
+
+
+/* =========================================================
+   TARGET INFO
+   ========================================================= */
+
+.target-info {
+    margin:
+        15px 0;
+
+    padding:
+        16px;
+
+    background:
+        #eef8f3;
+
+    border:
+        1px solid #b8dfca;
+
+    border-left:
+        5px solid #0b7a50;
+
+    border-radius:
+        9px;
+
+    color:
+        #245b42;
+}
+
+
+.target-info strong {
+    display:
+        block;
+
+    margin-bottom:
+        4px;
+
+    font-size:
+        14px;
+}
+
+
+.target-info p {
+    font-size:
+        13px;
+
+    color:
+        #547164;
+}
+
+
+/* =========================================================
+   HIDDEN
+   ========================================================= */
+
+.hidden {
+    display:
+        none !important;
+}
+
+
+/* =========================================================
+   TARGET SUMMARY
+   ========================================================= */
+
+.target-summary {
+    margin:
+        16px 0 20px;
+
+    padding:
+        15px 17px;
+
+    background:
+        #f1f7ff;
+
+    border:
+        1px solid #cbdff2;
+
+    border-left:
+        5px solid #2877b8;
+
+    border-radius:
+        9px;
+}
+
+
+.target-summary h4 {
+    color:
+        #1d527c;
+
+    margin-bottom:
+        5px;
+
+    font-size:
+        14px;
+}
+
+
+.target-summary p {
+    color:
+        #4d6577;
+
+    font-size:
+        13px;
+}
+
+
+/* =========================================================
+   SCHEDULE
+   ========================================================= */
+
+.schedule-grid {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap:
+        16px;
+}
+
+
+.checkbox-row {
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        9px;
+
+    cursor:
+        pointer;
+
+    font-size:
+        13px;
+
+    font-weight:
+        700;
+
+    color:
+        #34434d;
+}
+
+
+.checkbox-row input {
+    width:
+        18px;
+
+    height:
+        18px;
+
+    accent-color:
+        #0b7a50;
+}
+
+
+/* =========================================================
+   FORM MESSAGE
+   ========================================================= */
+
+.form-message {
+    display:
+        block;
+
+    min-height:
+        0;
+
+    margin:
+        10px 0;
+
+    padding:
+        0;
+
+    border-radius:
+        8px;
+
+    font-size:
+        13px;
+
+    font-weight:
+        600;
+}
+
+
+.form-message.success,
+.form-message.error,
+.form-message.warning {
+    padding:
+        12px 14px;
+}
+
+
+.form-message.success {
+    background:
+        #e9f8ef;
+
+    color:
+        #087443;
+
+    border:
+        1px solid #b9e1c8;
+}
+
+
+.form-message.error {
+    background:
+        #fff0ef;
+
+    color:
+        #a32116;
+
+    border:
+        1px solid #efc0bb;
+}
+
+
+.form-message.warning {
+    background:
+        #fff7df;
+
+    color:
+        #785900;
+
+    border:
+        1px solid #ead79a;
+}
+
+
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
+.form-actions {
+    display:
+        flex;
+
+    justify-content:
+        flex-end;
+
+    gap:
+        10px;
+
+    margin-top:
+        20px;
+}
+
+
+.primary-btn,
+.secondary-btn,
+.danger-btn {
+    border:
+        none;
+
+    border-radius:
+        8px;
+
+    padding:
+        11px 17px;
+
+    font-size:
+        13px;
+
+    font-weight:
+        750;
+
+    cursor:
+        pointer;
+
+    transition:
+        0.2s ease;
+}
+
+
+.primary-btn {
+    background:
+        #0b7a50;
+
+    color:
+        white;
+}
+
+
+.primary-btn:hover {
+    background:
+        #075e3d;
+
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 4px 10px
+        rgba(11, 122, 80, 0.2);
+}
+
+
+.secondary-btn {
+    background:
+        #edf1f3;
+
+    color:
+        #33424c;
+
+    border:
+        1px solid #d5dde2;
+}
+
+
+.secondary-btn:hover {
+    background:
+        #e1e7ea;
+
+    transform:
+        translateY(-1px);
+}
+
+
+.danger-btn {
+    background:
+        #fff0ef;
+
+    color:
+        #a32116;
+
+    border:
+        1px solid #efc2bd;
+}
+
+
+.danger-btn:hover {
+    background:
+        #fce0dd;
+
+    transform:
+        translateY(-1px);
+}
+
+
+.primary-btn:disabled,
+.secondary-btn:disabled,
+.danger-btn:disabled {
+    opacity:
+        0.55;
+
+    cursor:
+        not-allowed;
+
+    transform:
+        none;
+}
+
+
+/* =========================================================
+   ANNOUNCEMENT FILTERS
+   ========================================================= */
+
+.announcement-filters {
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap:
+        15px;
+
+    padding:
+        17px;
+
+    background:
+        #f7f9fa;
+
+    border:
+        1px solid #e1e7eb;
+
+    border-radius:
+        10px;
+
+    margin-bottom:
+        18px;
+}
+
+
+.announcement-filters .form-group {
+    margin:
+        0;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.announcements-status {
+    padding:
+        12px 14px;
+
+    background:
+        #f5f7f8;
+
+    color:
+        #65727d;
+
+    border:
+        1px solid #e0e5e8;
+
+    border-radius:
+        8px;
+
+    font-size:
+        13px;
+
+    margin-bottom:
+        16px;
+}
+
+
+.announcements-status.error {
+    background:
+        #fff0ef;
+
+    color:
+        #a32116;
+
+    border-color:
+        #efc0bb;
+}
+
+
+/* =========================================================
+   ANNOUNCEMENTS LIST
+   ========================================================= */
+
+.announcements-list {
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    gap:
+        15px;
+}
+
+
+/* =========================================================
+   ANNOUNCEMENT ITEM
+   ========================================================= */
+
+.announcement-item {
+    border:
+        1px solid #dfe5e9;
+
+    border-radius:
+        12px;
+
+    padding:
+        18px;
+
+    background:
+        white;
+
+    box-shadow:
+        0 2px 8px
+        rgba(0, 0, 0, 0.04);
+
+    transition:
+        0.2s ease;
+}
+
+
+.announcement-item:hover {
+    box-shadow:
+        0 5px 15px
+        rgba(0, 0, 0, 0.07);
+
+    transform:
+        translateY(-1px);
+}
+
+
+.announcement-active {
+    border-left:
+        5px solid #0b7a50;
+}
+
+
+.announcement-inactive {
+    border-left:
+        5px solid #9ba6ad;
+
+    opacity:
+        0.78;
+}
+
+
+/* =========================================================
+   ANNOUNCEMENT ITEM HEADER
+   ========================================================= */
+
+.announcement-item-header {
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    gap:
+        15px;
+
+    margin-bottom:
+        12px;
+}
+
+
+.announcement-item-header h3 {
+    font-size:
+        18px;
+
+    color:
+        #17382b;
+
+    margin-bottom:
+        7px;
+}
+
+
+/* =========================================================
+   META
+   ========================================================= */
+
+.announcement-meta {
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    align-items:
+        center;
+
+    gap:
+        7px;
+}
+
+
+.priority-badge,
+.status-badge {
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    padding:
+        4px 9px;
+
+    border-radius:
+        999px;
+
+    font-size:
+        11px;
+
+    font-weight:
+        800;
+}
+
+
+.priority-normal {
+    background:
+        #edf1f3;
+
+    color:
+        #52616b;
+}
+
+
+.priority-important {
+    background:
+        #fff4d6;
+
+    color:
+        #785b00;
+}
+
+
+.priority-urgent {
+    background:
+        #ffe8e5;
+
+    color:
+        #a32116;
+}
+
+
+.status-active {
+    background:
+        #e7f7ed;
+
+    color:
+        #087443;
+}
+
+
+.status-inactive {
+    background:
+        #eef0f2;
+
+    color:
+        #66727a;
+}
+
+
+/* =========================================================
+   ANNOUNCEMENT BODY
+   ========================================================= */
+
+.announcement-item-body {
+    margin-bottom:
+        13px;
+}
+
+
+.announcement-item-body p {
+    color:
+        #4b5962;
+
+    font-size:
+        14px;
+
+    white-space:
+        pre-wrap;
+
+    word-break:
+        break-word;
+}
+
+
+/* =========================================================
+   TARGET
+   ========================================================= */
+
+.announcement-target {
+    background:
+        #f4f8f6;
+
+    border:
+        1px solid #dce8e1;
+
+    border-radius:
+        8px;
+
+    padding:
+        10px 12px;
+
+    color:
+        #4e6258;
+
+    font-size:
+        12px;
+
+    margin-bottom:
+        12px;
+}
+
+
+.announcement-target strong {
+    color:
+        #234a38;
+}
+
+
+/* =========================================================
+   DATES
+   ========================================================= */
+
+.announcement-dates {
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        12px;
+
+    color:
+        #7a858d;
+
+    font-size:
+        11px;
+
+    padding-bottom:
+        13px;
+
+    border-bottom:
+        1px solid #edf0f2;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.announcement-actions {
+    display:
+        flex;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        8px;
+
+    margin-top:
+        13px;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+    text-align:
+        center;
+
+    padding:
+        35px 20px;
+
+    color:
+        #78858d;
+
+    background:
+        #f8fafb;
+
+    border:
+        1px dashed #cdd6dc;
+
+    border-radius:
+        10px;
+
+    font-size:
+        14px;
+}
+
+
+.error-state {
+    color:
+        #
+
