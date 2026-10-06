@@ -6,13 +6,45 @@
 let platformAnnouncements = [];
 let platformAnnouncementFarms = [];
 
+let platformAnnouncementsInitialized = false;
+
+
+/* ============================================================
+   WAIT FOR SUPABASE CLIENT
+   ============================================================ */
+
+async function waitForPlatformSupabaseClient(
+    maxAttempts = 50,
+    delay = 100
+) {
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+
+        if (
+            typeof window.supabaseClient !== "undefined" &&
+            window.supabaseClient
+        ) {
+            return window.supabaseClient;
+        }
+
+        await new Promise(
+            resolve => setTimeout(resolve, delay)
+        );
+    }
+
+    return null;
+}
+
 
 /* ============================================================
    DATE FORMAT
    ============================================================ */
 
 function platformAnnouncementFormatDate(value) {
-    if (!value) return "Date not available";
+
+    if (!value) {
+        return "Date not available";
+    }
 
     const date = new Date(value);
 
@@ -21,6 +53,7 @@ function platformAnnouncementFormatDate(value) {
     }
 
     return date.toLocaleString("en-ZM", {
+        timeZone: "Africa/Lusaka",
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -35,12 +68,67 @@ function platformAnnouncementFormatDate(value) {
    ============================================================ */
 
 function escapePlatformAnnouncementHTML(value) {
+
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+
+/* ============================================================
+   SHOW ERROR
+   ============================================================ */
+
+function showPlatformAnnouncementError(message) {
+
+    const container =
+        document.getElementById(
+            "platformAnnouncements"
+        );
+
+    const status =
+        document.getElementById(
+            "platformAnnouncementsStatus"
+        );
+
+
+    if (status) {
+
+        status.textContent =
+            "Announcements could not be loaded.";
+    }
+
+
+    if (container) {
+
+        container.innerHTML = `
+
+            <div class="platform-announcement-error">
+
+                <strong>
+                    Announcements could not be loaded.
+                </strong>
+
+                <p>
+                    ${escapePlatformAnnouncementHTML(
+                        message ||
+                        "An unexpected error occurred."
+                    )}
+                </p>
+
+                <button
+                    type="button"
+                    onclick="retryPlatformAnnouncements()"
+                >
+                    🔄 Try Again
+                </button>
+
+            </div>
+        `;
+    }
 }
 
 
@@ -55,15 +143,44 @@ async function loadPlatformAnnouncementFarms() {
             "platformAnnouncementFarmFilter"
         );
 
+
+    const client =
+        window.supabaseClient;
+
+
+    if (!client) {
+
+        console.error(
+            "Supabase client is not available."
+        );
+
+        platformAnnouncementFarms = [];
+
+        if (select) {
+
+            select.innerHTML = `
+                <option value="all">
+                    All Farms
+                </option>
+            `;
+        }
+
+        return false;
+    }
+
+
     try {
 
-        const { data, error } =
-            await supabaseClient
-                .from("farms")
-                .select("id, farm_name, status")
-                .order("farm_name", {
-                    ascending: true
-                });
+        const {
+            data,
+            error
+        } = await client
+            .from("farms")
+            .select("id, farm_name, status")
+            .order("farm_name", {
+                ascending: true
+            });
+
 
         if (error) {
 
@@ -86,10 +203,13 @@ async function loadPlatformAnnouncementFarms() {
             return false;
         }
 
+
         platformAnnouncementFarms =
             data || [];
 
+
         populatePlatformAnnouncementFarmFilter();
+
 
         return true;
 
@@ -127,6 +247,7 @@ function populatePlatformAnnouncementFarmFilter() {
             "platformAnnouncementFarmFilter"
         );
 
+
     if (!select) {
 
         console.warn(
@@ -136,11 +257,13 @@ function populatePlatformAnnouncementFarmFilter() {
         return;
     }
 
+
     select.innerHTML = `
         <option value="all">
             All Farms
         </option>
     `;
+
 
     platformAnnouncementFarms.forEach(
         farm => {
@@ -148,12 +271,15 @@ function populatePlatformAnnouncementFarmFilter() {
             const option =
                 document.createElement("option");
 
+
             option.value =
                 String(farm.id);
+
 
             option.textContent =
                 farm.farm_name ||
                 `Farm ${farm.id}`;
+
 
             select.appendChild(option);
         }
@@ -170,8 +296,10 @@ function getPlatformAnnouncementFarmName(
 ) {
 
     if (!farmId) {
+
         return "MUNKA PIGGERY PLATFORM";
     }
+
 
     const farm =
         platformAnnouncementFarms.find(
@@ -180,9 +308,12 @@ function getPlatformAnnouncementFarmName(
                 Number(farmId)
         );
 
+
     if (!farm) {
+
         return `Farm ${farmId}`;
     }
+
 
     return (
         farm.farm_name ||
@@ -201,6 +332,7 @@ async function loadPlatformAnnouncements() {
         document.getElementById(
             "platformAnnouncements"
         );
+
 
     const status =
         document.getElementById(
@@ -225,80 +357,84 @@ async function loadPlatformAnnouncements() {
     }
 
 
+    const client =
+        await waitForPlatformSupabaseClient();
+
+
+    if (!client) {
+
+        showPlatformAnnouncementError(
+            "Supabase could not be initialized. Please check supabase.js and try again."
+        );
+
+        return false;
+    }
+
+
     try {
 
-        /*
-         * IMPORTANT:
-         * This project uses supabaseClient,
-         * not the Supabase CDN namespace.
-         */
+        console.log(
+            "Loading announcements from Supabase..."
+        );
 
-        const { data, error } =
-            await supabaseClient
-                .from("announcements")
-                .select(`
-                    id,
-                    title,
-                    message,
-                    priority,
-                    target_type,
-                    farm_id,
-                    target_role,
-                    target_user_id,
-                    created_by,
-                    created_at,
-                    start_at,
-                    expires_at,
-                    is_active
-                `)
-                .order("created_at", {
-                    ascending: false
-                });
+
+        const {
+            data,
+            error
+        } = await client
+            .from("announcements")
+            .select(`
+                id,
+                title,
+                message,
+                priority,
+                target_type,
+                farm_id,
+                target_role,
+                target_user_id,
+                created_by,
+                created_at,
+                start_at,
+                expires_at,
+                is_active
+            `)
+            .order("created_at", {
+                ascending: false
+            });
 
 
         if (error) {
 
             console.error(
-                "Platform announcements error:",
+                "Platform announcements database error:",
                 error
             );
 
-            if (status) {
 
-                status.textContent =
-                    "Announcements could not be loaded.";
-            }
+            showPlatformAnnouncementError(
+                error.message ||
+                "Database error while loading announcements."
+            );
 
-            if (container) {
 
-                container.innerHTML = `
-                    <div class="platform-announcement-error">
-
-                        <strong>
-                            Announcements could not be loaded.
-                        </strong>
-
-                        <p>
-                            Database error:
-                            ${escapePlatformAnnouncementHTML(
-                                error.message ||
-                                "Unknown database error"
-                            )}
-                        </p>
-
-                    </div>
-                `;
-            }
-
-            return;
+            return false;
         }
 
 
         platformAnnouncements =
             data || [];
 
+
+        console.log(
+            "Platform announcements loaded:",
+            platformAnnouncements.length
+        );
+
+
         displayPlatformAnnouncements();
 
+
+        return true;
 
     } catch (error) {
 
@@ -307,31 +443,14 @@ async function loadPlatformAnnouncements() {
             error
         );
 
-        if (status) {
 
-            status.textContent =
-                "Announcements could not be loaded.";
-        }
+        showPlatformAnnouncementError(
+            error.message ||
+            "Unexpected error occurred."
+        );
 
-        if (container) {
 
-            container.innerHTML = `
-                <div class="platform-announcement-error">
-
-                    <strong>
-                        Announcements could not be loaded.
-                    </strong>
-
-                    <p>
-                        ${escapePlatformAnnouncementHTML(
-                            error.message ||
-                            "Unexpected error occurred."
-                        )}
-                    </p>
-
-                </div>
-            `;
-        }
+        return false;
     }
 }
 
@@ -363,11 +482,23 @@ function filterPlatformAnnouncements() {
     return platformAnnouncements.filter(
         announcement => {
 
+
+            /*
+             * PLATFORM ANNOUNCEMENTS
+             *
+             * If "All Farms" is selected,
+             * platform announcements remain visible.
+             */
+
             const farmMatches =
                 farmFilter === "all" ||
-                String(
-                    announcement.farm_id
-                ) === String(farmFilter);
+                (
+                    announcement.farm_id !== null &&
+                    announcement.farm_id !== undefined &&
+                    String(
+                        announcement.farm_id
+                    ) === String(farmFilter)
+                );
 
 
             const priorityMatches =
@@ -412,8 +543,11 @@ function getPlatformAnnouncementTargetText(
 
     if (target === "Farm") {
 
-        return getPlatformAnnouncementFarmName(
-            announcement.farm_id
+        return (
+            "Whole Farm: " +
+            getPlatformAnnouncementFarmName(
+                announcement.farm_id
+            )
         );
     }
 
@@ -421,8 +555,11 @@ function getPlatformAnnouncementTargetText(
     if (target === "Role") {
 
         return (
-            announcement.target_role ||
-            "Specific Role"
+            "Role: " +
+            (
+                announcement.target_role ||
+                "Specific Role"
+            )
         );
     }
 
@@ -773,22 +910,63 @@ function setupPlatformAnnouncementFilters() {
 
                 refreshButton.disabled = true;
 
+                const originalText =
+                    refreshButton.textContent;
+
+
                 refreshButton.textContent =
                     "⏳ Refreshing...";
 
 
-                await loadPlatformAnnouncementFarms();
+                try {
 
-                await loadPlatformAnnouncements();
+                    await loadPlatformAnnouncementFarms();
 
+                    await loadPlatformAnnouncements();
 
-                refreshButton.disabled = false;
+                } finally {
 
-                refreshButton.textContent =
-                    "🔄 Refresh";
+                    refreshButton.disabled = false;
+
+                    refreshButton.textContent =
+                        originalText || "🔄 Refresh";
+                }
             }
         );
     }
+}
+
+
+/* ============================================================
+   RETRY
+   ============================================================ */
+
+async function retryPlatformAnnouncements() {
+
+    console.log(
+        "Retrying platform announcements..."
+    );
+
+
+    const container =
+        document.getElementById(
+            "platformAnnouncements"
+        );
+
+
+    if (container) {
+
+        container.innerHTML = `
+            <div class="platform-announcement-loading">
+                🔄 Retrying...
+            </div>
+        `;
+    }
+
+
+    await loadPlatformAnnouncementFarms();
+
+    await loadPlatformAnnouncements();
 }
 
 
@@ -798,34 +976,73 @@ function setupPlatformAnnouncementFilters() {
 
 async function initializePlatformAnnouncements() {
 
+    if (platformAnnouncementsInitialized) {
+        return;
+    }
+
+
+    platformAnnouncementsInitialized = true;
+
+
     console.log(
         "Initializing Platform Announcements..."
     );
 
 
-    /*
-     * Farms are loaded first for the filter.
-     *
-     * If farm loading fails, announcement
-     * loading still continues.
-     */
+    try {
 
-    await loadPlatformAnnouncementFarms();
+        /*
+         * Wait for Supabase.
+         */
 
-
-    /*
-     * Always load announcements.
-     */
-
-    await loadPlatformAnnouncements();
+        const client =
+            await waitForPlatformSupabaseClient();
 
 
-    setupPlatformAnnouncementFilters();
+        if (!client) {
+
+            showPlatformAnnouncementError(
+                "Supabase client is not available. Check that supabase.js loads before platform_announcements.js."
+            );
+
+            return;
+        }
 
 
-    console.log(
-        "Platform Announcements initialized."
-    );
+        /*
+         * Farms are loaded first for
+         * the announcement filter.
+         *
+         * Announcement loading continues
+         * even if farms fail.
+         */
+
+        await loadPlatformAnnouncementFarms();
+
+
+        await loadPlatformAnnouncements();
+
+
+        setupPlatformAnnouncementFilters();
+
+
+        console.log(
+            "Platform Announcements initialized successfully."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Platform announcements initialization failed:",
+            error
+        );
+
+
+        showPlatformAnnouncementError(
+            error.message ||
+            "Platform announcements failed to initialize."
+        );
+    }
 }
 
 
