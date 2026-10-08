@@ -1,1172 +1,374 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>MUNKA PIGGERY - Login</title>
-
-<!-- CLOUDFLARE TURNSTILE -->
-<script
-    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-    async
-    defer
-></script>
-
-<style>
-
-/* =========================================================
-   MUNKA PIGGERY TECHNOLOGY
-   PROFESSIONAL FARM MANAGEMENT LOGIN
-   GREEN + BLUE + RED + WHITE + GOLD
-========================================================= */
-
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100%;
-}
-
-body {
-
-    min-height: 100vh;
-
-    font-family:
-        "Segoe UI",
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    color: #17231c;
-
-    background:
-
-        radial-gradient(
-            circle at 10% 10%,
-            rgba(25, 135, 84, 0.35),
-            transparent 28%
-        ),
-
-        radial-gradient(
-            circle at 90% 15%,
-            rgba(13, 110, 253, 0.25),
-            transparent 25%
-        ),
-
-        radial-gradient(
-            circle at 85% 90%,
-            rgba(212, 175, 55, 0.22),
-            transparent 25%
-        ),
-
-        linear-gradient(
-            135deg,
-            #063d29 0%,
-            #087f4b 42%,
-            #075e9b 72%,
-            #062c4c 100%
-        );
-
-    background-attachment: fixed;
-}
-
-.login-container {
-
-    width: min(1180px, 94%);
-
-    min-height: 720px;
-
-    margin: 30px auto;
-
-    padding:
-        48px
-        65px
-        38px;
-
-    background: #ffffff;
-
-    border-radius: 26px;
-
-    position: relative;
-
-    overflow: hidden;
-
-    box-shadow:
-        0 30px 80px
-        rgba(0, 0, 0, 0.30);
-}
-
-.login-container::before {
-
-    content: "";
-
-    position: absolute;
-
-    top: 0;
-    left: 0;
-
-    width: 100%;
-    height: 9px;
-
-    background:
-
-        linear-gradient(
-            90deg,
-
-            #c62828 0%,
-            #c62828 20%,
-
-            #087f4b 20%,
-            #087f4b 50%,
-
-            #0d6efd 50%,
-            #0d6efd 75%,
-
-            #d4af37 75%,
-            #d4af37 100%
-        );
-}
-
-.login-container::after {
-
-    content: "";
-
-    position: absolute;
-
-    width: 360px;
-    height: 360px;
-
-    border-radius: 50%;
-
-    right: -180px;
-    bottom: -180px;
-
-    background:
-        rgba(8, 127, 75, 0.07);
-
-    pointer-events: none;
-}
-
-.brand-icon {
-
-    width: 125px;
-    height: 125px;
-
-    margin:
-        8px auto 14px;
-
-    display: flex;
-
-    justify-content: center;
-    align-items: center;
-
-    position: relative;
-
-    z-index: 2;
-}
-
-.brand-logo {
-
-    width: 100%;
-    height: 100%;
-
-    object-fit: contain;
-
-    display: block;
-
-    filter:
-        drop-shadow(
-            0 6px 10px
-            rgba(0, 0, 0, 0.12)
-        );
-}
-
-.login-container h1 {
-
-    margin: 0;
-
-    text-align: center;
-
-    font-size:
-        clamp(32px, 4vw, 50px);
-
-    font-weight: 900;
-
-    letter-spacing: 2px;
-
-    color: #075e3b;
-}
-
-.login-container h3 {
-
-    margin:
-        7px 0 0;
-
-    text-align: center;
-
-    font-size:
-        clamp(13px, 1.6vw, 18px);
-
-    font-weight: 800;
-
-    letter-spacing: 3px;
-
-    text-transform: uppercase;
-
-    color: #0d6efd;
-}
-
-.login-container h3::after {
-
-    content: "";
-
-    display: block;
-
-    width: 75px;
-
-    height: 4px;
-
-    margin:
-        12px auto 0;
-
-    border-radius: 10px;
-
-    background: #d4af37;
-}
-
-.welcome {
-
-    margin:
-        32px 0 7px;
-
-    text-align: center;
-
-    font-size:
-        clamp(25px, 3vw, 35px);
-
-    font-weight: 850;
-
-    color: #17231c;
-}
-
-.login-instruction {
-
-    margin:
-        0 0 30px;
-
-    text-align: center;
-
-    font-size: 15px;
-
-    color: #68756e;
-}
-
-#loginForm {
-
-    width: 100%;
-
-    max-width: 1050px;
-
-    margin: auto;
-
-    position: relative;
-
-    z-index: 3;
-}
-
-.role-title {
-
-    margin-bottom: 14px;
-
-    font-size: 15px;
-
-    font-weight: 900;
-
-    color: #075e3b;
-
-    text-transform: uppercase;
-
-    letter-spacing: 1px;
-}
-
-.roles-container {
-
-    width: 100%;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
-
-    gap: 13px;
-
-    margin-bottom: 10px;
-}
-
-.role-button {
-
-    width: 100%;
-
-    min-height: 66px;
-
-    padding: 11px;
-
-    border-radius: 13px;
-
-    border:
-        1px solid #d8e3dd;
-
-    background:
-        #ffffff;
-
-    color:
-        #26352d;
-
-    font-size: 14px;
-
-    font-weight: 750;
-
-    cursor: pointer;
-
-    transition:
-        all 0.2s ease;
-
-    box-shadow:
-        0 4px 12px
-        rgba(0, 70, 45, 0.07);
-}
-
-.role-button:hover {
-
-    transform:
-        translateY(-3px);
-
-    border-color:
-        #0d6efd;
-
-    color:
-        #075e3b;
-
-    background:
-        #f4f9ff;
-
-    box-shadow:
-        0 9px 20px
-        rgba(13, 110, 253, 0.15);
-}
-
-.role-button.selected {
-
-    color: #ffffff;
-
-    border:
-        2px solid #d4af37;
-
-    background:
-
-        linear-gradient(
-            135deg,
-            #075e3b,
-            #087f4b 55%,
-            #0d6efd
-        );
-
-    box-shadow:
-        0 10px 25px
-        rgba(7, 94, 59, 0.28);
-
-    transform:
-        translateY(-3px);
-}
-
-.selected-role {
-
-    min-height: 23px;
-
-    margin:
-        8px 0 17px;
-
-    color:
-        #087f4b;
-
-    font-size:
-        14px;
-
-    font-weight:
-        800;
-}
-
-.login-container input {
-
-    width: 100%;
-
-    height: 58px;
-
-    padding:
-        0 18px;
-
-    margin-bottom: 14px;
-
-    border-radius: 11px;
-
-    border:
-        1px solid #d5e0da;
-
-    background:
-        #f9fcfa;
-
-    color:
-        #17231c;
-
-    font-size:
-        16px;
-
-    outline: none;
-
-    transition:
-        all 0.2s ease;
-}
-
-.login-container input::placeholder {
-
-    color:
-        #9aa59f;
-}
-
-.login-container input:hover {
-
-    border-color:
-        #9bbcaf;
-}
-
-.login-container input:focus {
-
-    border:
-        2px solid #087f4b;
-
-    background:
-        #ffffff;
-
-    box-shadow:
-        0 0 0 4px
-        rgba(8, 127, 75, 0.10);
-}
-
-.password-container {
-
-    position: relative;
-
-    width: 100%;
-}
-
-.password-container input {
-
-    padding-right:
-        85px;
-}
-
-#togglePassword {
-
-    position: absolute;
-
-    right: 10px;
-
-    top: 50%;
-
-    transform:
-        translateY(-50%);
-
-    width: auto;
-
-    height: auto;
-
-    margin: 0;
-
-    padding:
-        8px 11px;
-
-    border: none;
-
-    border-radius: 7px;
-
-    background:
-        transparent;
-
-    color:
-        #087f4b;
-
-    font-size:
-        14px;
-
-    font-weight:
-        850;
-
-    cursor:
-        pointer;
-}
-
-#togglePassword:hover {
-
-    background:
-        #e9f7f0;
-
-    color:
-        #075e3b;
-}
-
-.forgot-password {
-
-    text-align:
-        right;
-
-    margin:
-        0 0 20px;
-}
-
-.forgot-password a {
-
-    color:
-        #0d6efd;
-
-    font-size:
-        14px;
-
-    font-weight:
-        750;
-
-    text-decoration:
-        none;
-}
-
-.forgot-password a:hover {
-
-    color:
-        #075e3b;
-
-    text-decoration:
-        underline;
-}
-
-
-/* =========================================================
-   CLOUDFLARE TURNSTILE
-========================================================= */
-
-.turnstile-container {
-
-    width: 100%;
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: center;
-
-    margin:
-        4px 0 20px;
-
-    min-height: 65px;
-}
-
-
-/* =========================================================
-   LOGIN BUTTON
-========================================================= */
-
-.login-button {
-
-    width: 100%;
-
-    height: 62px;
-
-    border: none;
-
-    border-radius: 13px;
-
-    background:
-
-        linear-gradient(
-            100deg,
-            #075e3b 0%,
-            #087f4b 45%,
-            #0d6efd 78%,
-            #d4af37 100%
-        );
-
-    color:
-        #ffffff;
-
-    font-size:
-        17px;
-
-    font-weight:
-        900;
-
-    letter-spacing:
-        0.7px;
-
-    cursor:
-        pointer;
-
-    box-shadow:
-        0 10px 25px
-        rgba(7, 94, 59, 0.28);
-
-    transition:
-        all 0.2s ease;
-}
-
-.login-button:hover {
-
-    transform:
-        translateY(-3px);
-
-    filter:
-        brightness(1.07);
-
-    box-shadow:
-        0 15px 30px
-        rgba(7, 94, 59, 0.35);
-}
-
-.login-button:active {
-
-    transform:
-        translateY(0);
-}
-
-#message {
-
-    min-height: 20px;
-
-    margin:
-        13px 0 0;
-
-    padding:
-        0 5px;
-
-    font-size:
-        14px;
-
-    font-weight:
-        750;
-
-    line-height:
-        1.4;
-
-    color:
-        #c62828;
-}
-
-.farm-footer {
-
-    width: 100%;
-
-    max-width: 1050px;
-
-    margin:
-        28px auto 0;
-
-    padding-top:
-        17px;
-
-    border-top:
-        1px solid #e3ebe6;
-
-    text-align:
-        center;
-
-    font-size:
-        13px;
-
-    line-height:
-        1.7;
-
-    color:
-        #7b857f;
-}
-
-.farm-footer strong {
-
-    color:
-        #087f4b;
-
-    font-size:
-        14px;
-}
-
-@media (max-width: 900px) {
-
-    .login-container {
-
-        width: 96%;
-
-        padding:
-            45px 35px 32px;
-    }
-
-    .roles-container {
-
-        grid-template-columns:
-            repeat(3, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 600px) {
-
-    body {
-
-        align-items:
-            flex-start;
-
-        background:
-            linear-gradient(
-                145deg,
-                #075e3b,
-                #087f4b,
-                #075e9b
-            );
-    }
-
-    .login-container {
-
-        width: 100%;
-
-        min-height: 100vh;
-
-        margin: 0;
-
-        padding:
-            38px 18px 25px;
-
-        border-radius:
-            0;
-
-        box-shadow:
-            none;
-    }
-
-    .brand-icon {
-
-        width:
-            92px;
-
-        height:
-            92px;
-
-        margin-bottom:
-            12px;
-    }
-
-    .login-container h1 {
-
-        font-size:
-            28px;
-
-        letter-spacing:
-            1.5px;
-    }
-
-    .login-container h3 {
-
-        font-size:
-            11px;
-
-        letter-spacing:
-            1.5px;
-    }
-
-    .welcome {
-
-        margin-top:
-            25px;
-
-        font-size:
-            23px;
-    }
-
-    .login-instruction {
-
-        font-size:
-            13px;
-
-        margin-bottom:
-            24px;
-    }
-
-    .roles-container {
-
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-
-        gap:
-            9px;
-    }
-
-    .role-button {
-
-        min-height:
-            58px;
-
-        padding:
-            9px 5px;
-
-        font-size:
-            11.5px;
-    }
-
-    .login-container input {
-
-        height:
-            55px;
-
-        font-size:
-            15px;
-    }
-
-    .login-button {
-
-        height:
-            57px;
-
-        font-size:
-            15px;
-    }
-
-    .farm-footer {
-
-        font-size:
-            12px;
-    }
-}
-
-@media (max-width: 380px) {
-
-    .login-container {
-
-        padding:
-            32px 13px 20px;
-    }
-
-    .brand-icon {
-
-        width:
-            78px;
-
-        height:
-            78px;
-    }
-
-    .login-container h1 {
-
-        font-size:
-            24px;
-    }
-
-    .welcome {
-
-        font-size:
-            20px;
-    }
-
-    .role-button {
-
-        min-height:
-            53px;
-
-        font-size:
-            10.5px;
-    }
-}
-
-button:focus-visible,
-input:focus-visible,
-a:focus-visible {
-
-    outline:
-        3px solid
-        rgba(13, 110, 253, 0.35);
-
-    outline-offset:
-        2px;
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MUNKA PIGGERY TECHNOLOGY | Login</title>
+
+    <!-- MUNKA LOGIN CSS -->
+    <link rel="stylesheet" href="login.css?v=10">
+
+    <!-- Cloudflare Turnstile -->
+    <script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+        async
+        defer>
+    </script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Existing project files -->
+    <script src="supabase.js"></script>
+    <script src="activity.js"></script>
 </head>
 
 <body>
 
-<div class="login-container">
+    <!-- Animated background -->
+    <div class="background-overlay"></div>
 
-    <div class="brand-icon">
+    <!-- Main login dashboard -->
+    <main class="login-dashboard">
 
-        <img
-            src="munka-logo.png"
-            alt="MUNKA PIGGERY Management System"
-            class="brand-logo"
-        >
-
-    </div>
-
-    <h1>
-        MUNKA PIGGERY
-    </h1>
-
-    <h3>
-        Farm Management System
-    </h3>
-
-    <div class="welcome">
-        Welcome Back
-    </div>
-
-    <p class="login-instruction">
-        Sign in to manage your farm operations
-    </p>
-
-    <form id="loginForm">
-
-        <div class="role-title">
-            Select Your Role
+        <!-- Top technology strip -->
+        <div class="color-strip">
+            <span class="green"></span>
+            <span class="blue"></span>
+            <span class="red"></span>
+            <span class="green"></span>
+            <span class="blue"></span>
         </div>
 
-        <div class="roles-container">
+        <!-- Header -->
+        <section class="brand-section">
 
-            <button
-                type="button"
-                class="role-button"
-                data-role="owner/admin"
-            >
-                Owner / Admin
-            </button>
+            <div class="logo-container">
+                <img
+                    src="munka-logo.png"
+                    alt="MUNKA PIGGERY TECHNOLOGY Logo"
+                    class="munka-logo">
+            </div>
 
-            <button
-                type="button"
-                class="role-button"
-                data-role="farm manager"
-            >
-                Farm Manager
-            </button>
+            <h1>MUNKA PIGGERY</h1>
 
-            <button
-                type="button"
-                class="role-button"
-                data-role="serviceman"
-            >
-                Serviceman<br>
-                (Gestation Pen)
-            </button>
+            <div class="technology-title">
+                TECHNOLOGY
+            </div>
 
-            <button
-                type="button"
-                class="role-button"
-                data-role="farrowman"
-            >
-                Farrowman<br>
-                (Farrowing Pen)
-            </button>
+            <p class="system-status">
+                <span class="status-dot"></span>
+                FARM MANAGEMENT SYSTEM
+            </p>
 
-            <button
-                type="button"
-                class="role-button"
-                data-role="sales officer"
-            >
-                Sales Officer
-            </button>
+        </section>
 
-            <button
-                type="button"
-                class="role-button"
-                data-role="veterinary officer"
-            >
-                Veterinary Officer
-            </button>
 
-            <button
-                type="button"
-                class="role-button"
-                data-role="farm worker"
-            >
-                Farm Worker
-            </button>
+        <!-- Login card -->
+        <section class="login-card">
 
-        </div>
+            <div class="card-top-line"></div>
 
-        <div
-            id="selectedRole"
-            class="selected-role"
-        ></div>
+            <div class="login-heading">
+                <div class="login-icon">🔐</div>
 
-        <input
-            type="email"
-            id="email"
-            placeholder="Email Address"
-            autocomplete="email"
-            required
-        >
+                <div>
+                    <h2>SECURE LOGIN</h2>
+                    <p>Access your farm management dashboard</p>
+                </div>
+            </div>
 
-        <div class="password-container">
 
-            <input
-                type="password"
-                id="password"
-                placeholder="Password"
-                autocomplete="current-password"
-                required
-            >
+            <form id="loginForm" autocomplete="on">
 
-            <button
-                type="button"
-                id="togglePassword"
-            >
-                Show
-            </button>
+                <!-- EMAIL -->
+                <div class="input-group">
 
-        </div>
+                    <label for="email">
+                        EMAIL ADDRESS
+                    </label>
 
-        <div class="forgot-password">
+                    <div class="input-wrapper">
 
-            <a href="forgot_password.html">
-                Forgot Password?
-            </a>
+                        <span class="input-icon">✉</span>
 
-        </div>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Enter your email address"
+                            autocomplete="username"
+                            required>
 
-        <!-- =================================================
-             CLOUDFLARE TURNSTILE
-        ================================================== -->
+                    </div>
+                </div>
 
-        <div class="turnstile-container">
 
+                <!-- PASSWORD -->
+                <div class="input-group">
+
+                    <label for="password">
+                        PASSWORD
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <span class="input-icon">🔑</span>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required>
+
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            class="password-toggle"
+                            aria-label="Show password">
+                            👁
+                        </button>
+
+                    </div>
+                </div>
+
+
+                <!-- ROLE -->
+                <div class="role-section" id="roleSection">
+
+                    <label>
+                        SELECT YOUR ROLE
+                    </label>
+
+                    <div class="role-grid" id="roleButtons">
+
+                        <button
+                            type="button"
+                            class="role-button role-owner"
+                            data-role="owner/admin">
+                            <span>👑</span>
+                            <strong>OWNER / ADMIN</strong>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="role-button role-manager"
+                            data-role="farm manager">
+                            <span>👨‍💼</span>
+                            <strong>FARM MANAGER</strong>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="role-button role-service"
+                            data-role="serviceman">
+                            <span>🐖</span>
+                            <strong>SERVICEMAN</strong>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="role-button role-farrow"
+                            data-role="farrowman">
+                            <span>🏠</span>
+                            <strong>FARROWMAN</strong>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="role-button role-sales"
+                            data-role="sales officer">
+                            <span>💰</span>
+                            <strong>SALES OFFICER</strong>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="role-button role-vet"
+                            data-role="veterinary officer">
+                            <span>🩺</span>
+                            <strong>VETERINARY</strong>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="role-button role-worker"
+                            data-role="farm worker">
+                            <span>👷</span>
+                            <strong>FARM WORKER</strong>
+                        </button>
+
+                    </div>
+
+                    <input
+                        type="hidden"
+                        id="selectedRole"
+                        value="">
+
+                    <div
+                        id="roleSelectedText"
+                        class="role-selected-text">
+                        SELECT YOUR ROLE TO CONTINUE
+                    </div>
+
+                </div>
+
+
+                <!-- CAPTCHA -->
+                <div class="security-section">
+
+                    <div class="security-title">
+                        <span>🛡</span>
+                        SECURITY VERIFICATION
+                    </div>
+
+                    <div class="turnstile-box">
+
+                        <div
+                            class="cf-turnstile"
+                            data-sitekey="0x4AAAAAAFMo7xO_ThI6laYl">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FORGOT PASSWORD -->
+                <div class="forgot-row">
+
+                    <a
+                        href="forgot_password.html"
+                        class="forgot-link">
+                        Forgot password?
+                    </a>
+
+                </div>
+
+
+                <!-- LOGIN BUTTON -->
+                <button
+                    type="submit"
+                    id="loginButton"
+                    class="login-button">
+
+                    <span class="button-icon">🌿</span>
+
+                    <span id="loginButtonText">
+                        LOGIN TO FARM
+                    </span>
+
+                    <span class="button-arrow">➜</span>
+
+                </button>
+
+
+                <!-- MESSAGE -->
+                <div
+                    id="message"
+                    class="message"
+                    role="alert">
+                </div>
+
+            </form>
+
+
+            <!-- SUPER ADMIN MFA -->
             <div
-                class="cf-turnstile"
-                data-sitekey="0x4AAAAAAFMo7xO_ThI6laYl"
-                data-theme="light"
-            ></div>
+                id="mfaPanel"
+                class="mfa-panel"
+                hidden>
 
-        </div>
+                <div class="mfa-header">
 
-        <button
-            type="submit"
-            class="login-button"
-        >
-            🌿 LOGIN TO FARM
-        </button>
+                    <div class="mfa-icon">
+                        🔐
+                    </div>
 
-        <p id="message"></p>
+                    <div>
+                        <h3>MULTI-FACTOR AUTHENTICATION</h3>
+                        <p>Super Admin security verification</p>
+                    </div>
 
-    </form>
+                </div>
 
-    <div class="farm-footer">
 
-        <strong>
-            MUNKA PIGGERY TECHNOLOGY
-        </strong>
+                <div class="mfa-warning">
+                    <span>🛡</span>
+                    Enter the 6-digit authentication code from your authenticator app.
+                </div>
 
-        <br>
 
-        Professional Farm Management &amp; Records System
+                <div class="mfa-input-group">
 
-    </div>
+                    <label for="mfaCode">
+                        AUTHENTICATION CODE
+                    </label>
 
-</div>
+                    <input
+                        type="text"
+                        id="mfaCode"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        maxlength="6"
+                        placeholder="000000">
 
-<!-- SUPABASE -->
+                </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script src="supabase.js"></script>
+                <button
+                    type="button"
+                    id="verifyMfaButton"
+                    class="mfa-button">
 
-<script src="activity.js"></script>
+                    VERIFY MFA
 
-<script src="login.js"></script>
+                </button>
 
-<!-- ROLE + PASSWORD UI -->
 
-<script>
+                <div
+                    id="mfaMessage"
+                    class="mfa-message">
+                </div>
 
-const roleButtons =
-    document.querySelectorAll(".role-button");
 
-const selectedRole =
-    document.getElementById("selectedRole");
+                <button
+                    type="button"
+                    id="cancelMfaButton"
+                    class="cancel-mfa-button">
 
-let selectedRoleValue = "";
+                    ← BACK TO LOGIN
 
-roleButtons.forEach(button => {
+                </button>
 
-    button.addEventListener("click", () => {
+            </div>
 
-        roleButtons.forEach(btn => {
-            btn.classList.remove("selected");
-        });
+        </section>
 
-        button.classList.add("selected");
 
-        selectedRoleValue =
-            button.dataset.role;
+        <!-- Footer -->
+        <footer class="login-footer">
 
-        selectedRole.textContent =
-            "Selected role: " +
-            button.textContent
-                .replace(/\s+/g, " ")
-                .trim();
+            <div class="footer-line"></div>
 
-    });
+            <p>
+                MUNKA PIGGERY TECHNOLOGY
+            </p>
 
-});
+            <span>
+                Smart Farm Management • Secure • Reliable
+            </span>
 
-const password =
-    document.getElementById("password");
+        </footer>
 
-const togglePassword =
-    document.getElementById("togglePassword");
+    </main>
 
-togglePassword.addEventListener(
-    "click",
-    () => {
 
-        if (
-            password.type === "password"
-        ) {
-
-            password.type =
-                "text";
-
-            togglePassword.textContent =
-                "Hide";
-
-        } else {
-
-            password.type =
-                "password";
-
-            togglePassword.textContent =
-                "Show";
-
-        }
-
-    }
-);
-
-</script>
+    <!-- MUNKA LOGIN JAVASCRIPT -->
+    <script src="login.js?v=10"></script>
 
 </body>
 </html>
