@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>MUNKA PIGGERY TECHNOLOGY</title>
+    <title>MUNKA PIGGERY TECHNOLOGY | Smart Pig Farm Management</title>
 
     <meta name="description"
-          content="Welcome to MUNKA PIGGERY TECHNOLOGY, your digital piggery farm management solution.">
+          content="MUNKA PIGGERY TECHNOLOGY helps pig farmers organise farm records, monitor production, manage expenses and make informed farming decisions.">
 
     <style>
         :root {
-            --green: #078348;
-            --dark-green: #03472d;
-            --blue: #0756a0;
-            --dark-blue: #041f3d;
-            --gold: #f5c451;
+            --green: #087443;
+            --dark-green: #06452f;
+            --blue: #075985;
+            --gold: #f5c542;
             --white: #ffffff;
+            --light: #f2f8f5;
+            --text: #243746;
         }
 
         * {
@@ -32,511 +32,552 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            min-height: 100vh;
-            color: white;
-            background: var(--dark-blue);
+            color: var(--text);
+            background: var(--white);
+            line-height: 1.7;
         }
 
         a {
             text-decoration: none;
         }
 
-        /* =========================
-           TOP NAVIGATION
-        ========================= */
+        /* HEADER */
 
-        .navbar {
-            height: 82px;
-            width: 100%;
-            padding: 0 6%;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            background: rgba(3, 26, 49, 0.82);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-
-            position: absolute;
+        header {
+            position: sticky;
             top: 0;
-            left: 0;
             z-index: 1000;
+            background: rgba(5, 58, 43, 0.98);
+            color: white;
+            padding: 13px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.18);
         }
 
         .brand {
             display: flex;
             align-items: center;
             gap: 12px;
-            color: white;
+            min-width: 0;
         }
 
         .brand img {
-            width: 49px;
-            height: 49px;
+            width: 52px;
+            height: 52px;
             object-fit: contain;
+            background: white;
+            border-radius: 50%;
+            padding: 4px;
         }
 
-        .brand-name {
-            font-size: 17px;
-            font-weight: 900;
-            letter-spacing: 0.8px;
+        .brand-text h1 {
+            font-size: 19px;
+            line-height: 1.3;
+            color: white;
         }
 
-        .brand-subtitle {
-            font-size: 10px;
+        .brand-text p {
             color: var(--gold);
-            letter-spacing: 2px;
-            margin-top: 5px;
+            font-size: 11px;
+            letter-spacing: 1px;
         }
 
-        /* =========================
-           WORKING THREE-LINE MENU
-        ========================= */
+        /* THREE-LINE MENU */
 
         .menu-area {
             position: relative;
         }
 
         .menu-button {
-            width: 49px;
-            height: 46px;
-
+            width: 48px;
+            height: 45px;
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 9px;
+            background: var(--green);
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.35);
-            border-radius: 10px;
-
-            cursor: pointer;
-            transition: background 0.25s, border-color 0.25s;
         }
 
-        .menu-button:hover,
-        .menu-button.active {
-            background: var(--green);
-            border-color: var(--gold);
+        .menu-button:hover {
+            background: var(--blue);
         }
-
-        .menu-button span {
-            width: 24px;
-            height: 3px;
-            display: block;
-
-            background: white;
-            border-radius: 5px;
-
-            transition: transform 0.25s, opacity 0.2s;
-        }
-
-        .menu-button.active span:nth-child(1) {
-            transform: translateY(9px) rotate(45deg);
-        }
-
-        .menu-button.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .menu-button.active span:nth-child(3) {
-            transform: translateY(-9px) rotate(-45deg);
-        }
-
-        /* MENU PANEL */
 
         .menu-dropdown {
             display: none;
-
             position: absolute;
-            top: 59px;
             right: 0;
-
-            width: 260px;
-
+            top: 57px;
+            width: 245px;
             background: white;
-            border-radius: 13px;
+            border-radius: 12px;
             overflow: hidden;
-
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
-            border-top: 4px solid var(--gold);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.25);
         }
 
         .menu-dropdown.show {
             display: block;
-            animation: menuAppear 0.22s ease;
         }
 
         .menu-dropdown a {
             display: block;
-            padding: 17px 20px;
-
-            color: var(--dark-blue);
-            font-size: 14px;
-            font-weight: bold;
-
-            border-bottom: 1px solid #e9efec;
-
-            transition: background 0.2s, padding-left 0.2s;
+            padding: 13px 18px;
+            color: #174535;
+            font-size: 15px;
+            border-bottom: 1px solid #e8eee9;
         }
 
-        .menu-dropdown a:hover,
-        .menu-dropdown a:focus {
-            background: #e9f7ef;
+        .menu-dropdown a:hover {
+            background: #e8f7ee;
             color: var(--green);
-            padding-left: 27px;
         }
 
-        .menu-dropdown a:last-child {
-            border-bottom: none;
+        .menu-dropdown .login-link {
+            background: var(--green);
+            color: white;
+            font-weight: bold;
         }
 
-        /* =========================
-           BEAUTIFUL HOMEPAGE
-        ========================= */
+        .menu-dropdown .login-link:hover {
+            background: var(--blue);
+            color: white;
+        }
+
+        /* HERO */
 
         .hero {
-            min-height: 100vh;
-            min-height: 100svh;
-
+            min-height: 570px;
             display: flex;
             align-items: center;
-            justify-content: center;
-
-            text-align: center;
-
-            padding: 120px 7% 100px;
-
-            position: relative;
-            overflow: hidden;
+            padding: 70px 7%;
+            color: white;
 
             background:
-                radial-gradient(
-                    circle at 15% 20%,
-                    rgba(16, 164, 91, 0.48),
-                    transparent 36%
-                ),
-                radial-gradient(
-                    circle at 85% 75%,
-                    rgba(12, 115, 202, 0.52),
-                    transparent 38%
-                ),
                 linear-gradient(
-                    130deg,
-                    #032c45 0%,
-                    #07568c 48%,
-                    #04663d 100%
-                );
-        }
+                    90deg,
+                    rgba(2, 43, 31, 0.94),
+                    rgba(2, 65, 47, 0.78),
+                    rgba(2, 43, 31, 0.30)
+                ),
+                url("https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=2000&q=85");
 
-        /* Decorative background circles */
-
-        .circle {
-            position: absolute;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            pointer-events: none;
-        }
-
-        .circle-one {
-            width: 430px;
-            height: 430px;
-            top: -160px;
-            right: -100px;
-        }
-
-        .circle-two {
-            width: 300px;
-            height: 300px;
-            bottom: -110px;
-            left: -90px;
-            border-color: rgba(245, 196, 81, 0.25);
-        }
-
-        .circle-three {
-            width: 150px;
-            height: 150px;
-            bottom: 15%;
-            right: 12%;
-            border-color: rgba(255, 255, 255, 0.09);
+            background-size: cover;
+            background-position: center;
         }
 
         .hero-content {
-            position: relative;
-            z-index: 2;
-
-            width: 100%;
-            max-width: 950px;
-
-            animation: heroAppear 0.9s ease;
+            max-width: 760px;
         }
 
-        .welcome-badge {
+        .hero-label {
             display: inline-block;
-
-            padding: 11px 20px;
-            margin-bottom: 27px;
-
-            border: 1px solid rgba(245, 196, 81, 0.65);
-            border-radius: 40px;
-
-            background: rgba(255, 255, 255, 0.07);
-
+            padding: 8px 16px;
+            border: 1px solid var(--gold);
+            border-radius: 30px;
             color: var(--gold);
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            margin-bottom: 22px;
         }
 
-        .hero h1 {
-            font-size: clamp(36px, 6vw, 72px);
-            line-height: 1.12;
-            font-weight: 900;
-
-            margin-bottom: 23px;
-            text-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+        .hero h2 {
+            font-size: clamp(36px, 5.5vw, 64px);
+            line-height: 1.13;
+            margin-bottom: 22px;
         }
 
-        .hero h1 span {
-            display: block;
+        .hero h2 span {
             color: var(--gold);
-            margin-top: 8px;
         }
 
-        .hero-description {
-            max-width: 720px;
-            margin: 0 auto 32px;
-
-            color: #e8f4f7;
-            font-size: 17px;
-            line-height: 1.9;
+        .hero p {
+            max-width: 650px;
+            font-size: 18px;
+            color: #f0f7f3;
+            margin-bottom: 25px;
         }
 
-        .hero-buttons {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
+        .hero-motto {
+            display: inline-block;
+            border-left: 5px solid var(--gold);
+            padding: 8px 0 8px 15px;
+            color: var(--gold);
+            font-weight: bold;
+            letter-spacing: 1px;
         }
 
-        .button {
-            min-height: 52px;
-            padding: 16px 26px;
+        /* GENERAL SECTIONS */
 
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 9px;
-
-            font-size: 14px;
-            font-weight: 800;
-
-            transition: transform 0.25s, background 0.25s;
+        section.content-section {
+            padding: 75px 6%;
         }
 
-        .button:hover {
-            transform: translateY(-3px);
+        .section-heading {
+            text-align: center;
+            max-width: 780px;
+            margin: 0 auto 42px;
         }
 
-        .button-primary {
-            color: var(--dark-blue);
-            background: var(--gold);
-            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
+        .section-heading .eyebrow {
+            color: var(--green);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 12px;
         }
 
-        .button-primary:hover {
+        .section-heading h2 {
+            font-size: clamp(28px, 4vw, 40px);
+            color: var(--dark-green);
+            line-height: 1.25;
+            margin: 10px 0 15px;
+        }
+
+        .section-heading p {
+            color: #5c6b65;
+            font-size: 16px;
+        }
+
+        /* INTRODUCTION */
+
+        .intro-section {
             background: white;
         }
 
-        .button-secondary {
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.65);
-            background: rgba(255, 255, 255, 0.07);
+        .intro-grid {
+            max-width: 1150px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
         }
 
-        .button-secondary:hover {
-            background: rgba(255, 255, 255, 0.17);
+        .intro-image {
+            min-height: 350px;
+            border-radius: 20px;
+            background:
+                url("https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=1000&q=80")
+                center / cover;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.13);
         }
 
-        .motto {
-            margin-top: 45px;
+        .intro-text h3 {
+            color: var(--green);
+            font-size: 27px;
+            margin-bottom: 15px;
+        }
 
-            color: rgba(255, 255, 255, 0.88);
-            font-size: 12px;
+        .intro-text p {
+            margin-bottom: 15px;
+            color: #53645c;
+        }
+
+        .intro-highlight {
+            margin-top: 22px;
+            padding: 18px;
+            background: #e8f7ee;
+            border-left: 5px solid var(--green);
+            border-radius: 8px;
             font-weight: bold;
-            letter-spacing: 2px;
+            color: var(--dark-green);
         }
 
-        .motto span {
+        /* BENEFITS */
+
+        .benefits-section {
+            background: var(--light);
+        }
+
+        .benefits-grid {
+            max-width: 1150px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 23px;
+        }
+
+        .benefit-card {
+            background: white;
+            border-radius: 15px;
+            padding: 27px;
+            border-bottom: 4px solid var(--green);
+            box-shadow: 0 5px 22px rgba(0,0,0,0.055);
+        }
+
+        .benefit-icon {
+            font-size: 35px;
+            margin-bottom: 12px;
+        }
+
+        .benefit-card h3 {
+            color: var(--blue);
+            font-size: 19px;
+            margin-bottom: 10px;
+        }
+
+        .benefit-card p {
+            color: #5b6a63;
+            font-size: 14px;
+        }
+
+        /* MANAGEMENT AREAS */
+
+        .management-section {
+            background: white;
+        }
+
+        .management-grid {
+            max-width: 1200px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .management-card {
+            background: #f7fbf8;
+            border: 1px solid #dcebe1;
+            padding: 23px 17px;
+            border-radius: 13px;
+            text-align: center;
+            transition: 0.25s;
+        }
+
+        .management-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.09);
+            border-color: var(--green);
+        }
+
+        .management-card .icon {
+            font-size: 34px;
+            margin-bottom: 9px;
+        }
+
+        .management-card h3 {
+            color: var(--dark-green);
+            font-size: 16px;
+            margin-bottom: 7px;
+        }
+
+        .management-card p {
+            color: #617068;
+            font-size: 13px;
+        }
+
+        /* HOW IT HELPS */
+
+        .working-section {
+            background: linear-gradient(120deg, #06452f, #075985);
+            color: white;
+        }
+
+        .working-section .section-heading h2 {
+            color: white;
+        }
+
+        .working-section .section-heading p {
+            color: #e1eee8;
+        }
+
+        .working-section .section-heading .eyebrow {
             color: var(--gold);
         }
 
-        /* =========================
-           FIXED LOGIN BUTTON
-        ========================= */
-
-        .floating-login {
-            position: fixed;
-            right: 22px;
-            bottom: 22px;
-            z-index: 2000;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 9px;
-
-            padding: 16px 23px;
-
-            border: 2px solid white;
-            border-radius: 50px;
-
-            background: linear-gradient(
-                135deg,
-                #0ba65b,
-                #057443
-            );
-
-            color: white;
-            font-size: 14px;
-            font-weight: 900;
-
-            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-
-            transition: transform 0.25s, background 0.25s;
+        .working-grid {
+            max-width: 1100px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
         }
 
-        .floating-login:hover {
-            transform: translateY(-4px);
+        .working-card {
+            text-align: center;
+            padding: 27px 20px;
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 15px;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .working-card .number {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 15px;
             background: var(--gold);
-            color: var(--dark-blue);
+            color: var(--dark-green);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 20px;
         }
 
-        /* =========================
-           ANIMATIONS
-        ========================= */
-
-        @keyframes heroAppear {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .working-card h3 {
+            margin-bottom: 10px;
         }
 
-        @keyframes menuAppear {
-            from {
-                opacity: 0;
-                transform: translateY(-8px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .working-card p {
+            color: #e0eee7;
+            font-size: 14px;
         }
 
-        /* =========================
-           MOBILE DISPLAY
-        ========================= */
+        /* MISSION */
+
+        .mission-section {
+            background: #f7faf8;
+            text-align: center;
+        }
+
+        .mission-box {
+            max-width: 900px;
+            margin: auto;
+            padding: 42px 28px;
+            background: white;
+            border-radius: 20px;
+            border-top: 6px solid var(--gold);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.07);
+        }
+
+        .mission-box h2 {
+            color: var(--dark-green);
+            font-size: 30px;
+            margin-bottom: 15px;
+        }
+
+        .mission-box p {
+            color: #586960;
+            font-size: 16px;
+        }
+
+        .mission-box .motto {
+            margin-top: 22px;
+            font-weight: bold;
+            color: var(--green);
+            letter-spacing: 1px;
+        }
+
+        /* FOOTER */
+
+        footer {
+            background: #032f24;
+            color: white;
+            padding: 38px 6% 20px;
+            text-align: center;
+        }
+
+        footer h2 {
+            font-size: 23px;
+            margin-bottom: 8px;
+        }
+
+        footer .motto {
+            color: var(--gold);
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 17px;
+        }
+
+        footer p {
+            font-size: 13px;
+            color: #d5e6dd;
+        }
+
+        footer .copyright {
+            border-top: 1px solid rgba(255,255,255,0.18);
+            margin-top: 22px;
+            padding-top: 18px;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 900px) {
+            .benefits-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .management-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .intro-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .intro-image {
+                min-height: 280px;
+            }
+        }
 
         @media (max-width: 600px) {
-
-            .navbar {
-                height: 72px;
-                padding: 0 5%;
-            }
-
-            .brand {
-                gap: 9px;
+            header {
+                padding: 11px 4%;
             }
 
             .brand img {
-                width: 39px;
-                height: 39px;
-            }
-
-            .brand-name {
-                font-size: 12px;
-            }
-
-            .brand-subtitle {
-                font-size: 8px;
-                letter-spacing: 1.3px;
-            }
-
-            .menu-button {
-                width: 44px;
+                width: 43px;
                 height: 43px;
             }
 
-            .menu-dropdown {
-                width: min(260px, calc(100vw - 30px));
+            .brand-text h1 {
+                font-size: 14px;
+            }
+
+            .brand-text p {
+                font-size: 9px;
             }
 
             .hero {
-                padding: 115px 6% 95px;
+                min-height: 510px;
+                padding: 55px 6%;
+                background-position: center;
             }
 
-            .welcome-badge {
-                font-size: 10px;
-                letter-spacing: 1.3px;
-                padding: 10px 14px;
+            .hero h2 {
+                font-size: 39px;
             }
 
-            .hero-description {
-                font-size: 15px;
-                line-height: 1.8;
+            .hero p {
+                font-size: 16px;
             }
 
-            .hero-buttons {
-                flex-direction: column;
-                width: 100%;
+            section.content-section {
+                padding: 53px 5%;
             }
 
-            .button {
-                width: 100%;
-                max-width: 320px;
+            .benefits-grid,
+            .working-grid {
+                grid-template-columns: 1fr;
             }
 
-            .motto {
-                font-size: 10px;
-                line-height: 1.8;
-                letter-spacing: 1.3px;
-                margin-top: 35px;
+            .management-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
             }
 
-            .floating-login {
-                right: 13px;
-                bottom: 13px;
-                padding: 14px 18px;
+            .management-card {
+                padding: 18px 10px;
+            }
+
+            .management-card h3 {
+                font-size: 14px;
+            }
+
+            .management-card p {
                 font-size: 12px;
             }
 
-            .circle-one {
-                width: 270px;
-                height: 270px;
-            }
-
-            .circle-two {
-                width: 220px;
-                height: 220px;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                animation: none !important;
-                transition: none !important;
+            .section-heading h2 {
+                font-size: 29px;
             }
         }
     </style>
@@ -544,247 +585,440 @@
 
 <body>
 
-    <!-- TOP NAVIGATION -->
+<header>
 
-    <header class="navbar">
+    <a href="index.html" class="brand" aria-label="MUNKA home">
+        <img src="munka-logo.png" alt="MUNKA PIGGERY TECHNOLOGY Logo">
 
-        <a href="index.html" class="brand">
+        <div class="brand-text">
+            <h1>MUNKA PIGGERY</h1>
+            <p>TECHNOLOGY</p>
+        </div>
+    </a>
 
-            <img
-                src="munka-logo.png"
-                alt="MUNKA PIGGERY logo"
-                onerror="this.style.display='none'"
-            >
+    <div class="menu-area">
 
-            <div>
-                <div class="brand-name">
-                    MUNKA PIGGERY
-                </div>
+        <button
+            class="menu-button"
+            id="menuButton"
+            type="button"
+            aria-label="Open navigation menu"
+            aria-expanded="false"
+            aria-controls="menuDropdown">
+            ☰
+        </button>
 
-                <div class="brand-subtitle">
-                    TECHNOLOGY
-                </div>
+        <nav class="menu-dropdown" id="menuDropdown">
+
+            <a href="index.html">🏠 Home</a>
+
+            <a href="about.html">ℹ️ About MUNKA</a>
+
+            <a href="management-features.html">🐖 Management Features</a>
+
+            <a href="how-it-works.html">⚙️ How It Works</a>
+
+            <a href="contact.html">📞 Contact Information</a>
+
+            <a href="login.html" class="login-link">
+                🔐 Login Dashboard
+            </a>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+<!-- MAIN HERO -->
+
+<section class="hero">
+
+    <div class="hero-content">
+
+        <div class="hero-label">
+            SMART TECHNOLOGY • MODERN PIG FARMING
+        </div>
+
+        <h2>
+            Smart Technology<br>
+            for <span>Modern Pig Farming</span>
+        </h2>
+
+        <p>
+            Take control of your piggery with organised farm records,
+            production monitoring, feeding information, animal health
+            records and financial reporting — all designed to support
+            better farm management.
+        </p>
+
+        <div class="hero-motto">
+            HOME OF SOFT, HEALTHY AND FRESH MEAT
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- INTRODUCTION -->
+
+<section class="content-section intro-section">
+
+    <div class="intro-grid">
+
+        <div class="intro-image" role="img"
+             aria-label="Pigs in a farming environment"></div>
+
+        <div class="intro-text">
+
+            <h3>Welcome to MUNKA PIGGERY TECHNOLOGY</h3>
+
+            <p>
+                Managing a pig farm involves more than feeding pigs.
+                Farmers need to monitor breeding, pregnancy, farrowing,
+                piglet growth, animal health, sales and expenses.
+            </p>
+
+            <p>
+                MUNKA PIGGERY TECHNOLOGY is designed to help bring these
+                important records together in one organised management
+                system.
+            </p>
+
+            <p>
+                Whether you manage your farm personally or supervise
+                operations while away, organised records can help you
+                understand what is happening on your farm.
+            </p>
+
+            <div class="intro-highlight">
+                Better records. Better monitoring. More informed
+                farming decisions.
             </div>
-
-        </a>
-
-
-        <!-- THREE-LINE MENU BUTTON -->
-
-        <div class="menu-area">
-
-            <button
-                type="button"
-                class="menu-button"
-                id="menuButton"
-                aria-label="Open menu"
-                aria-expanded="false"
-                aria-controls="menuDropdown"
-            >
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
-
-            <!-- NAVIGATION LINKS -->
-
-            <nav
-                class="menu-dropdown"
-                id="menuDropdown"
-                aria-label="Main navigation"
-                hidden
-            >
-
-                <a href="index.html">
-                    🏠 Home
-                </a>
-
-                <a href="about.html">
-                    ℹ️ About MUNKA
-                </a>
-
-                <a href="about.html#features">
-                    🐖 Management Features
-                </a>
-
-                <a href="about.html#how-it-works">
-                    ⚙️ How It Works
-                </a>
-
-                <a href="about.html#contact">
-                    📞 Contact Information
-                </a>
-
-            </nav>
 
         </div>
 
-    </header>
+    </div>
 
+</section>
 
-    <!-- SIMPLE, BEAUTIFUL HOMEPAGE -->
 
-    <main>
+<!-- BENEFITS -->
 
-        <section class="hero">
+<section class="content-section benefits-section">
 
-            <div class="circle circle-one"></div>
-            <div class="circle circle-two"></div>
-            <div class="circle circle-three"></div>
+    <div class="section-heading">
 
+        <div class="eyebrow">Why MUNKA?</div>
 
-            <div class="hero-content">
+        <h2>Designed Around Your Farming Needs</h2>
 
-                <div class="welcome-badge">
-                    SMART FARM MANAGEMENT SOLUTION
-                </div>
+        <p>
+            Keep important farm information organised and make it
+            easier to review your farm's daily activities.
+        </p>
 
+    </div>
 
-                <h1>
-                    Welcome to
-                    <span>MUNKA PIGGERY TECHNOLOGY</span>
-                </h1>
+    <div class="benefits-grid">
 
+        <article class="benefit-card">
+            <div class="benefit-icon">🏡</div>
+            <h3>Manage Your Farm Remotely</h3>
+            <p>
+                Review records entered into the system by authorised
+                users without needing to be physically present at the farm.
+            </p>
+        </article>
 
-                <p class="hero-description">
-                    Bringing smarter piggery management to your fingertips.
-                    Organise your farm records, support better decision-making
-                    and stay connected with your farm management activities.
-                </p>
+        <article class="benefit-card">
+            <div class="benefit-icon">📋</div>
+            <h3>Organised Records</h3>
+            <p>
+                Keep pig registration, breeding, production, health
+                and other farm information in a structured format.
+            </p>
+        </article>
+
+        <article class="benefit-card">
+            <div class="benefit-icon">💰</div>
+            <h3>Financial Monitoring</h3>
+            <p>
+                Record sales and expenses and review available financial
+                summaries to support business decisions.
+            </p>
+        </article>
+
+        <article class="benefit-card">
+            <div class="benefit-icon">🐷</div>
+            <h3>Production Monitoring</h3>
+            <p>
+                Maintain records of gestation, farrowing, weaning
+                and other production activities.
+            </p>
+        </article>
+
+        <article class="benefit-card">
+            <div class="benefit-icon">💊</div>
+            <h3>Animal Health Records</h3>
+            <p>
+                Record treatments, vaccinations and veterinary
+                interventions to support organised health management.
+            </p>
+        </article>
+
+        <article class="benefit-card">
+            <div class="benefit-icon">👥</div>
+            <h3>Staff Responsibilities</h3>
+            <p>
+                Use configured user roles and permissions to help
+                organise responsibilities among authorised farm staff.
+            </p>
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- MANAGEMENT AREAS -->
+
+<section class="content-section management-section">
+
+    <div class="section-heading">
 
+        <div class="eyebrow">One Management System</div>
 
-                <div class="hero-buttons">
+        <h2>Important Areas of Your Piggery</h2>
 
-                    <a
-                        href="about.html"
-                        class="button button-primary"
-                    >
-                        Discover MUNKA →
-                    </a>
+        <p>
+            MUNKA brings together key areas of pig farm record keeping
+            to support a more organised farming operation.
+        </p>
 
-                    <a
-                        href="login.html"
-                        class="button button-secondary"
-                    >
-                        Access Your Account
-                    </a>
+    </div>
 
-                </div>
+    <div class="management-grid">
+
+        <article class="management-card">
+            <div class="icon">🐖</div>
+            <h3>Pig Registration</h3>
+            <p>Maintain pig identification, breed, sex, weight and source records.</p>
+        </article>
+
+        <article class="management-card">
+            <div class="icon">🤰</div>
+            <h3>Gestation</h3>
+            <p>Record service dates and monitor important pregnancy milestones.</p>
+        </article>
+
+        <article class="management-card">
+            <div class="icon">🐷</div>
+            <h3>Farrowing</h3>
+            <p>Keep records of farrowing events and litter information.</p>
+        </article>
+
+        <article class="management-card">
+            <div class="icon">🍼</div>
+            <h3>Weaning</h3>
+            <p>Maintain weaning records and monitor piglet production.</p>
+        </article>
+
+        <article class="management-card">
+            <div class="icon">🌽</div>
+            <h3>Feeding</h3>
+            <p>Record feeding activities and review available feed information.</p>
+        </article>
+
+        <article class="management-card">
+            <div class="icon">💉</div>
+            <h3>Health & Treatment</h3>
+            <p>Record treatments, vaccinations and other health activities.</p>
+        </article>
+
+        <article class="management-card">
+            <div class="icon">🛒</div>
+            <h3>Sales</h3>
+            <p>Maintain records of pig sales and other recorded farm income.</p>
+        </article>
+
+        <article class="management-card">
+            <div class="icon">🧾</div>
+            <h3>Expenses</h3>
+            <p>Record farm expenditure for easier financial review.</p>
+        </article>
+
+        <article class="management-card">
+            <div class="icon">📊</div>
+            <h3>Reports</h3>
+            <p>Review available production, health and financial information.</p>
+        </article>
+
+        <article class="management-card">
+            <div class="icon">👨‍🌾</div>
+            <h3>Staff Management</h3>
+            <p>Organise staff access using the system's configured roles.</p>
+        </article>
 
+        <article class="management-card">
+            <div class="icon">📝</div>
+            <h3>Activity Logs</h3>
+            <p>Review recorded activities to support accountability.</p>
+        </article>
 
-                <div class="motto">
-                    <span>HOME</span> OF SOFT, HEALTHY AND FRESH MEAT
-                </div>
+        <article class="management-card">
+            <div class="icon">🏢</div>
+            <h3>Farm Records</h3>
+            <p>Keep farm information organised within the system.</p>
+        </article>
 
-            </div>
+    </div>
 
-        </section>
+</section>
 
-    </main>
 
+<!-- HOW IT HELPS -->
 
-    <!-- FIXED LOGIN DASHBOARD BUTTON -->
+<section class="content-section working-section">
 
-    <a href="login.html" class="floating-login">
-        🔐 Login Dashboard
-    </a>
+    <div class="section-heading">
 
+        <div class="eyebrow">Simple Management Approach</div>
 
-    <!-- WORKING MENU JAVASCRIPT -->
+        <h2>From Daily Activities to Better Decisions</h2>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        <p>
+            A structured way to record information and review
+            your farm's operations.
+        </p>
 
-            const menuButton = document.getElementById("menuButton");
-            const menuDropdown = document.getElementById("menuDropdown");
+    </div>
 
+    <div class="working-grid">
 
-            function openMenu() {
+        <article class="working-card">
+            <div class="number">1</div>
+            <h3>Record</h3>
+            <p>
+                Authorised users enter pig information and farm activities
+                into the relevant system modules.
+            </p>
+        </article>
 
-                menuDropdown.hidden = false;
+        <article class="working-card">
+            <div class="number">2</div>
+            <h3>Monitor</h3>
+            <p>
+                Review available records to follow production,
+                animal health and financial activities.
+            </p>
+        </article>
 
-                menuDropdown.classList.add("show");
+        <article class="working-card">
+            <div class="number">3</div>
+            <h3>Make Informed Decisions</h3>
+            <p>
+                Use recorded information and reports to help plan
+                farm activities and manage resources.
+            </p>
+        </article>
 
-                menuButton.classList.add("active");
+    </div>
 
-                menuButton.setAttribute("aria-expanded", "true");
+</section>
 
-                menuButton.setAttribute("aria-label", "Close menu");
 
-            }
+<!-- MISSION AND MOTTO -->
 
+<section class="content-section mission-section">
 
-            function closeMenu() {
+    <div class="mission-box">
 
-                menuDropdown.classList.remove("show");
+        <h2>Our Purpose</h2>
 
-                menuButton.classList.remove("active");
+        <p>
+            Our purpose is to support pig farmers with organised
+            information, practical record keeping and tools that
+            help them monitor their farming operations more effectively.
+        </p>
 
-                menuButton.setAttribute("aria-expanded", "false");
+        <p style="margin-top: 15px;">
+            We believe that good farm management starts with knowing
+            your animals, understanding your records and reviewing
+            your business performance.
+        </p>
 
-                menuButton.setAttribute("aria-label", "Open menu");
+        <div class="motto">
+            HOME OF SOFT, HEALTHY AND FRESH MEAT
+        </div>
 
-                menuDropdown.hidden = true;
+    </div>
 
-            }
+</section>
 
 
-            function toggleMenu(event) {
+<!-- FOOTER -->
 
-                event.stopPropagation();
+<footer>
 
-                if (menuDropdown.hidden) {
-                    openMenu();
-                } else {
-                    closeMenu();
-                }
+    <h2>MUNKA PIGGERY TECHNOLOGY</h2>
 
-            }
+    <div class="motto">
+        HOME OF SOFT, HEALTHY AND FRESH MEAT
+    </div>
 
+    <p>
+        Supporting organised records and informed pig farm management.
+    </p>
 
-            menuButton.addEventListener("click", toggleMenu);
+    <div class="copyright">
+        <p>
+            &copy; <span id="currentYear"></span>
+            MUNKA PIGGERY TECHNOLOGY. All rights reserved.
+        </p>
+    </div>
 
+</footer>
 
-            /* Close menu after selecting a link */
 
-            menuDropdown.querySelectorAll("a").forEach(function (link) {
+<script>
+    // Three-line navigation menu
+    const menuButton = document.getElementById("menuButton");
+    const menuDropdown = document.getElementById("menuDropdown");
 
-                link.addEventListener("click", function () {
-                    closeMenu();
-                });
+    menuButton.addEventListener("click", function (event) {
+        event.stopPropagation();
 
-            });
+        const isOpen = menuDropdown.classList.toggle("show");
 
+        menuButton.setAttribute("aria-expanded", isOpen);
+    });
 
-            /* Close menu when clicking outside */
+    // Close menu when a user clicks outside it
+    document.addEventListener("click", function (event) {
+        if (
+            !menuDropdown.contains(event.target) &&
+            !menuButton.contains(event.target)
+        ) {
+            menuDropdown.classList.remove("show");
+            menuButton.setAttribute("aria-expanded", "false");
+        }
+    });
 
-            document.addEventListener("click", function (event) {
-
-                if (
-                    !menuButton.contains(event.target) &&
-                    !menuDropdown.contains(event.target)
-                ) {
-                    closeMenu();
-                }
-
-            });
-
-
-            /* Close menu with Escape key */
-
-            document.addEventListener("keydown", function (event) {
-
-                if (event.key === "Escape") {
-                    closeMenu();
-                    menuButton.focus();
-                }
-
-            });
-
+    // Close menu when a navigation link is selected
+    menuDropdown.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", function () {
+            menuDropdown.classList.remove("show");
+            menuButton.setAttribute("aria-expanded", "false");
         });
-    </script>
+    });
+
+    // Automatically update the copyright year
+    document.getElementById("currentYear").textContent =
+        new Date().getFullYear();
+</script>
 
 </body>
-
 </html>

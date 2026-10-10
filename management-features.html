@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Features | MUNKA PIGGERY TECHNOLOGY</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eafaf0, #eaf3ff);
+            color: #203040;
+            line-height: 1.7;
+        }
+
+        header {
+            background: linear-gradient(100deg, #064e3b, #075985);
+            color: white;
+            padding: 22px 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            font-size: 22px;
+        }
+
+        header a {
+            color: #073b2b;
+            background: #facc15;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 55px 20px 35px;
+        }
+
+        .hero h2 {
+            color: #065f46;
+            font-size: clamp(28px, 5vw, 42px);
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            max-width: 750px;
+            margin: auto;
+            font-size: 17px;
+        }
+
+        .features {
+            max-width: 1150px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 22px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border-top: 5px solid #059669;
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card .icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .feature-card h3 {
+            color: #075985;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: #475569;
+        }
+
+        .cta {
+            text-align: center;
+            margin: 35px 20px 60px;
+            padding: 35px 20px;
+            background: linear-gradient(120deg, #065f46, #075985);
+            color: white;
+            border-radius: 18px;
+        }
+
+        .cta h2 {
+            margin-bottom: 10px;
+        }
+
+        .cta a {
+            display: inline-block;
+            margin-top: 18px;
+            background: #facc15;
+            color: #163526;
+            padding: 13px 22px;
+            text-decoration: none;
+            border-radius: 9px;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 22px;
+            background: #062f28;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                padding: 18px;
+            }
+
+            header h1 {
+                font-size: 18px;
+            }
+
+            .hero {
+                padding-top: 35px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🐖 MUNKA PIGGERY TECHNOLOGY</h1>
+        <a href="index.html">← Home</a>
+    </header>
+
+    <section class="hero">
+        <h2>Powerful Piggery Management Features</h2>
+        <p>
+            MUNKA helps pig farmers organise farm records, monitor pig production,
+            manage daily activities and understand their farm's financial performance,
+            even when they are away from the farm.
+        </p>
+    </section>
+
+    <section class="features">
+
+        <div class="feature-card">
+            <div class="icon">🐖</div>
+            <h3>Pig Registration</h3>
+            <p>
+                Register pigs and keep important information such as pig identification,
+                breed, sex, source, farrowing date, weight and health status.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">🤰</div>
+            <h3>Gestation Management</h3>
+            <p>
+                Record service dates and monitor important pregnancy milestones,
+                expected farrowing dates and scheduled management activities.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">🐷</div>
+            <h3>Farrowing Records</h3>
+            <p>
+                Record farrowing events and track litter information to help monitor
+                sow performance and piglet production.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">🍼</div>
+            <h3>Weaning Management</h3>
+            <p>
+                Keep records of weaning activities and piglet numbers to support
+                better monitoring of production.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">💊</div>
+            <h3>Health and Treatment</h3>
+            <p>
+                Record vaccinations, treatments, veterinary interventions and other
+                health activities to help maintain organised animal health records.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">🌽</div>
+            <h3>Feeding Management</h3>
+            <p>
+                Record feeding activities and monitor feed use to help farmers
+                understand feeding practices and manage resources.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">💰</div>
+            <h3>Sales Management</h3>
+            <p>
+                Record pig and other farm sales, helping you keep track of
+                sales transactions and income.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">🧾</div>
+            <h3>Expense Tracking</h3>
+            <p>
+                Record farm expenses so you can review where money is being spent
+                and make more informed financial decisions.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">📊</div>
+            <h3>Reports and Dashboard</h3>
+            <p>
+                Review available farm records, production information and financial
+                summaries through the system's reporting dashboard.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">🔐</div>
+            <h3>User Roles and Permissions</h3>
+            <p>
+                Assign staff roles and control access according to configured
+                permissions, helping organise responsibilities within the farm.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">🏡</div>
+            <h3>Farm Management</h3>
+            <p>
+                Organise records for your farm and support more structured
+                management of daily farm operations.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">📝</div>
+            <h3>Activity Records</h3>
+            <p>
+                Keep track of recorded activities to support accountability
+                and make it easier to review farm operations.
+            </p>
+        </div>
+
+    </section>
+
+    <section class="cta">
+        <h2>Manage Your Farm with Confidence</h2>
+        <p>
+            Keep your piggery records organised and make informed decisions
+            using MUNKA PIGGERY TECHNOLOGY.
+        </p>
+        <a href="login.html">Access Login Dashboard</a>
+    </section>
+
+    <footer>
+        <p><strong>MUNKA PIGGERY TECHNOLOGY</strong></p>
+        <p>HOME OF SOFT, HEALTHY AND FRESH MEAT</p>
+        <p>&copy; <span id="year"></span> MUNKA PIGGERY TECHNOLOGY</p>
+    </footer>
+
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+
+</body>
+</html>

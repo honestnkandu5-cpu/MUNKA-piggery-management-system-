@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Contact MUNKA PIGGERY TECHNOLOGY</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f8f6;
+            color: #263b32;
+            line-height: 1.8;
+        }
+
+        header {
+            background: #062b50;
+            color: white;
+            padding: 22px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        header h2 {
+            font-size: 18px;
+        }
+
+        .home {
+            background: #087443;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .hero {
+            padding: 65px 6%;
+            text-align: center;
+            color: white;
+            background: linear-gradient(120deg, #062b50, #087443);
+        }
+
+        .hero h1 {
+            font-size: clamp(30px, 5vw, 44px);
+        }
+
+        .hero span {
+            color: #f3bd43;
+        }
+
+        main {
+            max-width: 800px;
+            margin: auto;
+            padding: 45px 6%;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            border-left: 5px solid #087443;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .card h2 {
+            color: #062b50;
+        }
+
+        .contact-item {
+            background: #edf7f1;
+            padding: 17px;
+            margin-top: 15px;
+            border-radius: 9px;
+        }
+
+        .contact-item strong {
+            display: block;
+            color: #087443;
+        }
+
+        .login {
+            display: inline-block;
+            background: #f3bd43;
+            color: #062b50;
+            padding: 13px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            margin-top: 15px;
+        }
+
+        footer {
+            text-align: center;
+            background: #041e35;
+            color: white;
+            padding: 25px;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                padding: 20px 5%;
+            }
+
+            main {
+                padding: 30px 5%;
+            }
+
+            .card {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div>
+            <h2>MUNKA PIGGERY TECHNOLOGY</h2>
+        </div>
+
+        <a href="index.html" class="home">← Home</a>
+    </header>
+
+    <section class="hero">
+        <h1>Contact <span>MUNKA</span></h1>
+
+        <p>
+            Interested in learning more about our piggery
+            management system? Get in touch.
+        </p>
+    </section>
+
+    <main>
+
+        <section class="card">
+
+            <h2>Get in Touch</h2>
+
+            <p>
+                Contact MUNKA PIGGERY TECHNOLOGY for enquiries
+                about the management system, demonstrations,
+                farm testing and access arrangements.
+            </p>
+
+            <div class="contact-item">
+                <strong>Business Name</strong>
+                MUNKA PIGGERY TECHNOLOGY
+            </div>
+
+            <div class="contact-item">
+                <strong>Telephone / WhatsApp</strong>
+                Add your official business number here.
+            </div>
+
+            <div class="contact-item">
+                <strong>Email Address</strong>
+                Add your official business email here.
+            </div>
+
+        </section>
+
+        <section class="card">
+
+            <h2>Access the System</h2>
+
+            <p>
+                Already have an authorised account?
+                Use the login dashboard to access the system.
+            </p>
+
+            <a href="login.html" class="login">
+                Open Login Dashboard →
+            </a>
+
+        </section>
+
+    </main>
+
+    <footer>
+        &copy; <span id="year"></span> MUNKA PIGGERY TECHNOLOGY
+    </footer>
+
+    <script>
+        document.getElementById("year").textContent =
+            new Date().getFullYear();
+    </script>
+
+</body>
+</html>

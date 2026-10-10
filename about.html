@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>About MUNKA PIGGERY TECHNOLOGY</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #263b32;
+            background: #f3f8f6;
+            line-height: 1.8;
+        }
+
+        header {
+            background: #062b50;
+            color: white;
+            padding: 22px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 19px;
+        }
+
+        header p {
+            color: #f3bd43;
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .back {
+            background: #087443;
+            color: white;
+            padding: 10px 17px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .hero {
+            padding: 65px 7%;
+            text-align: center;
+            color: white;
+            background: linear-gradient(125deg, #062b50, #087443);
+        }
+
+        .hero h1 {
+            font-size: clamp(30px, 5vw, 46px);
+        }
+
+        .hero span {
+            color: #f3bd43;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: auto;
+            padding: 45px 6%;
+        }
+
+        .card {
+            background: white;
+            padding: 28px;
+            margin-bottom: 22px;
+            border-radius: 13px;
+            border-left: 5px solid #087443;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            color: #062b50;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 13px 20px;
+            border-radius: 8px;
+            background: #f3bd43;
+            color: #062b50;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            background: #041e35;
+            color: white;
+            padding: 25px;
+        }
+
+        footer span {
+            color: #f3bd43;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                padding: 20px 5%;
+            }
+
+            .container {
+                padding: 30px 5%;
+            }
+
+            .card {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div>
+            <h2>MUNKA PIGGERY TECHNOLOGY</h2>
+            <p>SMART FARM MANAGEMENT</p>
+        </div>
+
+        <a href="index.html" class="back">← Home</a>
+    </header>
+
+    <section class="hero">
+        <h1>About <span>MUNKA PIGGERY</span></h1>
+
+        <p>
+            Bringing smarter record management to pig farming.
+        </p>
+    </section>
+
+    <main class="container">
+
+        <section class="card">
+            <h2>Who We Are</h2>
+
+            <p>
+                MUNKA PIGGERY TECHNOLOGY provides a digital piggery
+                management system designed to help farmers organise
+                farm records and monitor important farm activities.
+            </p>
+
+            <p>
+                The system brings relevant farm information together
+                so authorised users can record activities and review
+                the information available to them.
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>Our Purpose</h2>
+
+            <p>
+                Our purpose is to make piggery record management
+                more organised and accessible. We aim to help farm
+                owners understand what is happening on their farms,
+                including when they are away from the farm.
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>Our Vision</h2>
+
+            <p>
+                To support modern pig farming through organised
+                digital records, improved monitoring and informed
+                farm management decisions.
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>Our Motto</h2>
+
+            <p>
+                <strong>HOME OF SOFT, HEALTHY AND FRESH MEAT</strong>
+            </p>
+
+            <a href="how-it-works.html" class="button">
+                Discover How It Works →
+            </a>
+        </section>
+
+    </main>
+
+    <footer>
+        &copy; <span id="year"></span>
+        MUNKA PIGGERY TECHNOLOGY. All rights reserved.
+    </footer>
+
+    <script>
+        document.getElementById("year").textContent =
+            new Date().getFullYear();
+    </script>
+
+</body>
+</html>
