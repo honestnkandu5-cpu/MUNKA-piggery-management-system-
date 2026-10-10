@@ -1,202 +1,541 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!DOCTYPE html><html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Contact MUNKA PIGGERY TECHNOLOGY</title>
 
-    <title>Contact MUNKA PIGGERY TECHNOLOGY</title>
+<meta name="description" content="Contact MUNKA PIGGERY TECHNOLOGY by phone, WhatsApp or email to learn more about smart piggery management.">
 
-    <style>
-        * {
-            box-sizing: border-box;
+<meta name="theme-color" content="#075e46">
+
+<style>
+    :root {
+        --green: #075e46;
+        --green-dark: #043d30;
+        --green-light: #12865f;
+        --blue: #083c70;
+        --gold: #f5c542;
+        --white: #ffffff;
+        --light: #f4f8f6;
+        --text: #25332d;
+        --muted: #66756e;
+        --shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--text);
+        background: var(--light);
+        line-height: 1.7;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .topbar {
+        background: var(--green-dark);
+        color: white;
+        padding: 9px 5%;
+        font-size: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar a {
+        color: var(--gold);
+    }
+
+    .header {
+        background: white;
+        min-height: 82px;
+        padding: 12px 5%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .brand img {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+
+    .brand h1 {
+        color: var(--green);
+        font-size: clamp(14px, 2vw, 22px);
+        line-height: 1.25;
+    }
+
+    .brand p {
+        color: var(--blue);
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .home-link {
+        background: var(--green);
+        color: white;
+        padding: 10px 17px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .home-link:hover {
+        background: var(--blue);
+    }
+
+    .hero {
+        padding: 65px 6%;
+        text-align: center;
+        color: white;
+        background:
+            linear-gradient(
+                120deg,
+                rgba(3, 61, 48, 0.95),
+                rgba(8, 60, 112, 0.89)
+            ),
+            url("https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=1800&q=85");
+        background-position: center;
+        background-size: cover;
+    }
+
+    .hero .eyebrow {
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
+
+    .hero h2 {
+        font-size: clamp(30px, 5vw, 48px);
+        line-height: 1.2;
+        margin: 14px 0;
+    }
+
+    .hero p {
+        max-width: 720px;
+        margin: auto;
+        color: #edf6f1;
+        font-size: 16px;
+    }
+
+    .hero .motto {
+        color: var(--gold);
+        font-weight: 900;
+        font-size: 13px;
+        letter-spacing: 1px;
+        margin-top: 22px;
+    }
+
+    .contact-area {
+        padding: 65px 6%;
+        flex: 1;
+    }
+
+    .intro {
+        text-align: center;
+        max-width: 750px;
+        margin: 0 auto 38px;
+    }
+
+    .intro h2 {
+        color: var(--blue);
+        font-size: clamp(26px, 4vw, 35px);
+        margin-bottom: 12px;
+    }
+
+    .intro p {
+        color: var(--muted);
+    }
+
+    .contact-grid {
+        max-width: 1100px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .contact-card {
+        background: white;
+        padding: 35px 23px;
+        border-radius: 17px;
+        text-align: center;
+        border-top: 5px solid var(--green);
+        box-shadow: var(--shadow);
+        overflow-wrap: anywhere;
+    }
+
+    .contact-card:nth-child(2) {
+        border-top-color: var(--gold);
+    }
+
+    .contact-card:nth-child(3) {
+        border-top-color: var(--blue);
+    }
+
+    .icon {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e8f5ed;
+        font-size: 34px;
+    }
+
+    .contact-card h3 {
+        color: var(--blue);
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .contact-card .detail {
+        color: var(--muted);
+        font-size: 15px;
+        margin-bottom: 22px;
+        min-height: 27px;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .button {
+        display: inline-block;
+        padding: 11px 16px;
+        border-radius: 8px;
+        color: white;
+        background: var(--green);
+        font-size: 13px;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    .button:hover {
+        background: var(--green-dark);
+        transform: translateY(-2px);
+    }
+
+    .button.whatsapp {
+        background: #168c55;
+    }
+
+    .button.email {
+        background: var(--blue);
+    }
+
+    .extra-note {
+        max-width: 900px;
+        margin: 40px auto 0;
+        padding: 25px;
+        text-align: center;
+        background: white;
+        border-left: 5px solid var(--gold);
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .extra-note h3 {
+        color: var(--green);
+        margin-bottom: 8px;
+    }
+
+    .extra-note p {
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    .footer {
+        margin-top: auto;
+        background: #032c23;
+        color: #dbe8e1;
+        padding: 28px 6%;
+        text-align: center;
+    }
+
+    .footer strong {
+        color: var(--gold);
+    }
+
+    .footer p {
+        font-size: 13px;
+        margin: 5px 0;
+    }
+
+    .footer a {
+        color: white;
+    }
+
+    @media (max-width: 850px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+            max-width: 550px;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .topbar {
+            font-size: 10px;
+            padding: 8px 4%;
         }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f3f8f6;
-            color: #263b32;
-            line-height: 1.8;
+        .header {
+            padding: 10px 4%;
         }
 
-        header {
-            background: #062b50;
-            color: white;
-            padding: 22px 6%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
+        .brand {
+            gap: 8px;
         }
 
-        header h2 {
-            font-size: 18px;
+        .brand img {
+            width: 46px;
+            height: 46px;
         }
 
-        .home {
-            background: #087443;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
+        .brand h1 {
+            font-size: 12px;
+        }
+
+        .brand p {
+            font-size: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .home-link {
+            font-size: 12px;
+            padding: 9px 11px;
         }
 
         .hero {
-            padding: 65px 6%;
-            text-align: center;
-            color: white;
-            background: linear-gradient(120deg, #062b50, #087443);
+            padding: 48px 5%;
         }
 
-        .hero h1 {
-            font-size: clamp(30px, 5vw, 44px);
+        .contact-area {
+            padding: 45px 5%;
         }
 
-        .hero span {
-            color: #f3bd43;
+        .contact-card {
+            padding: 28px 18px;
         }
+    }
+</style>
 
-        main {
-            max-width: 800px;
-            margin: auto;
-            padding: 45px 6%;
-        }
+</head><body><div class="topbar">
+    <span>MUNKA PIGGERY TECHNOLOGY</span>
+    <span><a href="tel:+260976560135">Call Us</a></span>
+</div>
 
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 14px;
-            margin-bottom: 25px;
-            border-left: 5px solid #087443;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-        }
+<header class="header">
 
-        .card h2 {
-            color: #062b50;
-        }
+    <a class="brand" href="index.html">
+        <img src="munka-logo.png" alt="MUNKA PIGGERY TECHNOLOGY Logo">
 
-        .contact-item {
-            background: #edf7f1;
-            padding: 17px;
-            margin-top: 15px;
-            border-radius: 9px;
-        }
-
-        .contact-item strong {
-            display: block;
-            color: #087443;
-        }
-
-        .login {
-            display: inline-block;
-            background: #f3bd43;
-            color: #062b50;
-            padding: 13px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            text-decoration: none;
-            margin-top: 15px;
-        }
-
-        footer {
-            text-align: center;
-            background: #041e35;
-            color: white;
-            padding: 25px;
-        }
-
-        @media (max-width: 600px) {
-            header {
-                padding: 20px 5%;
-            }
-
-            main {
-                padding: 30px 5%;
-            }
-
-            .card {
-                padding: 22px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <header>
         <div>
-            <h2>MUNKA PIGGERY TECHNOLOGY</h2>
+            <h1>MUNKA PIGGERY TECHNOLOGY</h1>
+            <p>SMART FARM MANAGEMENT</p>
         </div>
+    </a>
 
-        <a href="index.html" class="home">← Home</a>
-    </header>
+    <a class="home-link" href="index.html">Home</a>
+
+</header>
+
+<main>
 
     <section class="hero">
-        <h1>Contact <span>MUNKA</span></h1>
+
+        <span class="eyebrow">WE ARE HERE TO HELP</span>
+
+        <h2>Contact MUNKA PIGGERY TECHNOLOGY</h2>
 
         <p>
-            Interested in learning more about our piggery
-            management system? Get in touch.
+            Would you like to learn more about the MUNKA Piggery
+            Management System? Contact us by phone, WhatsApp or email.
+            We welcome your questions and enquiries.
         </p>
+
+        <p class="motto">
+            HOME OF SOFT, HEALTHY AND FRESH MEAT
+        </p>
+
     </section>
 
-    <main>
+    <section class="contact-area">
 
-        <section class="card">
+        <div class="intro">
 
-            <h2>Get in Touch</h2>
-
-            <p>
-                Contact MUNKA PIGGERY TECHNOLOGY for enquiries
-                about the management system, demonstrations,
-                farm testing and access arrangements.
-            </p>
-
-            <div class="contact-item">
-                <strong>Business Name</strong>
-                MUNKA PIGGERY TECHNOLOGY
-            </div>
-
-            <div class="contact-item">
-                <strong>Telephone / WhatsApp</strong>
-                Add your official business number here.
-            </div>
-
-            <div class="contact-item">
-                <strong>Email Address</strong>
-                Add your official business email here.
-            </div>
-
-        </section>
-
-        <section class="card">
-
-            <h2>Access the System</h2>
+            <h2>Let's Talk About Your Piggery</h2>
 
             <p>
-                Already have an authorised account?
-                Use the login dashboard to access the system.
+                Choose your preferred contact method below. You can call
+                us directly, start a WhatsApp conversation or send an email.
             </p>
 
-            <a href="login.html" class="login">
-                Open Login Dashboard →
-            </a>
+        </div>
 
-        </section>
+        <div class="contact-grid">
 
-    </main>
+            <!-- FIRST PHONE NUMBER -->
 
-    <footer>
-        &copy; <span id="year"></span> MUNKA PIGGERY TECHNOLOGY
-    </footer>
+            <article class="contact-card">
 
-    <script>
-        document.getElementById("year").textContent =
-            new Date().getFullYear();
-    </script>
+                <div class="icon">📞</div>
+
+                <h3>Phone Number 1</h3>
+
+                <p class="detail">+260 976 560135</p>
+
+                <div class="actions">
+
+                    <a class="button"
+                       href="tel:+260976560135">
+                        Call Now
+                    </a>
+
+                    <a class="button whatsapp"
+                       href="https://wa.me/260976560135"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        WhatsApp
+                    </a>
+
+                </div>
+
+            </article>
+
+            <!-- CORRECTED SECOND PHONE NUMBER -->
+
+            <article class="contact-card">
+
+                <div class="icon">📱</div>
+
+                <h3>Phone Number 2</h3>
+
+                <p class="detail">+260 968 253128</p>
+
+                <div class="actions">
+
+                    <a class="button"
+                       href="tel:+260968253128">
+                        Call Now
+                    </a>
+
+                    <a class="button whatsapp"
+                       href="https://wa.me/260968253128"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        WhatsApp
+                    </a>
+
+                </div>
+
+            </article>
+
+            <!-- EMAIL ADDRESS -->
+
+            <article class="contact-card">
+
+                <div class="icon">✉️</div>
+
+                <h3>Email Address</h3>
+
+                <p class="detail">honestnkandu2@gmail.com</p>
+
+                <div class="actions">
+
+                    <a class="button email"
+                       href="mailto:honestnkandu2@gmail.com">
+                        Send Email
+                    </a>
+
+                </div>
+
+            </article>
+
+        </div>
+
+        <div class="extra-note">
+
+            <h3>Interested in MUNKA?</h3>
+
+            <p>
+                Contact us to enquire about the MUNKA Piggery Management
+                System and how digital farm records can help you organise
+                your piggery operations.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+<footer class="footer">
+
+    <p><strong>MUNKA PIGGERY TECHNOLOGY</strong></p>
+
+    <p>HOME OF SOFT, HEALTHY AND FRESH MEAT</p>
+
+    <p>
+        Phone:
+        <a href="tel:+260976560135">+260 976 560135</a>
+        |
+        <a href="tel:+260968253128">+260 968 253128</a>
+    </p>
+
+    <p>
+        Email:
+        <a href="mailto:honestnkandu2@gmail.com">
+            honestnkandu2@gmail.com
+        </a>
+    </p>
+
+    <p>
+        &copy; <span id="currentYear"></span>
+        MUNKA PIGGERY TECHNOLOGY. All rights reserved.
+    </p>
+
+</footer>
+
+<script>
+    document.getElementById("currentYear").textContent =
+        new Date().getFullYear();
+</script>
 
 </body>
 </html>
