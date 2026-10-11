@@ -4,21 +4,187 @@
 // FARM-SECURED VERSION
 // PROFESSIONAL UPGRADE
 // DYNAMIC FARM BRANDING
+// CUSTOM NOTIFICATIONS
+// NO BROWSER ALERT HEADINGS
 // =====================================
 
 let editID = null;
 
 
 // =====================================
+// CUSTOM NOTIFICATION SYSTEM
+// =====================================
+
+function showExpenseNotification(message, type = "success") {
+
+    let container = document.getElementById(
+        "munka-expense-notifications"
+    );
+
+    if (!container) {
+
+        container = document.createElement("div");
+
+        container.id = "munka-expense-notifications";
+
+        container.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 15px;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: min(360px, calc(100vw - 30px));
+            pointer-events: none;
+        `;
+
+        document.body.appendChild(container);
+    }
+
+    const styles = {
+        success: {
+            background: "#166534",
+            border: "#22c55e",
+            icon: "✓"
+        },
+
+        error: {
+            background: "#991b1b",
+            border: "#ef4444",
+            icon: "✕"
+        },
+
+        warning: {
+            background: "#92400e",
+            border: "#f59e0b",
+            icon: "!"
+        },
+
+        info: {
+            background: "#1e40af",
+            border: "#60a5fa",
+            icon: "i"
+        }
+    };
+
+    const selected = styles[type] || styles.info;
+
+    const notification = document.createElement("div");
+
+    notification.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px;
+        background: ${selected.background};
+        color: white;
+        border-left: 5px solid ${selected.border};
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity .25s ease, transform .25s ease;
+        pointer-events: auto;
+    `;
+
+    const icon = document.createElement("span");
+
+    icon.textContent = selected.icon;
+
+    icon.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 26px;
+        height: 26px;
+        border: 2px solid white;
+        border-radius: 50%;
+        font-size: 15px;
+        font-weight: bold;
+    `;
+
+    const text = document.createElement("span");
+
+    text.textContent = String(message);
+
+    text.style.flex = "1";
+
+    const closeButton = document.createElement("button");
+
+    closeButton.type = "button";
+    closeButton.textContent = "×";
+    closeButton.setAttribute("aria-label", "Close notification");
+
+    closeButton.style.cssText = `
+        border: none;
+        background: transparent;
+        color: white;
+        font-size: 25px;
+        cursor: pointer;
+        padding: 0 3px;
+    `;
+
+    notification.appendChild(icon);
+    notification.appendChild(text);
+    notification.appendChild(closeButton);
+
+    container.appendChild(notification);
+
+    requestAnimationFrame(() => {
+        notification.style.opacity = "1";
+        notification.style.transform = "translateY(0)";
+    });
+
+    let timer;
+
+    function removeNotification() {
+
+        clearTimeout(timer);
+
+        notification.style.opacity = "0";
+        notification.style.transform = "translateY(-10px)";
+
+        setTimeout(() => {
+            notification.remove();
+        }, 250);
+    }
+
+    closeButton.addEventListener(
+        "click",
+        removeNotification
+    );
+
+    timer = setTimeout(
+        removeNotification,
+        type === "error" ? 6000 : 3500
+    );
+}
+
+
+// =====================================
 // GET LOGGED-IN USER
 // =====================================
 
-function getLoggedUser(){
+function getLoggedUser() {
 
-    return JSON.parse(
-        localStorage.getItem("loggedInUser")
-    );
+    try {
 
+        return JSON.parse(
+            localStorage.getItem("loggedInUser")
+        );
+
+    } catch (error) {
+
+        console.error("Unable to read logged-in user:", error);
+
+        return null;
+    }
 }
 
 
@@ -26,19 +192,20 @@ function getLoggedUser(){
 // GET CURRENT FARM ID
 // =====================================
 
-function getFarmID(){
+function getFarmID() {
 
     const loggedUser = getLoggedUser();
 
-    if(!loggedUser || !loggedUser.farm_id){
+    if (!loggedUser || !loggedUser.farm_id) {
 
-        console.error("No farm_id found for logged-in user.");
+        console.error(
+            "No farm_id found for logged-in user."
+        );
 
         return null;
     }
 
     return loggedUser.farm_id;
-
 }
 
 
@@ -46,78 +213,52 @@ function getFarmID(){
 // GET REGISTERED FARM NAME
 // =====================================
 
-async function getRegisteredFarmName(){
+async function getRegisteredFarmName() {
 
-    try{
+    try {
 
         const {
             data: sessionData,
             error: sessionError
-        } =
-            await supabaseClient.auth.getSession();
+        } = await supabaseClient.auth.getSession();
 
-        if(sessionError) throw sessionError;
+        if (sessionError) throw sessionError;
 
-        const session =
-            sessionData.session;
+        const session = sessionData.session;
 
-        if(!session || !session.user){
-
+        if (!session || !session.user) {
             return "Registered Farm";
-
         }
 
         const {
             data: userProfile,
             error: userError
-        } =
-            await supabaseClient
+        } = await supabaseClient
+            .from("users")
+            .select("farm_id")
+            .eq("auth_user_id", session.user.id)
+            .maybeSingle();
 
-                .from("users")
+        if (userError) throw userError;
 
-                .select("farm_id")
-
-                .eq(
-                    "auth_user_id",
-                    session.user.id
-                )
-
-                .maybeSingle();
-
-        if(userError) throw userError;
-
-        if(
-            !userProfile ||
-            !userProfile.farm_id
-        ){
-
+        if (!userProfile || !userProfile.farm_id) {
             return "Registered Farm";
-
         }
 
         const {
             data: farm,
             error: farmError
-        } =
-            await supabaseClient
+        } = await supabaseClient
+            .from("farms")
+            .select("farm_name")
+            .eq("id", userProfile.farm_id)
+            .maybeSingle();
 
-                .from("farms")
+        if (farmError) throw farmError;
 
-                .select("farm_name")
+        return farm?.farm_name || "Registered Farm";
 
-                .eq(
-                    "id",
-                    userProfile.farm_id
-                )
-
-                .maybeSingle();
-
-        if(farmError) throw farmError;
-
-        return farm?.farm_name ||
-            "Registered Farm";
-
-    }catch(error){
+    } catch (error) {
 
         console.error(
             "Unable to get registered farm name:",
@@ -125,9 +266,7 @@ async function getRegisteredFarmName(){
         );
 
         return "Registered Farm";
-
     }
-
 }
 
 
@@ -135,22 +274,18 @@ async function getRegisteredFarmName(){
 // ESCAPE HTML
 // =====================================
 
-function escapeHTML(value){
+function escapeHTML(value) {
 
-    if(value === null || value === undefined){
-
+    if (value === null || value === undefined) {
         return "";
-
     }
 
     return String(value)
-
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-
 }
 
 
@@ -276,7 +411,6 @@ const descriptionOptions = {
         "Bank Charges",
         "Other"
     ]
-
 };
 
 
@@ -397,7 +531,6 @@ const recommendationOptions = {
         "Monitor Farm Operating Costs",
         "Consider Cost Reduction Measures"
     ]
-
 };
 
 
@@ -405,55 +538,40 @@ const recommendationOptions = {
 // LOAD DESCRIPTION OPTIONS
 // =====================================
 
-function loadDescriptionOptions(selectedValue = ""){
+function loadDescriptionOptions(selectedValue = "") {
 
-    const category =
-        document.getElementById("category").value;
-
-    const description =
-        document.getElementById("description");
+    const category = document.getElementById("category").value;
+    const description = document.getElementById("description");
 
     description.innerHTML = "";
 
-    const firstOption =
-        document.createElement("option");
+    const firstOption = document.createElement("option");
 
     firstOption.value = "";
 
-    firstOption.textContent =
-        category
-            ? "Select Description"
-            : "Select Expense Category First";
+    firstOption.textContent = category
+        ? "Select Description"
+        : "Select Expense Category First";
 
     description.appendChild(firstOption);
 
-    if(!category){
+    if (!category) return;
 
-        return;
+    const options = descriptionOptions[category] || [];
 
-    }
+    options.forEach(function (item) {
 
-    const options =
-        descriptionOptions[category] || [];
-
-    options.forEach(function(item){
-
-        const option =
-            document.createElement("option");
+        const option = document.createElement("option");
 
         option.value = item;
         option.textContent = item;
 
-        if(item === selectedValue){
-
+        if (item === selectedValue) {
             option.selected = true;
-
         }
 
         description.appendChild(option);
-
     });
-
 }
 
 
@@ -461,55 +579,40 @@ function loadDescriptionOptions(selectedValue = ""){
 // LOAD REMARKS OPTIONS
 // =====================================
 
-function loadRecommendationOptions(selectedValue = ""){
+function loadRecommendationOptions(selectedValue = "") {
 
-    const category =
-        document.getElementById("category").value;
-
-    const remarks =
-        document.getElementById("remarks");
+    const category = document.getElementById("category").value;
+    const remarks = document.getElementById("remarks");
 
     remarks.innerHTML = "";
 
-    const firstOption =
-        document.createElement("option");
+    const firstOption = document.createElement("option");
 
     firstOption.value = "";
 
-    firstOption.textContent =
-        category
-            ? "Select Recommendation"
-            : "Select Expense Category First";
+    firstOption.textContent = category
+        ? "Select Recommendation"
+        : "Select Expense Category First";
 
     remarks.appendChild(firstOption);
 
-    if(!category){
+    if (!category) return;
 
-        return;
+    const options = recommendationOptions[category] || [];
 
-    }
+    options.forEach(function (item) {
 
-    const options =
-        recommendationOptions[category] || [];
-
-    options.forEach(function(item){
-
-        const option =
-            document.createElement("option");
+        const option = document.createElement("option");
 
         option.value = item;
         option.textContent = item;
 
-        if(item === selectedValue){
-
+        if (item === selectedValue) {
             option.selected = true;
-
         }
 
         remarks.appendChild(option);
-
     });
-
 }
 
 
@@ -519,59 +622,42 @@ function loadRecommendationOptions(selectedValue = ""){
 
 document
     .getElementById("category")
-    .addEventListener(
-        "change",
-        function(){
+    .addEventListener("change", function () {
 
-            loadDescriptionOptions();
+        loadDescriptionOptions();
+        loadRecommendationOptions();
 
-            loadRecommendationOptions();
-
-        }
-    );
+    });
 
 
 // =====================================
 // AUTOMATIC EXPENSE CALCULATION
 // =====================================
 
-function calculateExpenseTotal(){
+function calculateExpenseTotal() {
 
-    const quantity =
-        Number(
-            document.getElementById("quantity").value
-        ) || 0;
+    const quantity = Number(
+        document.getElementById("quantity").value
+    ) || 0;
 
-    const unitCost =
-        Number(
-            document.getElementById("unitCost").value
-        ) || 0;
+    const unitCost = Number(
+        document.getElementById("unitCost").value
+    ) || 0;
 
-    const total =
-        quantity * unitCost;
+    const total = quantity * unitCost;
 
-    document.getElementById(
-        "totalAmount"
-    ).value =
+    document.getElementById("totalAmount").value =
         total.toFixed(2);
-
 }
 
 
 document
     .getElementById("quantity")
-    .addEventListener(
-        "change",
-        calculateExpenseTotal
-    );
-
+    .addEventListener("change", calculateExpenseTotal);
 
 document
     .getElementById("unitCost")
-    .addEventListener(
-        "change",
-        calculateExpenseTotal
-    );
+    .addEventListener("change", calculateExpenseTotal);
 
 
 // =====================================
@@ -580,242 +666,179 @@ document
 
 document
     .getElementById("expensesForm")
-    .addEventListener(
-        "submit",
-        async function(e){
+    .addEventListener("submit", async function (e) {
 
-            e.preventDefault();
+        e.preventDefault();
 
-            const loggedUser =
-                getLoggedUser();
+        const loggedUser = getLoggedUser();
 
-            if(!loggedUser){
+        if (!loggedUser) {
 
-                alert(
-                    "No logged-in user found. Please login again."
-                );
+            showExpenseNotification(
+                "No logged-in user found. Please login again.",
+                "error"
+            );
 
-                return;
-
-            }
-
-            const farmID =
-                getFarmID();
-
-            if(!farmID){
-
-                alert(
-                    "Your account is not linked to a farm. Please contact the administrator."
-                );
-
-                return;
-
-            }
-
-            const farmName =
-                await getRegisteredFarmName();
-
-            const totalAmount =
-                Number(
-                    document.getElementById(
-                        "totalAmount"
-                    ).value
-                ) || 0;
-
-            if(totalAmount <= 0){
-
-                alert(
-                    "Please select a valid quantity and unit cost."
-                );
-
-                return;
-
-            }
-
-            const expense = {
-
-                farm_id:
-                    farmID,
-
-                expense_id:
-                    "EXP-" + Date.now(),
-
-                expense_date:
-                    document.getElementById(
-                        "expenseDate"
-                    ).value,
-
-                category:
-                    document.getElementById(
-                        "category"
-                    ).value,
-
-                description:
-                    document.getElementById(
-                        "description"
-                    ).value,
-
-                quantity:
-                    Number(
-                        document.getElementById(
-                            "quantity"
-                        ).value
-                    ) || 0,
-
-                unit:
-                    document.getElementById(
-                        "unit"
-                    ).value,
-
-                unit_cost:
-                    Number(
-                        document.getElementById(
-                            "unitCost"
-                        ).value
-                    ) || 0,
-
-                total_amount:
-                    totalAmount,
-
-                payment_method:
-                    document.getElementById(
-                        "paymentMethod"
-                    ).value,
-
-                supplier_name:
-                    document.getElementById(
-                        "supplierName"
-                    ).value.trim(),
-
-                supplier_contact:
-                    document.getElementById(
-                        "supplierContact"
-                    ).value.trim(),
-
-                responsible_person:
-                    document.getElementById(
-                        "responsiblePerson"
-                    ).value,
-
-                remarks:
-                    document.getElementById(
-                        "remarks"
-                    ).value,
-
-                created_by:
-                    loggedUser.full_name,
-
-                created_at:
-                    new Date().toISOString(),
-
-                updated_by:
-                    null,
-
-                updated_at:
-                    null
-
-            };
-
-            try{
-
-                const {error} =
-                    await supabaseClient
-
-                        .from("expenses_records")
-
-                        .insert([expense]);
-
-                if(error) throw error;
-
-                await saveActivity(
-
-                    loggedUser.full_name +
-                    " (" +
-                    loggedUser.role +
-                    ")",
-
-                    "Added",
-
-                    "Expenses Records",
-
-                    "Added expense record: " +
-                    expense.description
-
-                );
-
-                alert(
-                    farmName +
-                    "\n\nExpense record saved successfully."
-                );
-
-                clearExpenseForm();
-
-                loadExpensesRecords();
-
-            }catch(error){
-
-                console.error(error);
-
-                alert(error.message);
-
-            }
-
+            return;
         }
-    );
+
+        const farmID = getFarmID();
+
+        if (!farmID) {
+
+            showExpenseNotification(
+                "Your account is not linked to a farm. Please contact the administrator.",
+                "error"
+            );
+
+            return;
+        }
+
+        const totalAmount = Number(
+            document.getElementById("totalAmount").value
+        ) || 0;
+
+        if (totalAmount <= 0) {
+
+            showExpenseNotification(
+                "Please select a valid quantity and unit cost.",
+                "warning"
+            );
+
+            return;
+        }
+
+        const expense = {
+
+            farm_id: farmID,
+
+            expense_id: "EXP-" + Date.now(),
+
+            expense_date: document.getElementById(
+                "expenseDate"
+            ).value,
+
+            category: document.getElementById(
+                "category"
+            ).value,
+
+            description: document.getElementById(
+                "description"
+            ).value,
+
+            quantity: Number(
+                document.getElementById("quantity").value
+            ) || 0,
+
+            unit: document.getElementById("unit").value,
+
+            unit_cost: Number(
+                document.getElementById("unitCost").value
+            ) || 0,
+
+            total_amount: totalAmount,
+
+            payment_method: document.getElementById(
+                "paymentMethod"
+            ).value,
+
+            supplier_name: document.getElementById(
+                "supplierName"
+            ).value.trim(),
+
+            supplier_contact: document.getElementById(
+                "supplierContact"
+            ).value.trim(),
+
+            responsible_person: document.getElementById(
+                "responsiblePerson"
+            ).value,
+
+            remarks: document.getElementById("remarks").value,
+
+            created_by: loggedUser.full_name,
+
+            created_at: new Date().toISOString(),
+
+            updated_by: null,
+
+            updated_at: null
+        };
+
+        try {
+
+            const { error } = await supabaseClient
+                .from("expenses_records")
+                .insert([expense]);
+
+            if (error) throw error;
+
+            await saveActivity(
+                loggedUser.full_name + " (" + loggedUser.role + ")",
+                "Added",
+                "Expenses Records",
+                "Added expense record: " + expense.description
+            );
+
+            showExpenseNotification(
+                "Expense record saved successfully.",
+                "success"
+            );
+
+            clearExpenseForm();
+
+            await loadExpensesRecords();
+
+        } catch (error) {
+
+            console.error(error);
+
+            showExpenseNotification(
+                error.message || "Unable to save expense record.",
+                "error"
+            );
+        }
+    });
 
 
 // =====================================
 // LOAD EXPENSE RECORDS
 // =====================================
 
-async function loadExpensesRecords(){
+async function loadExpensesRecords() {
 
-    const farmID =
-        getFarmID();
+    const farmID = getFarmID();
 
-    if(!farmID){
+    if (!farmID) {
 
         console.error(
             "Cannot load expenses: farm_id missing."
         );
 
         return;
-
     }
 
-    try{
+    try {
 
-        const {data,error} =
-            await supabaseClient
+        const { data, error } = await supabaseClient
+            .from("expenses_records")
+            .select("*")
+            .eq("farm_id", farmID)
+            .order("id", { ascending: false });
 
-                .from("expenses_records")
+        if (error) throw error;
 
-                .select("*")
+        displayExpensesRecords(data || []);
 
-                .eq(
-                    "farm_id",
-                    farmID
-                )
-
-                .order(
-                    "id",
-                    {ascending:false}
-                );
-
-        if(error) throw error;
-
-        displayExpensesRecords(
-            data || []
-        );
-
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
-        alert(error.message);
-
+        showExpenseNotification(
+            error.message || "Unable to load expense records.",
+            "error"
+        );
     }
-
 }
 
 
@@ -823,136 +846,76 @@ async function loadExpensesRecords(){
 // DISPLAY EXPENSE RECORDS
 // =====================================
 
-function displayExpensesRecords(records){
+function displayExpensesRecords(records) {
 
-    const table =
-        document.getElementById(
-            "expensesTable"
-        );
+    const table = document.getElementById("expensesTable");
 
-    const recordCount =
-        document.getElementById(
-            "recordCount"
-        );
+    const recordCount = document.getElementById("recordCount");
 
     table.innerHTML = "";
 
-    if(!records.length){
+    if (!records.length) {
 
         table.innerHTML = `
-
             <tr>
-
-                <td
-                    colspan="9"
-                    class="no-records">
-
+                <td colspan="9" class="no-records">
                     No expense records found.
-
                 </td>
-
             </tr>
-
         `;
 
-        recordCount.textContent =
-            "0 Records";
+        recordCount.textContent = "0 Records";
 
         return;
-
     }
 
     recordCount.textContent =
         records.length +
-        (
-            records.length === 1
-                ? " Record"
-                : " Records"
-        );
+        (records.length === 1 ? " Record" : " Records");
 
-    records.forEach(function(expense){
+    records.forEach(function (expense) {
 
         table.innerHTML += `
+            <tr>
+                <td>${escapeHTML(expense.expense_date || "")}</td>
 
-        <tr>
+                <td>${escapeHTML(expense.category || "")}</td>
 
-            <td>
-                ${escapeHTML(
-                    expense.expense_date || ""
-                )}
-            </td>
+                <td>${escapeHTML(expense.description || "")}</td>
 
-            <td>
-                ${escapeHTML(
-                    expense.category || ""
-                )}
-            </td>
+                <td>
+                    ${escapeHTML(expense.quantity || 0)}
+                    ${escapeHTML(expense.unit || "")}
+                </td>
 
-            <td>
-                ${escapeHTML(
-                    expense.description || ""
-                )}
-            </td>
+                <td>
+                    ZMW ${Number(expense.unit_cost || 0).toFixed(2)}
+                </td>
 
-            <td>
-                ${escapeHTML(
-                    expense.quantity || 0
-                )}
-                ${escapeHTML(
-                    expense.unit || ""
-                )}
-            </td>
+                <td class="amount-cell">
+                    ZMW ${Number(expense.total_amount || 0).toFixed(2)}
+                </td>
 
-            <td>
-                ZMW ${Number(
-                    expense.unit_cost || 0
-                ).toFixed(2)}
-            </td>
+                <td>${escapeHTML(expense.supplier_name || "")}</td>
 
-            <td class="amount-cell">
-                ZMW ${Number(
-                    expense.total_amount || 0
-                ).toFixed(2)}
-            </td>
+                <td>${escapeHTML(expense.payment_method || "")}</td>
 
-            <td>
-                ${escapeHTML(
-                    expense.supplier_name || ""
-                )}
-            </td>
+                <td class="action-cell">
+                    <button
+                        class="edit-btn"
+                        onclick="editExpense(${Number(expense.id)})">
+                        Edit
+                    </button>
 
-            <td>
-                ${escapeHTML(
-                    expense.payment_method || ""
-                )}
-            </td>
-
-            <td class="action-cell">
-
-                <button
-                    class="edit-btn"
-                    onclick="editExpense(${expense.id})">
-
-                    Edit
-
-                </button>
-
-                <button
-                    class="delete-btn"
-                    onclick="deleteExpense(${expense.id})">
-
-                    Delete
-
-                </button>
-
-            </td>
-
-        </tr>
-
+                    <button
+                        class="delete-btn"
+                        onclick="deleteExpense(${Number(expense.id)})">
+                        Delete
+                    </button>
+                </td>
+            </tr>
         `;
-
     });
-
 }
 
 
@@ -960,135 +923,87 @@ function displayExpensesRecords(records){
 // LOAD PAGE
 // =====================================
 
-window.addEventListener(
-    "load",
-    function(){
+window.addEventListener("load", function () {
 
-        const dateField =
-            document.getElementById(
-                "expenseDate"
-            );
+    const dateField = document.getElementById("expenseDate");
 
-        if(
-            dateField &&
-            !dateField.value
-        ){
+    if (dateField && !dateField.value) {
 
-            dateField.value =
-                new Date()
-                    .toISOString()
-                    .split("T")[0];
-
-        }
-
-        loadExpensesRecords();
-
+        dateField.value = new Date()
+            .toISOString()
+            .split("T")[0];
     }
-);
+
+    loadExpensesRecords();
+});
 
 
 // =====================================
 // EDIT EXPENSE
 // =====================================
 
-async function editExpense(id){
+async function editExpense(id) {
 
-    const farmID =
-        getFarmID();
+    const farmID = getFarmID();
 
-    if(!farmID){
+    if (!farmID) {
 
-        alert(
-            "Your account is not linked to a farm."
+        showExpenseNotification(
+            "Your account is not linked to a farm.",
+            "error"
         );
 
         return;
-
     }
 
-    try{
+    try {
 
-        const {data,error} =
-            await supabaseClient
+        const { data, error } = await supabaseClient
+            .from("expenses_records")
+            .select("*")
+            .eq("id", id)
+            .eq("farm_id", farmID)
+            .single();
 
-                .from("expenses_records")
-
-                .select("*")
-
-                .eq("id", id)
-
-                .eq(
-                    "farm_id",
-                    farmID
-                )
-
-                .single();
-
-        if(error) throw error;
+        if (error) throw error;
 
         editID = id;
 
-        document.getElementById(
-            "expenseID"
-        ).value =
+        document.getElementById("expenseID").value =
             data.expense_id || "";
 
-        document.getElementById(
-            "expenseDate"
-        ).value =
+        document.getElementById("expenseDate").value =
             data.expense_date || "";
 
-        document.getElementById(
-            "category"
-        ).value =
+        document.getElementById("category").value =
             data.category || "";
 
-        loadDescriptionOptions(
-            data.description || ""
-        );
+        loadDescriptionOptions(data.description || "");
 
-        loadRecommendationOptions(
-            data.remarks || ""
-        );
+        loadRecommendationOptions(data.remarks || "");
 
-        document.getElementById(
-            "quantity"
-        ).value =
-            data.quantity || "";
+        document.getElementById("quantity").value =
+            data.quantity ?? "";
 
-        document.getElementById(
-            "unit"
-        ).value =
+        document.getElementById("unit").value =
             data.unit || "";
 
-        document.getElementById(
-            "unitCost"
-        ).value =
-            data.unit_cost || "";
+        document.getElementById("unitCost").value =
+            data.unit_cost ?? "";
 
-        document.getElementById(
-            "totalAmount"
-        ).value =
-            data.total_amount || "";
+        document.getElementById("totalAmount").value =
+            data.total_amount ?? "";
 
-        document.getElementById(
-            "paymentMethod"
-        ).value =
+        document.getElementById("paymentMethod").value =
             data.payment_method || "";
 
-        document.getElementById(
-            "supplierName"
-        ).value =
+        document.getElementById("supplierName").value =
             data.supplier_name || "";
 
-        document.getElementById(
-            "supplierContact"
-        ).value =
+        document.getElementById("supplierContact").value =
             data.supplier_contact || "";
 
-        document.getElementById(
-            "responsiblePerson"
-        ).value =
+        document.getElementById("responsiblePerson").value =
             data.responsible_person || "";
 
         window.scrollTo({
@@ -1096,14 +1011,15 @@ async function editExpense(id){
             behavior: "smooth"
         });
 
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
-        alert(error.message);
-
+        showExpenseNotification(
+            error.message || "Unable to load expense record.",
+            "error"
+        );
     }
-
 }
 
 
@@ -1111,178 +1027,144 @@ async function editExpense(id){
 // UPDATE EXPENSE
 // =====================================
 
-async function updateExpenseRecord(){
+async function updateExpenseRecord() {
 
-    if(editID === null){
+    if (editID === null) {
 
-        alert(
-            "Please select an expense record first."
+        showExpenseNotification(
+            "Please select an expense record first.",
+            "warning"
         );
 
         return;
-
     }
 
-    const loggedUser =
-        getLoggedUser();
+    const loggedUser = getLoggedUser();
 
-    if(!loggedUser){
+    if (!loggedUser) {
 
-        alert(
-            "No logged-in user found. Please login again."
+        showExpenseNotification(
+            "No logged-in user found. Please login again.",
+            "error"
         );
 
         return;
-
     }
 
-    const farmID =
-        getFarmID();
+    const farmID = getFarmID();
 
-    if(!farmID){
+    if (!farmID) {
 
-        alert(
-            "Your account is not linked to a farm."
+        showExpenseNotification(
+            "Your account is not linked to a farm.",
+            "error"
         );
 
         return;
-
     }
-
-    const farmName =
-        await getRegisteredFarmName();
 
     calculateExpenseTotal();
 
-    const updatedExpense = {
+    const totalAmount = Number(
+        document.getElementById("totalAmount").value
+    ) || 0;
 
-        expense_date:
-            document.getElementById(
-                "expenseDate"
-            ).value,
+    if (totalAmount <= 0) {
 
-        category:
-            document.getElementById(
-                "category"
-            ).value,
-
-        description:
-            document.getElementById(
-                "description"
-            ).value,
-
-        quantity:
-            Number(
-                document.getElementById(
-                    "quantity"
-                ).value
-            ) || 0,
-
-        unit:
-            document.getElementById(
-                "unit"
-            ).value,
-
-        unit_cost:
-            Number(
-                document.getElementById(
-                    "unitCost"
-                ).value
-            ) || 0,
-
-        total_amount:
-            Number(
-                document.getElementById(
-                    "totalAmount"
-                ).value
-            ) || 0,
-
-        payment_method:
-            document.getElementById(
-                "paymentMethod"
-            ).value,
-
-        supplier_name:
-            document.getElementById(
-                "supplierName"
-            ).value.trim(),
-
-        supplier_contact:
-            document.getElementById(
-                "supplierContact"
-            ).value.trim(),
-
-        responsible_person:
-            document.getElementById(
-                "responsiblePerson"
-            ).value,
-
-        remarks:
-            document.getElementById(
-                "remarks"
-            ).value,
-
-        updated_by:
-            loggedUser.full_name,
-
-        updated_at:
-            new Date().toISOString()
-
-    };
-
-    try{
-
-        const {error} =
-            await supabaseClient
-
-                .from("expenses_records")
-
-                .update(updatedExpense)
-
-                .eq("id", editID)
-
-                .eq(
-                    "farm_id",
-                    farmID
-                );
-
-        if(error) throw error;
-
-        await saveActivity(
-
-            loggedUser.full_name +
-            " (" +
-            loggedUser.role +
-            ")",
-
-            "Updated",
-
-            "Expenses Records",
-
-            "Updated expense record ID: " +
-            editID
-
+        showExpenseNotification(
+            "Please select a valid quantity and unit cost.",
+            "warning"
         );
 
-        alert(
-            farmName +
-            "\n\nExpense record updated successfully."
+        return;
+    }
+
+    const updatedExpense = {
+
+        expense_date: document.getElementById(
+            "expenseDate"
+        ).value,
+
+        category: document.getElementById(
+            "category"
+        ).value,
+
+        description: document.getElementById(
+            "description"
+        ).value,
+
+        quantity: Number(
+            document.getElementById("quantity").value
+        ) || 0,
+
+        unit: document.getElementById("unit").value,
+
+        unit_cost: Number(
+            document.getElementById("unitCost").value
+        ) || 0,
+
+        total_amount: totalAmount,
+
+        payment_method: document.getElementById(
+            "paymentMethod"
+        ).value,
+
+        supplier_name: document.getElementById(
+            "supplierName"
+        ).value.trim(),
+
+        supplier_contact: document.getElementById(
+            "supplierContact"
+        ).value.trim(),
+
+        responsible_person: document.getElementById(
+            "responsiblePerson"
+        ).value,
+
+        remarks: document.getElementById("remarks").value,
+
+        updated_by: loggedUser.full_name,
+
+        updated_at: new Date().toISOString()
+    };
+
+    try {
+
+        const { error } = await supabaseClient
+            .from("expenses_records")
+            .update(updatedExpense)
+            .eq("id", editID)
+            .eq("farm_id", farmID);
+
+        if (error) throw error;
+
+        await saveActivity(
+            loggedUser.full_name + " (" + loggedUser.role + ")",
+            "Updated",
+            "Expenses Records",
+            "Updated expense record ID: " + editID
+        );
+
+        showExpenseNotification(
+            "Expense record updated successfully.",
+            "success"
         );
 
         editID = null;
 
         clearExpenseForm();
 
-        loadExpensesRecords();
+        await loadExpensesRecords();
 
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
-        alert(error.message);
-
+        showExpenseNotification(
+            error.message || "Unable to update expense record.",
+            "error"
+        );
     }
-
 }
 
 
@@ -1290,87 +1172,64 @@ async function updateExpenseRecord(){
 // DELETE EXPENSE
 // =====================================
 
-async function deleteExpense(id){
+async function deleteExpense(id) {
 
-    const confirmDelete =
-        confirm(
-            "Delete this expense record?"
-        );
+    const confirmDelete = confirm(
+        "Delete this expense record?"
+    );
 
-    if(!confirmDelete) return;
+    if (!confirmDelete) return;
 
-    const farmID =
-        getFarmID();
+    const farmID = getFarmID();
 
-    if(!farmID){
+    if (!farmID) {
 
-        alert(
-            "Your account is not linked to a farm."
+        showExpenseNotification(
+            "Your account is not linked to a farm.",
+            "error"
         );
 
         return;
-
     }
 
-    try{
+    try {
 
-        const {error} =
-            await supabaseClient
+        const { error } = await supabaseClient
+            .from("expenses_records")
+            .delete()
+            .eq("id", id)
+            .eq("farm_id", farmID);
 
-                .from("expenses_records")
+        if (error) throw error;
 
-                .delete()
+        const loggedUser = getLoggedUser();
 
-                .eq("id", id)
-
-                .eq(
-                    "farm_id",
-                    farmID
-                );
-
-        if(error) throw error;
-
-        const loggedUser =
-            getLoggedUser();
-
-        if(loggedUser){
+        if (loggedUser) {
 
             await saveActivity(
-
-                loggedUser.full_name +
-                " (" +
-                loggedUser.role +
-                ")",
-
+                loggedUser.full_name + " (" + loggedUser.role + ")",
                 "Deleted",
-
                 "Expenses Records",
-
-                "Deleted expense record ID: " +
-                id
-
+                "Deleted expense record ID: " + id
             );
-
         }
 
-        const farmName =
-            await getRegisteredFarmName();
-
-        alert(
-            farmName +
-            "\n\nExpense record deleted successfully."
+        showExpenseNotification(
+            "Expense record deleted successfully.",
+            "success"
         );
 
-        loadExpensesRecords();
+        await loadExpensesRecords();
 
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
-        alert(error.message);
-
+        showExpenseNotification(
+            error.message || "Unable to delete expense record.",
+            "error"
+        );
     }
-
 }
 
 
@@ -1378,75 +1237,59 @@ async function deleteExpense(id){
 // SEARCH EXPENSE
 // =====================================
 
-async function searchExpenseRecord(){
+async function searchExpenseRecord() {
 
-    const supplier =
-        prompt(
-            "Enter Supplier / Payee Name"
-        );
+    const supplier = prompt(
+        "Enter Supplier / Payee Name"
+    );
 
-    if(!supplier) return;
+    if (!supplier) return;
 
-    const farmID =
-        getFarmID();
+    const farmID = getFarmID();
 
-    if(!farmID){
+    if (!farmID) {
 
-        alert(
-            "Your account is not linked to a farm."
+        showExpenseNotification(
+            "Your account is not linked to a farm.",
+            "error"
         );
 
         return;
-
     }
 
-    try{
+    try {
 
-        const {data,error} =
-            await supabaseClient
+        const { data, error } = await supabaseClient
+            .from("expenses_records")
+            .select("*")
+            .eq("farm_id", farmID)
+            .ilike("supplier_name", "%" + supplier + "%");
 
-                .from("expenses_records")
+        if (error) throw error;
 
-                .select("*")
+        if (!data || data.length === 0) {
 
-                .eq(
-                    "farm_id",
-                    farmID
-                )
-
-                .ilike(
-                    "supplier_name",
-                    "%" +
-                    supplier +
-                    "%"
-                );
-
-        if(error) throw error;
-
-        if(!data || data.length === 0){
-
-            alert(
-                "No expense record found."
+            showExpenseNotification(
+                "No expense record found.",
+                "warning"
             );
 
             return;
-
         }
 
         displayExpensesRecords(data);
 
-        editExpense(
-            data[0].id
-        );
+        await editExpense(data[0].id);
 
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
-        alert(error.message);
-
+        showExpenseNotification(
+            error.message || "Unable to search expense records.",
+            "error"
+        );
     }
-
 }
 
 
@@ -1454,288 +1297,192 @@ async function searchExpenseRecord(){
 // GENERATE PRINT REPORT
 // =====================================
 
-async function generateExpenseReport(){
+async function generateExpenseReport() {
 
-    const farmID =
-        getFarmID();
+    const farmID = getFarmID();
 
-    if(!farmID){
+    if (!farmID) {
 
-        alert(
-            "Your account is not linked to a farm."
+        showExpenseNotification(
+            "Your account is not linked to a farm.",
+            "error"
         );
 
         return;
-
     }
 
-    try{
+    try {
 
-        const farmName =
-            await getRegisteredFarmName();
+        const farmName = await getRegisteredFarmName();
 
-        const {data,error} =
-            await supabaseClient
+        const { data, error } = await supabaseClient
+            .from("expenses_records")
+            .select("*")
+            .eq("farm_id", farmID)
+            .order("id", { ascending: false });
 
-                .from("expenses_records")
+        if (error) throw error;
 
-                .select("*")
-
-                .eq(
-                    "farm_id",
-                    farmID
-                )
-
-                .order(
-                    "id",
-                    {ascending:false}
-                );
-
-        if(error) throw error;
-
-        const records =
-            data || [];
+        const records = data || [];
 
         let totalExpense = 0;
 
-        records.forEach(function(expense){
+        records.forEach(function (expense) {
 
-            totalExpense +=
-                Number(
-                    expense.total_amount || 0
-                );
+            totalExpense += Number(expense.total_amount || 0);
 
         });
 
-        const reportWindow =
-            window.open(
-                "",
-                "_blank"
-            );
+        const reportWindow = window.open("", "_blank");
 
-        if(!reportWindow){
+        if (!reportWindow) {
 
-            alert(
-                "Please allow pop-ups to generate the report."
+            showExpenseNotification(
+                "Please allow pop-ups to generate the report.",
+                "warning"
             );
 
             return;
-
         }
 
         let rows = "";
 
-        records.forEach(function(expense){
+        records.forEach(function (expense) {
 
             rows += `
-
-            <tr>
-
-                <td>
-                    ${escapeHTML(
-                        expense.expense_date || ""
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        expense.category || ""
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        expense.description || ""
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        expense.quantity || 0
-                    )}
-                    ${escapeHTML(
-                        expense.unit || ""
-                    )}
-                </td>
-
-                <td>
-                    ZMW ${Number(
-                        expense.unit_cost || 0
-                    ).toFixed(2)}
-                </td>
-
-                <td>
-                    ZMW ${Number(
-                        expense.total_amount || 0
-                    ).toFixed(2)}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        expense.supplier_name || ""
-                    )}
-                </td>
-
-            </tr>
-
+                <tr>
+                    <td>${escapeHTML(expense.expense_date || "")}</td>
+                    <td>${escapeHTML(expense.category || "")}</td>
+                    <td>${escapeHTML(expense.description || "")}</td>
+                    <td>
+                        ${escapeHTML(expense.quantity || 0)}
+                        ${escapeHTML(expense.unit || "")}
+                    </td>
+                    <td>
+                        ZMW ${Number(expense.unit_cost || 0).toFixed(2)}
+                    </td>
+                    <td>
+                        ZMW ${Number(expense.total_amount || 0).toFixed(2)}
+                    </td>
+                    <td>${escapeHTML(expense.supplier_name || "")}</td>
+                </tr>
             `;
-
         });
 
         reportWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${escapeHTML(farmName)} - Expense Report</title>
 
-        <!DOCTYPE html>
-
-        <html>
-
-        <head>
-
-            <title>
-                ${escapeHTML(
-                    farmName
-                )} - Expense Report
-            </title>
-
-            <style>
-
-                body{
-                    font-family:Arial,sans-serif;
-                    padding:30px;
-                }
-
-                h1{
-                    text-align:center;
-                    color:#1b5e20;
-                }
-
-                h2{
-                    text-align:center;
-                }
-
-                table{
-                    width:100%;
-                    border-collapse:collapse;
-                    margin-top:25px;
-                }
-
-                th{
-                    background:#2e7d32;
-                    color:white;
-                    padding:8px;
-                }
-
-                td{
-                    border:1px solid #ccc;
-                    padding:8px;
-                    text-align:center;
-                }
-
-                .summary{
-                    margin-top:20px;
-                    font-size:18px;
-                    font-weight:bold;
-                }
-
-                .print-btn{
-                    margin-top:20px;
-                    padding:10px 20px;
-                    background:#2e7d32;
-                    color:white;
-                    border:none;
-                    cursor:pointer;
-                }
-
-                @media print{
-
-                    .print-btn{
-                        display:none;
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        padding: 30px;
                     }
 
-                }
+                    h1 {
+                        text-align: center;
+                        color: #1b5e20;
+                    }
 
-            </style>
+                    h2 {
+                        text-align: center;
+                    }
 
-        </head>
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 25px;
+                    }
 
-        <body>
+                    th {
+                        background: #2e7d32;
+                        color: white;
+                        padding: 8px;
+                    }
 
-            <h1>
-                ${escapeHTML(
-                    farmName
-                )}
-            </h1>
+                    td {
+                        border: 1px solid #ccc;
+                        padding: 8px;
+                        text-align: center;
+                    }
 
-            <h2>
-                EXPENSE REPORT
-            </h2>
+                    .summary {
+                        margin-top: 20px;
+                        font-size: 18px;
+                        font-weight: bold;
+                    }
 
-            <p>
-                Generated Date:
-                ${new Date().toLocaleDateString()}
-            </p>
+                    .print-btn {
+                        margin-top: 20px;
+                        padding: 10px 20px;
+                        background: #2e7d32;
+                        color: white;
+                        border: none;
+                        cursor: pointer;
+                    }
 
-            <p>
-                Total Records:
-                ${records.length}
-            </p>
+                    @media print {
+                        .print-btn {
+                            display: none;
+                        }
+                    }
+                </style>
+            </head>
 
-            <div class="summary">
+            <body>
+                <h1>${escapeHTML(farmName)}</h1>
 
-                Total Expenses:
-                ZMW ${totalExpense.toFixed(2)}
+                <h2>EXPENSE REPORT</h2>
 
-            </div>
+                <p>
+                    Generated Date:
+                    ${new Date().toLocaleDateString()}
+                </p>
 
-            <table>
+                <p>Total Records: ${records.length}</p>
 
-                <thead>
+                <div class="summary">
+                    Total Expenses: ZMW ${totalExpense.toFixed(2)}
+                </div>
 
-                    <tr>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit Cost</th>
+                            <th>Total</th>
+                            <th>Supplier / Payee</th>
+                        </tr>
+                    </thead>
 
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Quantity</th>
-                        <th>Unit Cost</th>
-                        <th>Total</th>
-                        <th>Supplier / Payee</th>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
 
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    ${rows}
-
-                </tbody>
-
-            </table>
-
-            <button
-                class="print-btn"
-                onclick="window.print()">
-
-                Print Report
-
-            </button>
-
-        </body>
-
-        </html>
-
+                <button class="print-btn" onclick="window.print()">
+                    Print Report
+                </button>
+            </body>
+            </html>
         `);
 
         reportWindow.document.close();
 
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
-        alert(error.message);
-
+        showExpenseNotification(
+            error.message || "Unable to generate expense report.",
+            "error"
+        );
     }
-
 }
 
 
@@ -1743,110 +1490,87 @@ async function generateExpenseReport(){
 // DOWNLOAD PDF
 // =====================================
 
-async function downloadExpensesPDF(){
+async function downloadExpensesPDF() {
 
-    const farmID =
-        getFarmID();
+    const farmID = getFarmID();
 
-    if(!farmID){
+    if (!farmID) {
 
-        alert(
-            "Your account is not linked to a farm."
+        showExpenseNotification(
+            "Your account is not linked to a farm.",
+            "error"
         );
 
         return;
-
     }
 
-    try{
+    try {
 
-        const farmName =
-            await getRegisteredFarmName();
+        const farmName = await getRegisteredFarmName();
 
-        const {data,error} =
-            await supabaseClient
+        const { data, error } = await supabaseClient
+            .from("expenses_records")
+            .select("*")
+            .eq("farm_id", farmID)
+            .order("id", { ascending: false });
 
-                .from("expenses_records")
+        if (error) throw error;
 
-                .select("*")
+        const records = data || [];
 
-                .eq(
-                    "farm_id",
-                    farmID
-                )
+        if (records.length === 0) {
 
-                .order(
-                    "id",
-                    {ascending:false}
-                );
-
-        if(error) throw error;
-
-        const records =
-            data || [];
-
-        if(records.length === 0){
-
-            alert(
-                "There are no expense records to download."
+            showExpenseNotification(
+                "There are no expense records to download.",
+                "warning"
             );
 
             return;
-
         }
 
-        const {
-            jsPDF
-        } = window.jspdf;
+        if (
+            !window.jspdf ||
+            typeof window.jspdf.jsPDF !== "function"
+        ) {
 
-        const doc =
-            new jsPDF({
+            throw new Error(
+                "PDF library is unavailable. Please check the jsPDF script."
+            );
+        }
 
-                orientation:"landscape",
-                unit:"mm",
-                format:"a4"
+        const { jsPDF } = window.jspdf;
 
-            });
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: "a4"
+        });
 
-        const loggedUser =
-            getLoggedUser();
+        const loggedUser = getLoggedUser();
 
         let totalExpense = 0;
         let totalQuantity = 0;
 
-        records.forEach(function(expense){
+        records.forEach(function (expense) {
 
-            totalExpense +=
-                Number(
-                    expense.total_amount || 0
-                );
+            totalExpense += Number(expense.total_amount || 0);
 
-            totalQuantity +=
-                Number(
-                    expense.quantity || 0
-                );
+            totalQuantity += Number(expense.quantity || 0);
 
         });
 
 
-        // =====================================
         // PDF HEADER
-        // =====================================
 
         doc.setFontSize(18);
 
-        doc.setFont(
-            undefined,
-            "bold"
-        );
+        doc.setFont(undefined, "bold");
 
         doc.text(
             farmName,
             148,
             15,
-            {
-                align:"center"
-            }
+            { align: "center" }
         );
 
         doc.setFontSize(13);
@@ -1855,112 +1579,79 @@ async function downloadExpensesPDF(){
             "EXPENSE RECORDS REPORT",
             148,
             23,
-            {
-                align:"center"
-            }
+            { align: "center" }
         );
 
         doc.setFontSize(9);
 
-        doc.setFont(
-            undefined,
-            "normal"
-        );
+        doc.setFont(undefined, "normal");
+
+        doc.text("Farm: " + farmName, 14, 32);
 
         doc.text(
-            "Farm: " +
-            farmName,
-            14,
-            32
-        );
-
-        doc.text(
-            "Generated By: " +
-            (
-                loggedUser?.full_name ||
-                ""
-            ),
+            "Generated By: " + (loggedUser?.full_name || ""),
             14,
             38
         );
 
         doc.text(
-            "Generated: " +
-            new Date().toLocaleString(),
+            "Generated: " + new Date().toLocaleString(),
             200,
             32
         );
 
         doc.text(
-            "Total Records: " +
-            records.length,
+            "Total Records: " + records.length,
             200,
             38
         );
 
 
-        // =====================================
         // SUMMARY
-        // =====================================
 
         doc.setFontSize(10);
 
         doc.text(
-            "Total Quantity: " +
-            totalQuantity,
+            "Total Quantity: " + totalQuantity,
             14,
             48
         );
 
         doc.text(
-            "TOTAL EXPENSES: ZMW " +
-            totalExpense.toFixed(2),
+            "TOTAL EXPENSES: ZMW " + totalExpense.toFixed(2),
             200,
             48
         );
 
 
-        // =====================================
         // TABLE
-        // =====================================
 
-        const rows =
-            records.map(function(expense){
+        const rows = records.map(function (expense) {
 
-                return [
+            return [
+                expense.expense_date || "",
+                expense.category || "",
+                expense.description || "",
+                `${expense.quantity || 0} ${expense.unit || ""}`,
+                "ZMW " + Number(expense.unit_cost || 0).toFixed(2),
+                "ZMW " + Number(expense.total_amount || 0).toFixed(2),
+                expense.supplier_name || "",
+                expense.payment_method || ""
+            ];
+        });
 
-                    expense.expense_date || "",
+        if (typeof doc.autoTable !== "function") {
 
-                    expense.category || "",
-
-                    expense.description || "",
-
-                    `${expense.quantity || 0} ${expense.unit || ""}`,
-
-                    "ZMW " +
-                    Number(
-                        expense.unit_cost || 0
-                    ).toFixed(2),
-
-                    "ZMW " +
-                    Number(
-                        expense.total_amount || 0
-                    ).toFixed(2),
-
-                    expense.supplier_name || "",
-
-                    expense.payment_method || ""
-
-                ];
-
-            });
-
+            throw new Error(
+                "PDF table library is unavailable. Please check the AutoTable script."
+            );
+        }
 
         doc.autoTable({
 
-            startY:55,
+            startY: 55,
 
-            head:[[
+            head: [[
                 "Date",
                 "Category",
                 "Description",
@@ -1971,76 +1662,42 @@ async function downloadExpensesPDF(){
                 "Payment"
             ]],
 
-            body:rows,
+            body: rows,
 
-            theme:"grid",
+            theme: "grid",
 
-            styles:{
-
-                fontSize:7,
-                cellPadding:2
-
+            styles: {
+                fontSize: 7,
+                cellPadding: 2
             },
 
-            headStyles:{
-
-                fontStyle:"bold"
-
+            headStyles: {
+                fontStyle: "bold"
             },
 
-            columnStyles:{
-
-                0:{
-                    cellWidth:23
-                },
-
-                1:{
-                    cellWidth:30
-                },
-
-                2:{
-                    cellWidth:45
-                },
-
-                3:{
-                    cellWidth:25
-                },
-
-                4:{
-                    cellWidth:27
-                },
-
-                5:{
-                    cellWidth:28
-                },
-
-                6:{
-                    cellWidth:45
-                },
-
-                7:{
-                    cellWidth:27
-                }
-
+            columnStyles: {
+                0: { cellWidth: 23 },
+                1: { cellWidth: 30 },
+                2: { cellWidth: 45 },
+                3: { cellWidth: 25 },
+                4: { cellWidth: 27 },
+                5: { cellWidth: 28 },
+                6: { cellWidth: 45 },
+                7: { cellWidth: 27 }
             },
 
-            foot:[[
-
+            foot: [[
                 "",
                 "",
                 "",
                 "",
                 "TOTAL",
-
-                "ZMW " +
-                totalExpense.toFixed(2),
-
+                "ZMW " + totalExpense.toFixed(2),
                 "",
                 ""
-
             ]],
 
-            didDrawPage:function(){
+            didDrawPage: function () {
 
                 const pageNumber =
                     doc.internal.getNumberOfPages();
@@ -2048,75 +1705,44 @@ async function downloadExpensesPDF(){
                 doc.setFontSize(8);
 
                 doc.text(
-
-                    farmName +
-                    " - Expense Report | Page " +
-                    pageNumber,
-
+                    farmName + " - Expense Report | Page " + pageNumber,
                     148,
                     202,
-
-                    {
-                        align:"center"
-                    }
-
+                    { align: "center" }
                 );
-
             }
-
         });
 
 
-        // =====================================
         // SAVE PDF
-        // =====================================
 
-        const today =
-            new Date()
-                .toISOString()
-                .split("T")[0];
+        const today = new Date()
+            .toISOString()
+            .split("T")[0];
 
-
-        const safeFarmName =
-            farmName
-
-                .replace(
-                    /[^a-z0-9]/gi,
-                    "_"
-                )
-
-                .replace(
-                    /_+/g,
-                    "_"
-                )
-
-                .replace(
-                    /^_|_$/g,
-                    ""
-                );
-
+        const safeFarmName = farmName
+            .replace(/[^a-z0-9]/gi, "_")
+            .replace(/_+/g, "_")
+            .replace(/^_|_$/g, "");
 
         doc.save(
-
-            safeFarmName +
-            "_Expense_Report_" +
-            today +
-            ".pdf"
-
+            safeFarmName + "_Expense_Report_" + today + ".pdf"
         );
 
+        showExpenseNotification(
+            "Expense report PDF downloaded successfully.",
+            "success"
+        );
 
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
-        alert(
-            "Unable to generate PDF: " +
-            error.message
+        showExpenseNotification(
+            "Unable to generate PDF: " + error.message,
+            "error"
         );
-
     }
-
 }
 
 
@@ -2124,58 +1750,36 @@ async function downloadExpensesPDF(){
 // CLEAR FORM
 // =====================================
 
-function clearExpenseForm(){
+function clearExpenseForm() {
 
     editID = null;
 
-    document
-        .getElementById(
-            "expensesForm"
-        )
-        .reset();
+    document.getElementById("expensesForm").reset();
 
-    document.getElementById(
-        "expenseID"
-    ).value = "";
+    document.getElementById("expenseID").value = "";
 
-    document.getElementById(
-        "description"
-    ).innerHTML = `
-
+    document.getElementById("description").innerHTML = `
         <option value="">
             Select Expense Category First
         </option>
-
     `;
 
-    document.getElementById(
-        "remarks"
-    ).innerHTML = `
-
+    document.getElementById("remarks").innerHTML = `
         <option value="">
             Select Expense Category First
         </option>
-
     `;
 
-    document.getElementById(
-        "totalAmount"
-    ).value = "";
+    document.getElementById("totalAmount").value = "";
 
-    const dateField =
-        document.getElementById(
-            "expenseDate"
-        );
+    const dateField = document.getElementById("expenseDate");
 
-    if(dateField){
+    if (dateField) {
 
-        dateField.value =
-            new Date()
-                .toISOString()
-                .split("T")[0];
-
+        dateField.value = new Date()
+            .toISOString()
+            .split("T")[0];
     }
-
 }
 
 
@@ -2183,67 +1787,49 @@ function clearExpenseForm(){
 // TOTAL EXPENSES
 // =====================================
 
-async function calculateTotalExpenses(){
+async function calculateTotalExpenses() {
 
-    const farmID =
-        getFarmID();
+    const farmID = getFarmID();
 
-    if(!farmID){
+    if (!farmID) {
 
-        alert(
-            "Your account is not linked to a farm."
+        showExpenseNotification(
+            "Your account is not linked to a farm.",
+            "error"
         );
 
         return;
-
     }
 
-    try{
+    try {
 
-        const {data,error} =
-            await supabaseClient
+        const { data, error } = await supabaseClient
+            .from("expenses_records")
+            .select("total_amount")
+            .eq("farm_id", farmID);
 
-                .from("expenses_records")
-
-                .select("total_amount")
-
-                .eq(
-                    "farm_id",
-                    farmID
-                );
-
-        if(error) throw error;
+        if (error) throw error;
 
         let total = 0;
 
-        (data || []).forEach(
-            function(expense){
+        (data || []).forEach(function (expense) {
 
-                total +=
-                    Number(
-                        expense.total_amount || 0
-                    );
+            total += Number(expense.total_amount || 0);
 
-            }
+        });
+
+        showExpenseNotification(
+            "Total Expenses: ZMW " + total.toFixed(2),
+            "info"
         );
 
-        const farmName =
-            await getRegisteredFarmName();
-
-        alert(
-
-            farmName +
-            "\n\nTotal Expenses: ZMW " +
-            total.toFixed(2)
-
-        );
-
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
-        alert(error.message);
-
+        showExpenseNotification(
+            error.message || "Unable to calculate total expenses.",
+            "error"
+        );
     }
-
 }
