@@ -2,6 +2,7 @@
 // MUNKA PIGGERY TECHNOLOGY
 // PIG REGISTRATION MODULE
 // MULTI-FARM + PERMISSION-CONTROLLED VERSION
+// CATEGORY-BASED LIVESTOCK REGISTRATION
 // FARM NAME FIRST PRINT & PDF VERSION
 // ==========================================================
 
@@ -12,19 +13,14 @@ let editID = null;
 // GET LOGGED-IN USER
 // ==========================================================
 
-function getLoggedUser(){
+function getLoggedUser() {
 
-    const user =
-        JSON.parse(
-            localStorage.getItem("loggedInUser")
-        );
+    const user = JSON.parse(
+        localStorage.getItem("loggedInUser")
+    );
 
-    if(!user){
-
-        alert(
-            "No logged-in user found. Please login again."
-        );
-
+    if (!user) {
+        alert("No logged-in user found. Please login again.");
         return null;
     }
 
@@ -36,15 +32,13 @@ function getLoggedUser(){
 // GET FARM ID
 // ==========================================================
 
-function getFarmID(){
+function getFarmID() {
 
     const user = getLoggedUser();
 
-    if(!user){
-        return null;
-    }
+    if (!user) return null;
 
-    if(!user.farm_id){
+    if (!user.farm_id) {
 
         alert(
             "Your account is not connected to a farm. " +
@@ -62,63 +56,57 @@ function getFarmID(){
 // GET REGISTERED FARM NAME
 // ==========================================================
 
-async function getRegisteredFarmName(){
+async function getRegisteredFarmName() {
 
-    const farmID =
-        getFarmID();
+    const farmID = getFarmID();
 
-    if(!farmID){
-        return "REGISTERED FARM";
-    }
+    if (!farmID) return "REGISTERED FARM";
 
-    try{
+    try {
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
+        const { data, error } = await supabaseClient
+            .from("farms")
+            .select("farm_name")
+            .eq("id", farmID)
+            .maybeSingle();
 
-                .from("farms")
+        if (error) throw error;
 
-                .select("farm_name")
-
-                .eq(
-                    "id",
-                    farmID
-                )
-
-                .maybeSingle();
-
-
-        if(error){
-            throw error;
-        }
-
-
-        if(
-            data &&
-            data.farm_name
-        ){
-
+        if (data && data.farm_name) {
             return data.farm_name;
-
         }
 
+    } catch (error) {
+
+        console.error("GET FARM NAME ERROR:", error);
 
     }
-    catch(error){
-
-        console.error(
-            "GET FARM NAME ERROR:",
-            error
-        );
-
-    }
-
 
     return "REGISTERED FARM";
+}
 
+
+// ==========================================================
+// SAFE HTML DISPLAY
+// ==========================================================
+
+function escapePigHTML(value) {
+
+    return String(value ?? "").replace(
+        /[&<>"']/g,
+        function (character) {
+
+            const replacements = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            };
+
+            return replacements[character];
+        }
+    );
 }
 
 
@@ -127,24 +115,21 @@ async function getRegisteredFarmName(){
 // ==========================================================
 
 document
-.getElementById("pigForm")
-.addEventListener(
-    "submit",
-    async function(e){
+    .getElementById("pigForm")
+    .addEventListener("submit", async function (e) {
 
         e.preventDefault();
 
-
-        // ==================================================
+        // ================================================
         // PERMISSIONS
-        // ==================================================
+        // ================================================
 
-        if(editID === null){
+        if (editID === null) {
 
-            if(
+            if (
                 typeof canAdd !== "function" ||
                 !canAdd("Pig Registration")
-            ){
+            ) {
 
                 alert(
                     "Access Denied.\n\n" +
@@ -154,14 +139,12 @@ document
                 return;
             }
 
-        }
+        } else {
 
-        else{
-
-            if(
+            if (
                 typeof canEdit !== "function" ||
                 !canEdit("Pig Registration")
-            ){
+            ) {
 
                 alert(
                     "Access Denied.\n\n" +
@@ -172,116 +155,89 @@ document
             }
         }
 
+        // ================================================
+        // USER AND FARM
+        // ================================================
 
-        // ==================================================
-        // LOGGED-IN USER
-        // ==================================================
+        const loggedUser = getLoggedUser();
 
-        const loggedUser =
-            getLoggedUser();
+        if (!loggedUser) return;
 
-        if(!loggedUser){
+        const farmID = getFarmID();
+
+        if (!farmID) return;
+
+        // ================================================
+        // READ FORM
+        // ================================================
+
+        const pigID = document
+            .getElementById("pigID")
+            .value
+            .trim();
+
+        const category = document
+            .getElementById("category")
+            .value;
+
+        if (!category) {
+            alert("Please select a pig category.");
             return;
         }
 
-
-        // ==================================================
-        // FARM ID
-        // ==================================================
-
-        const farmID =
-            getFarmID();
-
-        if(!farmID){
-            return;
-        }
-
-
-        // ==================================================
-        // PREPARE PIG DATA
-        // ==================================================
+        // ================================================
+        // PREPARE DATABASE RECORD
+        // ================================================
 
         const pig = {
 
-            pig_id:
-                document
-                .getElementById("pigID")
-                .value
-                .trim(),
+            pig_id: pigID,
 
-            breed:
-                document
+            breed: document
                 .getElementById("breed")
                 .value,
 
-            sex:
-                document
-                .getElementById("sex")
-                .value,
+            category: category,
 
-            farrow_date:
-                document
+            farrow_date: document
                 .getElementById("farrowDate")
                 .value,
 
-            source:
-                document
+            source: document
                 .getElementById("source")
                 .value
                 .trim(),
 
-            weight:
-                Number(
-                    document
+            weight: Number(
+                document
                     .getElementById("weight")
                     .value
-                ),
+            ),
 
-            health_status:
-                document
+            health_status: document
                 .getElementById("healthStatus")
-                .value,
+                .value
 
-            created_by:
-                loggedUser.full_name,
-
-            updated_by:
-                null,
-
-            updated_at:
-                null,
-
-            farm_id:
-                farmID
         };
 
+        try {
 
-        try{
+            // ============================================
+            // ADD NEW PIG
+            // ============================================
 
-            // ==================================================
-            // ADD NEW RECORD
-            // ==================================================
+            if (editID === null) {
 
-            if(editID === null){
+                pig.created_by = loggedUser.full_name;
+                pig.updated_by = null;
+                pig.updated_at = null;
+                pig.farm_id = farmID;
 
-                const {
-                    error
-                } =
-                    await supabaseClient
+                const { error } = await supabaseClient
+                    .from("pigs")
+                    .insert([pig]);
 
-                        .from("pigs")
-
-                        .insert([pig]);
-
-
-                if(error){
-                    throw error;
-                }
-
-
-                // ==========================================
-                // ACTIVITY LOG
-                // ==========================================
+                if (error) throw error;
 
                 await saveActivity(
 
@@ -295,63 +251,33 @@ document
                     "Pig Registration",
 
                     "Registered Pig ID: " +
-                    pig.pig_id
+                    pig.pig_id +
+                    "; Category: " +
+                    pig.category
 
                 );
 
-
-                alert(
-                    "Pig record saved successfully."
-                );
+                alert("Pig record saved successfully.");
 
             }
 
+            // ============================================
+            // UPDATE EXISTING PIG
+            // ============================================
 
-            // ==================================================
-            // UPDATE EXISTING RECORD
-            // ==================================================
+            else {
 
-            else{
+                pig.updated_by = loggedUser.full_name;
+                pig.updated_at = new Date().toISOString();
 
-                pig.updated_by =
-                    loggedUser.full_name;
+                // Do not change farm ownership or creator.
+                const { error } = await supabaseClient
+                    .from("pigs")
+                    .update(pig)
+                    .eq("id", editID)
+                    .eq("farm_id", farmID);
 
-                pig.updated_at =
-                    new Date().toISOString();
-
-
-                // Do not allow farm_id to be changed
-                delete pig.farm_id;
-
-
-                const {
-                    error
-                } =
-                    await supabaseClient
-
-                        .from("pigs")
-
-                        .update(pig)
-
-                        .eq(
-                            "id",
-                            editID
-                        )
-
-                        .eq(
-                            "farm_id",
-                            farmID
-                        );
-
-
-                if(error){
-                    throw error;
-                }
-
-
-                // ==========================================
-                // ACTIVITY LOG
-                // ==========================================
+                if (error) throw error;
 
                 await saveActivity(
 
@@ -365,104 +291,80 @@ document
                     "Pig Registration",
 
                     "Updated Pig ID: " +
-                    pig.pig_id
+                    pig.pig_id +
+                    "; Category: " +
+                    pig.category
 
                 );
 
+                alert("Pig record updated successfully.");
 
-                alert(
-                    "Pig record updated successfully."
-                );
-
-
-                editID = null;
             }
-
 
             clearForm();
 
-            loadPigs();
+            await loadPigs();
 
-        }
+        } catch (error) {
 
-
-        catch(error){
-
-            console.error(
-                "SAVE / UPDATE PIG ERROR:",
-                error
-            );
+            console.error("SAVE / UPDATE PIG ERROR:", error);
 
             alert(
+                "Unable to save the pig record.\n\n" +
                 error.message
             );
+
         }
 
-    }
-);
+    });
 
 
 // ==========================================================
 // LOAD PIG RECORDS
 // ==========================================================
 
-async function loadPigs(){
+async function loadPigs() {
 
-    const farmID =
-        getFarmID();
+    if (
+        typeof canView !== "function" ||
+        !canView("Pig Registration")
+    ) {
 
-    if(!farmID){
+        const table = document.getElementById("pigTable");
+
+        if (table) {
+            table.innerHTML =
+                '<tr><td colspan="8">You do not have permission to view pig records.</td></tr>';
+        }
+
         return;
     }
 
+    const farmID = getFarmID();
 
-    try{
+    if (!farmID) return;
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
+    try {
 
-                .from("pigs")
+        const { data, error } = await supabaseClient
+            .from("pigs")
+            .select("*")
+            .eq("farm_id", farmID)
+            .order("id", { ascending: true });
 
-                .select("*")
+        if (error) throw error;
 
-                .eq(
-                    "farm_id",
-                    farmID
-                )
+        displayPigs(data || []);
 
-                .order(
-                    "id",
-                    {
-                        ascending:true
-                    }
-                );
+    } catch (error) {
 
-
-        if(error){
-            throw error;
-        }
-
-
-        displayPigs(
-            data || []
-        );
-
-    }
-
-
-    catch(error){
-
-        console.error(
-            "LOAD PIGS ERROR:",
-            error
-        );
+        console.error("LOAD PIGS ERROR:", error);
 
         alert(
+            "Unable to load pig records.\n\n" +
             error.message
         );
+
     }
 
 }
@@ -472,129 +374,103 @@ async function loadPigs(){
 // DISPLAY PIG RECORDS
 // ==========================================================
 
-function displayPigs(records){
+function displayPigs(records) {
 
-    const table =
-        document.getElementById(
-            "pigTable"
-        );
+    const table = document.getElementById("pigTable");
 
-
-    if(!table){
-        return;
-    }
-
+    if (!table) return;
 
     table.innerHTML = "";
 
+    if (!records.length) {
 
-    records.forEach(
-        function(pig){
+        table.innerHTML =
+            '<tr><td colspan="8">No pig records found.</td></tr>';
 
-            let actionButtons = "";
+        return;
+    }
 
+    records.forEach(function (pig) {
 
-            // ==================================================
-            // EDIT BUTTON
-            // ==================================================
+        let actionButtons = "";
 
-            if(
-                typeof canEdit === "function" &&
-                canEdit("Pig Registration")
-            ){
+        // ================================================
+        // EDIT BUTTON
+        // ================================================
 
-                actionButtons += `
+        if (
+            typeof canEdit === "function" &&
+            canEdit("Pig Registration")
+        ) {
 
-                    <button
-                        type="button"
-                        onclick="editPig(${pig.id})">
-
-                        ✏️ Edit
-
-                    </button>
-
-                `;
-            }
-
-
-            // ==================================================
-            // DELETE BUTTON
-            // ==================================================
-
-            if(
-                typeof canDelete === "function" &&
-                canDelete("Pig Registration")
-            ){
-
-                actionButtons += `
-
-                    <button
-                        type="button"
-                        onclick="deletePig(${pig.id}, '${pig.pig_id}')">
-
-                        🗑️ Delete
-
-                    </button>
-
-                `;
-            }
-
-
-            if(!actionButtons){
-
-                actionButtons =
-                    "<span>No actions</span>";
-
-            }
-
-
-            // ==================================================
-            // TABLE ROW
-            // ==================================================
-
-            table.innerHTML += `
-
-                <tr>
-
-                    <td>
-                        ${pig.pig_id || ""}
-                    </td>
-
-                    <td>
-                        ${pig.breed || ""}
-                    </td>
-
-                    <td>
-                        ${pig.sex || ""}
-                    </td>
-
-                    <td>
-                        ${pig.farrow_date || ""}
-                    </td>
-
-                    <td>
-                        ${pig.source || ""}
-                    </td>
-
-                    <td>
-                        ${pig.weight || ""}
-                        ${pig.weight ? "Kg" : ""}
-                    </td>
-
-                    <td>
-                        ${pig.health_status || ""}
-                    </td>
-
-                    <td>
-                        ${actionButtons}
-                    </td>
-
-                </tr>
-
+            actionButtons += `
+                <button
+                    type="button"
+                    onclick="editPig(${Number(pig.id)})">
+                    ✏️ Edit
+                </button>
             `;
 
         }
-    );
+
+        // ================================================
+        // DELETE BUTTON
+        // ================================================
+
+        if (
+            typeof canDelete === "function" &&
+            canDelete("Pig Registration")
+        ) {
+
+            actionButtons += `
+                <button
+                    type="button"
+                    onclick="deletePig(${Number(pig.id)})">
+                    🗑️ Delete
+                </button>
+            `;
+
+        }
+
+        if (!actionButtons) {
+            actionButtons = "<span>No actions</span>";
+        }
+
+        // ================================================
+        // TABLE ROW
+        // ================================================
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+
+            <td>${escapePigHTML(pig.pig_id)}</td>
+
+            <td>${escapePigHTML(pig.breed)}</td>
+
+            <td>${escapePigHTML(pig.category || "Not assigned")}</td>
+
+            <td>${escapePigHTML(pig.farrow_date)}</td>
+
+            <td>${escapePigHTML(pig.source)}</td>
+
+            <td>
+                ${
+                    pig.weight !== null && pig.weight !== undefined
+                        ? escapePigHTML(pig.weight) + " Kg"
+                        : ""
+                }
+            </td>
+
+            <td>${escapePigHTML(pig.health_status)}</td>
+
+            <td>${actionButtons}</td>
+
+        `;
+
+        table.appendChild(row);
+
+    });
 
 }
 
@@ -603,12 +479,12 @@ function displayPigs(records){
 // EDIT PIG RECORD
 // ==========================================================
 
-async function editPig(id){
+async function editPig(id) {
 
-    if(
+    if (
         typeof canEdit !== "function" ||
         !canEdit("Pig Registration")
-    ){
+    ) {
 
         alert(
             "Access Denied.\n\n" +
@@ -618,108 +494,68 @@ async function editPig(id){
         return;
     }
 
+    const farmID = getFarmID();
 
-    const farmID =
-        getFarmID();
+    if (!farmID) return;
 
-    if(!farmID){
-        return;
-    }
+    try {
 
+        const { data, error } = await supabaseClient
+            .from("pigs")
+            .select("*")
+            .eq("id", id)
+            .eq("farm_id", farmID)
+            .single();
 
-    try{
+        if (error) throw error;
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-
-                .from("pigs")
-
-                .select("*")
-
-                .eq(
-                    "id",
-                    id
-                )
-
-                .eq(
-                    "farm_id",
-                    farmID
-                )
-
-                .single();
-
-
-        if(error){
-            throw error;
-        }
-
-
-        document
-            .getElementById("pigID")
-            .value =
+        document.getElementById("pigID").value =
             data.pig_id || "";
 
-
-        document
-            .getElementById("breed")
-            .value =
+        document.getElementById("breed").value =
             data.breed || "";
 
+        document.getElementById("category").value =
+            data.category || "";
 
-        document
-            .getElementById("sex")
-            .value =
-            data.sex || "";
-
-
-        document
-            .getElementById("farrowDate")
-            .value =
+        document.getElementById("farrowDate").value =
             data.farrow_date || "";
 
-
-        document
-            .getElementById("source")
-            .value =
+        document.getElementById("source").value =
             data.source || "";
 
+        document.getElementById("weight").value =
+            data.weight !== null && data.weight !== undefined
+                ? String(data.weight)
+                : "";
 
-        document
-            .getElementById("weight")
-            .value =
-            data.weight || "";
-
-
-        document
-            .getElementById("healthStatus")
-            .value =
+        document.getElementById("healthStatus").value =
             data.health_status || "";
-
 
         editID = id;
 
+        const submitButton = document.querySelector(
+            '#pigForm button[type="submit"]'
+        );
+
+        if (submitButton) {
+            submitButton.textContent = "💾 Update Pig Record";
+        }
 
         window.scrollTo({
             top: 0,
             behavior: "smooth"
         });
 
-    }
+    } catch (error) {
 
-
-    catch(error){
-
-        console.error(
-            "EDIT PIG ERROR:",
-            error
-        );
+        console.error("EDIT PIG ERROR:", error);
 
         alert(
+            "Unable to open pig record.\n\n" +
             error.message
         );
+
     }
 
 }
@@ -729,15 +565,12 @@ async function editPig(id){
 // DELETE PIG RECORD
 // ==========================================================
 
-async function deletePig(
-    id,
-    pigID
-){
+async function deletePig(id) {
 
-    if(
+    if (
         typeof canDelete !== "function" ||
         !canDelete("Pig Registration")
-    ){
+    ) {
 
         alert(
             "Access Denied.\n\n" +
@@ -747,66 +580,40 @@ async function deletePig(
         return;
     }
 
+    const farmID = getFarmID();
 
-    const confirmDelete =
-        confirm(
-            "Delete Pig ID: " +
-            (pigID || id) +
-            "?"
+    if (!farmID) return;
+
+    const loggedUser = getLoggedUser();
+
+    if (!loggedUser) return;
+
+    try {
+
+        // Get the pig ID for confirmation and activity log.
+        const { data: pig, error: fetchError } =
+            await supabaseClient
+                .from("pigs")
+                .select("pig_id")
+                .eq("id", id)
+                .eq("farm_id", farmID)
+                .single();
+
+        if (fetchError) throw fetchError;
+
+        const confirmDelete = confirm(
+            "Delete Pig ID: " + (pig.pig_id || id) + "?"
         );
 
+        if (!confirmDelete) return;
 
-    if(!confirmDelete){
-        return;
-    }
+        const { error } = await supabaseClient
+            .from("pigs")
+            .delete()
+            .eq("id", id)
+            .eq("farm_id", farmID);
 
-
-    const loggedUser =
-        getLoggedUser();
-
-    if(!loggedUser){
-        return;
-    }
-
-
-    const farmID =
-        getFarmID();
-
-    if(!farmID){
-        return;
-    }
-
-
-    try{
-
-        const {
-            error
-        } =
-            await supabaseClient
-
-                .from("pigs")
-
-                .delete()
-
-                .eq(
-                    "id",
-                    id
-                )
-
-                .eq(
-                    "farm_id",
-                    farmID
-                );
-
-
-        if(error){
-            throw error;
-        }
-
-
-        // ==================================================
-        // ACTIVITY LOG
-        // ==================================================
+        if (error) throw error;
 
         await saveActivity(
 
@@ -819,32 +626,23 @@ async function deletePig(
 
             "Pig Registration",
 
-            "Deleted Pig ID: " +
-            (pigID || id)
+            "Deleted Pig ID: " + (pig.pig_id || id)
 
         );
 
+        alert("Pig record deleted successfully.");
+
+        await loadPigs();
+
+    } catch (error) {
+
+        console.error("DELETE PIG ERROR:", error);
 
         alert(
-            "Pig record deleted successfully."
-        );
-
-
-        loadPigs();
-
-    }
-
-
-    catch(error){
-
-        console.error(
-            "DELETE PIG ERROR:",
-            error
-        );
-
-        alert(
+            "Unable to delete pig record.\n\n" +
             error.message
         );
+
     }
 
 }
@@ -852,14 +650,15 @@ async function deletePig(
 
 // ==========================================================
 // SEARCH PIG RECORDS
+// Searches Pig ID, Breed and Category
 // ==========================================================
 
-async function searchPig(){
+async function searchPig() {
 
-    if(
+    if (
         typeof canView !== "function" ||
         !canView("Pig Registration")
-    ){
+    ) {
 
         alert(
             "Access Denied.\n\n" +
@@ -869,81 +668,54 @@ async function searchPig(){
         return;
     }
 
+    const farmID = getFarmID();
 
-    const farmID =
-        getFarmID();
+    if (!farmID) return;
 
-    if(!farmID){
-        return;
-    }
+    const keyword = document
+        .getElementById("searchPig")
+        .value
+        .trim();
 
+    try {
 
-    const keyword =
-        document
-            .getElementById("searchPig")
-            .value
-            .trim();
+        let query = supabaseClient
+            .from("pigs")
+            .select("*")
+            .eq("farm_id", farmID);
 
+        if (keyword) {
 
-    try{
-
-        let query =
-            supabaseClient
-
-                .from("pigs")
-
-                .select("*")
-
-                .eq(
-                    "farm_id",
-                    farmID
-                );
-
-
-        if(keyword){
-
-            query =
-                query.or(
-                    `pig_id.ilike.%${keyword}%,breed.ilike.%${keyword}%`
-                );
-
-        }
-
-
-        const {
-            data,
-            error
-        } =
-            await query.order(
-                "id",
-                {
-                    ascending:true
-                }
+            // Escape PostgREST filter punctuation.
+            const safeKeyword = keyword.replace(
+                /[%_,().]/g,
+                " "
             );
 
+            query = query.or(
+                "pig_id.ilike.%" + safeKeyword + "%," +
+                "breed.ilike.%" + safeKeyword + "%," +
+                "category.ilike.%" + safeKeyword + "%"
+            );
 
-        if(error){
-            throw error;
         }
 
+        const { data, error } = await query
+            .order("id", { ascending: true });
 
-        displayPigs(
-            data || []
-        );
+        if (error) throw error;
 
-    }
+        displayPigs(data || []);
 
+    } catch (error) {
 
-    catch(error){
-
-        console.error(
-            "SEARCH PIG ERROR:",
-            error
-        );
+        console.error("SEARCH PIG ERROR:", error);
 
         alert(
+            "Unable to search pig records.\n\n" +
             error.message
         );
+
     }
 
 }
@@ -953,34 +725,37 @@ async function searchPig(){
 // CLEAR FORM
 // ==========================================================
 
-function clearForm(){
+function clearForm() {
 
-    const form =
-        document.getElementById(
-            "pigForm"
-        );
+    const form = document.getElementById("pigForm");
 
-
-    if(form){
+    if (form) {
         form.reset();
     }
 
-
     editID = null;
+
+    const submitButton = document.querySelector(
+        '#pigForm button[type="submit"]'
+    );
+
+    if (submitButton) {
+        submitButton.textContent = "💾 Save Pig Record";
+    }
 
 }
 
 
 // ==========================================================
-// GENERATE REPORT
+// GENERATE CATEGORY REPORT
 // ==========================================================
 
-async function generateReport(){
+async function generateReport() {
 
-    if(
+    if (
         typeof canReport !== "function" ||
         !canReport("Pig Registration")
-    ){
+    ) {
 
         alert(
             "Access Denied.\n\n" +
@@ -990,63 +765,90 @@ async function generateReport(){
         return;
     }
 
+    const farmID = getFarmID();
 
-    const farmID =
-        getFarmID();
+    if (!farmID) return;
 
-    if(!farmID){
-        return;
-    }
+    try {
 
+        const { data, error } = await supabaseClient
+            .from("pigs")
+            .select("category")
+            .eq("farm_id", farmID);
 
-    try{
+        if (error) throw error;
 
-        const {
-            count,
-            error
-        } =
-            await supabaseClient
+        const records = data || [];
 
-                .from("pigs")
+        const counts = {
+            "Piglet": 0,
+            "Weaner": 0,
+            "Grower": 0,
+            "Boar": 0,
+            "Sow": 0,
+            "Pregnant Sow": 0,
+            "Lactating Sow": 0,
+            "Unassigned": 0
+        };
 
-                .select(
-                    "*",
-                    {
-                        count:"exact",
-                        head:true
-                    }
-                )
+        records.forEach(function (pig) {
 
-                .eq(
-                    "farm_id",
-                    farmID
-                );
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    counts,
+                    pig.category
+                ) &&
+                pig.category !== "Unassigned"
+            ) {
 
+                counts[pig.category]++;
 
-        if(error){
-            throw error;
-        }
+            } else {
 
+                counts["Unassigned"]++;
 
-        alert(
-            "Pig Registration Report\n\n" +
-            "Total Registered Pigs: " +
-            (count || 0)
-        );
+            }
 
-    }
+        });
 
-
-    catch(error){
-
-        console.error(
-            "PIG REPORT ERROR:",
-            error
-        );
+        const totalSows =
+            counts["Sow"] +
+            counts["Pregnant Sow"] +
+            counts["Lactating Sow"];
 
         alert(
+
+            "PIG REGISTRATION REPORT\n\n" +
+
+            "Total Registered Pigs: " + records.length + "\n\n" +
+
+            "Piglets: " + counts["Piglet"] + "\n" +
+
+            "Weaners: " + counts["Weaner"] + "\n" +
+
+            "Growers: " + counts["Grower"] + "\n" +
+
+            "Boars: " + counts["Boar"] + "\n" +
+
+            "Total Sows: " + totalSows + "\n" +
+
+            "Pregnant Sows: " + counts["Pregnant Sow"] + "\n" +
+
+            "Lactating Sows: " + counts["Lactating Sow"] + "\n" +
+
+            "Category Not Assigned: " + counts["Unassigned"]
+
+        );
+
+    } catch (error) {
+
+        console.error("PIG REPORT ERROR:", error);
+
+        alert(
+            "Unable to generate pig report.\n\n" +
             error.message
         );
+
     }
 
 }
@@ -1054,15 +856,15 @@ async function generateReport(){
 
 // ==========================================================
 // PRINT REPORT
-// FARM NAME ONLY IN THE PRINTED HEADER
+// Uses the existing page print layout.
 // ==========================================================
 
-async function printReport(){
+async function printReport() {
 
-    if(
+    if (
         typeof canReport !== "function" ||
         !canReport("Pig Registration")
-    ){
+    ) {
 
         alert(
             "Access Denied.\n\n" +
@@ -1072,309 +874,120 @@ async function printReport(){
         return;
     }
 
+    try {
 
-    try{
+        const farmName = await getRegisteredFarmName();
 
-        // ==================================================
-        // GET REGISTERED FARM NAME
-        // ==================================================
+        const pageHeader = document.querySelector(".page-header");
 
-        const farmName =
-            await getRegisteredFarmName();
-
-
-        // ==================================================
-        // FIND HEADER ELEMENTS
-        // ==================================================
-
-        const pageHeader =
-            document.querySelector(
-                ".page-header"
-            );
-
-
-        if(!pageHeader){
-
+        if (!pageHeader) {
             window.print();
-
             return;
         }
 
-
         const softwareBrand =
-            pageHeader.querySelector(
-                ".software-brand"
-            );
-
+            pageHeader.querySelector(".software-brand");
 
         const subtitle =
-            pageHeader.querySelector(
-                "p"
-            );
-
+            pageHeader.querySelector("p");
 
         const farmLabel =
-            pageHeader.querySelector(
-                ".farm-label"
-            );
-
+            pageHeader.querySelector(".farm-label");
 
         const farmNameElement =
-            pageHeader.querySelector(
-                "[data-farm-name]"
-            );
-
+            pageHeader.querySelector("[data-farm-name]");
 
         const pigIcon =
-            pageHeader.querySelector(
-                ".pig-icon"
-            );
+            pageHeader.querySelector(".pig-icon");
 
+        const originalFarmName = farmNameElement
+            ? farmNameElement.textContent
+            : "";
 
-        // ==================================================
-        // SAVE ORIGINAL VALUES
-        // ==================================================
-
-        const originalFarmName =
-            farmNameElement
-                ? farmNameElement.textContent
-                : "";
-
-
-        // ==================================================
-        // PREPARE PRINT HEADER
-        // ==================================================
-
-        if(farmNameElement){
-
-            farmNameElement.textContent =
-                farmName;
-
-            farmNameElement.classList.add(
-                "print-farm-name"
-            );
-
+        if (farmNameElement) {
+            farmNameElement.textContent = farmName;
+            farmNameElement.classList.add("print-farm-name");
         }
 
+        if (softwareBrand) softwareBrand.style.display = "none";
+        if (subtitle) subtitle.style.display = "none";
+        if (farmLabel) farmLabel.style.display = "none";
+        if (pigIcon) pigIcon.style.display = "none";
 
-        if(softwareBrand){
+        pageHeader.classList.add("printing-farm-header");
 
-            softwareBrand.style.display =
-                "none";
+        const printStyle = document.createElement("style");
 
-        }
-
-
-        if(subtitle){
-
-            subtitle.style.display =
-                "none";
-
-        }
-
-
-        if(farmLabel){
-
-            farmLabel.style.display =
-                "none";
-
-        }
-
-
-        if(pigIcon){
-
-            pigIcon.style.display =
-                "none";
-
-        }
-
-
-        pageHeader.classList.add(
-            "printing-farm-header"
-        );
-
-
-        // ==================================================
-        // CREATE TEMPORARY PRINT STYLE
-        // ==================================================
-
-        const printStyle =
-            document.createElement(
-                "style"
-            );
-
-
-        printStyle.id =
-            "temporary-farm-print-style";
-
+        printStyle.id = "temporary-farm-print-style";
 
         printStyle.textContent = `
-
             @media print {
 
                 .printing-farm-header {
-
                     display: block !important;
-
                     width: 100% !important;
-
                     text-align: center !important;
-
                     margin-bottom: 18px !important;
-
                     padding: 0 !important;
-
                     background: transparent !important;
-
                     box-shadow: none !important;
-
                 }
 
-
-                .printing-farm-header
-                [data-farm-name] {
-
+                .printing-farm-header [data-farm-name] {
                     display: block !important;
-
                     visibility: visible !important;
-
                     font-size: 30px !important;
-
                     font-weight: 800 !important;
-
                     text-align: center !important;
-
                     color: #000 !important;
-
                     margin: 0 0 12px 0 !important;
-
                     padding: 0 !important;
-
                     border: none !important;
-
                 }
 
-
-                .printing-farm-header
-                .software-brand,
-
-                .printing-farm-header
-                p,
-
-                .printing-farm-header
-                .farm-label,
-
-                .printing-farm-header
-                .pig-icon {
-
+                .printing-farm-header .software-brand,
+                .printing-farm-header p,
+                .printing-farm-header .farm-label,
+                .printing-farm-header .pig-icon {
                     display: none !important;
-
                 }
 
             }
-
         `;
 
+        document.head.appendChild(printStyle);
 
-        document.head.appendChild(
-            printStyle
-        );
+        const restorePrintPage = function () {
 
+            if (farmNameElement) {
+                farmNameElement.textContent = originalFarmName;
+                farmNameElement.classList.remove("print-farm-name");
+            }
 
-        // ==================================================
-        // PRINT
-        // ==================================================
+            if (softwareBrand) softwareBrand.style.display = "";
+            if (subtitle) subtitle.style.display = "";
+            if (farmLabel) farmLabel.style.display = "";
+            if (pigIcon) pigIcon.style.display = "";
+
+            pageHeader.classList.remove("printing-farm-header");
+
+            const temporaryStyle = document.getElementById(
+                "temporary-farm-print-style"
+            );
+
+            if (temporaryStyle) temporaryStyle.remove();
+
+            window.removeEventListener("afterprint", restorePrintPage);
+
+        };
+
+        window.addEventListener("afterprint", restorePrintPage);
 
         window.print();
 
+    } catch (error) {
 
-        // ==================================================
-        // RESTORE PAGE AFTER PRINT
-        // ==================================================
-
-        window.addEventListener(
-            "afterprint",
-            function restorePrintPage(){
-
-                if(farmNameElement){
-
-                    farmNameElement.textContent =
-                        originalFarmName;
-
-                    farmNameElement.classList.remove(
-                        "print-farm-name"
-                    );
-
-                }
-
-
-                if(softwareBrand){
-
-                    softwareBrand.style.display =
-                        "";
-
-                }
-
-
-                if(subtitle){
-
-                    subtitle.style.display =
-                        "";
-
-                }
-
-
-                if(farmLabel){
-
-                    farmLabel.style.display =
-                        "";
-
-                }
-
-
-                if(pigIcon){
-
-                    pigIcon.style.display =
-                        "";
-
-                }
-
-
-                pageHeader.classList.remove(
-                    "printing-farm-header"
-                );
-
-
-                const temporaryStyle =
-                    document.getElementById(
-                        "temporary-farm-print-style"
-                    );
-
-
-                if(temporaryStyle){
-
-                    temporaryStyle.remove();
-
-                }
-
-
-                window.removeEventListener(
-                    "afterprint",
-                    restorePrintPage
-                );
-
-            }
-        );
-
-    }
-
-
-    catch(error){
-
-        console.error(
-            "PRINT REPORT ERROR:",
-            error
-        );
+        console.error("PRINT REPORT ERROR:", error);
 
         alert(
             "Unable to prepare the print report.\n\n" +
@@ -1388,19 +1001,15 @@ async function printReport(){
 
 // ==========================================================
 // DOWNLOAD PDF REPORT
-// FARM NAME IS THE MAIN PDF HEADING
+// Category-based version
 // ==========================================================
 
-async function downloadPDF(){
+async function downloadPDF() {
 
-    // ======================================================
-    // PERMISSION CHECK
-    // ======================================================
-
-    if(
+    if (
         typeof canReport !== "function" ||
         !canReport("Pig Registration")
-    ){
+    ) {
 
         alert(
             "Access Denied.\n\n" +
@@ -1410,14 +1019,7 @@ async function downloadPDF(){
         return;
     }
 
-
-    // ======================================================
-    // CHECK PDF LIBRARY
-    // ======================================================
-
-    if(
-        typeof window.jspdf === "undefined"
-    ){
+    if (typeof window.jspdf === "undefined") {
 
         alert(
             "PDF library could not be loaded. " +
@@ -1427,240 +1029,134 @@ async function downloadPDF(){
         return;
     }
 
+    const farmID = getFarmID();
 
-    // ======================================================
-    // GET FARM
-    // ======================================================
+    if (!farmID) return;
 
-    const farmID =
-        getFarmID();
+    const loggedUser = getLoggedUser();
 
-    if(!farmID){
-        return;
-    }
+    if (!loggedUser) return;
 
+    try {
 
-    const loggedUser =
-        getLoggedUser();
+        const farmName = await getRegisteredFarmName();
 
-    if(!loggedUser){
-        return;
-    }
+        const { data, error } = await supabaseClient
+            .from("pigs")
+            .select("*")
+            .eq("farm_id", farmID)
+            .order("id", { ascending: true });
 
+        if (error) throw error;
 
-    try{
+        const records = data || [];
 
-        // ==================================================
-        // GET FARM NAME
-        // ==================================================
+        const { jsPDF } = window.jspdf;
 
-        const farmName =
-            await getRegisteredFarmName();
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: "a4"
+        });
 
-
-        // ==================================================
-        // GET ALL PIG RECORDS
-        // ==================================================
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-
-                .from("pigs")
-
-                .select("*")
-
-                .eq(
-                    "farm_id",
-                    farmID
-                )
-
-                .order(
-                    "id",
-                    {
-                        ascending:true
-                    }
-                );
-
-
-        if(error){
-            throw error;
-        }
-
-
-        const records =
-            data || [];
-
-
-        // ==================================================
-        // CREATE PDF
-        // ==================================================
-
-        const {
-            jsPDF
-        } =
-            window.jspdf;
-
-
-        const doc =
-            new jsPDF({
-                orientation: "landscape",
-                unit: "mm",
-                format: "a4"
-            });
-
-
-        // ==================================================
-        // REGISTERED FARM NAME
-        // MAIN PDF HEADING
-        // ==================================================
+        // ================================================
+        // FARM NAME
+        // ================================================
 
         doc.setFontSize(22);
-
-        doc.setFont(
-            "helvetica",
-            "bold"
-        );
+        doc.setFont("helvetica", "bold");
 
         doc.text(
             farmName,
             148,
             18,
-            {
-                align: "center"
-            }
+            { align: "center" }
         );
 
-
-        // ==================================================
+        // ================================================
         // REPORT TITLE
-        // ==================================================
+        // ================================================
 
         doc.setFontSize(15);
-
-        doc.setFont(
-            "helvetica",
-            "bold"
-        );
 
         doc.text(
             "PIG REGISTRATION REPORT",
             148,
             30,
-            {
-                align: "center"
-            }
+            { align: "center" }
         );
 
+        // ================================================
+        // REPORT DETAILS
+        // ================================================
 
-        // ==================================================
-        // REPORT INFORMATION
-        // ==================================================
-
-        const generatedDate =
-            new Date()
-            .toLocaleString(
-                "en-ZM",
-                {
-                    timeZone:
-                        "Africa/Lusaka"
-                }
-            );
-
+        const generatedDate = new Date().toLocaleString(
+            "en-ZM",
+            { timeZone: "Africa/Lusaka" }
+        );
 
         doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
 
-        doc.setFont(
-            "helvetica",
-            "normal"
-        );
-
-
-        doc.text(
-            "Generated: " +
-            generatedDate,
-            14,
-            40
-        );
-
+        doc.text("Generated: " + generatedDate, 14, 40);
 
         doc.text(
             "Generated By: " +
-            (
-                loggedUser.full_name ||
-                "System User"
-            ),
+            (loggedUser.full_name || "System User"),
             14,
             46
         );
 
-
         doc.text(
-            "Total Registered Pigs: " +
-            records.length,
+            "Total Registered Pigs: " + records.length,
             14,
             52
         );
 
+        // ================================================
+        // TABLE ROWS
+        // ================================================
 
-        // ==================================================
-        // TABLE DATA
-        // ==================================================
+        const tableRows = records.map(function (pig) {
 
-        const tableRows =
-            records.map(
-                function(pig){
+            return [
 
-                    return [
+                pig.pig_id || "",
 
-                        pig.pig_id || "",
+                pig.breed || "",
 
-                        pig.breed || "",
+                pig.category || "Not assigned",
 
-                        pig.sex || "",
+                pig.farrow_date || "",
 
-                        pig.farrow_date || "",
+                pig.source || "",
 
-                        pig.source || "",
+                pig.weight !== null && pig.weight !== undefined
+                    ? pig.weight + " Kg"
+                    : "",
 
-                        pig.weight
-                            ? pig.weight + " Kg"
-                            : "",
+                pig.health_status || ""
 
-                        pig.health_status || ""
+            ];
 
-                    ];
+        });
 
-                }
-            );
-
-
-        // ==================================================
+        // ================================================
         // PDF TABLE
-        // ==================================================
+        // ================================================
 
         doc.autoTable({
 
             startY: 59,
 
             head: [[
-
                 "Pig ID",
-
                 "Breed",
-
-                "Sex",
-
+                "Category",
                 "Farrow Date",
-
                 "Source",
-
                 "Weight",
-
                 "Health Status"
-
             ]],
 
             body: tableRows,
@@ -1668,55 +1164,25 @@ async function downloadPDF(){
             theme: "grid",
 
             styles: {
-
                 fontSize: 8,
-
                 cellPadding: 3,
-
                 valign: "middle"
-
             },
 
             headStyles: {
-
                 fontSize: 8,
-
                 fontStyle: "bold",
-
                 halign: "center"
-
             },
 
             columnStyles: {
-
-                0: {
-                    cellWidth: 25
-                },
-
-                1: {
-                    cellWidth: 35
-                },
-
-                2: {
-                    cellWidth: 20
-                },
-
-                3: {
-                    cellWidth: 30
-                },
-
-                4: {
-                    cellWidth: 50
-                },
-
-                5: {
-                    cellWidth: 25
-                },
-
-                6: {
-                    cellWidth: 45
-                }
-
+                0: { cellWidth: 25 },
+                1: { cellWidth: 35 },
+                2: { cellWidth: 30 },
+                3: { cellWidth: 30 },
+                4: { cellWidth: 45 },
+                5: { cellWidth: 25 },
+                6: { cellWidth: 40 }
             },
 
             margin: {
@@ -1726,35 +1192,20 @@ async function downloadPDF(){
 
         });
 
+        // ================================================
+        // FOOTER
+        // ================================================
 
-        // ==================================================
-        // FOOTER ON EVERY PAGE
-        // NO MUNKA PIGGERY TEXT
-        // ==================================================
+        const pageCount = doc.internal.getNumberOfPages();
 
-        const pageCount =
-            doc.internal.getNumberOfPages();
-
-
-        for(
-            let page = 1;
-            page <= pageCount;
-            page++
-        ){
+        for (let page = 1; page <= pageCount; page++) {
 
             doc.setPage(page);
 
-            const pageHeight =
-                doc.internal.pageSize.height;
-
+            const pageHeight = doc.internal.pageSize.height;
 
             doc.setFontSize(8);
-
-            doc.setFont(
-                "helvetica",
-                "normal"
-            );
-
+            doc.setFont("helvetica", "normal");
 
             doc.text(
                 farmName,
@@ -1762,61 +1213,34 @@ async function downloadPDF(){
                 pageHeight - 8
             );
 
-
             doc.text(
-                "Page " +
-                page +
-                " of " +
-                pageCount,
+                "Page " + page + " of " + pageCount,
                 287,
                 pageHeight - 8,
-                {
-                    align: "right"
-                }
+                { align: "right" }
             );
 
         }
 
+        // ================================================
+        // DOWNLOAD FILE
+        // ================================================
 
-        // ==================================================
-        // FILE NAME
-        // ==================================================
-
-        const datePart =
-            new Date()
+        const datePart = new Date()
             .toISOString()
             .split("T")[0];
 
-
         const fileName =
-            farmName
-                .replace(
-                    /[^a-z0-9]/gi,
-                    "_"
-                ) +
+            farmName.replace(/[^a-z0-9]/gi, "_") +
             "_Pig_Registration_" +
             datePart +
             ".pdf";
 
+        doc.save(fileName);
 
-        // ==================================================
-        // DOWNLOAD
-        // ==================================================
+    } catch (error) {
 
-        doc.save(
-            fileName
-        );
-
-
-    }
-
-
-    catch(error){
-
-        console.error(
-            "DOWNLOAD PDF ERROR:",
-            error
-        );
+        console.error("DOWNLOAD PDF ERROR:", error);
 
         alert(
             "Unable to generate PDF.\n\n" +
@@ -1832,31 +1256,17 @@ async function downloadPDF(){
 // LOAD RECORDS WHEN PAGE OPENS
 // ==========================================================
 
-window.addEventListener(
-    "load",
-    function(){
-
-        loadPigs();
-
-    }
-);
+window.addEventListener("load", function () {
+    loadPigs();
+});
 
 
 // ==========================================================
 // SEARCH WHILE TYPING
 // ==========================================================
 
-const searchBox =
-    document.getElementById(
-        "searchPig"
-    );
+const searchBox = document.getElementById("searchPig");
 
-
-if(searchBox){
-
-    searchBox.addEventListener(
-        "keyup",
-        searchPig
-    );
-
+if (searchBox) {
+    searchBox.addEventListener("keyup", searchPig);
 }

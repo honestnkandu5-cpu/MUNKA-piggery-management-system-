@@ -1,277 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta charset="UTF-8">
+    <title>Registered Farm - Pig Registration</title>
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
-
-<title>
-    Registered Farm - Pig Registration
-</title>
-
-<link
-    rel="stylesheet"
-    href="pig.css">
-
-<link
-    rel="stylesheet"
-    href="farm_branding.css">
-
+    <link rel="stylesheet" href="pig.css">
+    <link rel="stylesheet" href="farm_branding.css">
 </head>
 
-
 <body>
-
-
 <div class="container">
 
-
-    <!-- =====================================================
-         PAGE HEADER
-    ====================================================== -->
-
+    <!-- PAGE HEADER -->
     <div class="page-header">
-
-        <div class="pig-icon">
-            🐖
-        </div>
+        <div class="pig-icon">🐖</div>
 
         <div>
-
-            <h1 class="software-brand">
-                MUNKA PIGGERY TECHNOLOGY
-            </h1>
-
-            <p>
-                Piggery Management System
-            </p>
-
-
-            <!-- REGISTERED FARM NAME -->
+            <h1 class="software-brand">MUNKA PIGGERY TECHNOLOGY</h1>
+            <p>Piggery Management System</p>
 
             <div class="farm-branding">
-
-                <span class="farm-label">
-                    REGISTERED FARM
-                </span>
-
-                <strong data-farm-name>
-                    Loading farm...
-                </strong>
-
+                <span class="farm-label">REGISTERED FARM</span>
+                <strong data-farm-name>Loading farm...</strong>
             </div>
-
         </div>
-
     </div>
 
-
-
-    <!-- =====================================================
-         REGISTRATION FORM
-    ====================================================== -->
-
+    <!-- REGISTRATION FORM -->
     <section class="form-section">
-
         <div class="section-title">
-
             <div>
-
-                <span>
-                    PIG MANAGEMENT
-                </span>
-
-                <h2>
-                    Register Pig
-                </h2>
-
+                <span>PIG MANAGEMENT</span>
+                <h2>Register Pig</h2>
             </div>
-
         </div>
-
 
         <form id="pigForm">
 
-
-            <!-- PIG ID -->
-
             <div class="form-group">
-
-                <label for="pigID">
-                    Pig ID
-                </label>
-
+                <label for="pigID">Pig ID</label>
                 <input
                     type="text"
                     id="pigID"
                     placeholder="Enter Pig ID"
                     autocomplete="off"
                     required>
-
             </div>
 
-
-
-            <!-- BREED -->
-
             <div class="form-group">
+                <label for="breed">Breed</label>
 
-                <label for="breed">
-                    Breed
-                </label>
-
-                <select
-                    id="breed"
-                    required>
-
-                    <option value="">
-                        Select Breed
-                    </option>
-
-                    <option>
-                        Large White
-                    </option>
-
-                    <option>
-                        Landrace
-                    </option>
-
-                    <option>
-                        Duroc
-                    </option>
-
-                    <option>
-                        Pietrain
-                    </option>
-
-                    <option>
-                        Hampshire
-                    </option>
-
-                    <option>
-                        Berkshire
-                    </option>
-
-                    <option>
-                        Yorkshire
-                    </option>
-
-                    <option>
-                        Tamworth
-                    </option>
-
-                    <option>
-                        Chester White
-                    </option>
-
-                    <option>
-                        Poland China
-                    </option>
-
-                    <option>
-                        Meishan
-                    </option>
-
-                    <option>
-                        Cross Breed
-                    </option>
-
-                    <option>
-                        Other
-                    </option>
-
+                <select id="breed" required>
+                    <option value="">Select Breed</option>
+                    <option>Large White</option>
+                    <option>Landrace</option>
+                    <option>Duroc</option>
+                    <option>Pietrain</option>
+                    <option>Hampshire</option>
+                    <option>Berkshire</option>
+                    <option>Yorkshire</option>
+                    <option>Tamworth</option>
+                    <option>Chester White</option>
+                    <option>Poland China</option>
+                    <option>Meishan</option>
+                    <option>Cross Breed</option>
+                    <option>Other</option>
                 </select>
-
             </div>
 
-
-
-            <!-- SEX -->
-
+            <!-- NEW PIG CATEGORY -->
             <div class="form-group">
+                <label for="category">Pig Category</label>
 
-                <label for="sex">
-                    Sex
-                </label>
-
-                <select
-                    id="sex"
-                    required>
-
-                    <option value="">
-                        Select Sex
-                    </option>
-
-                    <option>
-                        Male
-                    </option>
-
-                    <option>
-                        Female
-                    </option>
-
+                <select id="category" required>
+                    <option value="">Select Pig Category</option>
+                    <option value="Piglet">Piglet</option>
+                    <option value="Weaner">Weaner</option>
+                    <option value="Grower">Grower</option>
+                    <option value="Boar">Boar</option>
+                    <option value="Sow">Sow</option>
+                    <option value="Pregnant Sow">Pregnant Sow</option>
+                    <option value="Lactating Sow">Lactating Sow</option>
                 </select>
-
             </div>
 
-
-
-            <!-- FARROW DATE -->
-
             <div class="form-group">
-
-                <label for="farrowDate">
-                    Farrow Date
-                </label>
-
-                <input
-                    type="date"
-                    id="farrowDate"
-                    required>
-
+                <label for="farrowDate">Farrow Date</label>
+                <input type="date" id="farrowDate" required>
             </div>
 
-
-
-            <!-- SOURCE -->
-
             <div class="form-group">
-
-                <label for="source">
-                    Source (Farm name/Seller name)
-                </label>
-
+                <label for="source">Source (Farm name/Seller name)</label>
                 <input
                     type="text"
                     id="source"
                     placeholder="Enter Farm name or Seller name"
                     autocomplete="off"
                     required>
-
             </div>
 
-
-
-            <!-- WEIGHT -->
-
             <div class="form-group">
+                <label for="weight">Weight (Kg)</label>
 
-                <label for="weight">
-                    Weight (Kg)
-                </label>
-
-                <select
-                    id="weight"
-                    required>
-
-                    <option value="">
-                        Select Weight
-                    </option>
-
+                <select id="weight" required>
+                    <option value="">Select Weight</option>
                     <option value="1">1 Kg</option>
                     <option value="2">2 Kg</option>
                     <option value="3">3 Kg</option>
@@ -330,238 +164,120 @@
                     <option value="380">380 Kg</option>
                     <option value="390">390 Kg</option>
                     <option value="400">400 Kg</option>
-
                 </select>
-
             </div>
-
-
-
-            <!-- HEALTH STATUS -->
 
             <div class="form-group">
+                <label for="healthStatus">Health Status</label>
 
-                <label for="healthStatus">
-                    Health Status
-                </label>
-
-                <select
-                    id="healthStatus"
-                    required>
-
-                    <option value="">
-                        Select Health Status
-                    </option>
-
-                    <option>
-                        Healthy
-                    </option>
-
-                    <option>
-                        Sick
-                    </option>
-
-                    <option>
-                        Under Treatment
-                    </option>
-
-                    <option>
-                        Recovered
-                    </option>
-
-                    <option>
-                        Dead
-                    </option>
-
+                <select id="healthStatus" required>
+                    <option value="">Select Health Status</option>
+                    <option>Healthy</option>
+                    <option>Sick</option>
+                    <option>Under Treatment</option>
+                    <option>Recovered</option>
+                    <option>Dead</option>
                 </select>
-
             </div>
 
-
-
-            <!-- =================================================
-                 FORM BUTTONS
-            ================================================== -->
-
             <div class="buttons">
-
                 <button
                     type="submit"
                     data-permission="add"
                     data-module="Pig Registration">
-
                     💾 Save Pig Record
-
                 </button>
-
 
                 <button
                     type="button"
                     onclick="clearForm()"
                     class="secondary-button">
-
                     🧹 Clear
-
                 </button>
-
 
                 <button
                     type="button"
                     onclick="window.location.href='dashboard.html'"
                     class="secondary-button">
-
                     ↩️ Back
-
                 </button>
-
             </div>
-
 
         </form>
-
     </section>
 
-
-
-    <!-- =====================================================
-         SEARCH SECTION
-    ====================================================== -->
-
+    <!-- SEARCH -->
     <section class="records-section">
-
         <div class="section-title">
-
             <div>
-
-                <span>
-                    RECORD MANAGEMENT
-                </span>
-
-                <h2>
-                    Search Pig Records
-                </h2>
-
+                <span>RECORD MANAGEMENT</span>
+                <h2>Search Pig Records</h2>
             </div>
-
         </div>
 
-
         <div class="search-area">
-
             <input
                 type="text"
                 id="searchPig"
-                placeholder="Search by Pig ID or Breed"
+                placeholder="Search by Pig ID, Breed or Category"
                 autocomplete="off">
-
 
             <button
                 type="button"
                 onclick="searchPig()"
                 data-permission="view"
                 data-module="Pig Registration">
-
                 🔍 Search
-
             </button>
-
         </div>
-
     </section>
 
-
-
-    <!-- =====================================================
-         REGISTERED PIGS
-    ====================================================== -->
-
+    <!-- REGISTERED PIGS -->
     <section class="records-section">
-
         <div class="section-title">
-
             <div>
-
-                <span>
-                    FARM RECORDS
-                </span>
-
-                <h2>
-                    Registered Pigs
-                </h2>
-
+                <span>FARM RECORDS</span>
+                <h2>Registered Pigs</h2>
             </div>
-
         </div>
 
-
         <div class="table-wrapper">
-
             <table>
-
                 <thead>
-
                     <tr>
-
                         <th>Pig ID</th>
                         <th>Breed</th>
-                        <th>Sex</th>
+                        <th>Category</th>
                         <th>Farrow Date</th>
                         <th>Source</th>
                         <th>Weight</th>
                         <th>Health Status</th>
                         <th>Action</th>
-
                     </tr>
-
                 </thead>
 
-
-                <tbody id="pigTable">
-                </tbody>
-
+                <tbody id="pigTable"></tbody>
             </table>
-
         </div>
-
     </section>
 
-
-
-    <!-- =====================================================
-         REPORT SECTION
-    ====================================================== -->
-
+    <!-- REPORTS -->
     <section class="report-section">
-
         <div class="section-title">
-
             <div>
-
-                <span>
-                    REPORTING
-                </span>
-
-                <h2>
-                    Pig Registration Reports
-                </h2>
-
+                <span>REPORTING</span>
+                <h2>Pig Registration Reports</h2>
             </div>
-
         </div>
 
-
         <div class="report-buttons">
-
             <button
                 type="button"
                 onclick="generateReport()"
                 data-permission="report"
                 data-module="Pig Registration">
-
                 📊 Generate Report
-
             </button>
-
 
             <button
                 type="button"
@@ -569,11 +285,8 @@
                 data-permission="report"
                 data-module="Pig Registration"
                 class="print-button">
-
                 🖨️ Print
-
             </button>
-
 
             <button
                 type="button"
@@ -581,92 +294,27 @@
                 data-permission="report"
                 data-module="Pig Registration"
                 class="pdf-button">
-
                 📥 Download PDF
-
             </button>
-
         </div>
-
     </section>
-
 
 </div>
 
+<!-- LIBRARIES -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-
-<!-- =====================================================
-     SUPABASE LIBRARY
-====================================================== -->
-
-<script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-</script>
-
-
-
-<!-- =====================================================
-     PDF LIBRARY
-====================================================== -->
-
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-</script>
-
-
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js">
-</script>
-
-
-
-<!-- =====================================================
-     SUPABASE CONFIGURATION
-====================================================== -->
-
+<!-- EXISTING SYSTEM FILES -->
 <script src="supabase.js"></script>
-
-
-
-<!-- =====================================================
-     FARM BRANDING
-====================================================== -->
-
 <script src="farm_branding.js"></script>
-
-
-
-<!-- =====================================================
-     ACTIVITY LOG
-====================================================== -->
-
 <script src="activity.js"></script>
-
-
-
-<!-- =====================================================
-     CENTRAL PERMISSION ENGINE
-====================================================== -->
-
 <script src="role_permissions.js"></script>
-
-
-
-<!-- =====================================================
-     SECURITY
-====================================================== -->
-
 <script src="security.js"></script>
 
-
-
-<!-- =====================================================
-     PIG REGISTRATION JAVASCRIPT
-====================================================== -->
-
+<!-- PIG REGISTRATION -->
 <script src="pig.js"></script>
 
-
 </body>
-
 </html>
