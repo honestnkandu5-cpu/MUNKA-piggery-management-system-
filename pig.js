@@ -4,6 +4,7 @@
 // MULTI-FARM + PERMISSION-CONTROLLED VERSION
 // CATEGORY-BASED LIVESTOCK REGISTRATION
 // FARM NAME FIRST PRINT & PDF VERSION
+// DATABASE SAVE COMPATIBILITY FIX
 // ==========================================================
 
 let editID = null;
@@ -15,16 +16,27 @@ let editID = null;
 
 function getLoggedUser() {
 
-    const user = JSON.parse(
-        localStorage.getItem("loggedInUser")
-    );
+    try {
 
-    if (!user) {
-        alert("No logged-in user found. Please login again.");
+        const user = JSON.parse(
+            localStorage.getItem("loggedInUser")
+        );
+
+        if (!user) {
+            alert("No logged-in user found. Please login again.");
+            return null;
+        }
+
+        return user;
+
+    } catch (error) {
+
+        console.error("GET LOGGED-IN USER ERROR:", error);
+
+        alert("Unable to read your login details. Please login again.");
+
         return null;
     }
-
-    return user;
 }
 
 
@@ -38,7 +50,11 @@ function getFarmID() {
 
     if (!user) return null;
 
-    if (!user.farm_id) {
+    if (
+        user.farm_id === null ||
+        user.farm_id === undefined ||
+        user.farm_id === ""
+    ) {
 
         alert(
             "Your account is not connected to a farm. " +
@@ -60,7 +76,9 @@ async function getRegisteredFarmName() {
 
     const farmID = getFarmID();
 
-    if (!farmID) return "REGISTERED FARM";
+    if (farmID === null || farmID === undefined) {
+        return "REGISTERED FARM";
+    }
 
     try {
 
@@ -111,12 +129,37 @@ function escapePigHTML(value) {
 
 
 // ==========================================================
+// DETERMINE SEX FROM CATEGORY
+// ==========================================================
+
+function getPigSexFromCategory(category) {
+
+    if (category === "Boar") {
+        return "Male";
+    }
+
+    if (
+        category === "Sow" ||
+        category === "Pregnant Sow" ||
+        category === "Lactating Sow"
+    ) {
+        return "Female";
+    }
+
+    // Piglet, Weaner and Grower do not determine sex.
+    return "Unknown";
+}
+
+
+// ==========================================================
 // SAVE / UPDATE PIG RECORD
 // ==========================================================
 
-document
-    .getElementById("pigForm")
-    .addEventListener("submit", async function (e) {
+const pigForm = document.getElementById("pigForm");
+
+if (pigForm) {
+
+    pigForm.addEventListener("submit", async function (e) {
 
         e.preventDefault();
 
@@ -165,7 +208,7 @@ document
 
         const farmID = getFarmID();
 
-        if (!farmID) return;
+        if (farmID === null || farmID === undefined) return;
 
         // ================================================
         // READ FORM
@@ -176,14 +219,49 @@ document
             .value
             .trim();
 
+        const breed = document
+            .getElementById("breed")
+            .value;
+
         const category = document
             .getElementById("category")
             .value;
+
+        if (!pigID) {
+            alert("Please enter the Pig ID.");
+            return;
+        }
+
+        if (!breed) {
+            alert("Please select a pig breed.");
+            return;
+        }
 
         if (!category) {
             alert("Please select a pig category.");
             return;
         }
+
+        // ================================================
+        // READ OPTIONAL FIELDS
+        // ================================================
+
+        const farrowDate = document
+            .getElementById("farrowDate")
+            .value;
+
+        const source = document
+            .getElementById("source")
+            .value
+            .trim();
+
+        const weightValue = document
+            .getElementById("weight")
+            .value;
+
+        const healthStatus = document
+            .getElementById("healthStatus")
+            .value;
 
         // ================================================
         // PREPARE DATABASE RECORD
@@ -193,34 +271,55 @@ document
 
             pig_id: pigID,
 
-            breed: document
-                .getElementById("breed")
-                .value,
+            breed: breed,
 
+            // New lifecycle category.
             category: category,
 
-            farrow_date: document
-                .getElementById("farrowDate")
-                .value,
+            // Required by the existing database schema.
+            // The category is used to infer sex only when
+            // the category establishes it reliably.
+            sex: getPigSexFromCategory(category),
 
-            source: document
-                .getElementById("source")
-                .value
-                .trim(),
+            // Empty optional fields become null.
+            farrow_date: farrowDate || null,
 
-            weight: Number(
-                document
-                    .getElementById("weight")
-                    .value
-            ),
+            source: source || null,
 
-            health_status: document
-                .getElementById("healthStatus")
-                .value
+            weight:
+                weightValue !== ""
+                    ? Number(weightValue)
+                    : null,
+
+            health_status: healthStatus || null
 
         };
 
+        // Prevent invalid numeric weights.
+        if (
+            pig.weight !== null &&
+            (
+                !Number.isFinite(pig.weight) ||
+                pig.weight < 0
+            )
+        ) {
+
+            alert("Please enter a valid, non-negative weight.");
+
+            return;
+        }
+
         try {
+
+            const submitButton = document.querySelector(
+                '#pigForm button[type="submit"]'
+            );
+
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent =
+                    editID === null ? "Saving..." : "Updating...";
+            }
 
             // ============================================
             // ADD NEW PIG
@@ -239,23 +338,36 @@ document
 
                 if (error) throw error;
 
-                await saveActivity(
+                // Activity logging should not make a successful
+                // database insert appear to have failed.
+                try {
 
-                    loggedUser.full_name +
-                    " (" +
-                    loggedUser.role +
-                    ")",
+                    await saveActivity(
 
-                    "Added",
+                        loggedUser.full_name +
+                        " (" +
+                        loggedUser.role +
+                        ")",
 
-                    "Pig Registration",
+                        "Added",
 
-                    "Registered Pig ID: " +
-                    pig.pig_id +
-                    "; Category: " +
-                    pig.category
+                        "Pig Registration",
 
-                );
+                        "Registered Pig ID: " +
+                        pig.pig_id +
+                        "; Category: " +
+                        pig.category
+
+                    );
+
+                } catch (activityError) {
+
+                    console.error(
+                        "PIG SAVED BUT ACTIVITY LOG FAILED:",
+                        activityError
+                    );
+
+                }
 
                 alert("Pig record saved successfully.");
 
@@ -270,7 +382,7 @@ document
                 pig.updated_by = loggedUser.full_name;
                 pig.updated_at = new Date().toISOString();
 
-                // Do not change farm ownership or creator.
+                // Preserve the original farm and creator.
                 const { error } = await supabaseClient
                     .from("pigs")
                     .update(pig)
@@ -279,23 +391,34 @@ document
 
                 if (error) throw error;
 
-                await saveActivity(
+                try {
 
-                    loggedUser.full_name +
-                    " (" +
-                    loggedUser.role +
-                    ")",
+                    await saveActivity(
 
-                    "Updated",
+                        loggedUser.full_name +
+                        " (" +
+                        loggedUser.role +
+                        ")",
 
-                    "Pig Registration",
+                        "Updated",
 
-                    "Updated Pig ID: " +
-                    pig.pig_id +
-                    "; Category: " +
-                    pig.category
+                        "Pig Registration",
 
-                );
+                        "Updated Pig ID: " +
+                        pig.pig_id +
+                        "; Category: " +
+                        pig.category
+
+                    );
+
+                } catch (activityError) {
+
+                    console.error(
+                        "PIG UPDATED BUT ACTIVITY LOG FAILED:",
+                        activityError
+                    );
+
+                }
 
                 alert("Pig record updated successfully.");
 
@@ -311,12 +434,28 @@ document
 
             alert(
                 "Unable to save the pig record.\n\n" +
-                error.message
+                (error.message || "An unexpected error occurred.")
             );
+
+        } finally {
+
+            const submitButton = document.querySelector(
+                '#pigForm button[type="submit"]'
+            );
+
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent =
+                    editID === null
+                        ? "💾 Save Pig Record"
+                        : "💾 Update Pig Record";
+            }
 
         }
 
     });
+
+}
 
 
 // ==========================================================
@@ -342,7 +481,7 @@ async function loadPigs() {
 
     const farmID = getFarmID();
 
-    if (!farmID) return;
+    if (farmID === null || farmID === undefined) return;
 
     try {
 
@@ -496,7 +635,7 @@ async function editPig(id) {
 
     const farmID = getFarmID();
 
-    if (!farmID) return;
+    if (farmID === null || farmID === undefined) return;
 
     try {
 
@@ -582,7 +721,7 @@ async function deletePig(id) {
 
     const farmID = getFarmID();
 
-    if (!farmID) return;
+    if (farmID === null || farmID === undefined) return;
 
     const loggedUser = getLoggedUser();
 
@@ -590,7 +729,6 @@ async function deletePig(id) {
 
     try {
 
-        // Get the pig ID for confirmation and activity log.
         const { data: pig, error: fetchError } =
             await supabaseClient
                 .from("pigs")
@@ -615,20 +753,31 @@ async function deletePig(id) {
 
         if (error) throw error;
 
-        await saveActivity(
+        try {
 
-            loggedUser.full_name +
-            " (" +
-            loggedUser.role +
-            ")",
+            await saveActivity(
 
-            "Deleted",
+                loggedUser.full_name +
+                " (" +
+                loggedUser.role +
+                ")",
 
-            "Pig Registration",
+                "Deleted",
 
-            "Deleted Pig ID: " + (pig.pig_id || id)
+                "Pig Registration",
 
-        );
+                "Deleted Pig ID: " + (pig.pig_id || id)
+
+            );
+
+        } catch (activityError) {
+
+            console.error(
+                "PIG DELETED BUT ACTIVITY LOG FAILED:",
+                activityError
+            );
+
+        }
 
         alert("Pig record deleted successfully.");
 
@@ -670,12 +819,13 @@ async function searchPig() {
 
     const farmID = getFarmID();
 
-    if (!farmID) return;
+    if (farmID === null || farmID === undefined) return;
 
-    const keyword = document
-        .getElementById("searchPig")
-        .value
-        .trim();
+    const searchBox = document.getElementById("searchPig");
+
+    if (!searchBox) return;
+
+    const keyword = searchBox.value.trim();
 
     try {
 
@@ -686,7 +836,6 @@ async function searchPig() {
 
         if (keyword) {
 
-            // Escape PostgREST filter punctuation.
             const safeKeyword = keyword.replace(
                 /[%_,().]/g,
                 " "
@@ -767,7 +916,7 @@ async function generateReport() {
 
     const farmID = getFarmID();
 
-    if (!farmID) return;
+    if (farmID === null || farmID === undefined) return;
 
     try {
 
@@ -856,7 +1005,6 @@ async function generateReport() {
 
 // ==========================================================
 // PRINT REPORT
-// Uses the existing page print layout.
 // ==========================================================
 
 async function printReport() {
@@ -1001,7 +1149,6 @@ async function printReport() {
 
 // ==========================================================
 // DOWNLOAD PDF REPORT
-// Category-based version
 // ==========================================================
 
 async function downloadPDF() {
@@ -1031,7 +1178,7 @@ async function downloadPDF() {
 
     const farmID = getFarmID();
 
-    if (!farmID) return;
+    if (farmID === null || farmID === undefined) return;
 
     const loggedUser = getLoggedUser();
 
@@ -1059,10 +1206,7 @@ async function downloadPDF() {
             format: "a4"
         });
 
-        // ================================================
         // FARM NAME
-        // ================================================
-
         doc.setFontSize(22);
         doc.setFont("helvetica", "bold");
 
@@ -1073,10 +1217,7 @@ async function downloadPDF() {
             { align: "center" }
         );
 
-        // ================================================
         // REPORT TITLE
-        // ================================================
-
         doc.setFontSize(15);
 
         doc.text(
@@ -1086,10 +1227,7 @@ async function downloadPDF() {
             { align: "center" }
         );
 
-        // ================================================
         // REPORT DETAILS
-        // ================================================
-
         const generatedDate = new Date().toLocaleString(
             "en-ZM",
             { timeZone: "Africa/Lusaka" }
@@ -1113,10 +1251,7 @@ async function downloadPDF() {
             52
         );
 
-        // ================================================
         // TABLE ROWS
-        // ================================================
-
         const tableRows = records.map(function (pig) {
 
             return [
@@ -1141,10 +1276,7 @@ async function downloadPDF() {
 
         });
 
-        // ================================================
         // PDF TABLE
-        // ================================================
-
         doc.autoTable({
 
             startY: 59,
@@ -1192,10 +1324,7 @@ async function downloadPDF() {
 
         });
 
-        // ================================================
         // FOOTER
-        // ================================================
-
         const pageCount = doc.internal.getNumberOfPages();
 
         for (let page = 1; page <= pageCount; page++) {
@@ -1222,10 +1351,7 @@ async function downloadPDF() {
 
         }
 
-        // ================================================
         // DOWNLOAD FILE
-        // ================================================
-
         const datePart = new Date()
             .toISOString()
             .split("T")[0];
