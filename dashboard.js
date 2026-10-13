@@ -1,30 +1,30 @@
 // ==========================================================
 // MUNKA PIGGERY TECHNOLOGY
-// DASHBOARD.JS
-// COMPLETE DASHBOARD REPLACEMENT
+// COMPLETE DASHBOARD.JS
 // ==========================================================
 //
 // FEATURES
-// 1. Logged-in user information
-// 2. Registered farm information
-// 3. Zambia date and time
-// 4. Farm statistics
-// 5. Pig category statistics
-// 6. Pregnant sows and expected farrowings
-// 7. Piglets weaned
+// 1. Authenticated user profile
+// 2. Registered farm name
+// 3. Live farm statistics
+// 4. Pig registration population
+// 5. Pig categories
+// 6. Gestation and expected farrowing statistics
+// 7. Weaning statistics
 // 8. Monthly treatments, sales and expenses
-// 9. Net balance
-// 10. Dashboard announcements
+// 9. Net financial balance
+// 10. Announcements
 // 11. Announcement management
-// 12. Dashboard notifications
-// 13. Notification read status
+// 12. Notifications
+// 13. Mark notifications as read
 // 14. Dashboard navigation
-// 15. Secure Supabase logout
+// 15. Logout
 //
-// IMPORTANT:
+// SECURITY
 // - Uses the existing supabaseClient.
 // - Does not modify supabase.js.
-// - Super Admin access across farms depends on Supabase RLS.
+// - Does not disable RLS.
+// - Super Admin cross-farm access depends on RLS.
 // ==========================================================
 
 
@@ -39,30 +39,15 @@ let managedAnnouncements = [];
 let dashboardCurrentUser = null;
 let dashboardCurrentFarmId = null;
 
-let dashboardFarmStatistics = {
-    totalPigs: 0,
-    sows: 0,
-    boars: 0,
-    piglets: 0,
-    weaners: 0,
-    growers: 0,
-    otherCategories: 0,
-    pregnantSows: 0,
-    expectedFarrowings: 0,
-    pigletsWeaned: 0,
-    treatmentsThisMonth: 0,
-    salesThisMonth: 0,
-    expensesThisMonth: 0,
-    netBalance: 0
-};
-
 let dashboardStatisticsLoading = false;
 let dashboardAnnouncementsLoading = false;
 let dashboardNotificationsLoading = false;
 
+let dashboardFarmStatistics = {};
+
 
 // ==========================================================
-// SUPABASE CLIENT CHECK
+// SUPABASE CLIENT
 // ==========================================================
 
 function getDashboardSupabaseClient() {
@@ -74,7 +59,7 @@ function getDashboardSupabaseClient() {
     }
 
     console.error(
-        "MUNKA Dashboard: supabaseClient is unavailable. Check script order."
+        "Dashboard error: supabaseClient is unavailable."
     );
 
     return null;
@@ -86,7 +71,7 @@ function getDashboardSupabaseClient() {
 // ==========================================================
 
 function dashboardEscapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, function (character) {
+    return String(value ?? "").replace(/[&<>"']/g, function (char) {
         const replacements = {
             "&": "&amp;",
             "<": "&lt;",
@@ -95,33 +80,34 @@ function dashboardEscapeHTML(value) {
             "'": "&#039;"
         };
 
-        return replacements[character];
+        return replacements[char];
     });
 }
 
 
 function dashboardShowMessage(message, type = "info") {
-    let messageBox = document.getElementById(
+    let box = document.getElementById(
         "dashboardGeneralMessage"
     );
 
-    if (!messageBox) {
-        messageBox = document.createElement("div");
-        messageBox.id = "dashboardGeneralMessage";
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "dashboardGeneralMessage";
 
-        messageBox.style.position = "fixed";
-        messageBox.style.top = "15px";
-        messageBox.style.right = "15px";
-        messageBox.style.zIndex = "99999";
-        messageBox.style.maxWidth = "340px";
-        messageBox.style.padding = "12px 16px";
-        messageBox.style.borderRadius = "8px";
-        messageBox.style.color = "#ffffff";
-        messageBox.style.fontSize = "14px";
-        messageBox.style.boxShadow =
-            "0 4px 14px rgba(0,0,0,0.2)";
+        Object.assign(box.style, {
+            position: "fixed",
+            top: "15px",
+            right: "15px",
+            zIndex: "99999",
+            maxWidth: "340px",
+            padding: "12px 16px",
+            borderRadius: "8px",
+            color: "#ffffff",
+            fontSize: "14px",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.2)"
+        });
 
-        document.body.appendChild(messageBox);
+        document.body.appendChild(box);
     }
 
     const backgrounds = {
@@ -131,61 +117,37 @@ function dashboardShowMessage(message, type = "info") {
         info: "#1769aa"
     };
 
-    messageBox.textContent = message;
-    messageBox.style.background =
+    box.textContent = message;
+    box.style.background =
         backgrounds[type] || backgrounds.info;
 
-    messageBox.style.display = "block";
+    box.style.display = "block";
 
-    clearTimeout(messageBox.hideTimer);
+    clearTimeout(box.hideTimer);
 
-    messageBox.hideTimer = setTimeout(function () {
-        messageBox.style.display = "none";
-    }, 4000);
+    box.hideTimer = setTimeout(function () {
+        box.style.display = "none";
+    }, 4500);
 }
 
 
-function formatDashboardMoney(amount) {
-    const number = Number(amount || 0);
-
-    return "ZMW " + number.toLocaleString("en-ZM", {
+function formatDashboardMoney(value) {
+    return "ZMW " + Number(value || 0).toLocaleString("en-ZM", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
 }
 
 
-function getDashboardZambiaDateParts(dateValue = new Date()) {
-    const date = new Date(dateValue);
-
-    const parts = new Intl.DateTimeFormat("en-GB", {
-        timeZone: "Africa/Lusaka",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    }).formatToParts(date);
-
-    const result = {};
-
-    parts.forEach(function (part) {
-        if (part.type !== "literal") {
-            result[part.type] = part.value;
-        }
-    });
-
-    return result;
-}
-
-
-function formatDashboardDate(dateValue) {
-    if (!dateValue) {
+function formatDashboardDate(value) {
+    if (!value) {
         return "Not available";
     }
 
-    const date = new Date(dateValue);
+    const date = new Date(value);
 
     if (Number.isNaN(date.getTime())) {
-        return String(dateValue);
+        return String(value);
     }
 
     return new Intl.DateTimeFormat("en-GB", {
@@ -200,15 +162,15 @@ function formatDashboardDate(dateValue) {
 }
 
 
-function formatDashboardDateOnly(dateValue) {
-    if (!dateValue) {
+function formatDashboardDateOnly(value) {
+    if (!value) {
         return "Not available";
     }
 
-    const date = new Date(dateValue);
+    const date = new Date(value);
 
     if (Number.isNaN(date.getTime())) {
-        return String(dateValue);
+        return String(value);
     }
 
     return new Intl.DateTimeFormat("en-GB", {
@@ -220,31 +182,23 @@ function formatDashboardDateOnly(dateValue) {
 }
 
 
-function getDashboardCurrentMonthRange() {
-    const parts = getDashboardZambiaDateParts();
+function getDashboardZambiaDateParts() {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Africa/Lusaka",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(new Date());
 
-    const year = Number(parts.year);
-    const month = Number(parts.month);
+    const result = {};
 
-    const startDate =
-        year + "-" + String(month).padStart(2, "0") + "-01";
+    parts.forEach(function (part) {
+        if (part.type !== "literal") {
+            result[part.type] = part.value;
+        }
+    });
 
-    const nextMonthDate = new Date(
-        Date.UTC(year, month, 1)
-    );
-
-    const nextYear = nextMonthDate.getUTCFullYear();
-    const nextMonth = String(
-        nextMonthDate.getUTCMonth() + 1
-    ).padStart(2, "0");
-
-    const endDate =
-        nextYear + "-" + nextMonth + "-01";
-
-    return {
-        startDate: startDate,
-        endDate: endDate
-    };
+    return result;
 }
 
 
@@ -259,21 +213,52 @@ function getDashboardToday() {
 }
 
 
+function getDashboardCurrentMonthRange() {
+    const parts = getDashboardZambiaDateParts();
+
+    const year = Number(parts.year);
+    const month = Number(parts.month);
+
+    const startDate =
+        year + "-" +
+        String(month).padStart(2, "0") +
+        "-01";
+
+    const nextMonth = new Date(
+        Date.UTC(year, month, 1)
+    );
+
+    const endDate =
+        nextMonth.getUTCFullYear() + "-" +
+        String(nextMonth.getUTCMonth() + 1).padStart(2, "0") +
+        "-01";
+
+    return {
+        startDate,
+        endDate
+    };
+}
+
+
+// ==========================================================
+// LOGGED-IN USER
+// ==========================================================
+
 function getDashboardLoggedInUser() {
     if (dashboardCurrentUser) {
         return dashboardCurrentUser;
     }
 
     try {
-        const storedUser = localStorage.getItem("loggedInUser");
+        const saved = localStorage.getItem("loggedInUser");
 
-        if (storedUser) {
-            dashboardCurrentUser = JSON.parse(storedUser);
+        if (saved) {
+            dashboardCurrentUser = JSON.parse(saved);
             return dashboardCurrentUser;
         }
     } catch (error) {
         console.error(
-            "Unable to read dashboard user:",
+            "Unable to read saved dashboard profile:",
             error
         );
     }
@@ -304,17 +289,13 @@ function isDashboardAdmin() {
         .trim()
         .toLowerCase();
 
-    return (
-        role === "owner/admin" ||
-        role === "owner / admin" ||
-        role === "super admin"
-    );
+    return [
+        "owner/admin",
+        "owner / admin",
+        "super admin"
+    ].includes(role);
 }
 
-
-// ==========================================================
-// DISPLAY LOGGED-IN USER
-// ==========================================================
 
 function displayLoggedInUser() {
     const user = getDashboardLoggedInUser();
@@ -331,20 +312,12 @@ function displayLoggedInUser() {
 
     const role = user.role || "User";
 
-    const nameElements = [
+    [
         "loggedInUserName",
         "dashboardUserName",
         "userName",
         "welcomeUserName"
-    ];
-
-    const roleElements = [
-        "loggedInUserRole",
-        "dashboardUserRole",
-        "userRole"
-    ];
-
-    nameElements.forEach(function (id) {
+    ].forEach(function (id) {
         const element = document.getElementById(id);
 
         if (element) {
@@ -352,7 +325,11 @@ function displayLoggedInUser() {
         }
     });
 
-    roleElements.forEach(function (id) {
+    [
+        "loggedInUserRole",
+        "dashboardUserRole",
+        "userRole"
+    ].forEach(function (id) {
         const element = document.getElementById(id);
 
         if (element) {
@@ -363,14 +340,27 @@ function displayLoggedInUser() {
 
 
 // ==========================================================
-// LOAD USER PROFILE AND FARM
+// FARM NAME AND PROFILE
 // ==========================================================
 
 async function displayFarmName() {
     const client = getDashboardSupabaseClient();
 
-    if (!client) {
-        return;
+    const nameElementIds = [
+        "dashboardFarmName",
+        "farmName",
+        "registeredFarmName",
+        "currentFarmName"
+    ];
+
+    function showFarmName(name) {
+        nameElementIds.forEach(function (id) {
+            const element = document.getElementById(id);
+
+            if (element) {
+                element.textContent = name;
+            }
+        });
     }
 
     try {
@@ -386,11 +376,10 @@ async function displayFarmName() {
         const session = sessionData?.session;
 
         if (!session?.user) {
-            window.location.href = "login.html";
+            showFarmName("Session expired");
+            window.location.replace("login.html");
             return;
         }
-
-        const authUserId = session.user.id;
 
         const {
             data: profile,
@@ -398,7 +387,7 @@ async function displayFarmName() {
         } = await client
             .from("users")
             .select("*")
-            .eq("auth_user_id", authUserId)
+            .eq("auth_user_id", session.user.id)
             .maybeSingle();
 
         if (profileError) {
@@ -406,10 +395,7 @@ async function displayFarmName() {
         }
 
         if (!profile) {
-            console.error(
-                "No application user profile was found."
-            );
-
+            showFarmName("User profile not found");
             return;
         }
 
@@ -420,87 +406,54 @@ async function displayFarmName() {
 
         dashboardCurrentFarmId = profile.farm_id ?? null;
 
-        try {
-            localStorage.setItem(
-                "loggedInUser",
-                JSON.stringify(dashboardCurrentUser)
-            );
-        } catch (storageError) {
-            console.warn(
-                "Unable to refresh stored user profile.",
-                storageError
-            );
-        }
-
         displayLoggedInUser();
 
-        const farmNameElementIds = [
-            "dashboardFarmName",
-            "farmName",
-            "registeredFarmName",
-            "currentFarmName"
-        ];
-
         if (isDashboardSuperAdmin()) {
-            farmNameElementIds.forEach(function (id) {
-                const element = document.getElementById(id);
+            showFarmName("MUNKA PIGGERY PLATFORM");
+        } else if (!dashboardCurrentFarmId) {
+            showFarmName("No farm assigned");
+        } else {
+            const {
+                data: farm,
+                error: farmError
+            } = await client
+                .from("farms")
+                .select("id, farm_name")
+                .eq("id", dashboardCurrentFarmId)
+                .maybeSingle();
 
-                if (element) {
-                    element.textContent =
-                        "MUNKA PIGGERY PLATFORM";
-                }
-            });
-
-            return;
-        }
-
-        if (!dashboardCurrentFarmId) {
-            farmNameElementIds.forEach(function (id) {
-                const element = document.getElementById(id);
-
-                if (element) {
-                    element.textContent = "Farm not assigned";
-                }
-            });
-
-            return;
-        }
-
-        const {
-            data: farm,
-            error: farmError
-        } = await client
-            .from("farms")
-            .select("id, farm_name")
-            .eq("id", dashboardCurrentFarmId)
-            .maybeSingle();
-
-        if (farmError) {
-            throw farmError;
-        }
-
-        const farmName =
-            farm?.farm_name || "Registered Farm";
-
-        farmNameElementIds.forEach(function (id) {
-            const element = document.getElementById(id);
-
-            if (element) {
-                element.textContent = farmName;
+            if (farmError) {
+                throw farmError;
             }
-        });
+
+            if (!farm) {
+                showFarmName("Registered farm not found");
+            } else {
+                dashboardCurrentUser.farm_name =
+                    farm.farm_name || "Registered Farm";
+
+                showFarmName(dashboardCurrentUser.farm_name);
+            }
+        }
+
+        localStorage.setItem(
+            "loggedInUser",
+            JSON.stringify(dashboardCurrentUser)
+        );
 
     } catch (error) {
         console.error(
-            "Unable to load dashboard user and farm:",
+            "Unable to load farm name:",
             error
         );
+
+        showFarmName("Unable to load farm information");
     }
 }
 
 
 // ==========================================================
-// LIVE FARM STATISTICS
+// LIVE STATISTICS PANEL
 // ==========================================================
 
 function resetDashboardFarmStatistics() {
@@ -596,9 +549,9 @@ function createDashboardStatisticsPanel() {
         }
 
         #dashboardFarmStatisticsPanel .statistics-subtitle {
-            margin: 0 0 18px;
             color: #c8d6e5;
             font-size: 13px;
+            margin-bottom: 18px;
         }
 
         #dashboardStatisticsGrid {
@@ -610,7 +563,7 @@ function createDashboardStatisticsPanel() {
 
         .dashboard-stat-card {
             padding: 16px;
-            min-height: 80px;
+            min-height: 82px;
             border-radius: 10px;
             background: #173b4d;
             border-left: 4px solid #25b36a;
@@ -627,7 +580,7 @@ function createDashboardStatisticsPanel() {
         .dashboard-stat-card .stat-value {
             display: block;
             color: #ffffff;
-            font-size: 22px;
+            font-size: 21px;
             font-weight: bold;
             overflow-wrap: anywhere;
         }
@@ -647,13 +600,13 @@ function createDashboardStatisticsPanel() {
         }
 
         #refreshDashboardStatistics {
-            background: #16803c;
-            color: #ffffff;
+            margin-top: 12px;
+            padding: 9px 14px;
             border: none;
             border-radius: 7px;
-            padding: 9px 14px;
+            background: #16803c;
+            color: white;
             cursor: pointer;
-            margin-top: 12px;
         }
 
         #refreshDashboardStatistics:hover {
@@ -668,10 +621,10 @@ function createDashboardStatisticsPanel() {
     panel.id = "dashboardFarmStatisticsPanel";
 
     panel.innerHTML = `
-        <h2>Farm Statistics</h2>
+        <h2>Live Farm Statistics</h2>
 
         <p class="statistics-subtitle">
-            Live information from your registered farm.
+            Current registered pig population and farm activity.
         </p>
 
         <div id="dashboardStatisticsGrid"></div>
@@ -687,62 +640,33 @@ function createDashboardStatisticsPanel() {
         </button>
     `;
 
-    const possibleLocations = [
-        "dashboardStatisticsContainer",
-        "dashboardStatsContainer",
-        "dashboardMainContent",
-        "dashboardContent"
-    ];
+    const target =
+        document.getElementById("dashboardStatisticsContainer") ||
+        document.getElementById("dashboardStatsContainer") ||
+        document.getElementById("dashboardMainContent") ||
+        document.getElementById("dashboardContent") ||
+        document.querySelector("main") ||
+        document.querySelector(".dashboard-container") ||
+        document.body;
 
-    let inserted = false;
+    const announcementsSection =
+        document.getElementById("dashboardAnnouncements") ||
+        document.getElementById("announcementsSection");
 
-    for (const id of possibleLocations) {
-        const element = document.getElementById(id);
-
-        if (element) {
-            element.appendChild(panel);
-            inserted = true;
-            break;
-        }
+    if (
+        announcementsSection &&
+        announcementsSection.parentNode === target
+    ) {
+        target.insertBefore(panel, announcementsSection);
+    } else {
+        target.appendChild(panel);
     }
 
-    if (!inserted) {
-        const announcementSection =
-            document.getElementById(
-                "dashboardAnnouncements"
-            ) ||
-            document.getElementById(
-                "announcementsSection"
-            );
-
-        if (announcementSection?.parentNode) {
-            announcementSection.parentNode.insertBefore(
-                panel,
-                announcementSection
-            );
-
-            inserted = true;
-        }
-    }
-
-    if (!inserted) {
-        const main =
-            document.querySelector("main") ||
-            document.querySelector(".dashboard-container") ||
-            document.body;
-
-        main.appendChild(panel);
-    }
-
-    const refreshButton = document.getElementById(
+    document.getElementById(
         "refreshDashboardStatistics"
-    );
-
-    if (refreshButton) {
-        refreshButton.addEventListener("click", function () {
-            loadDashboardFarmStatistics();
-        });
-    }
+    ).addEventListener("click", function () {
+        loadDashboardFarmStatistics();
+    });
 
     displayDashboardFarmStatistics();
 }
@@ -761,7 +685,7 @@ function createStatisticsCardHTML(
 
             <span
                 class="stat-value"
-                id="dashboardStat-${dashboardEscapeHTML(key)}">
+                id="dashboardStat-${key}">
                 0
             </span>
         </div>
@@ -778,13 +702,11 @@ function updateDashboardStatistic(key, value) {
         return;
     }
 
-    const moneyKeys = [
+    if ([
         "salesThisMonth",
         "expensesThisMonth",
         "netBalance"
-    ];
-
-    if (moneyKeys.includes(key)) {
+    ].includes(key)) {
         element.textContent = formatDashboardMoney(value);
     } else {
         element.textContent = Number(value || 0)
@@ -805,890 +727,9 @@ function displayDashboardFarmStatistics() {
     grid.innerHTML = [
         createStatisticsCardHTML(
             "totalPigs",
-            "Total Registered Pigs"
+            "Registered Pig Population"
         ),
-
         createStatisticsCardHTML(
             "sows",
             "Sows"
         ),
-
-        createStatisticsCardHTML(
-            "boars",
-            "Boars"
-        ),
-
-        createStatisticsCardHTML(
-            "piglets",
-            "Piglets"
-        ),
-
-        createStatisticsCardHTML(
-            "weaners",
-            "Weaners"
-        ),
-
-        createStatisticsCardHTML(
-            "growers",
-            "Growers"
-        ),
-
-        createStatisticsCardHTML(
-            "otherCategories",
-            "Other Pig Categories"
-        ),
-
-        createStatisticsCardHTML(
-            "pregnantSows",
-            "Pregnant Sows"
-        ),
-
-        createStatisticsCardHTML(
-            "expectedFarrowings",
-            "Expected Farrowings",
-            "warning-card"
-        ),
-
-        createStatisticsCardHTML(
-            "pigletsWeaned",
-            "Piglets Weaned"
-        ),
-
-        createStatisticsCardHTML(
-            "treatmentsThisMonth",
-            "Treatments This Month"
-        ),
-
-        createStatisticsCardHTML(
-            "salesThisMonth",
-            "Sales This Month",
-            "money-card"
-        ),
-
-        createStatisticsCardHTML(
-            "expensesThisMonth",
-            "Expenses This Month",
-            "money-card"
-        ),
-
-        createStatisticsCardHTML(
-            "netBalance",
-            "Net Balance This Month",
-            "money-card"
-        )
-    ].join("");
-
-    Object.keys(dashboardFarmStatistics).forEach(function (key) {
-        updateDashboardStatistic(
-            key,
-            dashboardFarmStatistics[key]
-        );
-    });
-}
-
-
-async function loadDashboardFarmStatistics() {
-    if (dashboardStatisticsLoading) {
-        return;
-    }
-
-    const client = getDashboardSupabaseClient();
-
-    if (!client) {
-        return;
-    }
-
-    dashboardStatisticsLoading = true;
-
-    const statusElement = document.getElementById(
-        "dashboardStatisticsStatus"
-    );
-
-    if (statusElement) {
-        statusElement.textContent =
-            "Loading farm statistics...";
-    }
-
-    try {
-        if (!dashboardCurrentUser) {
-            await displayFarmName();
-        }
-
-        const user = getDashboardLoggedInUser();
-
-        if (!user) {
-            throw new Error(
-                "The dashboard user profile is unavailable."
-            );
-        }
-
-        const superAdmin = isDashboardSuperAdmin();
-
-        const farmId = dashboardCurrentFarmId;
-
-        if (!superAdmin && !farmId) {
-            resetDashboardFarmStatistics();
-            displayDashboardFarmStatistics();
-
-            if (statusElement) {
-                statusElement.textContent =
-                    "No farm has been assigned to this user.";
-            }
-
-            return;
-        }
-
-        resetDashboardFarmStatistics();
-
-        const monthRange = getDashboardCurrentMonthRange();
-
-        async function getFarmQuery(table, columns) {
-            let query = client
-                .from(table)
-                .select(columns);
-
-            if (!superAdmin) {
-                query = query.eq("farm_id", farmId);
-            }
-
-            const { data, error } = await query;
-
-            if (error) {
-                throw new Error(
-                    table + ": " + error.message
-                );
-            }
-
-            return data || [];
-        }
-
-        async function getMonthlyFarmQuery(
-            table,
-            columns,
-            dateColumn
-        ) {
-            let query = client
-                .from(table)
-                .select(columns)
-                .gte(dateColumn, monthRange.startDate)
-                .lt(dateColumn, monthRange.endDate);
-
-            if (!superAdmin) {
-                query = query.eq("farm_id", farmId);
-            }
-
-            const { data, error } = await query;
-
-            if (error) {
-                throw new Error(
-                    table + ": " + error.message
-                );
-            }
-
-            return data || [];
-        }
-
-        // ------------------------------------------
-        // PIG COUNTS
-        // ------------------------------------------
-
-        const pigs = await getFarmQuery(
-            "pigs",
-            "id, category"
-        );
-
-        dashboardFarmStatistics.totalPigs = pigs.length;
-
-        pigs.forEach(function (pig) {
-            const categoryKey =
-                normalizeDashboardPigCategory(
-                    pig.category
-                );
-
-            dashboardFarmStatistics[categoryKey]++;
-        });
-
-        // ------------------------------------------
-        // GESTATION AND EXPECTED FARROWINGS
-        // ------------------------------------------
-
-        const gestationRecords = await getFarmQuery(
-            "gestation_records",
-            "id, sow_id, service_date, delivery_date, status"
-        );
-
-        const today = getDashboardToday();
-
-        const pregnantSowIds = new Set();
-
-        gestationRecords.forEach(function (record) {
-            const status = String(record.status || "")
-                .trim()
-                .toLowerCase();
-
-            const closedStatuses = [
-                "completed",
-                "complete",
-                "delivered",
-                "farrowed",
-                "cancelled",
-                "canceled",
-                "failed",
-                "not pregnant",
-                "not_pregnant"
-            ];
-
-            const isClosed =
-                closedStatuses.includes(status);
-
-            const deliveryDate = record.delivery_date
-                ? String(record.delivery_date).slice(0, 10)
-                : "";
-
-            if (
-                !isClosed &&
-                record.sow_id
-            ) {
-                pregnantSowIds.add(
-                    String(record.sow_id)
-                );
-            }
-
-            if (
-                !isClosed &&
-                deliveryDate &&
-                deliveryDate >= today
-            ) {
-                dashboardFarmStatistics.expectedFarrowings++;
-            }
-        });
-
-        dashboardFarmStatistics.pregnantSows =
-            pregnantSowIds.size;
-
-        // ------------------------------------------
-        // PIGLETS WEANED
-        // ------------------------------------------
-
-        const weaningRecords = await getFarmQuery(
-            "weaning_records",
-            "total_weaned, weaning_date"
-        );
-
-        dashboardFarmStatistics.pigletsWeaned =
-            weaningRecords.reduce(function (total, record) {
-                return total +
-                    Number(record.total_weaned || 0);
-            }, 0);
-
-        // ------------------------------------------
-        // TREATMENTS THIS MONTH
-        // ------------------------------------------
-
-        const treatmentRecords = await getMonthlyFarmQuery(
-            "treatment_records",
-            "id, treatment_date",
-            "treatment_date"
-        );
-
-        dashboardFarmStatistics.treatmentsThisMonth =
-            treatmentRecords.length;
-
-        // ------------------------------------------
-        // SALES THIS MONTH
-        // ------------------------------------------
-
-        const salesRecords = await getMonthlyFarmQuery(
-            "sales_records",
-            "total_amount, sale_date",
-            "sale_date"
-        );
-
-        dashboardFarmStatistics.salesThisMonth =
-            salesRecords.reduce(function (total, record) {
-                return total +
-                    Number(record.total_amount || 0);
-            }, 0);
-
-        // ------------------------------------------
-        // EXPENSES THIS MONTH
-        // ------------------------------------------
-
-        const expenseRecords = await getMonthlyFarmQuery(
-            "expenses_records",
-            "total_amount, expense_date",
-            "expense_date"
-        );
-
-        dashboardFarmStatistics.expensesThisMonth =
-            expenseRecords.reduce(function (total, record) {
-                return total +
-                    Number(record.total_amount || 0);
-            }, 0);
-
-        // ------------------------------------------
-        // NET BALANCE
-        // ------------------------------------------
-
-        dashboardFarmStatistics.netBalance =
-            dashboardFarmStatistics.salesThisMonth -
-            dashboardFarmStatistics.expensesThisMonth;
-
-        displayDashboardFarmStatistics();
-
-        if (statusElement) {
-            statusElement.textContent =
-                "Statistics updated successfully. " +
-                "Monthly financial figures cover " +
-                monthRange.startDate +
-                " to " +
-                monthRange.endDate +
-                " (end date excluded).";
-        }
-
-    } catch (error) {
-        console.error(
-            "Dashboard statistics error:",
-            error
-        );
-
-        if (statusElement) {
-            statusElement.textContent =
-                "Some statistics could not be loaded. " +
-                "Check the browser console and database permissions.";
-        }
-
-    } finally {
-        dashboardStatisticsLoading = false;
-    }
-}
-
-
-// ==========================================================
-// ANNOUNCEMENTS
-// ==========================================================
-
-function isDashboardAnnouncementActive(announcement) {
-    if (!announcement) {
-        return false;
-    }
-
-    if (
-        announcement.status &&
-        String(announcement.status).toLowerCase() !== "active"
-    ) {
-        return false;
-    }
-
-    if (announcement.expires_at) {
-        const expiry = new Date(announcement.expires_at);
-
-        if (
-            !Number.isNaN(expiry.getTime()) &&
-            expiry < new Date()
-        ) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-function getPriorityInformation(priority) {
-    const value = String(priority || "normal")
-        .trim()
-        .toLowerCase();
-
-    if (value === "high" || value === "urgent") {
-        return {
-            label: value.toUpperCase(),
-            color: "#c62828"
-        };
-    }
-
-    if (value === "medium") {
-        return {
-            label: "MEDIUM",
-            color: "#e69500"
-        };
-    }
-
-    return {
-        label: "NORMAL",
-        color: "#16803c"
-    };
-}
-
-
-function createAnnouncementCard(announcement) {
-    const priority = getPriorityInformation(
-        announcement.priority
-    );
-
-    const card = document.createElement("article");
-
-    card.className = "dashboard-announcement-card";
-
-    card.style.background = "#ffffff";
-    card.style.borderRadius = "9px";
-    card.style.padding = "14px";
-    card.style.marginBottom = "12px";
-    card.style.borderLeft =
-        "5px solid " + priority.color;
-    card.style.boxShadow =
-        "0 2px 8px rgba(0,0,0,0.08)";
-
-    const title = dashboardEscapeHTML(
-        announcement.title || "Announcement"
-    );
-
-    const message = dashboardEscapeHTML(
-        announcement.message || ""
-    );
-
-    const createdDate = announcement.created_at
-        ? formatDashboardDate(announcement.created_at)
-        : "";
-
-    card.innerHTML = `
-        <div style="
-            display:flex;
-            justify-content:space-between;
-            gap:10px;
-            flex-wrap:wrap;
-            align-items:center;
-        ">
-            <strong style="color:#173b4d;">
-                ${title}
-            </strong>
-
-            <span style="
-                color:#ffffff;
-                background:${priority.color};
-                padding:4px 8px;
-                border-radius:5px;
-                font-size:11px;
-                font-weight:bold;
-            ">
-                ${dashboardEscapeHTML(priority.label)}
-            </span>
-        </div>
-
-        <p style="
-            color:#273746;
-            white-space:pre-wrap;
-            overflow-wrap:anywhere;
-            margin:12px 0;
-        ">${message}</p>
-
-        <small style="color:#64748b;">
-            ${dashboardEscapeHTML(createdDate)}
-        </small>
-    `;
-
-    return card;
-}
-
-
-function displayDashboardAnnouncements() {
-    const containers = [
-        document.getElementById("dashboardAnnouncementsList"),
-        document.getElementById("announcementsList"),
-        document.getElementById("dashboardAnnouncements")
-    ];
-
-    const container = containers.find(function (element) {
-        return element &&
-            element.id !== "dashboardAnnouncements" ||
-            (
-                element &&
-                element.id === "dashboardAnnouncements" &&
-                !element.querySelector(
-                    "#dashboardAnnouncementsList"
-                )
-            );
-    });
-
-    if (!container) {
-        return;
-    }
-
-    container.innerHTML = "";
-
-    const activeAnnouncements =
-        dashboardAnnouncements.filter(
-            isDashboardAnnouncementActive
-        );
-
-    if (activeAnnouncements.length === 0) {
-        container.innerHTML = `
-            <p style="padding:10px;color:#64748b;">
-                There are no announcements at the moment.
-            </p>
-        `;
-
-        return;
-    }
-
-    activeAnnouncements.forEach(function (announcement) {
-        container.appendChild(
-            createAnnouncementCard(announcement)
-        );
-    });
-}
-
-
-async function loadDashboardAnnouncements() {
-    if (dashboardAnnouncementsLoading) {
-        return;
-    }
-
-    const client = getDashboardSupabaseClient();
-
-    if (!client) {
-        return;
-    }
-
-    dashboardAnnouncementsLoading = true;
-
-    try {
-        let query = client
-            .from("announcements")
-            .select("*")
-            .order("created_at", {
-                ascending: false
-            });
-
-        const { data, error } = await query;
-
-        if (error) {
-            throw error;
-        }
-
-        dashboardAnnouncements = data || [];
-
-        displayDashboardAnnouncements();
-
-        if (isDashboardAdmin()) {
-            await loadManagedAnnouncements();
-        }
-
-    } catch (error) {
-        console.error(
-            "Unable to load announcements:",
-            error
-        );
-
-    } finally {
-        dashboardAnnouncementsLoading = false;
-    }
-}
-
-
-// ==========================================================
-// ANNOUNCEMENT MANAGEMENT
-// ==========================================================
-
-function openAnnouncementManagement() {
-    const modal = document.getElementById(
-        "announcementManagementModal"
-    );
-
-    if (!modal) {
-        dashboardShowMessage(
-            "Announcement management panel was not found.",
-            "warning"
-        );
-
-        return;
-    }
-
-    modal.style.display = "flex";
-
-    loadManagedAnnouncements();
-}
-
-
-function closeAnnouncementManagement() {
-    const modal = document.getElementById(
-        "announcementManagementModal"
-    );
-
-    if (modal) {
-        modal.style.display = "none";
-    }
-}
-
-
-async function loadAnnouncementTargetUsers() {
-    const client = getDashboardSupabaseClient();
-
-    const select = document.getElementById(
-        "announcementTargetUser"
-    );
-
-    if (!client || !select) {
-        return;
-    }
-
-    try {
-        const { data, error } = await client
-            .from("users")
-            .select("id, full_name, role, status")
-            .order("full_name", {
-                ascending: true
-            });
-
-        if (error) {
-            throw error;
-        }
-
-        select.innerHTML =
-            '<option value="">Select a user</option>';
-
-        (data || [])
-            .filter(function (user) {
-                return !user.status ||
-                    String(user.status).toLowerCase() ===
-                    "active";
-            })
-            .forEach(function (user) {
-                const option =
-                    document.createElement("option");
-
-                option.value = user.id;
-
-                option.textContent =
-                    (user.full_name || "Unnamed User") +
-                    " (" +
-                    (user.role || "User") +
-                    ")";
-
-                select.appendChild(option);
-            });
-
-    } catch (error) {
-        console.error(
-            "Unable to load announcement recipients:",
-            error
-        );
-    }
-}
-
-
-function handleAnnouncementTargetChange() {
-    const targetType = document.getElementById(
-        "announcementTargetType"
-    );
-
-    const targetUser = document.getElementById(
-        "announcementTargetUser"
-    );
-
-    if (!targetType || !targetUser) {
-        return;
-    }
-
-    const selectedType = String(
-        targetType.value || ""
-    ).toLowerCase();
-
-    const wrapper =
-        document.getElementById(
-            "announcementTargetUserWrapper"
-        );
-
-    if (wrapper) {
-        wrapper.style.display =
-            selectedType.includes("user")
-                ? "block"
-                : "none";
-    }
-
-    targetUser.disabled =
-        !selectedType.includes("user");
-}
-
-
-function toggleAnnouncementForm() {
-    const form = document.getElementById(
-        "announcementForm"
-    );
-
-    if (!form) {
-        return;
-    }
-
-    form.style.display =
-        form.style.display === "none"
-            ? "block"
-            : "none";
-}
-
-
-function resetAnnouncementForm() {
-    const form = document.getElementById(
-        "announcementForm"
-    );
-
-    if (form) {
-        form.reset();
-    }
-
-    const idField = document.getElementById(
-        "announcementId"
-    );
-
-    if (idField) {
-        idField.value = "";
-    }
-
-    const submitButton = document.getElementById(
-        "saveAnnouncementButton"
-    );
-
-    if (submitButton) {
-        submitButton.textContent = "Save Announcement";
-    }
-
-    handleAnnouncementTargetChange();
-}
-
-
-function cancelAnnouncementForm() {
-    resetAnnouncementForm();
-
-    const form = document.getElementById(
-        "announcementForm"
-    );
-
-    if (form) {
-        form.style.display = "none";
-    }
-}
-
-
-function showAnnouncementManagementMessage(
-    message,
-    type = "info"
-) {
-    const element = document.getElementById(
-        "announcementManagementMessage"
-    );
-
-    if (!element) {
-        dashboardShowMessage(message, type);
-        return;
-    }
-
-    element.textContent = message;
-    element.style.display = "block";
-
-    element.style.color =
-        type === "error"
-            ? "#c62828"
-            : type === "success"
-                ? "#16803c"
-                : "#1769aa";
-}
-
-
-async function createNotificationsForAnnouncement(
-    announcement
-) {
-    const client = getDashboardSupabaseClient();
-
-    if (!client || !announcement?.id) {
-        return;
-    }
-
-    const { error } = await client.rpc(
-        "create_announcement_notifications",
-        {
-            p_announcement_id: announcement.id
-        }
-    );
-
-    if (error) {
-        console.warn(
-            "Announcement was saved, but notifications " +
-            "could not be generated:",
-            error.message
-        );
-    }
-}
-
-
-async function saveDashboardAnnouncement(event) {
-    if (event) {
-        event.preventDefault();
-    }
-
-    if (!isDashboardAdmin()) {
-        dashboardShowMessage(
-            "You do not have permission to manage announcements.",
-            "error"
-        );
-
-        return;
-    }
-
-    const client = getDashboardSupabaseClient();
-
-    if (!client) {
-        return;
-    }
-
-    const title = document.getElementById(
-        "announcementTitle"
-    )?.value?.trim();
-
-    const message = document.getElementById(
-        "announcementMessage"
-    )?.value?.trim();
-
-    const priority = document.getElementById(
-        "announcementPriority"
-    )?.value || "normal";
-
-    const targetType = document.getElementById(
-        "announcementTargetType"
-    )?.value || "all";
-
-    const targetUserId = document.getElementById(
-        "announcementTargetUser"
-    )?.value || null;
-
-    const announcementId = document.getElementById(
-        "announcementId"
-    )?.value;
-
-    if (!title || !message) {
-        showAnnouncementManagementMessage(
-            "Enter both the announcement title and message.",
-            "error"
-        );
-
-        return;
-    }
-
-    if (
-        String(targetType).toLowerCase().includes("user") &&
-        !targetUserId
-    ) {
-        showAnnouncementManagementMessage(
-            "Select the user who should receive this announcement.",
-            "error"
-        );
-
-        return;
-    }
-
-    const user = getDashboardLoggedInUser();
-
-    const payload = {
-        title: title,
-        message: message,
-        priority: priority,
-        created_by: user?.id ?? null
