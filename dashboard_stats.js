@@ -4,25 +4,26 @@
 
    File: dashboard_stats.js
 
-   Features:
+   FEATURES
    - Farm-specific statistics
-   - Accurate pig category reporting
-   - Pregnant sow monitoring
-   - Expected farrowings
-   - Piglets weaned: monthly and cumulative
-   - Treatment records
-   - Sales recorded
-   - Payments received
-   - Pending payments
-   - Monthly expenses
-   - Net cash position
+   - Verified actual pig population
+   - Registered pig records shown separately
+   - Opening population and population movements
+   - Pregnant sows and expected farrowings
+   - Monthly and cumulative weaning
+   - Monthly treatments
+   - Monthly sales and payment status
+   - Monthly expenses and net cash position
    - Zambia date and time
    - Manual and automatic refreshing
-   - Mobile-responsive design
+   - Responsive mobile-friendly dashboard
+   - Prevents unverified population from appearing as zero
 
-   IMPORTANT:
-   Regular users can only request statistics for their farm.
-   Super Admin users are not shown farm statistics here.
+   IMPORTANT
+   - Super Admin does not see farm statistics here.
+   - Supabase Row Level Security must remain enabled.
+   - Population movements are obtained from
+     public.farm_population_summary.
    ============================================================ */
 
 (function () {
@@ -30,7 +31,6 @@
 
     const STYLE_ID = "munka-live-statistics-styles";
     const SECTION_ID = "munkaLiveStatisticsSection";
-
     const REFRESH_INTERVAL = 5 * 60 * 1000;
     const PAGE_SIZE = 1000;
 
@@ -64,39 +64,20 @@
                 return window.supabaseClient;
             }
 
-            if (
-                window.supabase &&
-                typeof window.supabase.from === "function"
-            ) {
-                return window.supabase;
-            }
-
             return null;
         } catch (error) {
-            console.error(
-                "MUNKA Statistics: Could not access Supabase.",
-                error
-            );
-
+            console.error("MUNKA Statistics:", error);
             return null;
         }
     }
 
     function getLoggedInUser() {
         try {
-            const savedUser = localStorage.getItem("loggedInUser");
+            const value = localStorage.getItem("loggedInUser");
 
-            if (!savedUser) {
-                return null;
-            }
-
-            return JSON.parse(savedUser);
+            return value ? JSON.parse(value) : null;
         } catch (error) {
-            console.error(
-                "MUNKA Statistics: Could not read logged-in user.",
-                error
-            );
-
+            console.error("Could not read logged-in user:", error);
             return null;
         }
     }
@@ -109,6 +90,14 @@
     }
 
     function numberValue(value) {
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return 0;
+        }
+
         const result = Number(value);
 
         return Number.isFinite(result) ? result : 0;
@@ -125,6 +114,24 @@
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }).format(numberValue(value));
+    }
+
+    function formatVerifiedPopulation(value) {
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return "Not verified";
+        }
+
+        const number = Number(value);
+
+        if (!Number.isFinite(number) || number < 0) {
+            return "Not verified";
+        }
+
+        return formatNumber(number);
     }
 
     function getZambiaDateParts() {
@@ -150,17 +157,14 @@
         const parts = getZambiaDateParts();
 
         return (
-            parts.year +
-            "-" +
-            parts.month +
-            "-" +
+            parts.year + "-" +
+            parts.month + "-" +
             parts.day
         );
     }
 
     function getMonthRange() {
         const today = getZambiaToday();
-        const firstDay = today.substring(0, 8) + "01";
 
         const year = Number(today.substring(0, 4));
         const month = Number(today.substring(5, 7));
@@ -173,16 +177,13 @@
             nextYear++;
         }
 
-        const nextMonthStart =
-            String(nextYear) +
-            "-" +
-            String(nextMonth).padStart(2, "0") +
-            "-01";
-
         return {
             today: today,
-            start: firstDay,
-            end: nextMonthStart
+            start: today.substring(0, 8) + "01",
+            end:
+                String(nextYear) + "-" +
+                String(nextMonth).padStart(2, "0") +
+                "-01"
         };
     }
 
@@ -220,32 +221,26 @@
     }
 
     function setStatus(message, type) {
-        const status = document.getElementById(
-            "munkaLiveStatisticsStatus"
-        );
-
-        if (!status) {
-            return;
-        }
-
-        status.textContent = message;
-        status.className =
-            "munka-statistics-status " +
-            (type || "info");
-    }
-
-    function setLastUpdated(date) {
         const element = document.getElementById(
-            "munkaStatisticsLastUpdated"
+            "munkaLiveStatisticsStatus"
         );
 
         if (!element) {
             return;
         }
 
-        element.textContent = date
-            ? "Last updated: " + formatZambiaDateTime(date)
-            : "Statistics have not been updated yet.";
+        element.textContent = message;
+        element.className =
+            "munka-statistics-status " + (type || "info");
+    }
+
+    function setLastUpdated(date) {
+        setText(
+            "munkaStatisticsLastUpdated",
+            date
+                ? "Last updated: " + formatZambiaDateTime(date)
+                : "Statistics have not been updated yet."
+        );
     }
 
     function setLoading(loading) {
@@ -265,7 +260,9 @@
         }
 
         if (spinner) {
-            spinner.style.display = loading ? "inline-block" : "none";
+            spinner.style.display = loading
+                ? "inline-block"
+                : "none";
         }
 
         const section = document.getElementById(SECTION_ID);
@@ -278,8 +275,16 @@
         }
     }
 
+    function setOptionalText(id, value) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = String(value);
+        }
+    }
+
     /* ========================================================
-       SECURITY AND FARM IDENTIFICATION
+       USER AND FARM VALIDATION
     ======================================================== */
 
     function isSuperAdmin(user) {
@@ -291,17 +296,17 @@
             return null;
         }
 
-        const farmId = user.farm_id;
+        const id = user.farm_id;
 
         if (
-            farmId === null ||
-            farmId === undefined ||
-            String(farmId).trim() === ""
+            id === null ||
+            id === undefined ||
+            String(id).trim() === ""
         ) {
             return null;
         }
 
-        return farmId;
+        return id;
     }
 
     function validateUser() {
@@ -340,12 +345,7 @@
     }
 
     /* ========================================================
-       DATABASE QUERY HELPER
-
-       Every farm statistics query includes farm_id.
-
-       Pagination avoids silently limiting larger farms to
-       the first 1,000 records.
+       PAGINATED FARM DATA
     ======================================================== */
 
     async function fetchAllFarmRows(
@@ -375,9 +375,7 @@
 
             if (result.error) {
                 throw new Error(
-                    tableName +
-                    ": " +
-                    result.error.message
+                    tableName + ": " + result.error.message
                 );
             }
 
@@ -396,10 +394,48 @@
     }
 
     /* ========================================================
-       PIG POPULATION CALCULATIONS
+       VERIFIED POPULATION SUMMARY
+
+       This view is the source of actual population figures.
+       Do not replace these values with pigs.length.
     ======================================================== */
 
-    function calculatePigPopulation(pigs) {
+    async function fetchPopulationSummary(client, farmId) {
+        const result = await client
+            .from("farm_population_summary")
+            .select(
+                "farm_id, farm_name, opening_date, " +
+                "opening_population, current_population, " +
+                "births_since_opening, purchases_since_opening, " +
+                "arrivals_since_opening, deaths_since_opening, " +
+                "sales_since_opening"
+            )
+            .eq("farm_id", farmId)
+            .maybeSingle();
+
+        if (result.error) {
+            throw new Error(
+                "Population summary: " + result.error.message
+            );
+        }
+
+        if (!result.data) {
+            throw new Error(
+                "No population summary exists for your farm."
+            );
+        }
+
+        return result.data;
+    }
+
+    /* ========================================================
+       REGISTERED PIG RECORDS
+
+       These are registration records, not a verified count
+       of every animal physically present on the farm.
+    ======================================================== */
+
+    function calculateRegisteredPigs(pigs) {
         const stats = {
             total: pigs.length,
             sows: 0,
@@ -413,78 +449,51 @@
         pigs.forEach(function (pig) {
             const category = normalizeText(pig.category);
 
-            if (!category) {
-                stats.unspecified++;
-                return;
-            }
-
             if (
                 category === "sow" ||
                 category === "sows"
             ) {
                 stats.sows++;
-                return;
-            }
-
-            if (
+            } else if (
                 category === "boar" ||
                 category === "boars"
             ) {
                 stats.boars++;
-                return;
-            }
-
-            if (
+            } else if (
                 category === "piglet" ||
                 category === "piglets" ||
                 category === "suckling piglet" ||
                 category === "suckling piglets"
             ) {
                 stats.piglets++;
-                return;
-            }
-
-            if (
+            } else if (
                 category === "weaner" ||
                 category === "weaners"
             ) {
                 stats.weaners++;
-                return;
-            }
-
-            if (
+            } else if (
                 category === "grower" ||
                 category === "growers"
             ) {
                 stats.growers++;
-                return;
+            } else {
+                stats.unspecified++;
             }
-
-            stats.unspecified++;
         });
 
         return stats;
     }
 
     /* ========================================================
-       BREEDING CALCULATIONS
+       BREEDING STATISTICS
     ======================================================== */
 
-    function calculateBreeding(gestationRecords, today) {
+    function calculateBreeding(records, today) {
         const pregnantSowIds = new Set();
-
         let expectedFarrowings = 0;
 
-        gestationRecords.forEach(function (record) {
-            const status = normalizeText(record.status);
-
-            /*
-             * Your database status check showed "Pregnant".
-             * Only records explicitly marked Pregnant count
-             * as current pregnancies.
-             */
-
-            if (status !== "pregnant") {
+        records.forEach(function (record) {
+            if (normalizeText(record.status) !== "pregnant") {
                 return;
             }
 
@@ -493,11 +502,6 @@
                     String(record.sow_id).trim()
                 );
             }
-
-            /*
-             * Count expected farrowings only where the
-             * delivery date is today or later.
-             */
 
             if (
                 record.delivery_date &&
@@ -514,13 +518,13 @@
     }
 
     /* ========================================================
-       WEANING CALCULATIONS
+       WEANING STATISTICS
     ======================================================== */
 
     function calculateWeaning(records, monthRange) {
-        let cumulativeWeaned = 0;
-        let monthlyWeaned = 0;
-        let monthlyRecords = 0;
+        let cumulative = 0;
+        let thisMonth = 0;
+        let recordsThisMonth = 0;
 
         records.forEach(function (record) {
             const total = Math.max(
@@ -528,7 +532,7 @@
                 numberValue(record.total_weaned)
             );
 
-            cumulativeWeaned += total;
+            cumulative += total;
 
             if (
                 isDateInCurrentMonth(
@@ -536,64 +540,43 @@
                     monthRange
                 )
             ) {
-                monthlyWeaned += total;
-                monthlyRecords++;
+                thisMonth += total;
+                recordsThisMonth++;
             }
         });
 
         return {
-            cumulative: cumulativeWeaned,
-            thisMonth: monthlyWeaned,
-            recordsThisMonth: monthlyRecords
+            cumulative: cumulative,
+            thisMonth: thisMonth,
+            recordsThisMonth: recordsThisMonth
         };
     }
 
     /* ========================================================
-       TREATMENT CALCULATIONS
+       TREATMENTS
     ======================================================== */
 
     function calculateTreatments(records, monthRange) {
-        const currentMonthRecords = records.filter(
-            function (record) {
+        return {
+            thisMonth: records.filter(function (record) {
                 return isDateInCurrentMonth(
                     record.treatment_date,
                     monthRange
                 );
-            }
-        );
-
-        return {
-            thisMonth: currentMonthRecords.length
+            }).length
         };
     }
 
     /* ========================================================
-       FINANCIAL CALCULATIONS
-
-       Sales recorded:
-       All sales entered during the current month.
-
-       Payments received:
-       Sales with payment_status = Paid.
-
-       Pending payments:
-       Sales with payment_status = Pending.
-
-       Net cash position:
-       Payments received minus recorded expenses.
-
-       This is a dashboard summary, not a full accounting
-       statement.
+       SALES AND PAYMENTS
     ======================================================== */
 
     function calculateSales(records, monthRange) {
         let totalSales = 0;
         let paymentsReceived = 0;
         let pendingPayments = 0;
-
         let paidTransactions = 0;
         let pendingTransactions = 0;
-
         let otherStatusAmount = 0;
 
         records.forEach(function (record) {
@@ -610,25 +593,18 @@
 
             totalSales += amount;
 
-            const paymentStatus = normalizeText(
-                record.payment_status
-            );
+            const status = normalizeText(record.payment_status);
 
-            if (paymentStatus === "paid") {
+            if (status === "paid") {
                 paymentsReceived += amount;
                 paidTransactions++;
             } else if (
-                paymentStatus === "pending" ||
-                paymentStatus === "unpaid"
+                status === "pending" ||
+                status === "unpaid"
             ) {
                 pendingPayments += amount;
                 pendingTransactions++;
             } else {
-                /*
-                 * Unknown statuses remain visible in the
-                 * sales total but are not assumed to be
-                 * money received.
-                 */
                 otherStatusAmount += amount;
             }
         });
@@ -643,27 +619,27 @@
         };
     }
 
-    function calculateExpenses(records, monthRange) {
-        let totalExpenses = 0;
+    /* ========================================================
+       EXPENSES
+    ======================================================== */
 
-        records.forEach(function (record) {
+    function calculateExpenses(records, monthRange) {
+        return records.reduce(function (total, record) {
             if (
                 isDateInCurrentMonth(
                     record.expense_date,
                     monthRange
                 )
             ) {
-                totalExpenses += numberValue(
-                    record.total_amount
-                );
+                return total + numberValue(record.total_amount);
             }
-        });
 
-        return totalExpenses;
+            return total;
+        }, 0);
     }
 
     /* ========================================================
-       CREATE DASHBOARD STYLES
+       CREATE STYLES
     ======================================================== */
 
     function injectStyles() {
@@ -672,306 +648,247 @@
         }
 
         const style = document.createElement("style");
-
         style.id = STYLE_ID;
 
         style.textContent = `
             #${SECTION_ID} {
-                width: 100%;
-                margin: 24px 0;
-                padding: 24px;
-                box-sizing: border-box;
-                border-radius: 18px;
-                background: var(--munka-stats-bg, #ffffff);
-                border: 1px solid var(--munka-stats-border, #e0e8e1);
-                box-shadow: 0 5px 20px rgba(20, 65, 35, 0.07);
-                color: var(--munka-stats-text, #183d28);
+                width:100%;
+                margin:24px 0;
+                padding:24px;
+                box-sizing:border-box;
+                border-radius:18px;
+                background:var(--munka-stats-bg,#fff);
+                border:1px solid var(--munka-stats-border,#e0e8e1);
+                box-shadow:0 5px 20px rgba(20,65,35,.07);
+                color:var(--munka-stats-text,#183d28);
             }
-
             #${SECTION_ID} *,
             #${SECTION_ID} *::before,
             #${SECTION_ID} *::after {
-                box-sizing: border-box;
+                box-sizing:border-box;
             }
-
             #${SECTION_ID} .munka-stats-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                flex-wrap: wrap;
-                gap: 16px;
-                margin-bottom: 20px;
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                flex-wrap:wrap;
+                gap:16px;
+                margin-bottom:20px;
             }
-
             #${SECTION_ID} .munka-stats-title {
-                margin: 0 0 7px;
-                font-size: clamp(21px, 3vw, 28px);
-                line-height: 1.25;
-                font-weight: 800;
-                color: var(--munka-stats-heading, #176b38);
+                margin:0 0 7px;
+                font-size:clamp(21px,3vw,28px);
+                line-height:1.25;
+                font-weight:800;
+                color:var(--munka-stats-heading,#176b38);
             }
-
             #${SECTION_ID} .munka-stats-subtitle {
-                margin: 0;
-                font-size: 14px;
-                line-height: 1.6;
-                color: var(--munka-stats-muted, #617166);
+                margin:0;
+                font-size:14px;
+                line-height:1.6;
+                color:var(--munka-stats-muted,#617166);
             }
-
             #${SECTION_ID} .munka-stats-controls {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                flex-wrap: wrap;
+                display:flex;
+                align-items:center;
+                gap:10px;
+                flex-wrap:wrap;
             }
-
             #${SECTION_ID} .munka-refresh-button {
-                min-height: 42px;
-                padding: 10px 16px;
-                border: none;
-                border-radius: 9px;
-                background: #176b38;
-                color: #ffffff;
-                font-weight: 700;
-                font-size: 13px;
-                cursor: pointer;
-                transition: opacity 0.2s ease;
+                min-height:42px;
+                padding:10px 16px;
+                border:0;
+                border-radius:9px;
+                background:#176b38;
+                color:#fff;
+                font-weight:700;
+                font-size:13px;
+                cursor:pointer;
             }
-
-            #${SECTION_ID} .munka-refresh-button:hover {
-                opacity: 0.88;
-            }
-
             #${SECTION_ID} .munka-refresh-button:disabled {
-                opacity: 0.6;
-                cursor: wait;
+                opacity:.6;
+                cursor:wait;
             }
-
             #${SECTION_ID} .munka-statistics-spinner {
-                display: none;
-                width: 13px;
-                height: 13px;
-                margin-right: 7px;
-                vertical-align: middle;
-                border: 2px solid rgba(255,255,255,0.4);
-                border-top-color: #ffffff;
-                border-radius: 50%;
-                animation: munkaStatsSpin 0.8s linear infinite;
+                display:none;
+                width:13px;
+                height:13px;
+                margin-right:7px;
+                vertical-align:middle;
+                border:2px solid rgba(255,255,255,.4);
+                border-top-color:#fff;
+                border-radius:50%;
+                animation:munkaStatsSpin .8s linear infinite;
             }
-
             @keyframes munkaStatsSpin {
-                to { transform: rotate(360deg); }
+                to { transform:rotate(360deg); }
             }
-
             #${SECTION_ID} .munka-stats-period {
-                margin: 0 0 14px;
-                font-size: 13px;
-                font-weight: 700;
-                color: var(--munka-stats-muted, #617166);
+                margin:0 0 14px;
+                font-size:13px;
+                font-weight:700;
+                color:var(--munka-stats-muted,#617166);
             }
-
             #${SECTION_ID} .munka-statistics-grid {
-                display: grid;
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-                gap: 14px;
+                display:grid;
+                grid-template-columns:repeat(4,minmax(0,1fr));
+                gap:14px;
             }
-
             #${SECTION_ID} .munka-stat-card {
-                min-width: 0;
-                padding: 17px;
-                border-radius: 13px;
-                border: 1px solid var(--munka-stats-border, #e0e8e1);
-                background: var(--munka-stats-card-bg, #fbfdfb);
-                position: relative;
-                overflow: hidden;
+                min-width:0;
+                padding:17px;
+                border-radius:13px;
+                border:1px solid var(--munka-stats-border,#e0e8e1);
+                background:var(--munka-stats-card-bg,#fbfdfb);
+                position:relative;
+                overflow:hidden;
             }
-
             #${SECTION_ID} .munka-stat-card::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 4px;
-                height: 100%;
-                background: var(--munka-card-accent, #27834a);
+                content:"";
+                position:absolute;
+                top:0;
+                left:0;
+                width:4px;
+                height:100%;
+                background:var(--munka-card-accent,#27834a);
             }
-
-            #${SECTION_ID} .munka-stat-card.green {
-                --munka-card-accent: #23834a;
-            }
-
-            #${SECTION_ID} .munka-stat-card.blue {
-                --munka-card-accent: #2879b9;
-            }
-
-            #${SECTION_ID} .munka-stat-card.orange {
-                --munka-card-accent: #d78624;
-            }
-
-            #${SECTION_ID} .munka-stat-card.red {
-                --munka-card-accent: #c64a4a;
-            }
-
-            #${SECTION_ID} .munka-stat-card.purple {
-                --munka-card-accent: #8055ae;
-            }
-
-            #${SECTION_ID} .munka-stat-card.teal {
-                --munka-card-accent: #198b8b;
-            }
-
+            #${SECTION_ID} .green { --munka-card-accent:#23834a; }
+            #${SECTION_ID} .blue { --munka-card-accent:#2879b9; }
+            #${SECTION_ID} .orange { --munka-card-accent:#d78624; }
+            #${SECTION_ID} .red { --munka-card-accent:#c64a4a; }
+            #${SECTION_ID} .purple { --munka-card-accent:#8055ae; }
+            #${SECTION_ID} .teal { --munka-card-accent:#198b8b; }
             #${SECTION_ID} .munka-stat-label {
-                display: block;
-                margin-bottom: 11px;
-                font-size: 12px;
-                line-height: 1.5;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.35px;
-                color: var(--munka-stats-muted, #617166);
-                overflow-wrap: anywhere;
+                display:block;
+                margin-bottom:11px;
+                font-size:12px;
+                line-height:1.5;
+                font-weight:700;
+                text-transform:uppercase;
+                letter-spacing:.35px;
+                color:var(--munka-stats-muted,#617166);
+                overflow-wrap:anywhere;
             }
-
             #${SECTION_ID} .munka-stat-value {
-                display: block;
-                font-size: clamp(22px, 2.3vw, 30px);
-                line-height: 1.25;
-                font-weight: 800;
-                color: var(--munka-stats-text, #183d28);
-                overflow-wrap: anywhere;
+                display:block;
+                font-size:clamp(22px,2.3vw,30px);
+                line-height:1.25;
+                font-weight:800;
+                color:var(--munka-stats-text,#183d28);
+                overflow-wrap:anywhere;
             }
-
             #${SECTION_ID} .munka-stat-value.currency {
-                font-size: clamp(17px, 1.8vw, 23px);
+                font-size:clamp(17px,1.8vw,23px);
             }
-
+            #${SECTION_ID} .munka-stat-value.text-value {
+                font-size:clamp(15px,1.6vw,20px);
+            }
             #${SECTION_ID} .munka-stat-description {
-                display: block;
-                margin-top: 8px;
-                font-size: 12px;
-                line-height: 1.5;
-                color: var(--munka-stats-muted, #617166);
+                display:block;
+                margin-top:8px;
+                font-size:12px;
+                line-height:1.5;
+                color:var(--munka-stats-muted,#617166);
             }
-
             #${SECTION_ID} .munka-stats-group-title {
-                grid-column: 1 / -1;
-                margin: 18px 0 0;
-                padding-bottom: 10px;
-                border-bottom: 1px solid var(--munka-stats-border, #e0e8e1);
-                font-size: 16px;
-                font-weight: 800;
-                color: var(--munka-stats-heading, #176b38);
+                grid-column:1/-1;
+                margin:18px 0 0;
+                padding-bottom:10px;
+                border-bottom:1px solid var(--munka-stats-border,#e0e8e1);
+                font-size:16px;
+                font-weight:800;
+                color:var(--munka-stats-heading,#176b38);
             }
-
             #${SECTION_ID} .munka-statistics-status {
-                margin-top: 18px;
-                padding: 11px 13px;
-                border-radius: 9px;
-                font-size: 13px;
-                line-height: 1.6;
-                background: #f0f6f1;
-                color: #315b3d;
-                overflow-wrap: anywhere;
+                margin-top:18px;
+                padding:11px 13px;
+                border-radius:9px;
+                font-size:13px;
+                line-height:1.6;
+                background:#f0f6f1;
+                color:#315b3d;
+                overflow-wrap:anywhere;
             }
-
             #${SECTION_ID} .munka-statistics-status.success {
-                background: #eaf7ed;
-                color: #176b38;
+                background:#eaf7ed;
+                color:#176b38;
             }
-
             #${SECTION_ID} .munka-statistics-status.error {
-                background: #fff0f0;
-                color: #a32727;
+                background:#fff0f0;
+                color:#a32727;
             }
-
             #${SECTION_ID} .munka-statistics-status.warning {
-                background: #fff7e8;
-                color: #805400;
+                background:#fff7e8;
+                color:#805400;
             }
-
             #${SECTION_ID} .munka-statistics-updated {
-                margin: 10px 0 0;
-                font-size: 12px;
-                color: var(--munka-stats-muted, #617166);
+                margin:10px 0 0;
+                font-size:12px;
+                color:var(--munka-stats-muted,#617166);
             }
-
             body.dark-mode #${SECTION_ID} {
-                --munka-stats-bg: #18251d;
-                --munka-stats-border: #35483b;
-                --munka-stats-text: #e8f3ea;
-                --munka-stats-heading: #7fdaa0;
-                --munka-stats-muted: #b0c2b5;
-                --munka-stats-card-bg: #202f25;
-                background: var(--munka-stats-bg);
-                color: var(--munka-stats-text);
+                --munka-stats-bg:#18251d;
+                --munka-stats-border:#35483b;
+                --munka-stats-text:#e8f3ea;
+                --munka-stats-heading:#7fdaa0;
+                --munka-stats-muted:#b0c2b5;
+                --munka-stats-card-bg:#202f25;
+                background:var(--munka-stats-bg);
+                color:var(--munka-stats-text);
             }
-
             body.dark-mode #${SECTION_ID} .munka-statistics-status {
-                background: #26382b;
-                color: #d9f0df;
+                background:#26382b;
+                color:#d9f0df;
             }
-
             body.dark-mode #${SECTION_ID} .munka-statistics-status.success {
-                background: #1f3b29;
-                color: #a9e6ba;
+                background:#1f3b29;
+                color:#a9e6ba;
             }
-
             body.dark-mode #${SECTION_ID} .munka-statistics-status.error {
-                background: #472626;
-                color: #ffd0d0;
+                background:#472626;
+                color:#ffd0d0;
             }
-
             body.dark-mode #${SECTION_ID} .munka-statistics-status.warning {
-                background: #493b22;
-                color: #ffe0a0;
+                background:#493b22;
+                color:#ffe0a0;
             }
-
-            @media (max-width: 1000px) {
+            @media(max-width:1000px) {
                 #${SECTION_ID} .munka-statistics-grid {
-                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    grid-template-columns:repeat(3,minmax(0,1fr));
                 }
             }
-
-            @media (max-width: 700px) {
+            @media(max-width:700px) {
                 #${SECTION_ID} {
-                    padding: 16px;
-                    margin: 18px 0;
-                    border-radius: 13px;
+                    padding:16px;
+                    margin:18px 0;
+                    border-radius:13px;
                 }
-
                 #${SECTION_ID} .munka-statistics-grid {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                    gap: 10px;
+                    grid-template-columns:repeat(2,minmax(0,1fr));
+                    gap:10px;
                 }
-
                 #${SECTION_ID} .munka-stat-card {
-                    padding: 13px;
+                    padding:13px;
                 }
-
                 #${SECTION_ID} .munka-stat-label {
-                    font-size: 11px;
+                    font-size:11px;
                 }
-
                 #${SECTION_ID} .munka-stat-value {
-                    font-size: 23px;
+                    font-size:23px;
                 }
-
                 #${SECTION_ID} .munka-stat-value.currency {
-                    font-size: 17px;
+                    font-size:17px;
                 }
             }
-
-            @media (max-width: 380px) {
+            @media(max-width:380px) {
                 #${SECTION_ID} .munka-statistics-grid {
-                    grid-template-columns: 1fr;
+                    grid-template-columns:1fr;
                 }
-
                 #${SECTION_ID} .munka-stats-header {
-                    display: block;
+                    display:block;
                 }
-
                 #${SECTION_ID} .munka-stats-controls {
-                    margin-top: 14px;
+                    margin-top:14px;
                 }
             }
         `;
@@ -992,293 +909,256 @@
 
         section = document.createElement("section");
         section.id = SECTION_ID;
-
         section.setAttribute("aria-label", "Live farm statistics");
 
         section.innerHTML = `
             <div class="munka-stats-header">
                 <div>
-                    <h2 class="munka-stats-title">
-                        Live Farm Statistics
-                    </h2>
-
+                    <h2 class="munka-stats-title">Live Farm Statistics</h2>
                     <p class="munka-stats-subtitle">
-                        Monitor your pig population, breeding,
+                        Monitor verified pig population, breeding,
                         production, animal health and finances.
                     </p>
                 </div>
-
                 <div class="munka-stats-controls">
-                    <button
-                        type="button"
+                    <button type="button"
                         id="munkaRefreshStatisticsButton"
-                        class="munka-refresh-button"
-                    >
-                        <span
-                            id="munkaStatisticsSpinner"
+                        class="munka-refresh-button">
+                        <span id="munkaStatisticsSpinner"
                             class="munka-statistics-spinner"
-                            aria-hidden="true"
-                        ></span>
+                            aria-hidden="true"></span>
                         Refresh Statistics
                     </button>
                 </div>
             </div>
 
             <p class="munka-stats-period"
-               id="munkaStatisticsPeriod">
+                id="munkaStatisticsPeriod">
                 Reporting period: Current month
             </p>
 
             <div class="munka-statistics-grid">
-
-                <h3 class="munka-stats-group-title">
-                    Pig Population
-                </h3>
+                <h3 class="munka-stats-group-title">Pig Population</h3>
 
                 <article class="munka-stat-card green">
-                    <span class="munka-stat-label">
-                        Total Registered Pigs
-                    </span>
-                    <strong class="munka-stat-value"
-                            id="munkaStatTotalPigs">—</strong>
-                    <span class="munka-stat-description">
-                        Registered pig records in this farm
-                    </span>
-                </article>
-
-                <article class="munka-stat-card green">
-                    <span class="munka-stat-label">
-                        Sows
-                    </span>
-                    <strong class="munka-stat-value"
-                            id="munkaStatSows">—</strong>
-                    <span class="munka-stat-description">
-                        Records classified as sows
+                    <span class="munka-stat-label">Actual Pig Population</span>
+                    <strong class="munka-stat-value text-value"
+                        id="munkaStatActualPopulation">—</strong>
+                    <span class="munka-stat-description"
+                        id="munkaStatPopulationDescription">
+                        Based on verified opening count and recorded movements.
                     </span>
                 </article>
 
                 <article class="munka-stat-card blue">
-                    <span class="munka-stat-label">
-                        Boars
-                    </span>
-                    <strong class="munka-stat-value"
-                            id="munkaStatBoars">—</strong>
-                    <span class="munka-stat-description">
-                        Records classified as boars
+                    <span class="munka-stat-label">Opening Population</span>
+                    <strong class="munka-stat-value text-value"
+                        id="munkaStatOpeningPopulation">—</strong>
+                    <span class="munka-stat-description"
+                        id="munkaStatOpeningDate">
+                        Verified baseline count
                     </span>
                 </article>
 
-                <article class="munka-stat-card orange">
-                    <span class="munka-stat-label">
-                        Piglets
-                    </span>
+                <article class="munka-stat-card green">
+                    <span class="munka-stat-label">Total Registered Pig Records</span>
                     <strong class="munka-stat-value"
-                            id="munkaStatPiglets">—</strong>
+                        id="munkaStatTotalPigs">—</strong>
+                    <span class="munka-stat-description">
+                        Registered records, not the verified physical population.
+                    </span>
                 </article>
 
                 <article class="munka-stat-card purple">
-                    <span class="munka-stat-label">
-                        Weaners
-                    </span>
+                    <span class="munka-stat-label">Sows Registered</span>
                     <strong class="munka-stat-value"
-                            id="munkaStatWeaners">—</strong>
+                        id="munkaStatSows">—</strong>
+                </article>
+
+                <article class="munka-stat-card blue">
+                    <span class="munka-stat-label">Boars Registered</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatBoars">—</strong>
+                </article>
+
+                <article class="munka-stat-card orange">
+                    <span class="munka-stat-label">Piglets Registered</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatPiglets">—</strong>
+                </article>
+
+                <article class="munka-stat-card purple">
+                    <span class="munka-stat-label">Weaners Registered</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatWeaners">—</strong>
                 </article>
 
                 <article class="munka-stat-card teal">
-                    <span class="munka-stat-label">
-                        Growers
-                    </span>
+                    <span class="munka-stat-label">Growers Registered</span>
                     <strong class="munka-stat-value"
-                            id="munkaStatGrowers">—</strong>
+                        id="munkaStatGrowers">—</strong>
                 </article>
 
                 <article class="munka-stat-card orange">
-                    <span class="munka-stat-label">
-                        Unspecified Categories
-                    </span>
+                    <span class="munka-stat-label">Other/Unspecified Categories</span>
                     <strong class="munka-stat-value"
-                            id="munkaStatUnspecified">—</strong>
-                    <span class="munka-stat-description">
-                        Records needing a category
-                    </span>
-                </article>
-
-                <h3 class="munka-stats-group-title">
-                    Breeding and Production
-                </h3>
-
-                <article class="munka-stat-card purple">
-                    <span class="munka-stat-label">
-                        Pregnant Sows
-                    </span>
-                    <strong class="munka-stat-value"
-                            id="munkaStatPregnantSows">—</strong>
-                    <span class="munka-stat-description">
-                        Unique sow IDs with Pregnant status
-                    </span>
-                </article>
-
-                <article class="munka-stat-card orange">
-                    <span class="munka-stat-label">
-                        Expected Farrowings
-                    </span>
-                    <strong class="munka-stat-value"
-                            id="munkaStatExpectedFarrowings">—</strong>
-                    <span class="munka-stat-description">
-                        Pregnant records with a due date today or later
-                    </span>
+                        id="munkaStatUnspecified">—</strong>
                 </article>
 
                 <article class="munka-stat-card green">
-                    <span class="munka-stat-label">
-                        Piglets Weaned This Month
-                    </span>
+                    <span class="munka-stat-label">Births Since Opening</span>
                     <strong class="munka-stat-value"
-                            id="munkaStatWeanedThisMonth">—</strong>
-                    <span class="munka-stat-description">
-                        Based on recorded weaning dates
-                    </span>
+                        id="munkaStatBirths">—</strong>
                 </article>
-
-                <article class="munka-stat-card blue">
-                    <span class="munka-stat-label">
-                        Piglets Weaned Cumulatively
-                    </span>
-                    <strong class="munka-stat-value"
-                            id="munkaStatWeanedCumulative">—</strong>
-                    <span class="munka-stat-description">
-                        Total across all recorded weaning events
-                    </span>
-                </article>
-
-                <h3 class="munka-stats-group-title">
-                    Animal Health
-                </h3>
 
                 <article class="munka-stat-card red">
-                    <span class="munka-stat-label">
-                        Treatments This Month
-                    </span>
+                    <span class="munka-stat-label">Deaths Since Opening</span>
                     <strong class="munka-stat-value"
-                            id="munkaStatTreatments">—</strong>
-                    <span class="munka-stat-description">
-                        Treatment records entered this month
-                    </span>
+                        id="munkaStatDeaths">—</strong>
                 </article>
 
-                <h3 class="munka-stats-group-title">
-                    Financial Performance
-                </h3>
+                <article class="munka-stat-card orange">
+                    <span class="munka-stat-label">Pigs Sold and Removed</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatPopulationSales">—</strong>
+                </article>
 
-                <article class="munka-stat-card green">
-                    <span class="munka-stat-label">
-                        Sales Recorded
-                    </span>
-                    <strong class="munka-stat-value currency"
-                            id="munkaStatSales">—</strong>
-                    <span class="munka-stat-description">
-                        All sales entered this month
-                    </span>
+                <article class="munka-stat-card blue">
+                    <span class="munka-stat-label">Purchases Since Opening</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatPurchases">—</strong>
                 </article>
 
                 <article class="munka-stat-card teal">
-                    <span class="munka-stat-label">
-                        Payments Received
-                    </span>
-                    <strong class="munka-stat-value currency"
-                            id="munkaStatPaymentsReceived">—</strong>
-                    <span class="munka-stat-description"
-                          id="munkaStatPaidTransactions">
-                        Confirmed paid sales
+                    <span class="munka-stat-label">Arrivals Since Opening</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatArrivals">—</strong>
+                </article>
+
+                <h3 class="munka-stats-group-title">Breeding and Production</h3>
+
+                <article class="munka-stat-card purple">
+                    <span class="munka-stat-label">Pregnant Sows</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatPregnantSows">—</strong>
+                    <span class="munka-stat-description">
+                        Unique sow IDs with Pregnant status.
                     </span>
                 </article>
 
                 <article class="munka-stat-card orange">
-                    <span class="munka-stat-label">
-                        Pending Payments
+                    <span class="munka-stat-label">Expected Farrowings</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatExpectedFarrowings">—</strong>
+                    <span class="munka-stat-description">
+                        Pregnant records with a due date today or later.
                     </span>
+                </article>
+
+                <article class="munka-stat-card green">
+                    <span class="munka-stat-label">Piglets Weaned This Month</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatWeanedThisMonth">—</strong>
+                </article>
+
+                <article class="munka-stat-card blue">
+                    <span class="munka-stat-label">Piglets Weaned Cumulatively</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatWeanedCumulative">—</strong>
+                </article>
+
+                <h3 class="munka-stats-group-title">Animal Health</h3>
+
+                <article class="munka-stat-card red">
+                    <span class="munka-stat-label">Treatments This Month</span>
+                    <strong class="munka-stat-value"
+                        id="munkaStatTreatments">—</strong>
+                </article>
+
+                <h3 class="munka-stats-group-title">Financial Performance</h3>
+
+                <article class="munka-stat-card green">
+                    <span class="munka-stat-label">Sales Recorded This Month</span>
                     <strong class="munka-stat-value currency"
-                            id="munkaStatPendingPayments">—</strong>
+                        id="munkaStatSales">—</strong>
+                </article>
+
+                <article class="munka-stat-card teal">
+                    <span class="munka-stat-label">Payments Received</span>
+                    <strong class="munka-stat-value currency"
+                        id="munkaStatPaymentsReceived">—</strong>
                     <span class="munka-stat-description"
-                          id="munkaStatPendingTransactions">
-                        Unpaid or pending sales
+                        id="munkaStatPaidTransactions">
+                        Paid transactions
+                    </span>
+                </article>
+
+                <article class="munka-stat-card orange">
+                    <span class="munka-stat-label">Pending Payments</span>
+                    <strong class="munka-stat-value currency"
+                        id="munkaStatPendingPayments">—</strong>
+                    <span class="munka-stat-description"
+                        id="munkaStatPendingTransactions">
+                        Pending transactions
                     </span>
                 </article>
 
                 <article class="munka-stat-card red">
-                    <span class="munka-stat-label">
-                        Expenses This Month
-                    </span>
+                    <span class="munka-stat-label">Expenses This Month</span>
                     <strong class="munka-stat-value currency"
-                            id="munkaStatExpenses">—</strong>
-                    <span class="munka-stat-description">
-                        Recorded expenses for the month
-                    </span>
+                        id="munkaStatExpenses">—</strong>
                 </article>
 
                 <article class="munka-stat-card blue">
-                    <span class="munka-stat-label">
-                        Net Cash Position
-                    </span>
+                    <span class="munka-stat-label">Net Cash Position</span>
                     <strong class="munka-stat-value currency"
-                            id="munkaStatNetBalance">—</strong>
+                        id="munkaStatNetBalance">—</strong>
                     <span class="munka-stat-description">
-                        Payments received minus recorded expenses
+                        Payments received minus recorded expenses.
+                        Not a complete profit calculation.
                     </span>
                 </article>
-
             </div>
 
-            <div
-                id="munkaLiveStatisticsStatus"
+            <div id="munkaLiveStatisticsStatus"
                 class="munka-statistics-status"
                 role="status"
-                aria-live="polite"
-            >
+                aria-live="polite">
                 Preparing your farm statistics...
             </div>
 
-            <p
-                id="munkaStatisticsLastUpdated"
-                class="munka-statistics-updated"
-            >
+            <p id="munkaStatisticsLastUpdated"
+                class="munka-statistics-updated">
                 Statistics have not been updated yet.
             </p>
         `;
 
-        /*
-         * Place statistics after the announcements area.
-         * The HTML uses the announcements-section class.
-         */
-
         const announcementsSection =
             document.querySelector(".announcements-section");
+
+        const welcomeSection =
+            document.querySelector(".welcome-section");
 
         if (announcementsSection) {
             announcementsSection.insertAdjacentElement(
                 "afterend",
                 section
             );
+        } else if (welcomeSection) {
+            welcomeSection.insertAdjacentElement(
+                "afterend",
+                section
+            );
         } else {
-            const welcomeSection =
-                document.querySelector(".welcome-section");
-
-            if (welcomeSection) {
-                welcomeSection.insertAdjacentElement(
-                    "afterend",
-                    section
-                );
-            } else {
-                document.body.appendChild(section);
-            }
+            document.body.appendChild(section);
         }
 
-        const refreshButton = document.getElementById(
+        const button = document.getElementById(
             "munkaRefreshStatisticsButton"
         );
 
-        if (refreshButton) {
-            refreshButton.addEventListener("click", function () {
+        if (button) {
+            button.addEventListener("click", function () {
                 loadDashboardFarmStatistics(true);
             });
         }
@@ -1287,20 +1167,73 @@
     }
 
     /* ========================================================
-       DISPLAY STATISTICS
+       DISPLAY ALL STATISTICS
     ======================================================== */
 
     function displayStatistics(data) {
-        setText("munkaStatTotalPigs", formatNumber(data.pigs.total));
-        setText("munkaStatSows", formatNumber(data.pigs.sows));
-        setText("munkaStatBoars", formatNumber(data.pigs.boars));
-        setText("munkaStatPiglets", formatNumber(data.pigs.piglets));
-        setText("munkaStatWeaners", formatNumber(data.pigs.weaners));
-        setText("munkaStatGrowers", formatNumber(data.pigs.growers));
+        const population = data.population;
+        const registered = data.pigs;
+
+        setText(
+            "munkaStatActualPopulation",
+            formatVerifiedPopulation(population.current_population)
+        );
+
+        setText(
+            "munkaStatOpeningPopulation",
+            formatVerifiedPopulation(population.opening_population)
+        );
+
+        setText(
+            "munkaStatOpeningDate",
+            population.opening_date
+                ? "Opening date: " + population.opening_date
+                : "Opening date not recorded"
+        );
+
+        setText(
+            "munkaStatPopulationDescription",
+            population.current_population === null ||
+            population.current_population === undefined
+                ? "Opening population has not been verified. Enter the actual opening count."
+                : "Based on verified opening count and recorded population movements."
+        );
+
+        setText("munkaStatTotalPigs", formatNumber(registered.total));
+        setText("munkaStatSows", formatNumber(registered.sows));
+        setText("munkaStatBoars", formatNumber(registered.boars));
+        setText("munkaStatPiglets", formatNumber(registered.piglets));
+        setText("munkaStatWeaners", formatNumber(registered.weaners));
+        setText("munkaStatGrowers", formatNumber(registered.growers));
 
         setText(
             "munkaStatUnspecified",
-            formatNumber(data.pigs.unspecified)
+            formatNumber(registered.unspecified)
+        );
+
+        setText(
+            "munkaStatBirths",
+            formatNumber(population.births_since_opening)
+        );
+
+        setText(
+            "munkaStatDeaths",
+            formatNumber(population.deaths_since_opening)
+        );
+
+        setText(
+            "munkaStatPopulationSales",
+            formatNumber(population.sales_since_opening)
+        );
+
+        setText(
+            "munkaStatPurchases",
+            formatNumber(population.purchases_since_opening)
+        );
+
+        setText(
+            "munkaStatArrivals",
+            formatNumber(population.arrivals_since_opening)
         );
 
         setText(
@@ -1378,7 +1311,7 @@
     }
 
     /* ========================================================
-       LOAD ALL STATISTICS
+       LOAD STATISTICS
     ======================================================== */
 
     async function loadDashboardFarmStatistics(manualRefresh) {
@@ -1409,7 +1342,7 @@
 
             if (!client) {
                 throw new Error(
-                    "The Supabase client was not found. Check supabase.js and the script order in dashboard.html."
+                    "Supabase client not found. Check supabase.js and script order."
                 );
             }
 
@@ -1417,7 +1350,7 @@
 
             if (sessionResult.error) {
                 throw new Error(
-                    "Could not verify the login session: " +
+                    "Could not verify login session: " +
                     sessionResult.error.message
                 );
             }
@@ -1434,27 +1367,13 @@
                 return;
             }
 
-            const user = validation.user;
             const farmId = validation.farmId;
-
-            /*
-             * The reporting dates use Zambia's calendar date.
-             * Database date columns are compared as YYYY-MM-DD.
-             */
-
             const monthRange = getMonthRange();
 
             setStatus(
                 "Loading statistics for your registered farm...",
                 "info"
             );
-
-            /*
-             * Fetch data concurrently.
-             *
-             * Every query is explicitly filtered by farm_id.
-             * Supabase Row Level Security must also remain enabled.
-             */
 
             const results = await Promise.all([
                 fetchAllFarmRows(
@@ -1497,7 +1416,9 @@
                     "expenses_records",
                     "id, expense_date, total_amount",
                     farmId
-                )
+                ),
+
+                fetchPopulationSummary(client, farmId)
             ]);
 
             const pigs = results[0];
@@ -1506,8 +1427,9 @@
             const treatmentRecords = results[3];
             const salesRecords = results[4];
             const expenseRecords = results[5];
+            const population = results[6];
 
-            const pigStats = calculatePigPopulation(pigs);
+            const pigStats = calculateRegisteredPigs(pigs);
 
             const breedingStats = calculateBreeding(
                 gestationRecords,
@@ -1539,6 +1461,8 @@
 
             const data = {
                 farmId: farmId,
+                farmName: population.farm_name,
+                population: population,
                 pigs: pigStats,
                 breeding: breedingStats,
                 weaning: weaningStats,
@@ -1552,23 +1476,25 @@
             displayStatistics(data);
 
             lastSuccessfulData = data;
-
             state.lastUpdated = new Date();
             state.lastError = null;
 
             setLastUpdated(state.lastUpdated);
 
-            setStatus(
-                "Statistics loaded successfully for your farm. " +
-                "Financial figures cover the current month; " +
-                "pig population and cumulative weaning figures cover all available records.",
-                "success"
-            );
+            const populationVerified =
+                population.current_population !== null &&
+                population.current_population !== undefined;
 
-            /*
-             * Preserve a public reference for other dashboard
-             * components that need the latest statistics.
-             */
+            setStatus(
+                populationVerified
+                    ? "Statistics loaded successfully for " +
+                      population.farm_name +
+                      ". Actual population is based on the verified opening count and recorded movements."
+                    : "Other farm statistics loaded for " +
+                      population.farm_name +
+                      ". Actual pig population is not verified because an opening count has not been entered.",
+                populationVerified ? "success" : "warning"
+            );
 
             window.munkaLiveStatistics = {
                 lastData: data,
@@ -1584,32 +1510,23 @@
             );
 
         } catch (error) {
-            console.error(
-                "MUNKA Statistics error:",
-                error
-            );
+            console.error("MUNKA Statistics error:", error);
 
-            state.lastError = error.message || "Unknown error";
-
-            /*
-             * If a refresh fails after an earlier successful
-             * load, keep the previous displayed values rather
-             * than replacing good data with zeros.
-             */
+            state.lastError =
+                error.message || "Unknown error";
 
             if (lastSuccessfulData) {
                 setStatus(
                     "Could not refresh the latest statistics. " +
-                    "The figures currently displayed are from the previous successful update. " +
-                    "Details: " + state.lastError,
+                    "Previously loaded figures remain displayed. Details: " +
+                    state.lastError,
                     "warning"
                 );
             } else {
                 setStatus(
-                    "Statistics could not be loaded. " +
-                    "Check your internet connection, login session, " +
-                    "table access and Supabase permissions. " +
-                    "Details: " + state.lastError,
+                    "Statistics could not be loaded. Check your connection, " +
+                    "login session, table names, view access and Supabase permissions. Details: " +
+                    state.lastError,
                     "error"
                 );
             }
@@ -1633,24 +1550,12 @@
 
         injectStyles();
 
-        /*
-         * Prevent the old dashboard.js statistics loader from
-         * creating another statistics panel. This replacement
-         * file becomes the single statistics loader.
-         *
-         * Other dashboard.js features remain unchanged.
-         */
-
         window.loadDashboardFarmStatistics =
             loadDashboardFarmStatistics;
 
         createStatisticsPanel();
 
         loadDashboardFarmStatistics(false);
-
-        /*
-         * Refresh every five minutes while the page is open.
-         */
 
         if (refreshTimer) {
             clearInterval(refreshTimer);
@@ -1661,10 +1566,6 @@
                 loadDashboardFarmStatistics(false);
             }
         }, REFRESH_INTERVAL);
-
-        /*
-         * Refresh when the user returns to the dashboard tab.
-         */
 
         document.addEventListener(
             "visibilitychange",
