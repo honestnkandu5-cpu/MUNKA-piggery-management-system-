@@ -1,721 +1,796 @@
 /* =========================================================
-   MUNKA PIGGERY MANAGEMENT SYSTEM
-   PROFESSIONAL PIG REGISTRATION MODULE
-   ========================================================= */
+   MUNKA PIGGERY TECHNOLOGY
+   PIG REGISTRATION AND GROUP MANAGEMENT
+   File: pig.css
+========================================================= */
+
+:root {
+    --pig-green: #176b3a;
+    --pig-dark-green: #104d2b;
+    --pig-light-green: #eaf5ed;
+    --pig-accent: #35a653;
+    --pig-background: #f3f6f4;
+    --pig-white: #ffffff;
+    --pig-text: #25372b;
+    --pig-muted: #69786e;
+    --pig-border: #d9e4dc;
+    --pig-danger: #c62828;
+    --pig-radius: 12px;
+    --pig-shadow: 0 4px 16px rgba(20, 65, 35, 0.07);
+}
 
 * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
 }
 
-:root {
-    --dark-green: #123d2a;
-    --primary-green: #198754;
-    --light-green: #eaf7ef;
-    --soft-green: #f4faf6;
-    --text-dark: #26352c;
-    --text-muted: #68756d;
-    --white: #ffffff;
-    --border: #dfe9e3;
-    --danger: #b02a37;
+html {
+    scroll-behavior: smooth;
 }
-
-
-/* =========================================================
-   PAGE
-   ========================================================= */
 
 body {
     margin: 0;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    background: #f4f7f5;
-
-    color: var(--text-dark);
-
-    min-height: 100vh;
-
-    line-height: 1.5;
+    padding: 0;
+    background: var(--pig-background);
+    color: var(--pig-text);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
 }
 
-
-/* =========================================================
-   MAIN CONTAINER
-   ========================================================= */
-
-.container {
-
-    width: 92%;
-
-    max-width: 1250px;
-
-    margin: 30px auto 45px;
-
-    background: var(--white);
-
-    padding: 32px;
-
-    border-radius: 18px;
-
-    border: 1px solid var(--border);
-
-    box-shadow:
-        0 6px 25px
-        rgba(0, 0, 0, 0.07);
-
-}
-
-
-/* =========================================================
-   MAIN TITLE
-   ========================================================= */
-
-h1 {
-
-    text-align: center;
-
-    color: var(--dark-green);
-
-    font-size: 30px;
-
-    font-weight: 800;
-
-    margin-bottom: 5px;
-
-    letter-spacing: 0.4px;
-
-}
-
-
-h2 {
-
-    color: var(--dark-green);
-
-    font-size: 21px;
-
-    font-weight: 800;
-
-    margin-top: 30px;
-
-    margin-bottom: 18px;
-
-}
-
-
-/* =========================================================
-   FORM
-   ========================================================= */
-
-#pigForm {
-
-    background: var(--soft-green);
-
-    border: 1px solid var(--border);
-
-    border-radius: 14px;
-
-    padding: 24px;
-
-    margin-top: 25px;
-
-}
-
-
-/* =========================================================
-   LABELS
-   ========================================================= */
-
-label {
-
-    display: block;
-
-    margin-top: 16px;
-
-    margin-bottom: 6px;
-
-    font-size: 13px;
-
-    font-weight: 700;
-
-    color: var(--dark-green);
-
-}
-
-
-/* =========================================================
-   INPUTS / SELECTS
-   ========================================================= */
-
+button,
 input,
-select {
-
-    width: 100%;
-
-    padding: 12px 13px;
-
-    margin-top: 0;
-
-    border: 1px solid #ccd9d1;
-
-    border-radius: 8px;
-
-    background: white;
-
-    color: var(--text-dark);
-
-    font-size: 14px;
-
-    outline: none;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-
+select,
+textarea {
+    font: inherit;
 }
-
-
-input:focus,
-select:focus {
-
-    border-color:
-        var(--primary-green);
-
-    box-shadow:
-        0 0 0 3px
-        rgba(25, 135, 84, 0.10);
-
-}
-
-
-/* =========================================================
-   SELECT DROPDOWN
-   ========================================================= */
-
-select {
-
-    cursor: pointer;
-
-}
-
-
-/* =========================================================
-   FORM BUTTON AREA
-   ========================================================= */
-
-.buttons {
-
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 10px;
-
-    margin-top: 24px;
-
-}
-
-
-/* =========================================================
-   BUTTONS
-   ========================================================= */
 
 button {
-
-    background:
-        var(--primary-green);
-
-    color: white;
-
-    border: none;
-
-    padding: 12px 19px;
-
-    margin: 0;
-
-    border-radius: 8px;
-
     cursor: pointer;
-
-    font-size: 14px;
-
-    font-weight: 700;
-
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-
 }
 
-
-button:hover {
-
-    background:
-        var(--dark-green);
-
-    transform:
-        translateY(-1px);
-
-    box-shadow:
-        0 5px 12px
-        rgba(0, 0, 0, 0.10);
-
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-
-button:active {
-
-    transform:
-        translateY(0);
-
+.container {
+    width: min(1200px, calc(100% - 36px));
+    margin: 25px auto;
 }
-
 
 /* =========================================================
-   HORIZONTAL LINE
-   ========================================================= */
-
-hr {
-
-    border: none;
-
-    border-top:
-        1px solid var(--border);
-
-    margin:
-        35px 0;
-
-}
-
-
-/* =========================================================
-   SEARCH AREA
-   ========================================================= */
-
-#searchPig {
-
-    width: 100%;
-
-    max-width: 600px;
-
-    margin-bottom: 10px;
-
-}
-
-
-/* =========================================================
-   TABLE WRAPPER
-   ========================================================= */
-
-table {
-
-    width: 100%;
-
-    border-collapse:
-        separate;
-
-    border-spacing: 0;
-
-    margin-top: 20px;
-
-    background: white;
-
-    border:
-        1px solid var(--border);
-
-    border-radius: 10px;
-
-    overflow: hidden;
-
-}
-
-
-/* =========================================================
-   TABLE HEADER
-   ========================================================= */
-
-th {
-
-    background:
-        var(--dark-green);
-
-    color: white;
-
-    padding: 13px 10px;
-
-    font-size: 12px;
-
-    font-weight: 700;
-
-    text-align: center;
-
-    white-space: nowrap;
-
-}
-
-
-/* =========================================================
-   TABLE CELLS
-   ========================================================= */
-
-td {
-
-    padding: 11px 9px;
-
-    text-align: center;
-
-    font-size: 12px;
-
-    border-bottom:
-        1px solid #edf1ee;
-
-}
-
-
-/* =========================================================
-   TABLE ROWS
-   ========================================================= */
-
-tbody tr:nth-child(even) {
-
-    background:
-        #f7faf8;
-
-}
-
-
-tbody tr:hover {
-
-    background:
-        #edf8f1;
-
-}
-
-
-/* =========================================================
-   LAST ROW
-   ========================================================= */
-
-tbody tr:last-child td {
-
-    border-bottom: none;
-
-}
-
-
-/* =========================================================
-   TABLE ACTION BUTTONS
-   ========================================================= */
-
-td button {
-
-    padding:
-        7px 10px;
-
-    font-size:
-        11px;
-
-    margin:
-        2px;
-
-    border-radius:
-        6px;
-
-}
-
-
-/* =========================================================
-   REPORT BUTTONS
-   ========================================================= */
-
-[onclick="generateReport()"] {
-
-    background:
-        #1769aa;
-
-}
-
-
-[onclick="generateReport()"]:hover {
-
-    background:
-        #125589;
-
-}
-
-
-[onclick="printReport()"] {
-
-    background:
-        #6c757d;
-
-}
-
-
-[onclick="printReport()"]:hover {
-
-    background:
-        #565e64;
-
-}
-
-
-[onclick="downloadPDF()"] {
-
-    background:
-        var(--primary-green);
-
-}
-
-
-[onclick="downloadPDF()"]:hover {
-
-    background:
-        var(--dark-green);
-
-}
-
-
-/* =========================================================
-   SEARCH BUTTON
-   ========================================================= */
-
-[onclick="searchPig()"] {
-
-    margin-top:
-        5px;
-
-}
-
-
-/* =========================================================
-   MOBILE TABLE SCROLL
-   ========================================================= */
-
-@media(max-width: 900px) {
-
-    .container {
-
-        width: 95%;
-
-        padding: 22px;
-
-    }
-
-    table {
-
-        display: block;
-
-        overflow-x: auto;
-
-        white-space: nowrap;
-
-    }
-
-}
-
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media(max-width: 600px) {
-
-    .container {
-
-        width: 94%;
-
-        margin:
-            18px auto 30px;
-
-        padding: 18px;
-
-        border-radius: 14px;
-
-    }
-
-
-    h1 {
-
-        font-size:
-            24px;
-
-    }
-
-
-    h2 {
-
-        font-size:
-            19px;
-
-    }
-
-
-    #pigForm {
-
-        padding:
-            18px;
-
-    }
-
-
-    input,
-    select {
-
-        padding:
-            11px;
-
-        font-size:
-            14px;
-
-    }
-
-
-    .buttons {
-
-        flex-direction:
-            column;
-
-    }
-
-
-    .buttons button {
-
-        width:
-            100%;
-
-    }
-
-
-    button {
-
-        font-size:
-            13px;
-
-    }
-
-
-    #searchPig {
-
-        max-width:
-            100%;
-
-    }
-
-
-    [onclick="searchPig()"] {
-
-        width:
-            100%;
-
-        margin-top:
-            5px;
-
-    }
-
-
-    /* Report buttons */
-
-    [onclick="generateReport()"],
-    [onclick="printReport()"],
-    [onclick="downloadPDF()"] {
-
-        width:
-            100%;
-
-        margin-top:
-            8px;
-
-    }
-
-}
-
-
-/* =========================================================
-   VERY SMALL PHONES
-   ========================================================= */
-
-@media(max-width:380px) {
-
-    .container {
-
-        width:
-            96%;
-
-        padding:
-            14px;
-
-    }
-
-
-    #pigForm {
-
-        padding:
-            14px;
-
-    }
-
-
-    h1 {
-
-        font-size:
-            21px;
-
-    }
-
-
-    h2 {
-
-        font-size:
-            18px;
-
-    }
-
-}/* =========================================================
-   MUNKA PIGGERY TECHNOLOGY
-   FARM BRANDING
+   PAGE HEADER
 ========================================================= */
 
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: 14px;
+    background: linear-gradient(
+        135deg,
+        var(--pig-dark-green),
+        var(--pig-green)
+    );
+    color: #ffffff;
+    box-shadow: var(--pig-shadow);
+}
+
+.pig-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 68px;
+    height: 68px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.15);
+    font-size: 39px;
+}
+
+.software-brand {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(20px, 3vw, 29px);
+    line-height: 1.3;
+}
+
+.page-header p {
+    margin: 5px 0 12px;
+    color: #e4f3e7;
+}
+
 .farm-branding {
-    margin-top: 8px;
-    padding-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
 }
 
 .farm-label {
-    display: block;
-    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.15);
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1.8px;
-    opacity: 0.75;
-    margin-bottom: 3px;
+    letter-spacing: 0.6px;
 }
 
 .farm-branding strong {
-    display: block;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
+    overflow-wrap: anywhere;
 }
 
+/* =========================================================
+   SECTION CARDS
+========================================================= */
+
+.form-section,
+.records-section,
+.report-section {
+    min-width: 0;
+    margin-bottom: 24px;
+    padding: 24px;
+    border: 1px solid var(--pig-border);
+    border-radius: var(--pig-radius);
+    background: var(--pig-white);
+    box-shadow: var(--pig-shadow);
+}
+
+.group-section {
+    margin-top: 25px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--pig-border);
+}
+
+.section-title > div {
+    min-width: 0;
+}
+
+.section-title span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--pig-green);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.section-title h2 {
+    margin: 0;
+    color: var(--pig-dark-green);
+    font-size: clamp(19px, 2.5vw, 25px);
+    line-height: 1.35;
+}
+
+.form-section > p,
+.group-section > p {
+    color: var(--pig-muted);
+}
+
+/* =========================================================
+   INDIVIDUAL PIG FORM
+========================================================= */
+
+#pigForm {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 20px;
+}
+
+#pigForm .form-group {
+    min-width: 0;
+    margin-bottom: 17px;
+}
+
+.form-group {
+    min-width: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #334a39;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.registration-note {
+    display: block;
+    margin-top: 7px;
+    color: var(--pig-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+#registrationType {
+    border-left: 4px solid var(--pig-green);
+    background: #fbfefb;
+    font-weight: 600;
+}
+
+#registrationDateGroup {
+    min-width: 0;
+}
+
+/* =========================================================
+   GROUP PIGLET AND WEANER FORM
+========================================================= */
+
+#groupForm {
+    display: block;
+    width: 100%;
+}
+
+.group-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 20px;
+}
+
+.group-form-grid .form-group {
+    min-width: 0;
+    margin-bottom: 17px;
+}
+
+.group-form-grid input,
+.group-form-grid select,
+.group-form-grid textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+#groupCategory {
+    border-left: 4px solid var(--pig-green);
+    background: #fbfefb;
+    font-weight: 700;
+}
+
+#groupQuantity {
+    font-weight: 700;
+    color: var(--pig-dark-green);
+}
+
+#groupNotes {
+    min-height: 85px;
+}
+
+/* Piglet and weaner category colours */
+
+.category-badge,
+.group-category-badge,
+.pig-category-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.category-badge.piglet,
+.category-badge.piglets,
+.group-category-badge.piglet,
+.group-category-badge.piglets,
+.pig-category-badge.piglet,
+.pig-category-badge.piglets {
+    background: #e4f2ff;
+    color: #15558b;
+}
+
+.category-badge.weaner,
+.category-badge.weaners,
+.group-category-badge.weaner,
+.group-category-badge.weaners,
+.pig-category-badge.weaner,
+.pig-category-badge.weaners {
+    background: #fff0d6;
+    color: #805000;
+}
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 45px;
+    padding: 11px 12px;
+    border: 1px solid #cbd8ce;
+    border-radius: 8px;
+    outline: none;
+    background: #ffffff;
+    color: var(--pig-text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--pig-accent);
+    box-shadow: 0 0 0 3px rgba(53, 166, 83, 0.13);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #8a978d;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--pig-green);
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.buttons,
+.report-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.buttons {
+    grid-column: 1 / -1;
+}
+
+.buttons button,
+.report-buttons button,
+.search-area button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 11px 17px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: var(--pig-green);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.buttons button:hover,
+.report-buttons button:hover,
+.search-area button:hover {
+    background: var(--pig-dark-green);
+}
+
+.buttons .secondary-button {
+    border-color: var(--pig-border);
+    background: #edf2ee;
+    color: var(--pig-text);
+}
+
+.buttons .secondary-button:hover {
+    background: #dfe8e1;
+}
+
+.report-buttons .print-button {
+    background: #315f86;
+}
+
+.report-buttons .print-button:hover {
+    background: #244766;
+}
+
+.report-buttons .pdf-button {
+    background: #9b3030;
+}
+
+.report-buttons .pdf-button:hover {
+    background: #7e2020;
+}
+
+/* =========================================================
+   STATUS MESSAGES
+========================================================= */
+
+.status-message {
+    margin-top: 12px;
+    padding: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+#pigStatusMessage:empty,
+#groupStatusMessage:empty {
+    display: none;
+}
+
+#pigStatusMessage:not(:empty),
+#groupStatusMessage:not(:empty) {
+    padding: 12px 14px;
+    border: 1px solid var(--pig-border);
+    border-radius: 8px;
+    background: #f5f9f5;
+}
+
+/* =========================================================
+   SEARCH AREA
+========================================================= */
+
+.search-area {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.search-area input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.search-area button {
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   TABLES
+========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 12px;
+    overflow-x: auto;
+    border: 1px solid var(--pig-border);
+    border-radius: 9px;
+    background: #ffffff;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background: #ffffff;
+    font-size: 13px;
+}
+
+.table-wrapper th {
+    padding: 13px 12px;
+    border-bottom: 1px solid var(--pig-border);
+    background: var(--pig-green);
+    color: #ffffff;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.table-wrapper td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #e6ede7;
+    color: var(--pig-text);
+    text-align: left;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+.table-wrapper tbody tr:nth-child(even) {
+    background: #f8fbf8;
+}
+
+.table-wrapper tbody tr:hover {
+    background: #edf7ef;
+}
+
+.table-wrapper tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Group table */
+
+.group-table {
+    min-width: 720px;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.group-table th,
+.group-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--pig-border);
+    text-align: left;
+}
+
+.group-table th {
+    background: var(--pig-green);
+    color: #ffffff;
+}
+
+.group-table td:nth-child(2) {
+    font-weight: 700;
+}
+
+/* Table action buttons */
+
+.table-wrapper td button,
+.table-wrapper td .btn {
+    margin: 2px;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: #e8f3eb;
+    color: var(--pig-dark-green);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.table-wrapper td button:hover,
+.table-wrapper td .btn:hover {
+    background: #d4e8d9;
+}
+
+/* =========================================================
+   GENERAL STATUS BADGES
+========================================================= */
+
+.status-badge,
+.status-label {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-healthy,
+.status-active,
+.status-success {
+    background: #e3f5e8;
+    color: #176b3a;
+}
+
+.status-sick,
+.status-warning {
+    background: #fff0d5;
+    color: #875700;
+}
+
+.status-dead,
+.status-inactive,
+.status-danger {
+    background: #fde6e6;
+    color: #ad2020;
+}
+
+/* =========================================================
+   FOOTER AND ACCESSIBILITY
+========================================================= */
+
+footer {
+    padding: 20px;
+    color: var(--pig-muted);
+    text-align: center;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid rgba(53, 166, 83, 0.5);
+    outline-offset: 2px;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 800px) {
+    .container {
+        width: calc(100% - 24px);
+        margin: 16px auto;
+    }
+
+    .form-section,
+    .records-section,
+    .report-section {
+        padding: 18px;
+    }
+
+    .page-header {
+        padding: 19px;
+    }
+}
 
 /* =========================================================
    MOBILE
 ========================================================= */
 
 @media (max-width: 600px) {
-
-    .farm-branding strong {
-        font-size: 16px;
+    body {
+        font-size: 14px;
     }
 
-    .farm-label {
-        font-size: 9px;
+    .container {
+        width: calc(100% - 18px);
+        margin: 10px auto;
     }
 
+    .page-header {
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .pig-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        font-size: 29px;
+    }
+
+    .software-brand {
+        font-size: 19px;
+    }
+
+    .page-header p {
+        font-size: 13px;
+    }
+
+    .farm-branding {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .form-section,
+    .records-section,
+    .report-section {
+        padding: 14px;
+        margin-bottom: 16px;
+        border-radius: 10px;
+    }
+
+    #pigForm,
+    .group-form-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+
+    #pigForm .form-group,
+    .group-form-grid .form-group {
+        margin-bottom: 15px;
+    }
+
+    .section-title {
+        margin-bottom: 17px;
+        padding-bottom: 12px;
+    }
+
+    .section-title h2 {
+        font-size: 20px;
+    }
+
+    .buttons,
+    .report-buttons {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .buttons button,
+    .report-buttons button {
+        width: 100%;
+    }
+
+    .search-area {
+        flex-direction: column;
+    }
+
+    .search-area button {
+        width: 100%;
+    }
+
+    .table-wrapper table {
+        min-width: 720px;
+    }
+}
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+@media print {
+    body {
+        background: #ffffff;
+        color: #000000;
+    }
+
+    .page-header {
+        background: #ffffff;
+        color: #000000;
+        border: 1px solid #cccccc;
+        box-shadow: none;
+    }
+
+    .software-brand,
+    .page-header p,
+    .farm-branding {
+        color: #000000;
+    }
+
+    .pig-icon,
+    .buttons,
+    .search-area,
+    .report-buttons {
+        display: none !important;
+    }
+
+    .container {
+        width: 100%;
+        margin: 0;
+    }
+
+    .form-section,
+    .records-section,
+    .report-section {
+        padding: 10px;
+        box-shadow: none;
+        border: 1px solid #cccccc;
+        break-inside: avoid;
+    }
+
+    .table-wrapper {
+        overflow: visible;
+        border: none;
+    }
+
+    .table-wrapper table {
+        width: 100%;
+        min-width: 0;
+        font-size: 9pt;
+    }
+
+    .table-wrapper th,
+    .table-wrapper td {
+        padding: 6px;
+        border: 1px solid #cccccc;
+    }
+
+    .table-wrapper th {
+        background: #eeeeee !important;
+        color: #000000 !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+        animation: none !important;
+    }
 }
