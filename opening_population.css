@@ -1,0 +1,315 @@
+:root {
+--green: #14532d;
+--green-light: #dcfce7;
+--background: #f3f6f4;
+--white: #ffffff;
+--text: #1f2937;
+--muted: #64748b;
+--border: #dbe4dd;
+--danger: #b91c1c;
+}
+
+* {
+  box-sizing: border-box;
+  }
+
+body {
+margin: 0;
+background: var(--background);
+color: var(--text);
+font-family: Arial, Helvetica, sans-serif;
+line-height: 1.6;
+}
+
+.topbar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 15px;
+padding: 18px 5%;
+background: var(--green);
+color: white;
+flex-wrap: wrap;
+}
+
+.brand {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.brand-icon {
+font-size: 35px;
+}
+
+.brand h1 {
+font-size: 17px;
+margin: 0;
+}
+
+.brand span {
+font-size: 12px;
+opacity: 0.9;
+}
+
+.back-button {
+padding: 10px 15px;
+border: 1px solid rgba(255,255,255,0.5);
+border-radius: 8px;
+background: transparent;
+color: white;
+cursor: pointer;
+font-weight: bold;
+}
+
+.container {
+width: min(100% - 28px, 1050px);
+margin: 30px auto;
+}
+
+.page-heading,
+.form-card,
+.information-card,
+.summary-card {
+background: var(--white);
+border: 1px solid var(--border);
+border-radius: 14px;
+}
+
+.page-heading {
+padding: 26px;
+margin-bottom: 20px;
+}
+
+.label {
+color: var(--green);
+font-size: 11px;
+font-weight: bold;
+letter-spacing: 1.2px;
+}
+
+.page-heading h2 {
+font-size: clamp(25px, 5vw, 34px);
+margin: 5px 0;
+color: var(--green);
+}
+
+.page-heading p {
+color: var(--muted);
+margin-top: 5px;
+}
+
+.information {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+margin-top: 12px;
+font-size: 14px;
+}
+
+.information strong {
+overflow-wrap: anywhere;
+}
+
+.summary-grid {
+display: grid;
+grid-template-columns: repeat(3, minmax(0, 1fr));
+gap: 15px;
+margin-bottom: 18px;
+}
+
+.summary-card {
+display: flex;
+align-items: center;
+gap: 13px;
+padding: 20px 16px;
+min-width: 0;
+}
+
+.summary-icon {
+font-size: 27px;
+}
+
+.summary-card span:not(.summary-icon) {
+display: block;
+font-size: 12px;
+color: var(--muted);
+}
+
+.summary-card strong {
+display: block;
+margin-top: 5px;
+font-size: 21px;
+overflow-wrap: anywhere;
+}
+
+.message {
+padding: 13px 16px;
+margin: 15px 0;
+background: #e8f2eb;
+border-radius: 9px;
+font-size: 14px;
+overflow-wrap: anywhere;
+}
+
+.message.error {
+background: #fee2e2;
+color: var(--danger);
+}
+
+.message.success {
+background: var(--green-light);
+color: var(--green);
+}
+
+.form-card,
+.information-card {
+padding: 26px;
+margin-bottom: 20px;
+}
+
+.section-title h3,
+.information-card h3 {
+margin: 4px 0;
+font-size: 22px;
+}
+
+.section-title > p {
+margin-top: 5px;
+color: var(--muted);
+}
+
+.form-group {
+margin-top: 22px;
+}
+
+.form-group label {
+display: block;
+font-weight: bold;
+margin-bottom: 7px;
+}
+
+.form-group input {
+width: 100%;
+min-height: 48px;
+border: 1px solid #cbd5e1;
+border-radius: 8px;
+padding: 12px;
+background: white;
+color: var(--text);
+font-size: 16px;
+}
+
+.form-group input:focus {
+outline: 2px solid #86efac;
+border-color: var(--green);
+}
+
+.form-group small {
+display: block;
+color: var(--muted);
+margin-top: 5px;
+}
+
+.notice {
+margin-top: 22px;
+padding: 15px;
+border-left: 4px solid #ca8a04;
+background: #fefce8;
+border-radius: 5px;
+font-size: 14px;
+}
+
+.notice p {
+margin: 5px 0 0;
+}
+
+.confirmation {
+display: flex;
+align-items: flex-start;
+gap: 10px;
+margin: 20px 0;
+font-size: 14px;
+}
+
+.confirmation input {
+width: 19px;
+height: 19px;
+flex-shrink: 0;
+margin-top: 3px;
+}
+
+.primary-button {
+width: 100%;
+min-height: 50px;
+padding: 13px 18px;
+border: 0;
+border-radius: 8px;
+background: var(--green);
+color: white;
+font-size: 16px;
+font-weight: bold;
+cursor: pointer;
+}
+
+.primary-button:hover {
+background: #166534;
+}
+
+.primary-button:disabled {
+opacity: 0.65;
+cursor: not-allowed;
+}
+
+.calculation p {
+display: flex;
+justify-content: space-between;
+gap: 15px;
+padding: 11px 0;
+margin: 0;
+border-bottom: 1px solid var(--border);
+}
+
+.calculation p:last-child {
+border-bottom: 0;
+}
+
+.calculation strong {
+text-align: right;
+}
+
+.footnote {
+font-size: 13px;
+color: var(--muted);
+margin-top: 16px;
+}
+
+@media (max-width: 650px) {
+.summary-grid {
+grid-template-columns: 1fr;
+}
+
+.summary-card {
+    padding: 16px;
+}
+
+.page-heading,
+.form-card,
+.information-card {
+    padding: 19px;
+}
+
+.topbar {
+    padding: 15px;
+}
+
+.brand h1 {
+    font-size: 14px;
+}
+
+.calculation p {
+    align-items: flex-start;
+}
+
+}
+

@@ -1,0 +1,294 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#14532d"><title>Pig Mortality Records | MUNKA PIGGERY</title>
+
+<link rel="stylesheet" href="pig_mortality_records.css">
+
+</head><body><header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">🐖</div>
+        <div>
+            <h1>MUNKA PIGGERY TECHNOLOGY</h1>
+            <span>Pig Mortality Management</span>
+        </div>
+    </div><button
+    type="button"
+    class="back-button"
+    onclick="window.location.href='dashboard.html'">
+    ← Dashboard
+</button>
+
+</header><main class="page-container"><!-- PAGE HEADING -->
+<section class="page-heading">
+    <span class="section-label">ANIMAL HEALTH MANAGEMENT</span>
+
+    <h2>Pig Mortality &amp; Death Records</h2>
+
+    <p>
+        Record pig deaths, monitor mortality incidents and track
+        changes in your farm population.
+    </p>
+
+    <div class="farm-information">
+        <span>Registered farm:</span>
+        <strong id="farmName">Loading farm...</strong>
+    </div>
+
+    <div class="user-information">
+        <span>Logged-in user:</span>
+        <strong id="currentUser">Verifying account...</strong>
+    </div>
+</section>
+
+<!-- POPULATION SUMMARY -->
+<section class="population-section">
+    <div class="section-heading">
+        <div>
+            <span class="section-label">FARM POPULATION</span>
+            <h3>Population Overview</h3>
+        </div>
+
+        <button
+            type="button"
+            id="refreshPopulationButton"
+            class="secondary-button">
+            ↻ Refresh
+        </button>
+    </div>
+
+    <div class="population-cards">
+
+        <article class="population-card">
+            <span class="population-icon">🐖</span>
+            <div>
+                <span>Opening Population</span>
+                <strong id="openingPopulation">—</strong>
+                <small>Verified starting count</small>
+            </div>
+        </article>
+
+        <article class="population-card current-population-card">
+            <span class="population-icon">📊</span>
+            <div>
+                <span>Current Population</span>
+                <strong id="currentPopulation">—</strong>
+                <small>Calculated from recorded events</small>
+            </div>
+        </article>
+
+        <article class="population-card">
+            <span class="population-icon">⚠️</span>
+            <div>
+                <span>Deaths Since Opening</span>
+                <strong id="totalDeaths">—</strong>
+                <small>Recorded mortality quantity</small>
+            </div>
+        </article>
+
+    </div>
+
+    <div
+        id="populationStatus"
+        class="status-message"
+        aria-live="polite">
+        Loading population information...
+    </div>
+</section>
+
+<!-- MORTALITY FORM -->
+<section class="form-section">
+    <div class="section-heading">
+        <div>
+            <span class="section-label">NEW RECORD</span>
+            <h3>Record Pig Mortality</h3>
+            <p>Enter the details of the pig or pigs that died.</p>
+        </div>
+    </div>
+
+    <form id="mortalityForm">
+
+        <div class="form-grid">
+
+            <div class="form-field">
+                <label for="deathDate">
+                    Date of Death <span class="required">*</span>
+                </label>
+                <input
+                    type="date"
+                    id="deathDate"
+                    name="death_date"
+                    required>
+                <small>Select the date the death occurred.</small>
+            </div>
+
+            <div class="form-field">
+                <label for="quantity">
+                    Number of Pigs That Died
+                    <span class="required">*</span>
+                </label>
+                <input
+                    type="number"
+                    id="quantity"
+                    name="quantity"
+                    min="1"
+                    max="100000"
+                    step="1"
+                    value="1"
+                    required>
+                <small>Enter a whole number greater than zero.</small>
+            </div>
+
+            <div class="form-field">
+                <label for="pigId">Pig ID / Identification Number</label>
+                <input
+                    type="text"
+                    id="pigId"
+                    name="pig_id"
+                    maxlength="100"
+                    placeholder="e.g. SOW-025">
+                <small>
+                    For multiple pigs, enter a batch or group reference
+                    if appropriate.
+                </small>
+            </div>
+
+            <div class="form-field">
+                <label for="category">Pig Category</label>
+                <select id="category" name="category">
+                    <option value="">Select category</option>
+                    <option value="Piglet">Piglet</option>
+                    <option value="Weaner">Weaner</option>
+                    <option value="Grower">Grower</option>
+                    <option value="Finisher">Finisher</option>
+                    <option value="Gilt">Gilt</option>
+                    <option value="Sow">Sow</option>
+                    <option value="Boar">Boar</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-field full-width">
+                <label for="cause">Suspected Cause of Death</label>
+                <select id="cause" name="cause">
+                    <option value="">Select suspected cause</option>
+                    <option value="Disease">Disease / illness</option>
+                    <option value="Diarrhoea">Diarrhoea</option>
+                    <option value="Respiratory illness">Respiratory illness</option>
+                    <option value="Crushing">Crushing / accidental injury</option>
+                    <option value="Weak piglet">Weak piglet</option>
+                    <option value="Birth complications">Birth complications</option>
+                    <option value="Feed or water problem">Feed or water problem</option>
+                    <option value="Unknown">Unknown</option>
+                    <option value="Other">Other</option>
+                </select>
+                <small>
+                    Record the suspected cause. Seek veterinary advice
+                    when the cause is uncertain or deaths are unusual.
+                </small>
+            </div>
+
+            <div class="form-field full-width">
+                <label for="notes">Additional Notes</label>
+                <textarea
+                    id="notes"
+                    name="notes"
+                    maxlength="3000"
+                    placeholder="Describe the symptoms, observations, action taken, or veterinary advice received."></textarea>
+                <small>Maximum 3,000 characters.</small>
+            </div>
+
+        </div>
+
+        <div class="form-notice">
+            <strong>Important:</strong>
+            Saving this record updates mortality tracking through the
+            existing database trigger. Do not enter the same death
+            separately as a population event.
+        </div>
+
+        <div
+            id="formMessage"
+            class="status-message"
+            aria-live="polite"></div>
+
+        <div class="form-actions">
+            <button
+                type="submit"
+                id="saveMortalityButton"
+                class="primary-button">
+                Save Mortality Record
+            </button>
+
+            <button
+                type="reset"
+                class="secondary-button">
+                Clear Form
+            </button>
+        </div>
+
+    </form>
+</section>
+
+<!-- MORTALITY HISTORY -->
+<section class="history-section">
+    <div class="section-heading">
+        <div>
+            <span class="section-label">RECORD HISTORY</span>
+            <h3>Recent Mortality Records</h3>
+            <p>
+                Review the latest death records recorded for your farm.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            id="refreshHistoryButton"
+            class="secondary-button">
+            ↻ Refresh Records
+        </button>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="mortality-table">
+            <thead>
+                <tr>
+                    <th>Date of Death</th>
+                    <th>Pig ID</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Suspected Cause</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+
+            <tbody id="mortalityTableBody">
+                <tr>
+                    <td colspan="6" class="empty-cell">
+                        Loading mortality records...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div
+        id="historyStatus"
+        class="status-message"
+        aria-live="polite">
+        Checking your farm records...
+    </div>
+
+    <p class="history-note">
+        The page displays up to 200 of the most recent records.
+        Older records remain in the database.
+    </p>
+</section>
+
+</main><footer class="page-footer">
+    <strong>MUNKA PIGGERY TECHNOLOGY</strong>
+    <span>Pig Mortality Management</span>
+    <span>Accurate records support better farm decisions.</span>
+</footer><!-- Keep this script order. Do not replace supabase.js. --><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="pig_mortality_records.js"></script></body>
+</html>

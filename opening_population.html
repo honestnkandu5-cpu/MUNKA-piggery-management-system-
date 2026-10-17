@@ -1,0 +1,118 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#14532d">
+    <title>Opening Population | MUNKA PIGGERY</title>
+    <link rel="stylesheet" href="opening_population.css">
+</head>
+<body><header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">🐖</div>
+        <div>
+            <h1>MUNKA PIGGERY TECHNOLOGY</h1>
+            <span>Farm Population Management</span>
+        </div>
+    </div>
+    <button class="back-button" type="button"
+        onclick="window.location.href='dashboard.html'">
+        ← Dashboard
+    </button>
+</header><main class="container"><section class="page-heading">
+    <span class="label">FARM MANAGEMENT</span>
+    <h2>Opening Population</h2>
+    <p>Establish the starting number of pigs on your farm. This count is used to calculate your current farm population.</p>
+
+    <div class="information">
+        <span>Registered farm:</span>
+        <strong id="farmName">Loading...</strong>
+    </div>
+
+    <div class="information">
+        <span>Logged-in user:</span>
+        <strong id="currentUser">Verifying account...</strong>
+    </div>
+</section>
+
+<section class="summary-grid">
+    <article class="summary-card">
+        <span class="summary-icon">🐖</span>
+        <div>
+            <span>Opening Population</span>
+            <strong id="openingPopulation">—</strong>
+        </div>
+    </article>
+
+    <article class="summary-card">
+        <span class="summary-icon">📊</span>
+        <div>
+            <span>Current Population</span>
+            <strong id="currentPopulation">—</strong>
+        </div>
+    </article>
+
+    <article class="summary-card">
+        <span class="summary-icon">🔐</span>
+        <div>
+            <span>Verification Status</span>
+            <strong id="verificationStatus">Checking...</strong>
+        </div>
+    </article>
+</section>
+
+<div id="pageMessage" class="message" role="status" aria-live="polite">
+    Connecting to your farm...
+</div>
+
+<section class="form-card">
+    <div class="section-title">
+        <span class="label">INITIAL FARM RECORD</span>
+        <h3>Register Opening Population</h3>
+        <p>Count all pigs physically present on the selected opening date.</p>
+    </div>
+
+    <form id="openingPopulationForm">
+        <div class="form-group">
+            <label for="openingDate">Opening date</label>
+            <input type="date" id="openingDate" required>
+            <small>Select the date the starting pig count applies to.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="openingCount">Total pigs at opening</label>
+            <input type="number" id="openingCount"
+                min="0" step="1" inputmode="numeric"
+                placeholder="Enter total number of pigs" required>
+            <small>Enter a whole number, including zero if the farm had no pigs.</small>
+        </div>
+
+        <div class="notice">
+            <strong>Important:</strong>
+            <p>Opening population is a starting balance, not a pig registration or a new birth record. Once verified, it cannot be changed through this form. Contact your system administrator if a correction is required.</p>
+        </div>
+
+        <label class="confirmation">
+            <input type="checkbox" id="confirmCount" required>
+            <span>I confirm that this count accurately represents the pigs present on the selected opening date.</span>
+        </label>
+
+        <button type="submit" id="saveButton" class="primary-button">
+            Save Opening Population
+        </button>
+    </form>
+</section>
+
+<section class="information-card">
+    <h3>How the population is calculated</h3>
+    <div class="calculation">
+        <p><span>Opening population</span><strong>Starting count</strong></p>
+        <p><span>Farrowing</span><strong>+ Piglets born alive</strong></p>
+        <p><span>Purchases and arrivals</span><strong>+ Pigs added</strong></p>
+        <p><span>Mortality</span><strong>− Pigs that die</strong></p>
+        <p><span>Sales</span><strong>− Pigs sold</strong></p>
+    </div>
+    <p class="footnote">The current population is calculated from the opening balance and recorded population events. Individual pig registration must not be counted again as a separate population addition.</p>
+</section>
+
+</main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="opening_population.js"></script></body>
+</html>
