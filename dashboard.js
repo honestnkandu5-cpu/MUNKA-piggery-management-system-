@@ -2492,7 +2492,9 @@ function openFarrowing() {
 function openWeaning() {
     window.location.href = "weaning.html";
 }
-
+function openPigMortalityRecords() {
+    window.location.href = "pig_mortality_records.html";
+}
 function openVaccination() {
     window.location.href = "vaccination.html";
 }
