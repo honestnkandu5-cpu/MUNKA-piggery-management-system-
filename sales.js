@@ -1,7 +1,7 @@
 /* ============================================================
    MUNKA PIGGERY MANAGEMENT SYSTEM
    SALES MANAGEMENT MODULE
-   Physical-removal confirmation and population-event support
+   Complete updated version
 ============================================================ */
 
 let editID = null;
@@ -15,7 +15,6 @@ let isSavingSale = false;
 function getLoggedUser() {
     try {
         const storedUser = localStorage.getItem("loggedInUser");
-
         return storedUser ? JSON.parse(storedUser) : null;
     } catch (error) {
         console.error("Unable to read logged-in user:", error);
@@ -26,23 +25,12 @@ function getLoggedUser() {
 
 function getFarmID() {
     const user = getLoggedUser();
-
     return user && user.farm_id ? user.farm_id : null;
 }
 
 
 async function getRegisteredFarmName() {
     try {
-        const user = getLoggedUser();
-
-        if (!user) {
-            return "Unknown Farm";
-        }
-
-        if (user.farm_name) {
-            return user.farm_name;
-        }
-
         const { data: sessionData, error: sessionError } =
             await supabase.auth.getSession();
 
@@ -77,42 +65,42 @@ async function getRegisteredFarmName() {
         return farmData.farm_name || "Unknown Farm";
 
     } catch (error) {
-        console.error("Error retrieving farm name:", error);
+        console.error("Farm name error:", error);
         return "Unknown Farm";
     }
 }
 
 
 /* ============================================================
-   2. PERMISSION CHECKS
+   2. PERMISSIONS
 ============================================================ */
 
 function checkSalesPermission(action) {
     try {
-        if (action === "add" && typeof canAdd === "function") {
-            return canAdd("Sales");
+        if (action === "add") {
+            return typeof canAdd === "function" && canAdd("Sales");
         }
 
-        if (action === "edit" && typeof canEdit === "function") {
-            return canEdit("Sales");
+        if (action === "edit") {
+            return typeof canEdit === "function" && canEdit("Sales");
         }
 
-        if (action === "delete" && typeof canDelete === "function") {
-            return canDelete("Sales");
+        if (action === "delete") {
+            return typeof canDelete === "function" && canDelete("Sales");
         }
 
-        if (action === "view" && typeof canView === "function") {
-            return canView("Sales");
+        if (action === "view") {
+            return typeof canView === "function" && canView("Sales");
         }
 
-        if (action === "report" && typeof canReport === "function") {
-            return canReport("Sales");
+        if (action === "report") {
+            return typeof canReport === "function" && canReport("Sales");
         }
 
         return false;
 
     } catch (error) {
-        console.error("Sales permission check failed:", error);
+        console.error("Permission check error:", error);
         return false;
     }
 }
@@ -125,18 +113,10 @@ function checkSalesPermission(action) {
 async function recordSalesActivity(action, description) {
     try {
         if (typeof logActivity === "function") {
-            await logActivity(
-                "Sales",
-                action,
-                description
-            );
-        } else {
-            console.warn(
-                "Activity logging function is unavailable."
-            );
+            await logActivity("Sales", action, description);
         }
     } catch (error) {
-        console.error("Sales activity logging failed:", error);
+        console.error("Activity logging error:", error);
     }
 }
 
@@ -173,8 +153,16 @@ function escapeHTML(value) {
 
 function getInputValue(id) {
     const element = document.getElementById(id);
-
     return element ? element.value.trim() : "";
+}
+
+
+function setInputValue(id, value) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.value = value ?? "";
+    }
 }
 
 
@@ -206,11 +194,10 @@ function formatDate(value) {
         return "";
     }
 
-    const datePart = String(value).split("T")[0];
-    const parts = datePart.split("-");
+    const parts = String(value).split("T")[0].split("-");
 
     if (parts.length !== 3) {
-        return escapeHTML(value);
+        return String(value);
     }
 
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -218,7 +205,7 @@ function formatDate(value) {
 
 
 /* ============================================================
-   5. CALCULATE TOTAL SALE AMOUNT
+   5. CALCULATE TOTAL AMOUNT
 
    Preserves the existing calculation:
    Weight x Price per kg
@@ -226,30 +213,28 @@ function formatDate(value) {
 
 function calculateTotalAmount() {
     const weight = getNumericValue("weight");
-    const pricePerKg = getNumericValue("pricePerKg");
+    const price = getNumericValue("pricePerKg");
 
-    const totalElement = document.getElementById("totalAmount");
+    const totalField = document.getElementById("totalAmount");
 
-    if (!totalElement) {
+    if (!totalField) {
         return;
     }
 
     if (
         !Number.isFinite(weight) ||
-        !Number.isFinite(pricePerKg)
+        !Number.isFinite(price)
     ) {
-        totalElement.value = "";
+        totalField.value = "";
         return;
     }
 
-    const total = weight * pricePerKg;
-
-    totalElement.value = total.toFixed(2);
+    totalField.value = (weight * price).toFixed(2);
 }
 
 
 /* ============================================================
-   6. PHYSICAL-REMOVAL CONFIRMATION
+   6. PHYSICAL REMOVAL CONFIRMATION
 ============================================================ */
 
 function updateRemovalDateField() {
@@ -266,17 +251,17 @@ function updateRemovalDateField() {
         return;
     }
 
-    const pigsRemoved = removalSelect.value === "true";
+    const removed = removalSelect.value === "true";
 
-    removalDate.disabled = !pigsRemoved;
-    removalDate.required = pigsRemoved;
+    removalDate.disabled = !removed;
+    removalDate.required = removed;
 
-    if (pigsRemoved) {
-        if (!removalDate.value) {
-            removalDate.value =
-                (saleDate && saleDate.value) || getTodayDate();
-        }
-    } else {
+    if (removed && !removalDate.value) {
+        removalDate.value =
+            (saleDate && saleDate.value) || getTodayDate();
+    }
+
+    if (!removed) {
         removalDate.value = "";
     }
 }
@@ -289,34 +274,24 @@ function getRemovalDetails() {
     const removalDate =
         document.getElementById("removalDate");
 
-    const removedFromFarm =
+    const removed =
         !!removalSelect &&
         removalSelect.value === "true";
 
-    const removalDateValue =
-        removalDate && removalDate.value
-            ? removalDate.value
-            : null;
-
     return {
-        removed_from_farm: removedFromFarm,
-        removal_date: removedFromFarm
-            ? removalDateValue
+        removed_from_farm: removed,
+        removal_date: removed && removalDate
+            ? removalDate.value || null
             : null
     };
 }
 
 
 function validateRemovalDetails() {
-    const removalDetails = getRemovalDetails();
+    const details = getRemovalDetails();
 
-    if (
-        removalDetails.removed_from_farm &&
-        !removalDetails.removal_date
-    ) {
-        alert(
-            "Please enter the date the pigs physically left the farm."
-        );
+    if (details.removed_from_farm && !details.removal_date) {
+        alert("Please enter the date the pigs left the farm.");
 
         document.getElementById("removalDate")?.focus();
 
@@ -328,42 +303,48 @@ function validateRemovalDetails() {
 
 
 function confirmPhysicalRemoval() {
-    const removalDetails = getRemovalDetails();
+    const details = getRemovalDetails();
 
-    if (!removalDetails.removed_from_farm) {
+    if (!details.removed_from_farm) {
         return true;
     }
 
     return confirm(
         "PHYSICAL REMOVAL CONFIRMATION\n\n" +
-        "You have indicated that these pigs have physically left the farm.\n\n" +
-        "Saving this record will create or update a sale population event " +
-        "in the database.\n\n" +
-        "Please confirm that the pigs have actually left the farm."
+        "Have these pigs actually left the farm?\n\n" +
+        "Confirming Yes will create or update the sale population event.\n\n" +
+        "Continue only if the pigs have physically left the farm."
     );
 }
 
 
 /* ============================================================
-   7. INITIALISE THE SALES FORM
+   7. INITIALISE FORM AND BUTTONS
+
+   IMPORTANT:
+   The HTML uses <form id="salesForm"> and a submit button.
+   This handler connects the Save button to the JavaScript.
 ============================================================ */
 
 document.addEventListener("DOMContentLoaded", function () {
-    const weightInput = document.getElementById("weight");
-    const priceInput = document.getElementById("pricePerKg");
+    const salesForm = document.getElementById("salesForm");
 
-    if (weightInput) {
-        weightInput.addEventListener(
-            "input",
-            calculateTotalAmount
-        );
+    if (salesForm) {
+        salesForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            await saveSaleRecord();
+        });
     }
 
-    if (priceInput) {
-        priceInput.addEventListener(
-            "input",
-            calculateTotalAmount
-        );
+    const weightField = document.getElementById("weight");
+    const priceField = document.getElementById("pricePerKg");
+
+    if (weightField) {
+        weightField.addEventListener("change", calculateTotalAmount);
+    }
+
+    if (priceField) {
+        priceField.addEventListener("change", calculateTotalAmount);
     }
 
     const removalSelect =
@@ -376,30 +357,10 @@ document.addEventListener("DOMContentLoaded", function () {
         );
     }
 
-    const saleDate =
-        document.getElementById("saleDate");
+    const saleDate = document.getElementById("saleDate");
 
-    if (saleDate) {
-        saleDate.addEventListener("change", function () {
-            const removalSelect =
-                document.getElementById("removedFromFarm");
-
-            const removalDate =
-                document.getElementById("removalDate");
-
-            if (
-                removalSelect &&
-                removalSelect.value === "true" &&
-                removalDate &&
-                !removalDate.value
-            ) {
-                removalDate.value = saleDate.value;
-            }
-        });
-
-        if (!saleDate.value) {
-            saleDate.value = getTodayDate();
-        }
+    if (saleDate && !saleDate.value) {
+        saleDate.value = getTodayDate();
     }
 
     updateRemovalDateField();
@@ -407,7 +368,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 /* ============================================================
-   8. SAVE A NEW SALE
+   8. SAVE OR UPDATE A SALE
 ============================================================ */
 
 async function saveSaleRecord() {
@@ -415,13 +376,15 @@ async function saveSaleRecord() {
         return;
     }
 
-    if (!checkSalesPermission("add") && editID === null) {
-        alert("You do not have permission to add sales records.");
+    const isEditing = editID !== null;
+
+    if (isEditing && !checkSalesPermission("edit")) {
+        alert("You do not have permission to update sales records.");
         return;
     }
 
-    if (editID !== null && !checkSalesPermission("edit")) {
-        alert("You do not have permission to edit sales records.");
+    if (!isEditing && !checkSalesPermission("add")) {
+        alert("You do not have permission to add sales records.");
         return;
     }
 
@@ -429,7 +392,7 @@ async function saveSaleRecord() {
     const user = getLoggedUser();
 
     if (!farmID || !user) {
-        alert("Your farm session could not be verified. Please log in again.");
+        alert("Your farm session is missing. Please log in again.");
         return;
     }
 
@@ -441,55 +404,54 @@ async function saveSaleRecord() {
         return;
     }
 
+    const saleDate = getInputValue("saleDate");
+    const pigID = getInputValue("pigID");
+    const breed = getInputValue("breed");
+    const category = getInputValue("category");
     const quantity = getNumericValue("quantity");
     const weight = getNumericValue("weight");
     const pricePerKg = getNumericValue("pricePerKg");
+
+    if (!saleDate || !pigID || !breed || !category) {
+        alert("Please complete all required sale fields.");
+        return;
+    }
 
     if (
         !Number.isFinite(quantity) ||
         quantity <= 0 ||
         !Number.isInteger(quantity)
     ) {
-        alert("Enter a valid whole-number quantity greater than zero.");
+        alert("Please select a valid quantity.");
         return;
     }
 
-    if (!Number.isFinite(weight) || weight < 0) {
-        alert("Enter a valid weight.");
+    if (!Number.isFinite(weight) || weight <= 0) {
+        alert("Please select a valid weight.");
         return;
     }
 
-    if (!Number.isFinite(pricePerKg) || pricePerKg < 0) {
-        alert("Enter a valid price per kilogram.");
-        return;
-    }
-
-    const saleDate = getInputValue("saleDate");
-
-    if (!saleDate) {
-        alert("Please enter the sale date.");
+    if (!Number.isFinite(pricePerKg) || pricePerKg <= 0) {
+        alert("Please select a valid price per kilogram.");
         return;
     }
 
     const userIdentifier =
         user.username ||
         user.full_name ||
-        user.id ||
-        "Unknown User";
+        String(user.id || "Unknown User");
 
     const removalDetails = getRemovalDetails();
 
-    const totalAmount = weight * pricePerKg;
-
     const saleData = {
         sale_date: saleDate,
-        pig_id: getInputValue("pigID"),
-        breed: getInputValue("breed"),
-        category: getInputValue("category"),
+        pig_id: pigID,
+        breed: breed,
+        category: category,
         quantity: quantity,
         weight: weight,
         price_per_kg: pricePerKg,
-        total_amount: totalAmount,
+        total_amount: weight * pricePerKg,
         buyer_name: getInputValue("buyerName"),
         buyer_contact: getInputValue("buyerContact"),
         payment_method: getInputValue("paymentMethod"),
@@ -497,7 +459,6 @@ async function saveSaleRecord() {
         responsible_person: getInputValue("responsiblePerson"),
         remarks: getInputValue("remarks"),
 
-        // PHYSICAL REMOVAL FIELDS
         removed_from_farm: removalDetails.removed_from_farm,
         removal_date: removalDetails.removal_date,
 
@@ -510,7 +471,7 @@ async function saveSaleRecord() {
     try {
         let result;
 
-        if (editID !== null) {
+        if (isEditing) {
             result = await supabase
                 .from("sales_records")
                 .update(saleData)
@@ -520,9 +481,7 @@ async function saveSaleRecord() {
 
         } else {
             saleData.farm_id = farmID;
-
             saleData.record_id = "SALE-" + Date.now();
-
             saleData.created_by = userIdentifier;
             saleData.created_at = new Date().toISOString();
 
@@ -536,7 +495,7 @@ async function saveSaleRecord() {
             console.error("Sales save error:", result.error);
 
             alert(
-                "Unable to save the sales record.\n\n" +
+                "The sales record could not be saved.\n\n" +
                 result.error.message
             );
 
@@ -545,7 +504,7 @@ async function saveSaleRecord() {
 
         if (!result.data || result.data.length === 0) {
             alert(
-                "No sales record was returned. Check your database permissions."
+                "No record was returned. Check your database permissions."
             );
 
             return;
@@ -553,44 +512,39 @@ async function saveSaleRecord() {
 
         const savedSale = result.data[0];
 
-        const action = editID !== null ? "UPDATE" : "INSERT";
-
         await recordSalesActivity(
-            action,
+            isEditing ? "UPDATE" : "INSERT",
             "Sales record " +
             (savedSale.record_id || savedSale.id) +
-            " saved. Quantity: " +
-            quantity +
-            ". Physical removal: " +
-            (removalDetails.removed_from_farm ? "Yes" : "No") +
-            "."
+            "; quantity: " + quantity +
+            "; pigs physically removed: " +
+            (removalDetails.removed_from_farm ? "Yes" : "No")
         );
 
         const farmName = await getRegisteredFarmName();
 
         alert(
-            "Sales record saved successfully.\n\n" +
-            "Farm: " + farmName + "\n" +
-            "Quantity: " + quantity + "\n" +
-            "Physical removal confirmed: " +
+            (isEditing ? "Sales record updated" : "Sales record saved") +
+            " successfully.\n\nFarm: " + farmName +
+            "\nQuantity: " + quantity +
+            "\nPigs physically removed: " +
             (removalDetails.removed_from_farm ? "Yes" : "No") +
             (
                 removalDetails.removed_from_farm
-                    ? "\nRemoval date: " +
-                      removalDetails.removal_date
+                    ? "\nRemoval date: " + removalDetails.removal_date
                     : ""
             )
         );
 
         clearSaleForm();
-
         await loadSalesRecords();
 
     } catch (error) {
         console.error("Unexpected sales error:", error);
 
         alert(
-            "An unexpected error occurred while saving the sale."
+            "An error occurred while saving the sale.\n\n" +
+            (error.message || "Please try again.")
         );
 
     } finally {
@@ -600,20 +554,40 @@ async function saveSaleRecord() {
 
 
 /* ============================================================
-   9. LOAD SALES RECORDS FOR THE CURRENT FARM
+   9. UPDATE BUTTON
+
+   The user must first select Edit on a saved record.
+============================================================ */
+
+async function updateSaleRecord() {
+    if (editID === null) {
+        alert(
+            "Please select a saved sales record using its Edit button first."
+        );
+        return;
+    }
+
+    await saveSaleRecord();
+}
+
+
+/* ============================================================
+   10. LOAD SALES RECORDS
 ============================================================ */
 
 async function loadSalesRecords() {
-    if (!checkSalesPermission("view")) {
-        const tableBody =
-            document.querySelector("#salesTable tbody");
+    const tableBody = document.getElementById("salesTable");
 
-        if (tableBody) {
-            tableBody.innerHTML =
-                '<tr><td colspan="14">' +
-                'You do not have permission to view sales records.' +
-                '</td></tr>';
-        }
+    if (!tableBody) {
+        console.error("Cannot find the sales table body.");
+        return;
+    }
+
+    if (!checkSalesPermission("view")) {
+        tableBody.innerHTML =
+            '<tr><td colspan="10">' +
+            'You do not have permission to view sales records.' +
+            '</td></tr>';
 
         return;
     }
@@ -621,7 +595,8 @@ async function loadSalesRecords() {
     const farmID = getFarmID();
 
     if (!farmID) {
-        console.error("Farm ID is missing.");
+        tableBody.innerHTML =
+            '<tr><td colspan="10">Farm session not found. Please log in again.</td></tr>';
 
         return;
     }
@@ -634,9 +609,10 @@ async function loadSalesRecords() {
             .order("id", { ascending: false });
 
         if (error) {
-            console.error("Unable to load sales records:", error);
+            console.error("Load sales error:", error);
 
-            alert("Unable to load sales records: " + error.message);
+            tableBody.innerHTML =
+                '<tr><td colspan="10">Unable to load sales records.</td></tr>';
 
             return;
         }
@@ -645,26 +621,37 @@ async function loadSalesRecords() {
 
     } catch (error) {
         console.error("Sales loading error:", error);
+
+        tableBody.innerHTML =
+            '<tr><td colspan="10">An error occurred while loading records.</td></tr>';
     }
 }
 
 
 /* ============================================================
-   10. DISPLAY SALES RECORDS
+   11. DISPLAY SALES HISTORY
+
+   The HTML has <tbody id="salesTable">.
+   Therefore, use getElementById rather than #salesTable tbody.
 ============================================================ */
 
 function displaySalesRecords(records) {
-    const tableBody =
-        document.querySelector("#salesTable tbody");
+    const tableBody = document.getElementById("salesTable");
 
     if (!tableBody) {
         console.error("Sales table body was not found.");
         return;
     }
 
+    const recordCount = document.getElementById("recordCount");
+
+    if (recordCount) {
+        recordCount.textContent = records.length + " Records";
+    }
+
     if (!records.length) {
         tableBody.innerHTML =
-            '<tr><td colspan="14">No sales records found.</td></tr>';
+            '<tr><td colspan="10">No sales records found.</td></tr>';
 
         return;
     }
@@ -672,9 +659,9 @@ function displaySalesRecords(records) {
     tableBody.innerHTML = records.map(function (sale) {
         const removed = sale.removed_from_farm === true;
 
-        let removalStatus = removed
-            ? "Yes — " + formatDate(sale.removal_date)
-            : "No";
+        const removalStatus = removed
+            ? "Removed from farm"
+            : "Still on farm";
 
         let actions = "";
 
@@ -694,19 +681,26 @@ function displaySalesRecords(records) {
 
         return `
             <tr>
-                <td>${escapeHTML(sale.record_id || sale.id)}</td>
                 <td>${escapeHTML(formatDate(sale.sale_date))}</td>
-                <td>${escapeHTML(sale.pig_id)}</td>
-                <td>${escapeHTML(sale.breed)}</td>
-                <td>${escapeHTML(sale.category)}</td>
-                <td>${escapeHTML(sale.quantity)}</td>
-                <td>${escapeHTML(sale.weight)}</td>
-                <td>${escapeHTML(formatMoney(sale.price_per_kg))}</td>
+                <td>${escapeHTML(sale.pig_id || "")}</td>
+                <td>${escapeHTML(sale.breed || "")}</td>
+                <td>${escapeHTML(sale.category || "")}</td>
+                <td>${escapeHTML(sale.quantity ?? 0)}</td>
+                <td>${escapeHTML(sale.weight ?? 0)}</td>
                 <td>${escapeHTML(formatMoney(sale.total_amount))}</td>
-                <td>${escapeHTML(sale.buyer_name)}</td>
-                <td>${escapeHTML(sale.buyer_contact)}</td>
-                <td>${escapeHTML(sale.payment_status)}</td>
-                <td>${escapeHTML(removalStatus)}</td>
+                <td>${escapeHTML(sale.buyer_name || "")}</td>
+                <td>
+                    ${escapeHTML(sale.payment_status || "")}
+                    <br>
+                    <small>${escapeHTML(removalStatus)}</small>
+                    ${
+                        removed && sale.removal_date
+                            ? '<br><small>Removal: ' +
+                              escapeHTML(formatDate(sale.removal_date)) +
+                              '</small>'
+                            : ""
+                    }
+                </td>
                 <td>${actions}</td>
             </tr>
         `;
@@ -715,7 +709,7 @@ function displaySalesRecords(records) {
 
 
 /* ============================================================
-   11. EDIT A SALE
+   12. EDIT A SALE
 ============================================================ */
 
 async function editSale(id) {
@@ -727,7 +721,7 @@ async function editSale(id) {
     const farmID = getFarmID();
 
     if (!farmID) {
-        alert("Farm information is missing. Please log in again.");
+        alert("Farm session missing. Please log in again.");
         return;
     }
 
@@ -740,12 +734,9 @@ async function editSale(id) {
             .maybeSingle();
 
         if (error || !data) {
-            alert(
-                "Unable to find this sales record for your farm."
-            );
-
             console.error("Edit sale error:", error);
 
+            alert("Unable to find that sales record for your farm.");
             return;
         }
 
@@ -772,27 +763,22 @@ async function editSale(id) {
 
         if (removalSelect) {
             removalSelect.value =
-                data.removed_from_farm === true
-                    ? "true"
-                    : "false";
+                data.removed_from_farm === true ? "true" : "false";
         }
 
         setInputValue("removalDate", data.removal_date);
 
         updateRemovalDateField();
-
         calculateTotalAmount();
 
-        const saveButton =
-            document.querySelector(
-                'button[onclick*="saveSaleRecord"]'
-            );
+        const updateButton =
+            document.querySelector(".update-btn");
 
-        if (saveButton) {
-            saveButton.textContent = "Update Sale";
+        if (updateButton) {
+            updateButton.textContent = "✏️ Update Selected Record";
         }
 
-        const form = document.querySelector("form");
+        const form = document.getElementById("salesForm");
 
         if (form) {
             form.scrollIntoView({
@@ -804,31 +790,8 @@ async function editSale(id) {
     } catch (error) {
         console.error("Edit sale error:", error);
 
-        alert("An error occurred while opening the sales record.");
+        alert("Unable to open the sales record.");
     }
-}
-
-
-function setInputValue(id, value) {
-    const element = document.getElementById(id);
-
-    if (element) {
-        element.value = value ?? "";
-    }
-}
-
-
-/* ============================================================
-   12. UPDATE A SALE
-============================================================ */
-
-async function updateSaleRecord() {
-    if (editID === null) {
-        alert("Please select a sales record to update.");
-        return;
-    }
-
-    await saveSaleRecord();
 }
 
 
@@ -845,17 +808,15 @@ async function deleteSale(id) {
     const farmID = getFarmID();
 
     if (!farmID) {
-        alert("Farm information is missing. Please log in again.");
+        alert("Farm session missing. Please log in again.");
         return;
     }
 
-    const confirmed = confirm(
+    if (!confirm(
         "Are you sure you want to delete this sales record?\n\n" +
-        "If this record has a linked population event, the database " +
-        "trigger is configured to remove that linked event as well."
-    );
-
-    if (!confirmed) {
+        "The linked sale population event will also be removed " +
+        "by the configured database trigger."
+    )) {
         return;
     }
 
@@ -870,16 +831,12 @@ async function deleteSale(id) {
         if (error) {
             console.error("Delete sale error:", error);
 
-            alert("Unable to delete the sales record: " + error.message);
-
+            alert("Unable to delete record: " + error.message);
             return;
         }
 
         if (!data || data.length === 0) {
-            alert(
-                "The record was not deleted. It may not belong to your farm."
-            );
-
+            alert("No record was deleted. Check your farm permissions.");
             return;
         }
 
@@ -889,18 +846,18 @@ async function deleteSale(id) {
             (data[0].record_id || data[0].id)
         );
 
-        alert("Sales record deleted successfully.");
-
         if (editID !== null && Number(editID) === Number(id)) {
             clearSaleForm();
         }
+
+        alert("Sales record deleted successfully.");
 
         await loadSalesRecords();
 
     } catch (error) {
         console.error("Delete sale error:", error);
 
-        alert("An unexpected error occurred while deleting the record.");
+        alert("An error occurred while deleting the record.");
     }
 }
 
@@ -916,7 +873,7 @@ async function searchSaleRecord() {
     }
 
     const searchValue = prompt(
-        "Enter the Pig ID or sale record ID to search:"
+        "Enter the Pig ID or Sale Record ID:"
     );
 
     if (searchValue === null || !searchValue.trim()) {
@@ -926,55 +883,52 @@ async function searchSaleRecord() {
     const farmID = getFarmID();
 
     if (!farmID) {
-        alert("Farm information is missing.");
+        alert("Farm session missing.");
         return;
     }
 
-    const searchTerm = searchValue.trim();
+    const term = searchValue.trim();
 
     try {
+        // Fetch only this farm's records.
+        // Client-side filtering avoids malformed Supabase OR filters.
         const { data, error } = await supabase
             .from("sales_records")
             .select("*")
             .eq("farm_id", farmID)
-            .or(
-                "pig_id.eq." +
-                searchTerm.replace(/[(),]/g, "") +
-                ",record_id.eq." +
-                searchTerm.replace(/[(),]/g, "")
-            )
             .order("id", { ascending: false });
 
         if (error) {
-            console.error("Search error:", error);
+            console.error("Sales search error:", error);
 
-            alert("Unable to search sales records: " + error.message);
-
+            alert("Unable to search records: " + error.message);
             return;
         }
 
-        if (!data || data.length === 0) {
-            alert("No matching sales records were found.");
-            return;
-        }
-
-        displaySalesRecords(data);
-
-        if (data.length === 1 && checkSalesPermission("edit")) {
-            const openRecord = confirm(
-                "One matching record was found.\n\n" +
-                "Would you like to open it for editing?"
+        const matches = (data || []).filter(function (sale) {
+            return (
+                String(sale.pig_id || "").toLowerCase() === term.toLowerCase() ||
+                String(sale.record_id || "").toLowerCase() === term.toLowerCase()
             );
+        });
 
-            if (openRecord) {
-                await editSale(data[0].id);
+        if (!matches.length) {
+            alert("No matching sales records found.");
+            return;
+        }
+
+        displaySalesRecords(matches);
+
+        if (matches.length === 1 && checkSalesPermission("edit")) {
+            if (confirm("One matching record found. Open it for editing?")) {
+                await editSale(matches[0].id);
             }
         }
 
     } catch (error) {
-        console.error("Search sale error:", error);
+        console.error("Sales search error:", error);
 
-        alert("An unexpected error occurred during the search.");
+        alert("An error occurred while searching.");
     }
 }
 
@@ -992,7 +946,7 @@ async function generateSalesReport() {
     const farmID = getFarmID();
 
     if (!farmID) {
-        alert("Farm information is missing.");
+        alert("Farm session missing.");
         return;
     }
 
@@ -1010,8 +964,6 @@ async function generateSalesReport() {
 
         const records = data || [];
 
-        const totalRecords = records.length;
-
         const totalQuantity = records.reduce(function (sum, sale) {
             return sum + (Number(sale.quantity) || 0);
         }, 0);
@@ -1026,15 +978,22 @@ async function generateSalesReport() {
 
         const farmName = await getRegisteredFarmName();
 
+        const reportWindow = window.open("", "_blank");
+
+        if (!reportWindow) {
+            alert("Allow pop-ups in your browser to open the report.");
+            return;
+        }
+
         const rows = records.map(function (sale) {
             return `
                 <tr>
                     <td>${escapeHTML(sale.record_id || sale.id)}</td>
                     <td>${escapeHTML(formatDate(sale.sale_date))}</td>
-                    <td>${escapeHTML(sale.pig_id)}</td>
-                    <td>${escapeHTML(sale.category)}</td>
-                    <td>${escapeHTML(sale.quantity)}</td>
-                    <td>${escapeHTML(sale.weight)}</td>
+                    <td>${escapeHTML(sale.pig_id || "")}</td>
+                    <td>${escapeHTML(sale.category || "")}</td>
+                    <td>${escapeHTML(sale.quantity ?? 0)}</td>
+                    <td>${escapeHTML(sale.weight ?? 0)}</td>
                     <td>${escapeHTML(formatMoney(sale.total_amount))}</td>
                     <td>${sale.removed_from_farm === true ? "Yes" : "No"}</td>
                     <td>${escapeHTML(formatDate(sale.removal_date))}</td>
@@ -1042,26 +1001,17 @@ async function generateSalesReport() {
             `;
         }).join("");
 
-        const reportWindow = window.open("", "_blank");
-
-        if (!reportWindow) {
-            alert(
-                "The report window was blocked. Allow pop-ups and try again."
-            );
-
-            return;
-        }
-
         reportWindow.document.write(`
             <!DOCTYPE html>
-            <html>
+            <html lang="en">
             <head>
                 <meta charset="UTF-8">
-                <title>Sales Report</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>MUNKA PIGGERY Sales Report</title>
                 <style>
                     body {
                         font-family: Arial, sans-serif;
-                        margin: 25px;
+                        margin: 20px;
                         color: #222;
                     }
 
@@ -1070,9 +1020,13 @@ async function generateSalesReport() {
                     }
 
                     .summary {
-                        margin: 20px 0;
-                        padding: 15px;
+                        padding: 12px;
                         border: 1px solid #ccc;
+                        margin: 20px 0;
+                    }
+
+                    .table-wrap {
+                        overflow-x: auto;
                     }
 
                     table {
@@ -1099,37 +1053,37 @@ async function generateSalesReport() {
                 </style>
             </head>
             <body>
-                <h1>MUNKA PIGGERY MANAGEMENT SYSTEM</h1>
+                <h1>MUNKA PIGGERY TECHNOLOGY</h1>
                 <h2>Sales Report</h2>
 
                 <p><strong>Farm:</strong> ${escapeHTML(farmName)}</p>
                 <p><strong>Report date:</strong> ${escapeHTML(getTodayDate())}</p>
 
                 <div class="summary">
-                    <p><strong>Total sales records:</strong> ${totalRecords}</p>
+                    <p><strong>Number of records:</strong> ${records.length}</p>
                     <p><strong>Total quantity sold:</strong> ${totalQuantity}</p>
-                    <p><strong>Total recorded weight:</strong> ${totalWeight.toLocaleString("en-ZM")}</p>
-                    <p><strong>Total sales amount:</strong> ${escapeHTML(formatMoney(totalSales))}</p>
+                    <p><strong>Total recorded weight:</strong> ${totalWeight.toLocaleString("en-ZM")} kg</p>
+                    <p><strong>Total sales:</strong> ${escapeHTML(formatMoney(totalSales))}</p>
                 </div>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Record ID</th>
-                            <th>Sale Date</th>
-                            <th>Pig ID</th>
-                            <th>Category</th>
-                            <th>Quantity</th>
-                            <th>Weight</th>
-                            <th>Total</th>
-                            <th>Removed?</th>
-                            <th>Removal Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows}
-                    </tbody>
-                </table>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Record ID</th>
+                                <th>Sale Date</th>
+                                <th>Pig ID</th>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Weight</th>
+                                <th>Total</th>
+                                <th>Removed?</th>
+                                <th>Removal Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
 
                 <br>
                 <button onclick="window.print()">Print Report</button>
@@ -1142,13 +1096,13 @@ async function generateSalesReport() {
     } catch (error) {
         console.error("Sales report error:", error);
 
-        alert("An error occurred while generating the sales report.");
+        alert("An error occurred while generating the report.");
     }
 }
 
 
 /* ============================================================
-   16. DOWNLOAD SALES REPORT AS PDF
+   16. DOWNLOAD SALES PDF
 ============================================================ */
 
 async function downloadSalesPDF() {
@@ -1157,18 +1111,20 @@ async function downloadSalesPDF() {
         return;
     }
 
-    if (!window.jspdf || !window.jspdf.jsPDF) {
+    if (
+        !window.jspdf ||
+        typeof window.jspdf.jsPDF !== "function"
+    ) {
         alert(
-            "The PDF library could not be loaded. Check your internet connection and refresh the page."
+            "The PDF library did not load. Check your internet connection and refresh the page."
         );
-
         return;
     }
 
     const farmID = getFarmID();
 
     if (!farmID) {
-        alert("Farm information is missing.");
+        alert("Farm session missing.");
         return;
     }
 
@@ -1180,41 +1136,25 @@ async function downloadSalesPDF() {
             .order("sale_date", { ascending: false });
 
         if (error) {
-            alert("Unable to download PDF: " + error.message);
+            alert("Unable to retrieve records: " + error.message);
             return;
         }
 
         const records = data || [];
-
         const farmName = await getRegisteredFarmName();
 
-        const { jsPDF } = window.jspdf;
-
-        const doc = new jsPDF({
-            orientation: "landscape"
-        });
+        const jsPDF = window.jspdf.jsPDF;
+        const doc = new jsPDF({ orientation: "landscape" });
 
         doc.setFontSize(16);
-
-        doc.text(
-            "MUNKA PIGGERY MANAGEMENT SYSTEM",
-            14,
-            15
-        );
+        doc.text("MUNKA PIGGERY TECHNOLOGY", 14, 15);
 
         doc.setFontSize(12);
-
         doc.text("Sales Report", 14, 23);
 
         doc.setFontSize(10);
-
         doc.text("Farm: " + farmName, 14, 30);
-
-        doc.text(
-            "Generated: " + getTodayDate(),
-            14,
-            36
-        );
+        doc.text("Generated: " + getTodayDate(), 14, 36);
 
         const totalQuantity = records.reduce(function (sum, sale) {
             return sum + (Number(sale.quantity) || 0);
@@ -1224,23 +1164,13 @@ async function downloadSalesPDF() {
             return sum + (Number(sale.total_amount) || 0);
         }, 0);
 
-        doc.text(
-            "Total quantity: " + totalQuantity,
-            14,
-            43
-        );
-
-        doc.text(
-            "Total sales: " + formatMoney(totalSales),
-            100,
-            43
-        );
+        doc.text("Total quantity: " + totalQuantity, 14, 43);
+        doc.text("Total sales: " + formatMoney(totalSales), 100, 43);
 
         if (typeof doc.autoTable !== "function") {
             alert(
-                "The PDF table library could not be loaded. Refresh the page and try again."
+                "The PDF table extension did not load. Refresh the page and try again."
             );
-
             return;
         }
 
@@ -1270,8 +1200,8 @@ async function downloadSalesPDF() {
                     sale.pig_id || "",
                     sale.breed || "",
                     sale.category || "",
-                    sale.quantity || 0,
-                    sale.weight || 0,
+                    sale.quantity ?? 0,
+                    sale.weight ?? 0,
                     formatMoney(sale.price_per_kg),
                     formatMoney(sale.total_amount),
                     sale.buyer_name || "",
@@ -1296,35 +1226,29 @@ async function downloadSalesPDF() {
     } catch (error) {
         console.error("Sales PDF error:", error);
 
-        alert("An error occurred while creating the PDF.");
+        alert(
+            "PDF generation failed.\n\n" +
+            (error.message || "Please refresh the page and try again.")
+        );
     }
 }
 
 
 /* ============================================================
-   17. CLEAR THE SALES FORM
+   17. CLEAR THE FORM
 ============================================================ */
 
 function clearSaleForm() {
     editID = null;
 
-    const form = document.querySelector("form");
+    const form = document.getElementById("salesForm");
 
     if (form) {
         form.reset();
     }
 
-    const recordID = document.getElementById("recordID");
-
-    if (recordID) {
-        recordID.value = "";
-    }
-
-    const saleDate = document.getElementById("saleDate");
-
-    if (saleDate) {
-        saleDate.value = getTodayDate();
-    }
+    setInputValue("recordID", "");
+    setInputValue("saleDate", getTodayDate());
 
     const removalSelect =
         document.getElementById("removedFromFarm");
@@ -1342,23 +1266,20 @@ function clearSaleForm() {
         removalDate.required = false;
     }
 
-    const saveButton =
-        document.querySelector(
-            'button[onclick*="saveSaleRecord"]'
-        );
+    const updateButton =
+        document.querySelector(".update-btn");
 
-    if (saveButton) {
-        saveButton.textContent = "Save Sale";
+    if (updateButton) {
+        updateButton.textContent = "✏️ Update Record";
     }
 
     calculateTotalAmount();
-
     updateRemovalDateField();
 }
 
 
 /* ============================================================
-   18. LOAD SALES WHEN THE PAGE OPENS
+   18. LOAD RECORDS WHEN THE PAGE OPENS
 ============================================================ */
 
 window.addEventListener("load", function () {
@@ -1367,5 +1288,5 @@ window.addEventListener("load", function () {
 
 
 /* ============================================================
-   END OF SALES MODULE
+   END OF SALES MANAGEMENT MODULE
 ============================================================ */
