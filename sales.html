@@ -633,8 +633,38 @@
                 </select>
 
             </div>
+<!-- PHYSICAL REMOVAL CONFIRMATION -->        <div class="form-group full-width">
 
+            <label for="removedFromFarm">
+                Have the pigs physically left the farm?
+            </label>
 
+            <select id="removedFromFarm" name="removedFromFarm">
+                <option value="false" selected>
+                    No — pigs are still on the farm
+                </option>
+
+                <option value="true">
+                    Yes — pigs have left the farm
+                </option>
+            </select>
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="removalDate">
+                Date pigs left the farm
+            </label>
+
+            <input
+                type="date"
+                id="removalDate"
+                name="removalDate"
+                disabled
+            >
+
+        </div>
         </div>
 
 
