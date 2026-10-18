@@ -1,22 +1,20 @@
-// ==========================================================
-// MUNKA PIGGERY TECHNOLOGY
-// PIG REGISTRATION MODULE
-// Individual pigs + piglet/weaner groups
-// Multi-farm and permission-controlled
-// ==========================================================
+/* =========================================================
+MUNKA PIGGERY TECHNOLOGY
+PIG REGISTRATION MODULE
+Individual pigs, piglet groups, weaner groups and reports
+========================================================= */
 
 let editID = null;
 let editingGroupID = null;
+let currentPigReport = null;
 
-// ==========================================================
-// BASIC HELPERS
-// ==========================================================
+const pigById = id => document.getElementById(id);
 
 function getLoggedUser() {
 try {
 return JSON.parse(localStorage.getItem("loggedInUser"));
 } catch (error) {
-console.error("Login details error:", error);
+console.error("Unable to read logged-in user:", error);
 return null;
 }
 }
@@ -37,12 +35,12 @@ const replacements = {
 "'": "'"
 };
 
-return String(value ?? "").replace(/[&<>"']/g, c => replacements[c]);
+return String(value ?? "").replace(/[&<>"']/g, char => replacements[char]);
 
 }
 
-function hasPigPermission(permission) {
-const names = {
+function pigPermission(action) {
+const map = {
 view: "canView",
 add: "canAdd",
 edit: "canEdit",
@@ -50,15 +48,22 @@ delete: "canDelete",
 report: "canReport"
 };
 
-const fn = window[names[permission]];
+const fn = window[map[action]];
 
 if (typeof fn !== "function") {
-    console.error("Permission helper unavailable:", names[permission]);
+    console.error("Permission helper is unavailable:", map[action]);
     return false;
 }
 
 try {
-    return fn("Pig Registration") === true;
+    const result = fn("Pig Registration");
+
+    if (result && typeof result.then === "function") {
+        console.error("Asynchronous permission helper detected:", map[action]);
+        return false;
+    }
+
+    return result === true;
 } catch (error) {
     console.error("Permission check failed:", error);
     return false;
@@ -66,19 +71,8 @@ try {
 
 }
 
-function getPigSexFromCategory(category) {
-if (category === "Boar") return "Male";
-
-if (["Sow", "Pregnant Sow", "Lactating Sow"].includes(category)) {
-    return "Female";
-}
-
-return "Unknown";
-
-}
-
 function setPigStatus(id, message, isError = false) {
-const element = document.getElementById(id);
+const element = pigById(id);
 if (!element) return;
 
 element.textContent = message;
@@ -96,13 +90,13 @@ if (typeof window.saveActivity !== "function") return;
 
 try {
     await window.saveActivity(
-        `${user.full_name || "User"} (${user.role || "Unknown role"})`,
+        `${user?.full_name || "User"} (${user?.role || "Unknown role"})`,
         action,
         "Pig Registration",
         details
     );
 } catch (error) {
-    console.error("Activity log error:", error);
+    console.error("Activity logging failed:", error);
 }
 
 }
@@ -127,207 +121,211 @@ try {
 
 }
 
-// ==========================================================
-// REGISTRATION DATE UI
-// ==========================================================
+function getPigSexFromCategory(category) {
+if (category === "Boar") return "Male";
+
+if (["Sow", "Pregnant Sow", "Lactating Sow"].includes(category)) {
+    return "Female";
+}
+
+return "Unknown";
+
+}
 
 function updateRegistrationTypeUI() {
-const typeInput = document.getElementById("registrationType");
-const dateInput = document.getElementById("registrationDate");
-const dateGroup = document.getElementById("registrationDateGroup");
+const type = pigById("registrationType");
+const date = pigById("registrationDate");
+const wrapper = pigById("registrationDateGroup");
 
-if (!typeInput || !dateInput || !dateGroup) return;
+if (!type || !date || !wrapper) return;
 
-const type = typeInput.value;
-const needsDate = ["purchase", "arrival"].includes(type);
+const needsDate = ["purchase", "arrival"].includes(type.value);
 
-dateGroup.style.display = needsDate ? "" : "none";
-dateInput.required = needsDate;
+wrapper.style.display = needsDate ? "" : "none";
+date.required = needsDate;
 
-const label = dateGroup.querySelector("label");
+const label = wrapper.querySelector("label");
 if (label) {
-    label.textContent = type === "purchase" ? "Purchase Date" : "Arrival Date";
+    label.textContent =
+        type.value === "purchase" ? "Purchase Date" : "Arrival Date";
 }
 
 }
 
-document.getElementById("registrationType")
-?.addEventListener("change", updateRegistrationTypeUI);
+/* =========================================================
+INDIVIDUAL PIG SAVE / UPDATE
+========================================================= */
 
-// ==========================================================
-// INDIVIDUAL PIG REGISTRATION
-// ==========================================================
+const pigForm = pigById("pigForm");
 
-const pigForm = document.getElementById("pigForm");
-
-if (pigForm) {
-pigForm.addEventListener("submit", async event => {
+pigForm?.addEventListener("submit", async event => {
 event.preventDefault();
 
-    const isEditing = editID !== null;
+const editing = editID !== null;
 
-    if (!hasPigPermission(isEditing ? "edit" : "add")) {
-        alert("You do not have permission for this action.");
-        return;
-    }
+if (!pigPermission(editing ? "edit" : "add")) {
+    alert("You do not have permission for this action.");
+    return;
+}
 
-    const user = getLoggedUser();
-    const farmID = getFarmID();
+const user = getLoggedUser();
+const farmID = getFarmID();
 
-    if (!user || farmID == null) {
-        alert("Please log in again and check your farm account.");
-        return;
-    }
+if (!user || farmID == null) {
+    alert("Please log in again and check your farm account.");
+    return;
+}
 
-    const value = id =>
-        document.getElementById(id)?.value?.trim() || "";
+const value = id => pigById(id)?.value?.trim() || "";
 
-    const pigID = value("pigID");
-    const breed = value("breed");
-    const category = value("category");
-    const farrowDate = value("farrowDate");
-    const source = value("source");
-    const weightValue = value("weight");
-    const healthStatus = value("healthStatus");
-    const registrationType = value("registrationType");
-    const registrationDate = value("registrationDate");
+const pigID = value("pigID");
+const breed = value("breed");
+const category = value("category");
+const farrowDate = value("farrowDate");
+const source = value("source");
+const weightText = value("weight");
+const health = value("healthStatus");
+const type = value("registrationType");
+const registrationDate = value("registrationDate");
 
-    if (!pigID || !breed || !category || !farrowDate ||
-        !source || !weightValue || !healthStatus) {
-        alert("Please complete all required fields.");
-        return;
-    }
+if (!pigID || !breed || !category || !farrowDate ||
+    !source || !weightText || !health) {
+    alert("Please complete all required fields.");
+    return;
+}
 
-    if (!isEditing && registrationType === "purchase" && !registrationDate) {
-        alert("Please enter the purchase date.");
-        return;
-    }
+if (!editing && type === "purchase" && !registrationDate) {
+    alert("Please enter the purchase date.");
+    return;
+}
 
-    if (!isEditing && registrationType === "arrival") {
-        alert("Transfer/arrival tracking is not connected. No record was saved.");
-        return;
-    }
+if (!editing && type === "arrival") {
+    alert("Transfer/arrival tracking is not connected. No record was saved.");
+    return;
+}
 
-    if (!isEditing && registrationType === "birth") {
-        alert("Please record farm births through the Farrowing module.");
-        return;
-    }
+if (!editing && type === "birth") {
+    alert("Please record farm births through the Farrowing module.");
+    return;
+}
 
-    const weight = Number(weightValue);
+const weight = Number(weightText);
 
-    if (!Number.isFinite(weight) || weight < 0) {
-        alert("Please enter a valid weight.");
-        return;
-    }
+if (!Number.isFinite(weight) || weight < 0) {
+    alert("Please select a valid weight.");
+    return;
+}
 
-    const pig = {
-        pig_id: pigID,
-        breed,
-        category,
-        sex: getPigSexFromCategory(category),
-        farrow_date: farrowDate || null,
-        source: source || null,
-        weight,
-        health_status: healthStatus
-    };
+const record = {
+    pig_id: pigID,
+    breed,
+    category,
+    sex: getPigSexFromCategory(category),
+    farrow_date: farrowDate,
+    source,
+    weight,
+    health_status: health
+};
 
-    const button = pigForm.querySelector('button[type="submit"]');
+const button = pigForm.querySelector('button[type="submit"]');
+const originalText = button?.textContent || "💾 Save Pig Record";
 
-    if (button) {
-        button.disabled = true;
-        button.textContent = isEditing ? "Updating..." : "Saving...";
-    }
+if (button) {
+    button.disabled = true;
+    button.textContent = editing ? "Updating..." : "Saving...";
+}
 
-    try {
-        if (isEditing) {
-            pig.updated_by = user.full_name || null;
-            pig.updated_at = new Date().toISOString();
+try {
+    if (editing) {
+        record.updated_by = user.full_name || null;
+        record.updated_at = new Date().toISOString();
 
-            const { error } = await supabaseClient
-                .from("pigs")
-                .update(pig)
-                .eq("id", editID)
-                .eq("farm_id", farmID);
-
-            if (error) throw error;
-
-            await logPigActivity(user, "Updated", `Updated pig ${pigID}`);
-            clearForm();
-            await loadPigs();
-            setPigStatus("pigStatusMessage", "Pig record updated successfully.");
-            return;
-        }
-
-        pig.created_by = user.full_name || null;
-        pig.updated_by = null;
-        pig.updated_at = null;
-        pig.farm_id = farmID;
-
-        const { data: insertedPig, error } = await supabaseClient
+        const { error } = await supabaseClient
             .from("pigs")
-            .insert([pig])
-            .select("id,pig_id")
-            .single();
+            .update(record)
+            .eq("id", editID)
+            .eq("farm_id", farmID);
 
         if (error) throw error;
 
-        if (registrationType === "purchase") {
-            const { error: movementError } = await supabaseClient.rpc(
-                "record_pig_purchase_movement",
-                {
-                    p_pig_record_id: insertedPig.id,
-                    p_purchase_date: registrationDate,
-                    p_notes: `Purchased from ${source}`
-                }
-            );
-
-            if (movementError) {
-                console.error("Purchase movement error:", movementError);
-                await loadPigs();
-
-                alert(
-                    "The pig was saved, but purchase tracking failed.\n" +
-                    "Pig ID: " + insertedPig.pig_id +
-                    "\nDo not register it again. Please report this error."
-                );
-                return;
-            }
-        }
-
-        await logPigActivity(
-            user,
-            "Added",
-            `Registered pig ${pigID}; category ${category}; type ${registrationType}`
-        );
+        await logPigActivity(user, "Updated", `Updated pig ${pigID}`);
 
         clearForm();
         await loadPigs();
-        setPigStatus("pigStatusMessage", "Pig record saved successfully.");
+        setPigStatus("pigStatusMessage", "Pig record updated successfully.");
+        return;
+    }
 
-    } catch (error) {
-        setPigStatus("pigStatusMessage", error.message || "Unable to save pig.", true);
-        showPigError("Unable to save the pig record.", error);
-    } finally {
-        if (button) {
-            button.disabled = false;
-            button.textContent = editID === null
-                ? "💾 Save Pig Record"
-                : "💾 Update Pig Record";
+    record.farm_id = farmID;
+    record.created_by = user.full_name || null;
+    record.updated_by = null;
+    record.updated_at = null;
+
+    const { data: inserted, error } = await supabaseClient
+        .from("pigs")
+        .insert([record])
+        .select("id,pig_id")
+        .single();
+
+    if (error) throw error;
+
+    if (type === "purchase") {
+        const { error: movementError } = await supabaseClient.rpc(
+            "record_pig_purchase_movement",
+            {
+                p_pig_record_id: inserted.id,
+                p_purchase_date: registrationDate,
+                p_notes: `Purchased from ${source}`
+            }
+        );
+
+        if (movementError) {
+            await loadPigs();
+
+            setPigStatus(
+                "pigStatusMessage",
+                "Pig saved, but purchase tracking failed. Do not register it again.",
+                true
+            );
+
+            alert(
+                "The pig was saved, but purchase tracking failed.\n" +
+                "Pig ID: " + inserted.pig_id +
+                "\nDo not register it again. Please report this error."
+            );
+            return;
         }
     }
-});
 
+    await logPigActivity(user, "Added", `Registered pig ${pigID}`);
+
+    clearForm();
+    await loadPigs();
+    setPigStatus("pigStatusMessage", "Pig record saved successfully.");
+
+} catch (error) {
+    setPigStatus("pigStatusMessage", error.message || "Unable to save pig.", true);
+    showPigError("Unable to save the pig record.", error);
+} finally {
+    if (button) {
+        button.disabled = false;
+        button.textContent = editID === null
+            ? "💾 Save Pig Record"
+            : "💾 Update Pig Record";
+    }
 }
 
-// ==========================================================
-// LOAD AND DISPLAY INDIVIDUAL PIGS
-// ==========================================================
+});
+
+/* =========================================================
+LOAD / DISPLAY INDIVIDUAL PIGS
+========================================================= */
 
 async function loadPigs() {
-const table = document.getElementById("pigTable");
+const table = pigById("pigTable");
 if (!table) return;
 
-if (!hasPigPermission("view")) {
+if (!pigPermission("view")) {
     table.innerHTML =
         '<tr><td colspan="8">You do not have permission to view records.</td></tr>';
     return;
@@ -341,6 +339,8 @@ if (farmID == null) {
     return;
 }
 
+table.innerHTML = '<tr><td colspan="8">Loading records...</td></tr>';
+
 try {
     const { data, error } = await supabaseClient
         .from("pigs")
@@ -349,17 +349,18 @@ try {
         .order("id", { ascending: true });
 
     if (error) throw error;
+
     displayPigs(data || []);
 } catch (error) {
-    console.error("Load pigs error:", error);
+    console.error("Load pigs failed:", error);
     table.innerHTML =
-        '<tr><td colspan="8">Unable to load records. Please try again.</td></tr>';
+        '<tr><td colspan="8">Unable to load records. Check your connection and access policies.</td></tr>';
 }
 
 }
 
 function displayPigs(records) {
-const table = document.getElementById("pigTable");
+const table = pigById("pigTable");
 if (!table) return;
 
 table.innerHTML = "";
@@ -373,11 +374,11 @@ if (!records.length) {
 records.forEach(pig => {
     let actions = "";
 
-    if (hasPigPermission("edit")) {
+    if (pigPermission("edit")) {
         actions += `<button type="button" onclick="editPig(${Number(pig.id)})">Edit</button> `;
     }
 
-    if (hasPigPermission("delete")) {
+    if (pigPermission("delete")) {
         actions += `<button type="button" onclick="deletePig(${Number(pig.id)})">Delete</button>`;
     }
 
@@ -388,7 +389,7 @@ records.forEach(pig => {
     row.innerHTML = `
         <td>${escapePigHTML(pig.pig_id)}</td>
         <td>${escapePigHTML(pig.breed)}</td>
-        <td>${escapePigHTML(pig.category || "Not assigned")}</td>
+        <td>${escapePigHTML(pig.category)}</td>
         <td>${escapePigHTML(pig.farrow_date)}</td>
         <td>${escapePigHTML(pig.source)}</td>
         <td>${pig.weight == null ? "" : escapePigHTML(pig.weight) + " Kg"}</td>
@@ -400,12 +401,8 @@ records.forEach(pig => {
 
 }
 
-// ==========================================================
-// EDIT AND DELETE INDIVIDUAL PIGS
-// ==========================================================
-
 async function editPig(id) {
-if (!hasPigPermission("edit")) {
+if (!pigPermission("edit")) {
 alert("You do not have permission to edit records.");
 return;
 }
@@ -423,17 +420,23 @@ try {
 
     if (error) throw error;
 
-    document.getElementById("pigID").value = data.pig_id || "";
-    document.getElementById("breed").value = data.breed || "";
-    document.getElementById("category").value = data.category || "";
-    document.getElementById("farrowDate").value = data.farrow_date || "";
-    document.getElementById("source").value = data.source || "";
-    document.getElementById("weight").value =
-        data.weight == null ? "" : String(data.weight);
-    document.getElementById("healthStatus").value = data.health_status || "";
+    const values = {
+        pigID: data.pig_id,
+        breed: data.breed,
+        category: data.category,
+        farrowDate: data.farrow_date,
+        source: data.source,
+        weight: data.weight,
+        healthStatus: data.health_status
+    };
 
-    document.getElementById("registrationType").value = "existing";
-    document.getElementById("registrationDate").value = "";
+    Object.entries(values).forEach(([id, value]) => {
+        const element = pigById(id);
+        if (element) element.value = value ?? "";
+    });
+
+    pigById("registrationType").value = "existing";
+    pigById("registrationDate").value = "";
     updateRegistrationTypeUI();
 
     editID = id;
@@ -449,13 +452,14 @@ try {
 }
 
 async function deletePig(id) {
-if (!hasPigPermission("delete")) {
+if (!pigPermission("delete")) {
 alert("You do not have permission to delete records.");
 return;
 }
 
 const farmID = getFarmID();
 const user = getLoggedUser();
+
 if (farmID == null || !user) return;
 
 try {
@@ -467,6 +471,7 @@ try {
         .single();
 
     if (fetchError) throw fetchError;
+
     if (!confirm(`Delete pig ${pig.pig_id || id}?`)) return;
 
     const { error } = await supabaseClient
@@ -486,12 +491,8 @@ try {
 
 }
 
-// ==========================================================
-// SEARCH PIGS
-// ==========================================================
-
 async function searchPig() {
-if (!hasPigPermission("view")) {
+if (!pigPermission("view")) {
 alert("You do not have permission to view records.");
 return;
 }
@@ -499,7 +500,7 @@ return;
 const farmID = getFarmID();
 if (farmID == null) return;
 
-const keyword = document.getElementById("searchPig")?.value?.trim() || "";
+const keyword = pigById("searchPig")?.value?.trim() || "";
 
 try {
     let query = supabaseClient
@@ -524,157 +525,147 @@ try {
 
 }
 
-// ==========================================================
-// CLEAR INDIVIDUAL PIG FORM
-// ==========================================================
-
 function clearForm() {
 pigForm?.reset();
 editID = null;
+updateRegistrationTypeUI();
 
 const button = pigForm?.querySelector('button[type="submit"]');
 if (button) button.textContent = "💾 Save Pig Record";
 
-const date = document.getElementById("registrationDate");
-if (date) date.value = "";
-
-updateRegistrationTypeUI();
 setPigStatus("pigStatusMessage", "");
 
 }
 
-// ==========================================================
-// PIGLET / WEANER GROUPS
-// ==========================================================
+/* =========================================================
+PIGLET / WEANER GROUP SAVE / UPDATE
+========================================================= */
 
-const groupForm = document.getElementById("groupForm");
+const groupForm = pigById("groupForm");
 
-if (groupForm) {
-groupForm.addEventListener("submit", async event => {
+groupForm?.addEventListener("submit", async event => {
 event.preventDefault();
 
-    const isEditing = editingGroupID !== null;
+const editing = editingGroupID !== null;
 
-    if (!hasPigPermission(isEditing ? "edit" : "add")) {
-        alert("You do not have permission to save groups.");
-        return;
-    }
-
-    const user = getLoggedUser();
-    const farmID = getFarmID();
-
-    if (!user || farmID == null) {
-        alert("Please log in and check your farm account.");
-        return;
-    }
-
-    const value = id =>
-        document.getElementById(id)?.value?.trim() || "";
-
-    const groupName = value("groupName");
-    const category = value("groupCategory");
-    const quantity = Number(value("groupQuantity"));
-    const weightText = value("groupWeight");
-    const averageWeight = weightText === "" ? null : Number(weightText);
-
-    if (!groupName || !["piglet", "weaner"].includes(category)) {
-        alert("Enter a group name and select Piglets or Weaners.");
-        return;
-    }
-
-    if (!Number.isInteger(quantity) || quantity < 1) {
-        alert("Enter a whole number of pigs greater than zero.");
-        return;
-    }
-
-    if (averageWeight !== null &&
-        (!Number.isFinite(averageWeight) || averageWeight < 0)) {
-        alert("Enter a valid average weight.");
-        return;
-    }
-
-    const group = {
-        farm_id: farmID,
-        group_name: groupName,
-        category,
-        quantity,
-        breed: value("groupBreed") || null,
-        sex: value("groupSex") || "Mixed",
-        farrow_date: value("groupFarrowDate") || null,
-        source: value("groupSource") || null,
-        average_weight: averageWeight,
-        health_status: value("groupHealth") || "Healthy",
-        pen_name: value("groupPen") || null,
-        notes: value("groupNotes") || null,
-        updated_by: user.full_name || null
-    };
-
-    const button = groupForm.querySelector('button[type="submit"]');
-
-    if (button) {
-        button.disabled = true;
-        button.textContent = isEditing ? "Updating..." : "Saving...";
-    }
-
-    try {
-        let error;
-
-        if (isEditing) {
-            ({ error } = await supabaseClient
-                .from("pig_groups")
-                .update(group)
-                .eq("id", editingGroupID)
-                .eq("farm_id", farmID));
-        } else {
-            group.created_by = user.full_name || null;
-
-            ({ error } = await supabaseClient
-                .from("pig_groups")
-                .insert([group]));
-        }
-
-        if (error) throw error;
-
-        await logPigActivity(
-            user,
-            isEditing ? "Updated Group" : "Added Group",
-            `${isEditing ? "Updated" : "Registered"} group ${groupName}; quantity ${quantity}`
-        );
-
-        clearGroupForm();
-        await loadPigGroups();
-
-        setPigStatus(
-            "groupStatusMessage",
-            isEditing ? "Group updated successfully." : "Group registered successfully."
-        );
-    } catch (error) {
-        setPigStatus("groupStatusMessage", error.message || "Unable to save group.", true);
-        showPigError("Unable to save the piglet/weaner group.", error);
-    } finally {
-        if (button) {
-            button.disabled = false;
-            button.textContent = editingGroupID === null
-                ? "💾 Save Group"
-                : "💾 Update Group";
-        }
-    }
-});
-
+if (!pigPermission(editing ? "edit" : "add")) {
+    alert("You do not have permission to save groups.");
+    return;
 }
 
-// ==========================================================
-// LOAD GROUPS
-// ==========================================================
+const user = getLoggedUser();
+const farmID = getFarmID();
+
+if (!user || farmID == null) {
+    alert("Please log in and check your farm account.");
+    return;
+}
+
+const value = id => pigById(id)?.value?.trim() || "";
+
+const groupName = value("groupName");
+const category = value("groupCategory");
+const quantity = Number(value("groupQuantity"));
+const weightText = value("groupWeight");
+const averageWeight = weightText === "" ? null : Number(weightText);
+
+if (!groupName || !["piglet", "weaner"].includes(category)) {
+    alert("Enter a group name and select Piglets or Weaners.");
+    return;
+}
+
+if (!Number.isInteger(quantity) || quantity < 1) {
+    alert("Enter a whole number greater than zero.");
+    return;
+}
+
+if (averageWeight !== null &&
+    (!Number.isFinite(averageWeight) || averageWeight < 0)) {
+    alert("Enter a valid average weight.");
+    return;
+}
+
+const record = {
+    farm_id: farmID,
+    group_name: groupName,
+    category,
+    quantity,
+    breed: value("groupBreed") || null,
+    sex: value("groupSex") || "Mixed",
+    farrow_date: value("groupFarrowDate") || null,
+    source: value("groupSource") || null,
+    average_weight: averageWeight,
+    health_status: value("groupHealth") || "Healthy",
+    pen_name: value("groupPen") || null,
+    notes: value("groupNotes") || null,
+    updated_by: user.full_name || null
+};
+
+const button = groupForm.querySelector('button[type="submit"]');
+
+if (button) {
+    button.disabled = true;
+    button.textContent = editing ? "Updating..." : "Saving...";
+}
+
+try {
+    let error;
+
+    if (editing) {
+        ({ error } = await supabaseClient
+            .from("pig_groups")
+            .update(record)
+            .eq("id", editingGroupID)
+            .eq("farm_id", farmID));
+    } else {
+        record.created_by = user.full_name || null;
+
+        ({ error } = await supabaseClient
+            .from("pig_groups")
+            .insert([record]));
+    }
+
+    if (error) throw error;
+
+    await logPigActivity(
+        user,
+        editing ? "Updated Group" : "Added Group",
+        `${editing ? "Updated" : "Registered"} group ${groupName}`
+    );
+
+    clearGroupForm();
+    await loadPigGroups();
+
+    setPigStatus(
+        "groupStatusMessage",
+        editing ? "Group updated successfully." : "Group saved successfully."
+    );
+} catch (error) {
+    setPigStatus("groupStatusMessage", error.message || "Unable to save group.", true);
+    showPigError("Unable to save the group.", error);
+} finally {
+    if (button) {
+        button.disabled = false;
+        button.textContent = editingGroupID === null
+            ? "💾 Save Group"
+            : "💾 Update Group";
+    }
+}
+
+});
+
+/* =========================================================
+LOAD / DISPLAY GROUPS
+Matches the actual eight-column HTML group table.
+========================================================= */
 
 async function loadPigGroups() {
-const table = document.getElementById("groupTable");
+const table = pigById("groupTable");
 if (!table) return;
 
-// Group records use the Pig Registration module permission.
-if (!hasPigPermission("view")) {
+if (!pigPermission("view")) {
     table.innerHTML =
-        '<tr><td colspan="10">You do not have permission to view groups.</td></tr>';
+        '<tr><td colspan="8">You do not have permission to view groups.</td></tr>';
     return;
 }
 
@@ -682,9 +673,11 @@ const farmID = getFarmID();
 
 if (farmID == null) {
     table.innerHTML =
-        '<tr><td colspan="10">Please log in and check your farm account.</td></tr>';
+        '<tr><td colspan="8">Please log in and check your farm account.</td></tr>';
     return;
 }
+
+table.innerHTML = '<tr><td colspan="8">Loading groups...</td></tr>';
 
 try {
     const { data, error } = await supabaseClient
@@ -697,33 +690,33 @@ try {
 
     displayPigGroups(data || []);
 } catch (error) {
-    console.error("Load pig groups error:", error);
+    console.error("Load pig groups failed:", error);
     table.innerHTML =
-        '<tr><td colspan="10">Unable to load groups. Check table permissions and try again.</td></tr>';
+        '<tr><td colspan="8">Unable to load groups. Check the pig_groups table access policies.</td></tr>';
 }
 
 }
 
 function displayPigGroups(records) {
-const table = document.getElementById("groupTable");
+const table = pigById("groupTable");
 if (!table) return;
 
 table.innerHTML = "";
 
 if (!records.length) {
     table.innerHTML =
-        '<tr><td colspan="10">No piglet or weaner groups registered yet.</td></tr>';
+        '<tr><td colspan="8">No piglet or weaner groups registered yet.</td></tr>';
     return;
 }
 
 records.forEach(group => {
     let actions = "";
 
-    if (hasPigPermission("edit")) {
+    if (pigPermission("edit")) {
         actions += `<button type="button" onclick="editPigGroup(${Number(group.id)})">Edit</button> `;
     }
 
-    if (hasPigPermission("delete")) {
+    if (pigPermission("delete")) {
         actions += `<button type="button" onclick="deletePigGroup(${Number(group.id)})">Delete</button>`;
     }
 
@@ -737,9 +730,7 @@ records.forEach(group => {
         <td>${escapePigHTML(group.quantity)}</td>
         <td>${escapePigHTML(group.breed || "")}</td>
         <td>${escapePigHTML(group.sex || "")}</td>
-        <td>${escapePigHTML(group.farrow_date || "")}</td>
         <td>${group.average_weight == null ? "" : escapePigHTML(group.average_weight) + " Kg"}</td>
-        <td>${escapePigHTML(group.health_status || "")}</td>
         <td>${escapePigHTML(group.pen_name || "")}</td>
         <td>${actions}</td>`;
 
@@ -748,12 +739,8 @@ records.forEach(group => {
 
 }
 
-// ==========================================================
-// EDIT AND DELETE GROUPS
-// ==========================================================
-
 async function editPigGroup(id) {
-if (!hasPigPermission("edit")) {
+if (!pigPermission("edit")) {
 alert("You do not have permission to edit groups.");
 return;
 }
@@ -785,8 +772,8 @@ try {
         groupNotes: data.notes
     };
 
-    Object.entries(values).forEach(([field, value]) => {
-        const element = document.getElementById(field);
+    Object.entries(values).forEach(([id, value]) => {
+        const element = pigById(id);
         if (element) element.value = value ?? "";
     });
 
@@ -797,13 +784,13 @@ try {
 
     window.scrollTo({ top: 0, behavior: "smooth" });
 } catch (error) {
-    showPigError("Unable to open this group.", error);
+    showPigError("Unable to open group.", error);
 }
 
 }
 
 async function deletePigGroup(id) {
-if (!hasPigPermission("delete")) {
+if (!pigPermission("delete")) {
 alert("You do not have permission to delete groups.");
 return;
 }
@@ -833,23 +820,14 @@ try {
 
     if (error) throw error;
 
-    await logPigActivity(
-        user,
-        "Deleted Group",
-        `Deleted group ${group.group_name || id}`
-    );
-
+    await logPigActivity(user, "Deleted Group", `Deleted group ${group.group_name || id}`);
     await loadPigGroups();
     setPigStatus("groupStatusMessage", "Group deleted successfully.");
 } catch (error) {
-    showPigError("Unable to delete this group.", error);
+    showPigError("Unable to delete group.", error);
 }
 
 }
-
-// ==========================================================
-// CLEAR GROUP FORM
-// ==========================================================
 
 function clearGroupForm() {
 groupForm?.reset();
@@ -862,134 +840,250 @@ setPigStatus("groupStatusMessage", "");
 
 }
 
-// ==========================================================
-// REPORT, PRINT AND PDF
-// ==========================================================
+/* =========================================================
+REPORT OUTPUT
+Adds a report container because the supplied HTML lacked one.
+========================================================= */
 
-async function generateReport() {
-if (!hasPigPermission("report")) {
-alert("You do not have permission to generate reports.");
-return;
+function getOrCreateReportOutput() {
+let output = pigById("reportOutput");
+
+if (output) return output;
+
+const section = document.querySelector(".report-section");
+if (!section) return null;
+
+output = document.createElement("div");
+output.id = "reportOutput";
+output.className = "report-output";
+output.setAttribute("aria-live", "polite");
+
+section.appendChild(output);
+return output;
+
+}
+
+async function collectPigReport() {
+if (!pigPermission("report")) {
+throw new Error("You do not have permission to generate reports.");
 }
 
 const farmID = getFarmID();
-if (farmID == null) {
-    alert("Please log in and check your farm account.");
+if (farmID == null) throw new Error("Please log in and check your farm account.");
+
+const [
+    { data: pigs, error: pigError },
+    { data: groups, error: groupError }
+] = await Promise.all([
+    supabaseClient.from("pigs").select("*").eq("farm_id", farmID),
+    supabaseClient.from("pig_groups").select("*").eq("farm_id", farmID)
+]);
+
+if (pigError) throw pigError;
+if (groupError) throw groupError;
+
+return {
+    farmName: await getRegisteredFarmName(),
+    pigs: pigs || [],
+    groups: groups || [],
+    generatedAt: new Date().toLocaleString("en-ZM", {
+        timeZone: "Africa/Lusaka"
+    })
+};
+
+}
+
+async function generateReport() {
+const output = getOrCreateReportOutput();
+
+if (!output) {
+    alert("The report display section could not be found.");
     return;
 }
 
+output.textContent = "Generating report...";
+
 try {
-    const [{ data: pigs, error: pigError }, { data: groups, error: groupError }] =
-        await Promise.all([
-            supabaseClient.from("pigs").select("*").eq("farm_id", farmID),
-            supabaseClient.from("pig_groups").select("*").eq("farm_id", farmID)
-        ]);
+    currentPigReport = await collectPigReport();
 
-    if (pigError) throw pigError;
-    if (groupError) throw groupError;
-
-    const totalPigs = (pigs || []).length;
-    const totalGroups = (groups || []).length;
-    const groupQuantity = (groups || []).reduce(
-        (sum, group) => sum + (Number(group.quantity) || 0), 0
+    const report = currentPigReport;
+    const groupCount = report.groups.length;
+    const groupQuantity = report.groups.reduce(
+        (total, group) => total + (Number(group.quantity) || 0),
+        0
     );
 
-    const report = document.getElementById("reportOutput");
-    if (!report) {
-        alert(
-            `Pig Registration Report\n\nIndividual pig records: ${totalPigs}` +
-            `\nGroups: ${totalGroups}\nPigs represented in groups: ${groupQuantity}`
-        );
-        return;
-    }
+    output.innerHTML = `
+        <div class="generated-pig-report">
+            <h2>MUNKA PIGGERY TECHNOLOGY</h2>
+            <h3>Pig Registration Report</h3>
+            <p><strong>Farm:</strong> ${escapePigHTML(report.farmName)}</p>
+            <p><strong>Generated:</strong> ${escapePigHTML(report.generatedAt)}</p>
+            <hr>
+            <p><strong>Individual pig records:</strong> ${report.pigs.length}</p>
+            <p><strong>Piglet/weaner groups:</strong> ${groupCount}</p>
+            <p><strong>Animals represented in groups:</strong> ${groupQuantity}</p>
+            <h3>Individual Pigs</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr>
+                        <th>Pig ID</th><th>Breed</th><th>Category</th>
+                        <th>Farrow Date</th><th>Weight</th><th>Health</th>
+                    </tr></thead>
+                    <tbody>
+                        ${report.pigs.map(pig => `
+                            <tr>
+                                <td>${escapePigHTML(pig.pig_id)}</td>
+                                <td>${escapePigHTML(pig.breed)}</td>
+                                <td>${escapePigHTML(pig.category)}</td>
+                                <td>${escapePigHTML(pig.farrow_date)}</td>
+                                <td>${pig.weight == null ? "" : escapePigHTML(pig.weight) + " Kg"}</td>
+                                <td>${escapePigHTML(pig.health_status)}</td>
+                            </tr>`).join("")}
+                    </tbody>
+                </table>
+            </div>
+            <h3>Piglet and Weaner Groups</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr>
+                        <th>Group</th><th>Category</th><th>Quantity</th>
+                        <th>Breed</th><th>Average Weight</th><th>Pen</th>
+                    </tr></thead>
+                    <tbody>
+                        ${report.groups.map(group => `
+                            <tr>
+                                <td>${escapePigHTML(group.group_name)}</td>
+                                <td>${escapePigHTML(group.category)}</td>
+                                <td>${escapePigHTML(group.quantity)}</td>
+                                <td>${escapePigHTML(group.breed || "")}</td>
+                                <td>${group.average_weight == null ? "" : escapePigHTML(group.average_weight) + " Kg"}</td>
+                                <td>${escapePigHTML(group.pen_name || "")}</td>
+                            </tr>`).join("")}
+                    </tbody>
+                </table>
+            </div>
+        </div>`;
 
-    report.innerHTML = `
-        <h2>Pig Registration Report</h2>
-        <p>Individual pig records: ${totalPigs}</p>
-        <p>Piglet/weaner groups: ${totalGroups}</p>
-        <p>Pigs represented in groups: ${groupQuantity}</p>
-        <p>Total pigs represented: ${totalPigs + groupQuantity}</p>`;
+    output.scrollIntoView({ behavior: "smooth", block: "start" });
 } catch (error) {
-    showPigError("Unable to generate the report.", error);
+    output.textContent = error.message || "Unable to generate report.";
+    showPigError("Unable to generate the registration report.", error);
 }
 
 }
 
-function printReport() {
-if (!hasPigPermission("report")) {
+/* =========================================================
+PRINT
+========================================================= */
+
+async function printReport() {
+if (!pigPermission("report")) {
 alert("You do not have permission to print reports.");
 return;
 }
 
-window.print();
+try {
+    if (!currentPigReport) {
+        await generateReport();
+        if (!currentPigReport) return;
+    }
+
+    const output = getOrCreateReportOutput();
+    if (!output || !output.innerHTML.trim()) {
+        alert("Generate the report first, then print it.");
+        return;
+    }
+
+    window.print();
+} catch (error) {
+    showPigError("Unable to prepare the report for printing.", error);
+}
 
 }
 
+/* =========================================================
+DOWNLOAD PDF
+========================================================= */
+
 async function downloadPDF() {
-if (!hasPigPermission("report")) {
+if (!pigPermission("report")) {
 alert("You do not have permission to download reports.");
 return;
 }
 
-if (!window.jspdf || typeof window.jspdf.jsPDF !== "function") {
-    alert("The PDF library did not load. Check your internet connection and try again.");
-    return;
-}
-
-const farmName = await getRegisteredFarmName();
-const doc = new window.jspdf.jsPDF();
-
-doc.setFontSize(16);
-doc.text("MUNKA PIGGERY TECHNOLOGY", 14, 18);
-
-doc.setFontSize(12);
-doc.text(`${farmName} - Pig Registration Report`, 14, 27);
-
 try {
-    const farmID = getFarmID();
+    if (!currentPigReport) {
+        await generateReport();
+        if (!currentPigReport) return;
+    }
 
-    const [{ data: pigs, error: pigError }, { data: groups, error: groupError }] =
-        await Promise.all([
-            supabaseClient.from("pigs").select("*").eq("farm_id", farmID),
-            supabaseClient.from("pig_groups").select("*").eq("farm_id", farmID)
-        ]);
+    if (!window.jspdf || typeof window.jspdf.jsPDF !== "function") {
+        alert("The PDF library did not load. Check your internet connection and try again.");
+        return;
+    }
 
-    if (pigError) throw pigError;
-    if (groupError) throw groupError;
+    const report = currentPigReport;
+    const doc = new window.jspdf.jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4"
+    });
 
-    let y = 36;
+    doc.setFontSize(16);
+    doc.text("MUNKA PIGGERY TECHNOLOGY", 14, 15);
 
-    doc.text(`Individual pig records: ${(pigs || []).length}`, 14, y);
-    y += 8;
-    doc.text(`Piglet/weaner groups: ${(groups || []).length}`, 14, y);
-    y += 8;
+    doc.setFontSize(12);
+    doc.text("Pig Registration Report", 14, 23);
+
+    doc.setFontSize(10);
+    doc.text(`Farm: ${report.farmName}`, 14, 30);
+    doc.text(`Generated: ${report.generatedAt}`, 14, 36);
+    doc.text(`Individual pig records: ${report.pigs.length}`, 14, 42);
+    doc.text(`Piglet/weaner groups: ${report.groups.length}`, 14, 48);
+
+    let nextY = 54;
 
     if (typeof doc.autoTable === "function") {
         doc.autoTable({
-            startY: y + 4,
-            head: [["Pig ID", "Breed", "Category", "Weight", "Health"]],
-            body: (pigs || []).map(pig => [
+            startY: nextY,
+            head: [["Pig ID", "Breed", "Category", "Farrow Date", "Source", "Weight (Kg)", "Health"]],
+            body: report.pigs.map(pig => [
                 pig.pig_id || "",
                 pig.breed || "",
                 pig.category || "",
-                pig.weight == null ? "" : `${pig.weight} Kg`,
+                pig.farrow_date || "",
+                pig.source || "",
+                pig.weight == null ? "" : String(pig.weight),
                 pig.health_status || ""
-            ])
+            ]),
+            styles: { fontSize: 8 }
         });
 
+        nextY = (doc.lastAutoTable?.finalY || nextY) + 8;
+
+        if (nextY > 170) {
+            doc.addPage();
+            nextY = 15;
+        }
+
         doc.autoTable({
-            startY: doc.lastAutoTable.finalY + 10,
-            head: [["Group", "Category", "Quantity", "Breed", "Pen"]],
-            body: (groups || []).map(group => [
+            startY: nextY,
+            head: [["Group", "Category", "Quantity", "Breed", "Sex", "Average Weight (Kg)", "Pen"]],
+            body: report.groups.map(group => [
                 group.group_name || "",
                 group.category || "",
                 String(group.quantity ?? ""),
                 group.breed || "",
+                group.sex || "",
+                group.average_weight == null ? "" : String(group.average_weight),
                 group.pen_name || ""
-            ])
+            ]),
+            styles: { fontSize: 8 }
         });
     } else {
-        alert("The PDF table library did not load. A simple PDF will be created.");
+        doc.setFontSize(9);
+        doc.text("PDF table extension unavailable; summary only.", 14, nextY + 5);
     }
 
     doc.save("munka-piggery-registration-report.pdf");
@@ -999,9 +1093,9 @@ try {
 
 }
 
-// ==========================================================
-// GLOBAL FUNCTIONS USED BY HTML BUTTONS
-// ==========================================================
+/* =========================================================
+EXPOSE FUNCTIONS USED BY HTML BUTTONS
+========================================================= */
 
 window.clearForm = clearForm;
 window.clearGroupForm = clearGroupForm;
@@ -1016,16 +1110,24 @@ window.generateReport = generateReport;
 window.printReport = printReport;
 window.downloadPDF = downloadPDF;
 
-// ==========================================================
-// INITIALISE MODULE
-// ==========================================================
+/* =========================================================
+INITIALISATION
+========================================================= */
 
-document.addEventListener("DOMContentLoaded", async () => {
+async function initialisePigRegistration() {
 updateRegistrationTypeUI();
 
-await Promise.all([
-    loadPigs(),
-    loadPigGroups()
-]);
-
+const farmName = await getRegisteredFarmName();
+document.querySelectorAll("[data-farm-name]").forEach(element => {
+    element.textContent = farmName;
 });
+
+await Promise.all([loadPigs(), loadPigGroups()]);
+
+}
+
+if (document.readyState === "loading") {
+document.addEventListener("DOMContentLoaded", initialisePigRegistration, { once: true });
+} else {
+initialisePigRegistration();
+}
