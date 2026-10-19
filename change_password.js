@@ -274,17 +274,17 @@ async function changePassword(event) {
         // =================================================
 
         const verificationClient =
-            window.supabase.createClient(
-                "https://esbbplcndwkhkrkghayw.supabase.co",
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzYmJwbGNuZHdraGtya2doYXl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MzkzOTQsImV4cCI6MjEwMTAxNTM5fQ.REPLACE_WITH_YOUR_EXISTING_PUBLIC_ANON_KEY",
-                {
-                    auth: {
-                        persistSession: false,
-                        autoRefreshToken: false,
-                        detectSessionInUrl: false
-                    }
-                }
-            );
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY,
+        {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false
+            }
+        }
+    );
 
 
         const {
