@@ -1,10 +1,42 @@
 // =========================================================
-// MUNKA PIGGERY FARM
+// MUNKA PIGGERY TECHNOLOGY
 // CHANGE PASSWORD SYSTEM
+// SUPABASE AUTHENTICATION
+// CLOUDFLARE TURNSTILE CAPTCHA
 // =========================================================
-// Uses the existing supabase.js WITHOUT modifying it.
-// Supports all authenticated farm users and Super Admin.
+//
+// IMPORTANT:
+// 1. Uses the existing supabase.js.
+// 2. Does not modify login.js.
+// 3. Verifies the current password.
+// 4. Requires a valid Cloudflare CAPTCHA token.
+// 5. Updates the password through Supabase.
+// 6. Preserves dashboard redirects.
 // =========================================================
+
+
+// =========================================================
+// CLOUDFLARE SITE KEY
+// =========================================================
+
+// Replace the placeholder below with your PUBLIC
+// Cloudflare Turnstile Site Key.
+//
+// Do NOT put your Cloudflare Secret Key here.
+
+const TURNSTILE_SITE_KEY =
+    "0x4AAAAAAFMo7xO_ThI6laYl";
+
+
+// =========================================================
+// GLOBAL VARIABLES
+// =========================================================
+
+let changePasswordCaptchaWidgetId = null;
+
+let changePasswordCaptchaToken = "";
+
+let changePasswordSubmissionRunning = false;
 
 
 // =========================================================
@@ -13,27 +45,25 @@
 
 function showMessage(text, color = "red") {
 
-    const message = document.getElementById("message");
+    const message =
+        document.getElementById("message");
 
-    if (!message) return;
+    if (!message) {
+        return;
+    }
 
     message.textContent = text;
+
     message.style.color = color;
 
 }
 
 
 // =========================================================
-// GET EXISTING SUPABASE CLIENT
+// GET SUPABASE CLIENT
 // =========================================================
 
 function getSupabaseClient() {
-
-    // supabaseClient is declared as a top-level const
-    // in the existing supabase.js file.
-    //
-    // This function can access it without changing
-    // supabase.js because both scripts run on this page.
 
     try {
 
@@ -41,13 +71,15 @@ function getSupabaseClient() {
             typeof supabaseClient !== "undefined" &&
             supabaseClient
         ) {
+
             return supabaseClient;
+
         }
 
     } catch (error) {
 
         console.error(
-            "Unable to access Supabase client:",
+            "Supabase client error:",
             error
         );
 
@@ -71,7 +103,10 @@ async function getCurrentSession(client) {
 
     if (error) {
 
-        console.error("Session error:", error);
+        console.error(
+            "Session error:",
+            error
+        );
 
         throw new Error(
             "Unable to verify your login session. Please try again."
@@ -93,14 +128,15 @@ async function getCurrentSession(client) {
 
 
 // =========================================================
-// GET CORRECT DASHBOARD
+// REDIRECT TO CORRECT DASHBOARD
 // =========================================================
 
 async function redirectToDashboard(client) {
 
     try {
 
-        const session = await getCurrentSession(client);
+        const session =
+            await getCurrentSession(client);
 
         const {
             data: profile,
@@ -108,31 +144,259 @@ async function redirectToDashboard(client) {
         } = await client
             .from("users")
             .select("role")
-            .eq("auth_user_id", session.user.id)
+            .eq(
+                "auth_user_id",
+                session.user.id
+            )
             .single();
 
+        if (error) {
+
+            console.error(
+                "Profile lookup error:",
+                error
+            );
+
+            throw error;
+
+        }
+
         if (
-            !error &&
             profile &&
-            String(profile.role).trim().toLowerCase() ===
-                "super admin"
+            String(profile.role)
+                .trim()
+                .toLowerCase() === "super admin"
         ) {
 
-            window.location.href = "superadmin.html";
+            window.location.href =
+                "superadmin.html";
 
         } else {
 
-            window.location.href = "dashboard.html";
+            window.location.href =
+                "dashboard.html";
 
         }
 
     } catch (error) {
 
-        console.error("Dashboard redirect error:", error);
+        console.error(
+            "Dashboard redirect error:",
+            error
+        );
 
-        window.location.href = "login.html";
+        window.location.href =
+            "login.html";
 
     }
+
+}
+
+
+// =========================================================
+// RESET CAPTCHA
+// =========================================================
+
+function resetChangePasswordCaptcha() {
+
+    changePasswordCaptchaToken = "";
+
+    if (
+        typeof window.turnstile !== "undefined" &&
+        changePasswordCaptchaWidgetId !== null
+    ) {
+
+        try {
+
+            window.turnstile.reset(
+                changePasswordCaptchaWidgetId
+            );
+
+        } catch (error) {
+
+            console.error(
+                "CAPTCHA reset error:",
+                error
+            );
+
+        }
+
+    }
+
+}
+
+
+// =========================================================
+// INITIALIZE CLOUDFLARE TURNSTILE
+// =========================================================
+
+function initializeChangePasswordCaptcha() {
+
+    if (
+        typeof window.turnstile === "undefined"
+    ) {
+
+        return false;
+
+    }
+
+    if (
+        changePasswordCaptchaWidgetId !== null
+    ) {
+
+        return true;
+
+    }
+
+    if (
+        !TURNSTILE_SITE_KEY ||
+        TURNSTILE_SITE_KEY ===
+            "PASTE_YOUR_CLOUDFLARE_SITE_KEY_HERE"
+    ) {
+
+        showMessage(
+            "Cloudflare Site Key has not been configured.",
+            "red"
+        );
+
+        console.error(
+            "Configure TURNSTILE_SITE_KEY in change_password.js."
+        );
+
+        return false;
+
+    }
+
+    const captchaContainer =
+        document.getElementById(
+            "changePasswordCaptcha"
+        );
+
+    if (!captchaContainer) {
+
+        console.error(
+            "CAPTCHA container was not found."
+        );
+
+        return false;
+
+    }
+
+    try {
+
+        changePasswordCaptchaWidgetId =
+            window.turnstile.render(
+                captchaContainer,
+                {
+
+                    sitekey:
+                        TURNSTILE_SITE_KEY,
+
+                    callback: function(token) {
+
+                        changePasswordCaptchaToken =
+                            token || "";
+
+                        if (changePasswordCaptchaToken) {
+
+                            showMessage(
+                                "Security check completed. You can now update your password.",
+                                "green"
+                            );
+
+                        }
+
+                    },
+
+                    "expired-callback": function() {
+
+                        changePasswordCaptchaToken = "";
+
+                        showMessage(
+                            "Your security check expired. Please complete it again.",
+                            "red"
+                        );
+
+                    },
+
+                    "error-callback": function(errorCode) {
+
+                        changePasswordCaptchaToken = "";
+
+                        console.error(
+                            "Turnstile error:",
+                            errorCode
+                        );
+
+                        showMessage(
+                            "Security verification failed to load. Please refresh the page and try again.",
+                            "red"
+                        );
+
+                    }
+
+                }
+            );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Unable to initialize Turnstile:",
+            error
+        );
+
+        showMessage(
+            "Unable to initialize security verification. Please refresh the page.",
+            "red"
+        );
+
+        return false;
+
+    }
+
+}
+
+
+// =========================================================
+// WAIT FOR TURNSTILE SCRIPT
+// =========================================================
+
+function waitForChangePasswordCaptcha() {
+
+    let attempts = 0;
+
+    const maximumAttempts = 100;
+
+    const timer = setInterval(function() {
+
+        attempts++;
+
+        if (
+            typeof window.turnstile !== "undefined"
+        ) {
+
+            clearInterval(timer);
+
+            initializeChangePasswordCaptcha();
+
+            return;
+
+        }
+
+        if (attempts >= maximumAttempts) {
+
+            clearInterval(timer);
+
+            showMessage(
+                "Cloudflare security verification could not load. Check your internet connection and refresh the page.",
+                "red"
+            );
+
+        }
+
+    }, 200);
 
 }
 
@@ -149,12 +413,19 @@ async function changePassword(event) {
 
     }
 
-    const client = getSupabaseClient();
+    if (changePasswordSubmissionRunning) {
+
+        return;
+
+    }
+
+    const client =
+        getSupabaseClient();
 
     if (!client) {
 
         showMessage(
-            "Supabase is not initialized. Check that supabase.js loads before change_password.js.",
+            "Supabase is not initialized. Please refresh the page.",
             "red"
         );
 
@@ -162,22 +433,29 @@ async function changePassword(event) {
 
     }
 
-
     const oldPassword =
-        document.getElementById("oldPassword").value;
+        document.getElementById(
+            "oldPassword"
+        ).value;
 
     const newPassword =
-        document.getElementById("newPassword").value;
+        document.getElementById(
+            "newPassword"
+        ).value;
 
     const confirmPassword =
-        document.getElementById("confirmPassword").value;
+        document.getElementById(
+            "confirmPassword"
+        ).value;
 
     const updateButton =
-        document.getElementById("updatePasswordBtn");
+        document.getElementById(
+            "updatePasswordBtn"
+        );
 
 
     // =====================================================
-    // VALIDATE INPUTS
+    // VALIDATE PASSWORD FIELDS
     // =====================================================
 
     if (
@@ -196,7 +474,9 @@ async function changePassword(event) {
     }
 
 
-    if (newPassword !== confirmPassword) {
+    if (
+        newPassword !== confirmPassword
+    ) {
 
         showMessage(
             "The new passwords do not match.",
@@ -208,7 +488,9 @@ async function changePassword(event) {
     }
 
 
-    if (newPassword.length < 6) {
+    if (
+        newPassword.length < 6
+    ) {
 
         showMessage(
             "Your new password must contain at least 6 characters.",
@@ -220,7 +502,9 @@ async function changePassword(event) {
     }
 
 
-    if (oldPassword === newPassword) {
+    if (
+        oldPassword === newPassword
+    ) {
 
         showMessage(
             "Your new password must be different from your current password.",
@@ -233,27 +517,56 @@ async function changePassword(event) {
 
 
     // =====================================================
-    // DISABLE BUTTON
+    // REQUIRE CAPTCHA TOKEN
     // =====================================================
+
+    if (
+        !changePasswordCaptchaToken
+    ) {
+
+        showMessage(
+            "Please complete the Cloudflare security check before continuing.",
+            "red"
+        );
+
+        return;
+
+    }
+
+
+    // =====================================================
+    // LOCK SUBMISSION
+    // =====================================================
+
+    changePasswordSubmissionRunning = true;
 
     if (updateButton) {
 
         updateButton.disabled = true;
 
-        updateButton.textContent = "Verifying password...";
+        updateButton.textContent =
+            "Verifying password...";
 
     }
 
 
+    // Temporary verification client is created below.
+    // We retain it here so its temporary session can
+    // be cleaned up after verification.
+
+    let verificationClient = null;
+
     try {
 
         // =================================================
-        // GET EXISTING AUTHENTICATED SESSION
+        // GET CURRENT AUTHENTICATED SESSION
         // =================================================
 
-        const session = await getCurrentSession(client);
+        const session =
+            await getCurrentSession(client);
 
-        const email = session.user.email;
+        const email =
+            session.user.email;
 
         if (!email) {
 
@@ -265,105 +578,143 @@ async function changePassword(event) {
 
 
         // =================================================
-        // VERIFY CURRENT PASSWORD
-        // =================================================
-        // Use a separate, temporary Supabase client.
-        // This avoids replacing the main client's session.
-        //
-        // The existing supabase.js remains unchanged.
+        // SAVE THE CAPTCHA TOKEN
         // =================================================
 
-        const verificationClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY,
-        {
-            auth: {
-                persistSession: false,
-                autoRefreshToken: false,
-                detectSessionInUrl: false
-            }
+        const captchaToken =
+            changePasswordCaptchaToken;
+
+        if (!captchaToken) {
+
+            throw new Error(
+                "Your security check is missing. Please complete it again."
+            );
+
         }
-    );
 
+
+        // =================================================
+        // CREATE TEMPORARY SUPABASE CLIENT
+        // =================================================
+        //
+        // This client is separate from the main client.
+        // It will not persist its session in browser storage.
+        // =================================================
+
+        verificationClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY,
+                {
+
+                    auth: {
+
+                        persistSession: false,
+
+                        autoRefreshToken: false,
+
+                        detectSessionInUrl: false
+
+                    }
+
+                }
+            );
+
+
+        // =================================================
+        // VERIFY CURRENT PASSWORD WITH CAPTCHA
+        // =================================================
 
         const {
             data: verificationData,
             error: verificationError
-        } = await verificationClient.auth.signInWithPassword({
+        } =
+            await verificationClient.auth.signInWithPassword({
 
-            email: email,
+                email: email,
 
-            password: oldPassword
+                password: oldPassword,
 
-        });
+                options: {
+
+                    captchaToken: captchaToken
+
+                }
+
+            });
+
+
+        // A CAPTCHA token is single-use, so clear it
+        // after the verification request.
+
+        changePasswordCaptchaToken = "";
+
 
         if (verificationError) {
 
-    console.error(
-        "Password verification error:",
-        verificationError.message,
-        verificationError.status,
-        verificationError.code
-    );
+            console.error(
+                "Password verification error:",
+                verificationError.message,
+                verificationError.status,
+                verificationError.code
+            );
 
-    showMessage(
-        "Password verification failed: " +
-        verificationError.message,
-        "red"
-    );
+            resetChangePasswordCaptcha();
 
-    return;
+            throw new Error(
+                "Current password verification failed. Check your password and complete the security check again."
+            );
 
-}
+        }
 
-if (
-    !verificationData ||
-    !verificationData.user
-) {
 
-    console.error(
-        "Password verification returned no user."
-    );
+        if (
+            !verificationData ||
+            !verificationData.user
+        ) {
 
-    showMessage(
-        "Verification failed because Supabase returned no user.",
-        "red"
-    );
+            resetChangePasswordCaptcha();
 
-    return;
+            throw new Error(
+                "Supabase could not confirm your current password."
+            );
 
-}
-
-if (verificationData.user.id !== session.user.id) {
-
-    console.error(
-        "The verified account does not match the logged-in account."
-    );
-
-    showMessage(
-        "The verified account does not match your current login.",
-        "red"
-    );
-
-    return;
-
-}
+        }
 
 
         // =================================================
-        // CONFIRM THE MAIN SESSION IS STILL VALID
+        // CONFIRM SAME ACCOUNT
+        // =================================================
+
+        if (
+            verificationData.user.id !==
+            session.user.id
+        ) {
+
+            resetChangePasswordCaptcha();
+
+            throw new Error(
+                "The verified account does not match your current login."
+            );
+
+        }
+
+
+        // =================================================
+        // CONFIRM MAIN SESSION IS STILL VALID
         // =================================================
 
         const {
-            data: { user },
-            error: userError
+            data: currentUserData,
+            error: currentUserError
         } = await client.auth.getUser();
 
         if (
-            userError ||
-            !user ||
-            user.id !== session.user.id
+            currentUserError ||
+            !currentUserData ||
+            !currentUserData.user ||
+            currentUserData.user.id !==
+                session.user.id
         ) {
 
             throw new Error(
@@ -374,24 +725,25 @@ if (verificationData.user.id !== session.user.id) {
 
 
         // =================================================
-        // UPDATE AUTHENTICATED USER PASSWORD
+        // UPDATE PASSWORD
         // =================================================
 
         if (updateButton) {
 
-            updateButton.textContent = "Updating password...";
+            updateButton.textContent =
+                "Updating password...";
 
         }
-
 
         const {
             data: updateData,
             error: updateError
-        } = await client.auth.updateUser({
+        } =
+            await client.auth.updateUser({
 
-            password: newPassword
+                password: newPassword
 
-        });
+            });
 
 
         if (updateError) {
@@ -401,12 +753,17 @@ if (verificationData.user.id !== session.user.id) {
                 updateError
             );
 
-            throw new Error(updateError.message);
+            throw new Error(
+                updateError.message
+            );
 
         }
 
 
-        if (!updateData || !updateData.user) {
+        if (
+            !updateData ||
+            !updateData.user
+        ) {
 
             throw new Error(
                 "Supabase did not confirm the password update."
@@ -431,10 +788,17 @@ if (verificationData.user.id !== session.user.id) {
 
 
         // =================================================
-        // RETURN TO APPROPRIATE DASHBOARD
+        // REDIRECT TO CORRECT DASHBOARD
         // =================================================
 
-        setTimeout(function () {
+        if (updateButton) {
+
+            updateButton.textContent =
+                "Password Updated";
+
+        }
+
+        setTimeout(function() {
 
             redirectToDashboard(client);
 
@@ -454,13 +818,52 @@ if (verificationData.user.id !== session.user.id) {
             "red"
         );
 
+
     } finally {
+
+        // =================================================
+        // CLEAN UP TEMPORARY CLIENT SESSION
+        // =================================================
+
+        if (verificationClient) {
+
+            try {
+
+                await verificationClient.auth.signOut({
+                    scope: "local"
+                });
+
+            } catch (cleanupError) {
+
+                console.error(
+                    "Temporary session cleanup error:",
+                    cleanupError
+                );
+
+            }
+
+        }
+
+
+        // =================================================
+        // RESTORE BUTTON
+        // =================================================
+
+        changePasswordSubmissionRunning = false;
 
         if (updateButton) {
 
             updateButton.disabled = false;
 
-            updateButton.textContent = "Update Password";
+            if (
+                updateButton.textContent !==
+                "Password Updated"
+            ) {
+
+                updateButton.textContent =
+                    "Update Password";
+
+            }
 
         }
 
@@ -475,9 +878,15 @@ if (verificationData.user.id !== session.user.id) {
 
 document.addEventListener(
     "DOMContentLoaded",
-    async function () {
+    async function() {
 
-        const client = getSupabaseClient();
+        const client =
+            getSupabaseClient();
+
+
+        // =================================================
+        // CHECK SUPABASE
+        // =================================================
 
         if (!client) {
 
@@ -491,6 +900,10 @@ document.addEventListener(
         }
 
 
+        // =================================================
+        // REQUIRE ACTIVE LOGIN SESSION
+        // =================================================
+
         try {
 
             await getCurrentSession(client);
@@ -502,9 +915,10 @@ document.addEventListener(
                 "red"
             );
 
-            setTimeout(function () {
+            setTimeout(function() {
 
-                window.location.href = "login.html";
+                window.location.href =
+                    "login.html";
 
             }, 1800);
 
@@ -513,12 +927,21 @@ document.addEventListener(
         }
 
 
-        // -----------------------------------------------
+        // =================================================
+        // INITIALIZE CAPTCHA
+        // =================================================
+
+        waitForChangePasswordCaptcha();
+
+
+        // =================================================
         // FORM SUBMISSION
-        // -----------------------------------------------
+        // =================================================
 
         const form =
-            document.getElementById("passwordForm");
+            document.getElementById(
+                "passwordForm"
+            );
 
         if (form) {
 
@@ -530,18 +953,20 @@ document.addEventListener(
         }
 
 
-        // -----------------------------------------------
+        // =================================================
         // BACK BUTTON
-        // -----------------------------------------------
+        // =================================================
 
         const backButton =
-            document.getElementById("backButton");
+            document.getElementById(
+                "backButton"
+            );
 
         if (backButton) {
 
             backButton.addEventListener(
                 "click",
-                function () {
+                function() {
 
                     redirectToDashboard(client);
 
