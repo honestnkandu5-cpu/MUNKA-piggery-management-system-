@@ -906,7 +906,214 @@ a:focus-visible {
     outline-offset:
         2px;
 }
+/* =========================================================
+   LOGIN NIGHT MODE
+========================================================= */
 
+.login-container {
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}
+
+.theme-toggle {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    z-index: 10;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 42px;
+    padding: 9px 14px;
+
+    border: 1px solid #d5e0da;
+    border-radius: 25px;
+
+    background: #f4f8f5;
+    color: #075e3b;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+}
+
+.theme-toggle:hover {
+    background: #e5f4eb;
+    border-color: #087f4b;
+}
+
+/* Dark theme */
+
+body.login-night-mode {
+    background:
+        radial-gradient(
+            circle at 10% 10%,
+            rgba(25, 135, 84, 0.18),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 90% 15%,
+            rgba(13, 110, 253, 0.15),
+            transparent 25%
+        ),
+        linear-gradient(
+            135deg,
+            #050d09,
+            #0b2117 48%,
+            #091725 100%
+        );
+}
+
+body.login-night-mode .login-container {
+    background: #17221c;
+    color: #e7efe9;
+
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+body.login-night-mode .login-container h1 {
+    color: #73d49a;
+}
+
+body.login-night-mode .login-container h3 {
+    color: #79adff;
+}
+
+body.login-night-mode .welcome {
+    color: #f1f6f2;
+}
+
+body.login-night-mode .login-instruction {
+    color: #b2c1b7;
+}
+
+body.login-night-mode .role-title {
+    color: #73d49a;
+}
+
+body.login-night-mode .role-button {
+    background: #202f26;
+    color: #e0ece4;
+    border-color: #3b5143;
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.login-night-mode .role-button:hover {
+    background: #263b2e;
+    border-color: #79adff;
+    color: #ffffff;
+}
+
+body.login-night-mode .role-button.selected {
+    background:
+        linear-gradient(
+            135deg,
+            #075e3b,
+            #087f4b 55%,
+            #0d6efd
+        );
+
+    color: #ffffff;
+    border-color: #d4af37;
+}
+
+body.login-night-mode .selected-role {
+    color: #73d49a;
+}
+
+body.login-night-mode .login-container input {
+    background: #101a14;
+    color: #f1f6f2;
+    border-color: #405748;
+}
+
+body.login-night-mode .login-container input::placeholder {
+    color: #9cac9f;
+}
+
+body.login-night-mode .login-container input:focus {
+    background: #142219;
+    border-color: #73d49a;
+
+    box-shadow:
+        0 0 0 4px rgba(115, 212, 154, 0.12);
+}
+
+body.login-night-mode #togglePassword {
+    color: #73d49a;
+}
+
+body.login-night-mode #togglePassword:hover {
+    background: #263b2e;
+    color: #ffffff;
+}
+
+body.login-night-mode .forgot-password a {
+    color: #79adff;
+}
+
+body.login-night-mode .forgot-password a:hover {
+    color: #73d49a;
+}
+
+body.login-night-mode .farm-footer {
+    border-top-color: #35473b;
+    color: #b2c1b7;
+}
+
+body.login-night-mode .farm-footer strong {
+    color: #73d49a;
+}
+
+body.login-night-mode #message {
+    color: #ff9999;
+}
+
+body.login-night-mode .theme-toggle {
+    background: #26372c;
+    color: #f2d477;
+    border-color: #4b6553;
+}
+
+body.login-night-mode .theme-toggle:hover {
+    background: #314a38;
+    border-color: #73d49a;
+}
+
+/* Mobile spacing */
+
+@media (max-width: 600px) {
+    .theme-toggle {
+        top: 15px;
+        right: 15px;
+
+        min-height: 38px;
+        padding: 8px 11px;
+
+        font-size: 12px;
+    }
+
+    .brand-icon {
+        margin-top: 32px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-container,
+    .theme-toggle {
+        transition: none;
+    }
+}
 </style>
 
 </head>
@@ -914,7 +1121,15 @@ a:focus-visible {
 <body>
 
 <div class="login-container">
-
+<button
+    type="button"
+    id="loginThemeToggle"
+    class="theme-toggle"
+    aria-label="Switch to night mode"
+    aria-pressed="false"
+>
+    🌙 Night Mode
+</button>
     <div class="brand-icon">
 
         <img
@@ -1165,7 +1380,78 @@ togglePassword.addEventListener(
 
     }
 );
+/* =========================================================
+   LOGIN NIGHT MODE CONTROLLER
+========================================================= */
 
+(function () {
+    "use strict";
+
+    const toggle = document.getElementById(
+        "loginThemeToggle"
+    );
+
+    if (!toggle) {
+        return;
+    }
+
+    const storageKey = "munkaLoginTheme";
+
+    function applyTheme(isNight) {
+        document.body.classList.toggle(
+            "login-night-mode",
+            isNight
+        );
+
+        toggle.textContent = isNight
+            ? "☀️ Light Mode"
+            : "🌙 Night Mode";
+
+        toggle.setAttribute(
+            "aria-pressed",
+            String(isNight)
+        );
+
+        toggle.setAttribute(
+            "aria-label",
+            isNight
+                ? "Switch to light mode"
+                : "Switch to night mode"
+        );
+    }
+
+    let savedTheme = null;
+
+    try {
+        savedTheme = localStorage.getItem(storageKey);
+    } catch (error) {
+        console.warn(
+            "Login theme preference could not be read."
+        );
+    }
+
+    applyTheme(savedTheme === "night");
+
+    toggle.addEventListener("click", function () {
+        const isNight =
+            !document.body.classList.contains(
+                "login-night-mode"
+            );
+
+        applyTheme(isNight);
+
+        try {
+            localStorage.setItem(
+                storageKey,
+                isNight ? "night" : "light"
+            );
+        } catch (error) {
+            console.warn(
+                "Login theme preference could not be saved."
+            );
+        }
+    });
+})();
 </script>
 
 </body>
