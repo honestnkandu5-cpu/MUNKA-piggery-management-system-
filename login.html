@@ -14,7 +14,7 @@
 
 <!-- CLOUDFLARE TURNSTILE -->
 <script
-    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
     async
     defer
 ></script>
@@ -1269,14 +1269,8 @@ body.login-night-mode .theme-toggle:hover {
         ================================================== -->
 
         <div class="turnstile-container">
-
-            <div
-                class="cf-turnstile"
-                data-sitekey="0x4AAAAAAFMo7xO_ThI6laYl"
-                data-theme="light"
-            ></div>
-
-        </div>
+    <div id="turnstileWidget"></div>
+</div>
 
         <button
             type="submit"
@@ -1381,23 +1375,28 @@ togglePassword.addEventListener(
     }
 );
 /* =========================================================
-   LOGIN NIGHT MODE CONTROLLER
+   LOGIN NIGHT MODE + TURNSTILE THEME
 ========================================================= */
 
 (function () {
     "use strict";
 
-    const toggle = document.getElementById(
-        "loginThemeToggle"
-    );
+    const toggle = document.getElementById("loginThemeToggle");
+    const storageKey = "munkaLoginTheme";
+    const siteKey = "0x4AAAAAAFMo7xO_ThI6laYl";
 
-    if (!toggle) {
-        return;
+    let isNight = false;
+    let widgetId = null;
+window.loginTurnstileWidgetId = null;
+    try {
+        isNight = localStorage.getItem(storageKey) === "night";
+    } catch (error) {
+        console.warn("Could not read saved theme.");
     }
 
-    const storageKey = "munkaLoginTheme";
+    function applyTheme(night) {
+        isNight = night;
 
-    function applyTheme(isNight) {
         document.body.classList.toggle(
             "login-night-mode",
             isNight
@@ -1418,27 +1417,6 @@ togglePassword.addEventListener(
                 ? "Switch to light mode"
                 : "Switch to night mode"
         );
-    }
-
-    let savedTheme = null;
-
-    try {
-        savedTheme = localStorage.getItem(storageKey);
-    } catch (error) {
-        console.warn(
-            "Login theme preference could not be read."
-        );
-    }
-
-    applyTheme(savedTheme === "night");
-
-    toggle.addEventListener("click", function () {
-        const isNight =
-            !document.body.classList.contains(
-                "login-night-mode"
-            );
-
-        applyTheme(isNight);
 
         try {
             localStorage.setItem(
@@ -1446,11 +1424,79 @@ togglePassword.addEventListener(
                 isNight ? "night" : "light"
             );
         } catch (error) {
-            console.warn(
-                "Login theme preference could not be saved."
-            );
+            console.warn("Could not save theme.");
         }
+
+        renderTurnstile();
+    }
+
+    function renderTurnstile() {
+        if (typeof window.turnstile === "undefined") {
+            return;
+        }
+
+        const container = document.getElementById(
+            "turnstileWidget"
+        );
+
+        if (!container) return;
+
+        if (widgetId !== null) {
+            try {
+                window.turnstile.remove(widgetId);
+            } catch (error) {
+                console.warn("Could not remove old CAPTCHA.");
+            }
+
+            widgetId = null;
+        }
+
+        container.innerHTML = "";
+
+        try {
+            widgetId = window.turnstile.render(container, {
+                sitekey: siteKey,
+                theme: isNight ? "dark" : "light"
+            });
+
+            window.loginTurnstileWidgetId = widgetId;
+        } catch (error) {
+            console.error("Turnstile rendering failed:", error);
+        }
+    }
+
+    toggle.addEventListener("click", function () {
+        applyTheme(!isNight);
     });
+
+    // Apply the saved theme without waiting for the user.
+    document.body.classList.toggle(
+        "login-night-mode",
+        isNight
+    );
+
+    toggle.textContent = isNight
+        ? "☀️ Light Mode"
+        : "🌙 Night Mode";
+
+    toggle.setAttribute("aria-pressed", String(isNight));
+
+    // Wait for Cloudflare's asynchronous script.
+    const waitForTurnstile = setInterval(function () {
+        if (typeof window.turnstile !== "undefined") {
+            clearInterval(waitForTurnstile);
+            renderTurnstile();
+        }
+    }, 300);
+
+    // Stop checking after 30 seconds if Cloudflare does not load.
+    setTimeout(function () {
+        clearInterval(waitForTurnstile);
+    }, 30000);
+
+    // Make the widget ID available to login.js.
+    
+
 })();
 </script>
 
