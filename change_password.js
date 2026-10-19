@@ -298,27 +298,57 @@ async function changePassword(event) {
 
         });
 
+        if (verificationError) {
 
-        if (
-            verificationError ||
-            !verificationData ||
-            !verificationData.user ||
-            verificationData.user.id !== session.user.id
-        ) {
+    console.error(
+        "Password verification error:",
+        verificationError.message,
+        verificationError.status,
+        verificationError.code
+    );
 
-            console.error(
-                "Password verification failed:",
-                verificationError
-            );
+    showMessage(
+        "Password verification failed: " +
+        verificationError.message,
+        "red"
+    );
 
-            showMessage(
-                "Current password could not be verified. Check your password and try again.",
-                "red"
-            );
+    return;
 
-            return;
+}
 
-        }
+if (
+    !verificationData ||
+    !verificationData.user
+) {
+
+    console.error(
+        "Password verification returned no user."
+    );
+
+    showMessage(
+        "Verification failed because Supabase returned no user.",
+        "red"
+    );
+
+    return;
+
+}
+
+if (verificationData.user.id !== session.user.id) {
+
+    console.error(
+        "The verified account does not match the logged-in account."
+    );
+
+    showMessage(
+        "The verified account does not match your current login.",
+        "red"
+    );
+
+    return;
+
+}
 
 
         // =================================================
