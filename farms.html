@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUNKA PIGGERY - Manage Farms</title>
+    <link rel="stylesheet" href="farms.css">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <span class="brand-icon">🐖</span>
+        <div>
+            <h1>MUNKA PIGGERY</h1>
+            <p>Super Admin · Farm Management</p>
+        </div>
+    </div>
+
+    <div class="top-actions">
+        <button id="themeToggle" class="btn btn-secondary" type="button">
+            🌙 Night Mode
+        </button>
+        <button id="dashboardBtn" class="btn btn-secondary" type="button">
+            Dashboard
+        </button>
+        <button id="logoutBtn" class="btn btn-danger" type="button">
+            Logout
+        </button>
+    </div>
+</header>
+
+<main class="container">
+    <section class="welcome">
+        <div>
+            <p class="eyebrow">PLATFORM CONTROL CENTRE</p>
+            <h2>Manage Registered Farms</h2>
+            <p class="muted">
+                Review farm information and manage access to the platform.
+            </p>
+        </div>
+        <div class="security-badge">🔐 Super Admin Access</div>
+    </section>
+
+    <div id="pageMessage" class="message hidden" role="status" aria-live="polite"></div>
+
+    <section class="stats-grid">
+        <article class="stat-card">
+            <span>Total Farms</span>
+            <strong id="totalFarms">—</strong>
+        </article>
+        <article class="stat-card">
+            <span>Active Farms</span>
+            <strong id="activeFarms">—</strong>
+        </article>
+        <article class="stat-card">
+            <span>Inactive Farms</span>
+            <strong id="inactiveFarms">—</strong>
+        </article>
+    </section>
+
+    <section class="panel">
+        <div class="section-heading">
+            <div>
+                <h3>Farm Directory</h3>
+                <p class="muted">Search, review and manage farm status.</p>
+            </div>
+            <button id="refreshBtn" class="btn btn-primary" type="button">
+                ↻ Refresh
+            </button>
+        </div>
+
+        <div class="filters">
+            <div class="search-box">
+                <label for="farmSearch">Search farms</label>
+                <input
+                    id="farmSearch"
+                    type="search"
+                    placeholder="Farm name, owner, phone, email or location">
+            </div>
+
+            <div class="filter-box">
+                <label for="statusFilter">Farm status</label>
+                <select id="statusFilter">
+                    <option value="all">All farms</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="loadingMessage" class="loading">Loading farm records...</div>
+
+        <div id="emptyMessage" class="empty-state hidden">
+            <span>🏡</span>
+            <h3>No farms found</h3>
+            <p>Try changing your search or status filter.</p>
+        </div>
+
+        <div id="farmTableWrapper" class="table-wrapper hidden">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Farm</th>
+                        <th>Owner</th>
+                        <th>Contact</th>
+                        <th>Status</th>
+                        <th>Subscription</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="farmTableBody"></tbody>
+            </table>
+        </div>
+
+        <p id="resultCount" class="result-count"></p>
+    </section>
+
+    <section class="notice-panel">
+        <h3>⚠️ Farm Status Management</h3>
+        <ul>
+            <li>Deactivating a farm changes its status to <strong>Inactive</strong>.</li>
+            <li>Reactivating a farm changes its status to <strong>Active</strong>.</li>
+            <li>Deactivation does not permanently delete farm records.</li>
+            <li>Farm access must also be checked by the application before allowing farm users to continue working.</li>
+            <li>Reactivating a farm does not automatically extend its subscription.</li>
+        </ul>
+    </section>
+</main>
+
+<footer>
+    <p>© <span id="currentYear"></span> MUNKA PIGGERY TECHNOLOGY</p>
+    <p>Secure Farm Management</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="farms.js"></script>
+</body>
+</html>
