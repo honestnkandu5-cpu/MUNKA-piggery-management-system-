@@ -2,7 +2,7 @@
 // ============================================================
 // MUNKA PIGGERY MANAGEMENT SYSTEM
 // SECURE PASSWORD RESET
-// SUPABASE AUTH - PKCE RECOVERY
+// SUPABASE AUTH - PKCE + TOKEN RECOVERY
 // COMPLETE UPDATED VERSION
 // ============================================================
 
@@ -20,22 +20,49 @@
     let recoveryReady = false;
     let recoveryCheckStarted = false;
 
+    // ========================================================
+    // MESSAGE DISPLAY
+    // ========================================================
+
     function showMessage(text, type = "error") {
+
+        if (!message) return;
+
         message.textContent = text;
         message.className = "message " + type;
     }
 
-    function setButtonState() {
-        resetButton.disabled = isSubmitting || !recoveryReady;
+    // ========================================================
+    // BUTTON STATE
+    // ========================================================
 
-        resetButton.textContent = isSubmitting
-            ? "Updating Password..."
-            : recoveryReady
-                ? "Update Password"
-                : "Verifying Reset Link...";
+    function setButtonState() {
+
+        if (!resetButton) return;
+
+        resetButton.disabled =
+            isSubmitting || !recoveryReady;
+
+        if (isSubmitting) {
+
+            resetButton.textContent = "Updating Password...";
+
+        } else if (recoveryReady) {
+
+            resetButton.textContent = "Update Password";
+
+        } else {
+
+            resetButton.textContent = "Verifying Reset Link...";
+        }
     }
 
+    // ========================================================
+    // PASSWORD VALIDATION
+    // ========================================================
+
     function isStrongPassword(password) {
+
         return (
             password.length >= 8 &&
             /[A-Z]/.test(password) &&
@@ -44,14 +71,34 @@
         );
     }
 
+    // ========================================================
+    // GET CURRENT SESSION
+    // ========================================================
+
+    async function getCurrentSession(auth) {
+
+        const { data, error } = await auth.getSession();
+
+        if (error) {
+            throw error;
+        }
+
+        return data.session;
+    }
+
+    // ========================================================
+    // VERIFY PASSWORD RECOVERY LINK
+    // ========================================================
+
     async function verifyRecoverySession() {
 
         if (
             typeof supabaseClient === "undefined" ||
             !supabaseClient.auth
         ) {
+
             throw new Error(
-                "Password recovery service is unavailable. Please contact the administrator."
+                "Supabase password recovery service is unavailable. Please contact the administrator."
             );
         }
 
@@ -66,162 +113,282 @@
         );
 
         // ----------------------------------------------------
-        // CHECK FOR AUTHENTICATION ERRORS IN THE URL
+        // CHECK URL ERRORS
         // ----------------------------------------------------
 
         const urlError =
             params.get("error_description") ||
-            hashParams.get("error_description");
+            hashParams.get("error_description") ||
+            params.get("error") ||
+            hashParams.get("error");
 
         if (urlError) {
+
+            console.error("RECOVERY URL ERROR:", urlError);
+
             throw new Error(
                 "Your password reset link is invalid or expired. Please request a new link."
             );
         }
 
         // ----------------------------------------------------
-        // WAIT FOR SUPABASE TO PROCESS THE RECOVERY LINK
+        // READ RECOVERY CREDENTIALS
         // ----------------------------------------------------
-
-        // IMPORTANT:
-        // Do not call exchangeCodeForSession() here.
-        // Supabase automatically handles PKCE URL codes
-        // because detectSessionInUrl is enabled by default.
-        //
-        // Also do not manually call setSession() for normal
-        // PKCE recovery links.
 
         const code = params.get("code");
 
         const tokenHash = params.get("token_hash");
 
-        const accessToken = hashParams.get("access_token");
+        const queryType = params.get("type");
 
-        const refreshToken = hashParams.get("refresh_token");
+        const hashType = hashParams.get("type");
 
-        const hashError = hashParams.get("error");
+        const accessToken =
+            hashParams.get("access_token");
 
-        if (hashError) {
+        const refreshToken =
+            hashParams.get("refresh_token");
+
+        const hashErrorCode =
+            hashParams.get("error_code");
+
+        if (hashErrorCode) {
+
             throw new Error(
-                "Your password recovery link could not be verified. Please request another link."
+                "Your password reset link could not be verified. Please request a new link."
+            );
+        }
+
+        // A recovery page must receive recovery credentials.
+        const hasRecoveryCredentials = Boolean(
+            code ||
+            tokenHash ||
+            (accessToken && refreshToken)
+        );
+
+        if (!hasRecoveryCredentials) {
+
+            throw new Error(
+                "No password recovery information was found in this link. Please request a new password reset email."
+            );
+        }
+
+        if (
+            tokenHash &&
+            queryType !== "recovery"
+        ) {
+
+            throw new Error(
+                "This is not a valid password recovery link."
+            );
+        }
+
+        if (
+            hashType &&
+            hashType !== "recovery"
+        ) {
+
+            throw new Error(
+                "This link is not intended for password recovery."
             );
         }
 
         // ----------------------------------------------------
-        // HANDLE TOKEN HASH LINKS
+        // INITIALISE SUPABASE AUTH
         // ----------------------------------------------------
 
-        // OTP token_hash links require explicit verification.
-        // Supabase does not automatically verify token_hash
-        // links in the same way as PKCE code links.
+        // Supabase may automatically process PKCE codes or
+        // implicit tokens when detectSessionInUrl is enabled.
+
+        if (typeof auth.initialize === "function") {
+
+            try {
+
+                await auth.initialize();
+
+            } catch (initialiseError) {
+
+                console.warn(
+                    "Supabase initialisation notice:",
+                    initialiseError
+                );
+            }
+        }
+
+        // ----------------------------------------------------
+        // METHOD 1: TOKEN HASH RECOVERY
+        // ----------------------------------------------------
 
         if (tokenHash) {
 
-            if (params.get("type") !== "recovery") {
-                throw new Error(
-                    "This is not a valid password recovery link."
-                );
-            }
-
             const { error } = await auth.verifyOtp({
+
                 token_hash: tokenHash,
+
                 type: "recovery"
+
             });
 
             if (error) {
+
                 console.error(
                     "RECOVERY OTP ERROR:",
                     error
                 );
 
                 throw new Error(
-                    "Your password reset link is invalid or expired. Please request another link."
+                    "Your password reset link is invalid, expired or already used. Please request another link."
                 );
             }
         }
 
         // ----------------------------------------------------
-        // CHECK SESSION
+        // CHECK WHETHER SUPABASE ALREADY CREATED A SESSION
         // ----------------------------------------------------
 
-        let session = null;
+        let session = await getCurrentSession(auth);
 
-        // Allow Supabase time to process an incoming PKCE code.
-        for (let attempt = 0; attempt < 20; attempt++) {
+        // ----------------------------------------------------
+        // METHOD 2: PKCE CODE EXCHANGE
+        // ----------------------------------------------------
 
-            const { data, error } = await auth.getSession();
+        // If automatic URL processing did not establish a
+        // session, explicitly exchange the recovery code.
+
+        if (!session && code) {
+
+            console.log(
+                "Attempting PKCE recovery code exchange..."
+            );
+
+            const { data, error } =
+                await auth.exchangeCodeForSession(code);
 
             if (error) {
+
                 console.error(
-                    "SESSION CHECK ERROR:",
+                    "PKCE CODE EXCHANGE ERROR:",
+                    error
+                );
+
+                // Check again in case automatic processing
+                // completed while the exchange was running.
+
+                session = await getCurrentSession(auth);
+
+                if (!session) {
+
+                    throw new Error(
+                        "The recovery code could not be exchanged. The link may have expired or already been used. Please request a new link."
+                    );
+                }
+
+            } else {
+
+                session = data.session ||
+                    await getCurrentSession(auth);
+            }
+        }
+
+        // ----------------------------------------------------
+        // METHOD 3: ACCESS TOKEN + REFRESH TOKEN
+        // ----------------------------------------------------
+
+        // Supports older implicit-flow recovery links.
+
+        if (
+            !session &&
+            accessToken &&
+            refreshToken
+        ) {
+
+            console.log(
+                "Attempting token-based recovery..."
+            );
+
+            const { data, error } =
+                await auth.setSession({
+
+                    access_token: accessToken,
+
+                    refresh_token: refreshToken
+
+                });
+
+            if (error) {
+
+                console.error(
+                    "RECOVERY SESSION ERROR:",
                     error
                 );
 
                 throw new Error(
-                    "Unable to verify your password recovery session."
+                    "Your password recovery session could not be established. Please request another reset link."
                 );
             }
 
             session = data.session;
+        }
 
-            if (session) {
-                break;
-            }
+        // ----------------------------------------------------
+        // FINAL SESSION VERIFICATION
+        // ----------------------------------------------------
 
-            if (!code && !(accessToken && refreshToken)) {
-                break;
-            }
+        if (!session) {
 
-            await new Promise(resolve =>
-                setTimeout(resolve, 250)
-            );
+            session = await getCurrentSession(auth);
         }
 
         if (!session) {
+
             throw new Error(
-                "No valid recovery session was found. Your link may have expired or already been used. Please request a new reset link."
+                "No valid recovery session was established. Please request a new password reset link."
             );
         }
 
         // ----------------------------------------------------
-        // CLEAN THE URL AFTER SESSION ESTABLISHMENT
+        // CLEAN URL AFTER SUCCESSFUL VERIFICATION
         // ----------------------------------------------------
 
         try {
+
             window.history.replaceState(
                 {},
                 document.title,
                 window.location.pathname
             );
+
         } catch (error) {
+
             console.warn(
                 "URL cleanup warning:",
                 error
             );
         }
 
+        console.log(
+            "Password recovery session successfully verified."
+        );
+
         return session;
     }
 
-    // --------------------------------------------------------
+    // ========================================================
     // INITIALISE RESET PAGE
-    // --------------------------------------------------------
+    // ========================================================
 
     async function initialiseResetPage() {
 
-        if (recoveryCheckStarted) {
-            return;
-        }
+        if (recoveryCheckStarted) return;
 
         recoveryCheckStarted = true;
 
         newPasswordInput.disabled = true;
         confirmPasswordInput.disabled = true;
-
         resetButton.disabled = true;
 
         showMessage(
-            "Verifying your secure password reset link...",
+            "Verifying your secure password reset link. Please wait...",
             "info"
         );
 
@@ -237,7 +404,7 @@
             setButtonState();
 
             showMessage(
-                "Your password reset link has been verified. You may now create a new password.",
+                "Your password reset link has been verified. You may now create your new password.",
                 "success"
             );
 
@@ -266,21 +433,20 @@
         }
     }
 
-    // --------------------------------------------------------
+    // ========================================================
     // UPDATE PASSWORD
-    // --------------------------------------------------------
+    // ========================================================
 
     form.addEventListener("submit", async function (event) {
 
         event.preventDefault();
 
-        if (isSubmitting) {
-            return;
-        }
+        if (isSubmitting) return;
 
         if (!recoveryReady) {
+
             showMessage(
-                "Your recovery link has not been verified.",
+                "Your recovery link has not been verified. Please request a new link if necessary.",
                 "error"
             );
 
@@ -290,6 +456,10 @@
         const newPassword = newPasswordInput.value;
 
         const confirmPassword = confirmPasswordInput.value;
+
+        // ----------------------------------------------------
+        // CHECK PASSWORD MATCH
+        // ----------------------------------------------------
 
         if (newPassword !== confirmPassword) {
 
@@ -302,6 +472,10 @@
 
             return;
         }
+
+        // ----------------------------------------------------
+        // CHECK PASSWORD STRENGTH
+        // ----------------------------------------------------
 
         if (!isStrongPassword(newPassword)) {
 
@@ -326,22 +500,29 @@
 
         try {
 
-            // Confirm the recovery session still exists.
+            // ------------------------------------------------
+            // CONFIRM RECOVERY SESSION
+            // ------------------------------------------------
 
             const { data, error: sessionError } =
                 await supabaseClient.auth.getSession();
 
             if (sessionError || !data.session) {
+
                 throw new Error(
                     "Your recovery session has expired. Please request a new reset link."
                 );
             }
 
-            // Update password through Supabase Authentication.
+            // ------------------------------------------------
+            // UPDATE SUPABASE AUTH PASSWORD
+            // ------------------------------------------------
 
-            const { error: updateError } =
+            const { data: updateData, error: updateError } =
                 await supabaseClient.auth.updateUser({
+
                     password: newPassword
+
                 });
 
             if (updateError) {
@@ -357,7 +538,16 @@
                 );
             }
 
-            // Optional audit logging.
+            if (!updateData || !updateData.user) {
+
+                throw new Error(
+                    "Supabase did not confirm the password update. Please try again."
+                );
+            }
+
+            // ------------------------------------------------
+            // OPTIONAL AUDIT LOGGING
+            // ------------------------------------------------
 
             try {
 
@@ -367,6 +557,7 @@
                     );
 
                 if (logError) {
+
                     console.warn(
                         "Password audit log unavailable:",
                         logError.message
@@ -381,19 +572,32 @@
                 );
             }
 
-            // Clear password fields.
+            // ------------------------------------------------
+            // CLEAR PASSWORD FIELDS
+            // ------------------------------------------------
 
             newPasswordInput.value = "";
             confirmPasswordInput.value = "";
 
             recoveryReady = false;
 
+            newPasswordInput.disabled = true;
+            confirmPasswordInput.disabled = true;
+
+            setButtonState();
+
+            // ------------------------------------------------
+            // SUCCESS MESSAGE
+            // ------------------------------------------------
+
             showMessage(
                 "SUCCESS! Your password has been changed. You can now log in using your new password.",
                 "success"
             );
 
-            // Sign out after successful password change.
+            // ------------------------------------------------
+            // SIGN OUT
+            // ------------------------------------------------
 
             try {
 
@@ -407,13 +611,15 @@
                 );
             }
 
-            // Return to login.
+            // ------------------------------------------------
+            // RETURN TO LOGIN
+            // ------------------------------------------------
 
             window.setTimeout(function () {
 
                 window.location.replace("login.html");
 
-            }, 2500);
+            }, 3000);
 
         } catch (error) {
 
@@ -436,9 +642,9 @@
         }
     });
 
-    // --------------------------------------------------------
+    // ========================================================
     // START RECOVERY PROCESS
-    // --------------------------------------------------------
+    // ========================================================
 
     setButtonState();
 
