@@ -1,3 +1,4 @@
+
 /* ============================================================
    MUNKA PIGGERY TECHNOLOGY
    PROFESSIONAL LIVE FARM STATISTICS
@@ -7,7 +8,9 @@
    FEATURES
    - Farm-specific statistics
    - Verified actual pig population
-   - Registered pig records shown separately
+   - Individual pig registration statistics
+   - Group pig registration statistics
+   - Combined piglet and weaner totals
    - Opening population and population movements
    - Pregnant sows and expected farrowings
    - Monthly and cumulative weaning
@@ -17,7 +20,24 @@
    - Zambia date and time
    - Manual and automatic refreshing
    - Responsive mobile-friendly dashboard
-   - Prevents unverified population from appearing as zero
+
+   REGISTRATION TABLES
+   - pigs: individual pig registrations
+   - pig_groups: group pig registrations
+
+   GROUP REGISTRATION COLUMNS
+   - farm_id
+   - group_name
+   - category
+   - quantity
+   - breed
+   - sex
+   - farrow_date
+   - source
+   - average_weight
+   - health_status
+   - pen_name
+   - notes
 
    IMPORTANT
    - Super Admin does not see farm statistics here.
@@ -275,14 +295,6 @@
         }
     }
 
-    function setOptionalText(id, value) {
-        const element = document.getElementById(id);
-
-        if (element) {
-            element.textContent = String(value);
-        }
-    }
-
     /* ========================================================
        USER AND FARM VALIDATION
     ======================================================== */
@@ -346,6 +358,8 @@
 
     /* ========================================================
        PAGINATED FARM DATA
+
+       All records are restricted to the logged-in farm.
     ======================================================== */
 
     async function fetchAllFarmRows(
@@ -395,9 +409,6 @@
 
     /* ========================================================
        VERIFIED POPULATION SUMMARY
-
-       This view is the source of actual population figures.
-       Do not replace these values with pigs.length.
     ======================================================== */
 
     async function fetchPopulationSummary(client, farmId) {
@@ -429,36 +440,74 @@
     }
 
     /* ========================================================
-       REGISTERED PIG RECORDS
+       REGISTERED PIG STATISTICS
 
-       These are registration records, not a verified count
-       of every animal physically present on the farm.
+       INDIVIDUAL REGISTRATIONS:
+       public.pigs
+
+       GROUP REGISTRATIONS:
+       public.pig_groups
+
+       IMPORTANT:
+       Individual pigs are counted as one animal each.
+
+       Group registrations are counted using quantity.
+
+       Example:
+       5 individual piglets + 30 group piglets = 35 piglets.
+
+       These are registration totals, not automatically
+       verified live population totals.
     ======================================================== */
 
-    function calculateRegisteredPigs(pigs) {
+    function calculateRegisteredPigs(pigs, pigGroups) {
+
         const stats = {
-            total: pigs.length,
+            total: 0,
+
+            individualTotal: pigs.length,
+            groupTotal: 0,
+
             sows: 0,
             boars: 0,
             piglets: 0,
             weaners: 0,
             growers: 0,
-            unspecified: 0
+            unspecified: 0,
+
+            individualPiglets: 0,
+            groupPiglets: 0,
+
+            individualWeaners: 0,
+            groupWeaners: 0,
+
+            groupRecords: pigGroups.length
         };
 
+        /* --------------------------------------------
+           COUNT INDIVIDUAL PIG REGISTRATIONS
+        -------------------------------------------- */
+
         pigs.forEach(function (pig) {
+
             const category = normalizeText(pig.category);
 
             if (
                 category === "sow" ||
-                category === "sows"
+                category === "sows" ||
+                category === "pregnant sow" ||
+                category === "pregnant sows" ||
+                category === "lactating sow" ||
+                category === "lactating sows"
             ) {
                 stats.sows++;
+
             } else if (
                 category === "boar" ||
                 category === "boars"
             ) {
                 stats.boars++;
+
             } else if (
                 category === "piglet" ||
                 category === "piglets" ||
@@ -466,20 +515,94 @@
                 category === "suckling piglets"
             ) {
                 stats.piglets++;
+                stats.individualPiglets++;
+
             } else if (
                 category === "weaner" ||
                 category === "weaners"
             ) {
                 stats.weaners++;
+                stats.individualWeaners++;
+
             } else if (
                 category === "grower" ||
                 category === "growers"
             ) {
                 stats.growers++;
+
             } else {
                 stats.unspecified++;
             }
         });
+
+        /* --------------------------------------------
+           COUNT GROUP REGISTRATIONS
+
+           Each group record represents several animals.
+           Therefore, use quantity instead of counting
+           the number of group records.
+        -------------------------------------------- */
+
+        pigGroups.forEach(function (group) {
+
+            const category = normalizeText(group.category);
+
+            const quantity = Math.max(
+                0,
+                Math.floor(numberValue(group.quantity))
+            );
+
+            if (quantity <= 0) {
+                return;
+            }
+
+            stats.groupTotal += quantity;
+
+            if (
+                category === "piglet" ||
+                category === "piglets"
+            ) {
+                stats.piglets += quantity;
+                stats.groupPiglets += quantity;
+
+            } else if (
+                category === "weaner" ||
+                category === "weaners"
+            ) {
+                stats.weaners += quantity;
+                stats.groupWeaners += quantity;
+
+            } else if (
+                category === "grower" ||
+                category === "growers"
+            ) {
+                stats.growers += quantity;
+
+            } else if (
+                category === "sow" ||
+                category === "sows" ||
+                category === "pregnant sow" ||
+                category === "lactating sow"
+            ) {
+                stats.sows += quantity;
+
+            } else if (
+                category === "boar" ||
+                category === "boars"
+            ) {
+                stats.boars += quantity;
+
+            } else {
+                stats.unspecified += quantity;
+            }
+        });
+
+        /* --------------------------------------------
+           COMBINED REGISTERED ANIMAL TOTAL
+        -------------------------------------------- */
+
+        stats.total =
+            stats.individualTotal + stats.groupTotal;
 
         return stats;
     }
@@ -493,7 +616,10 @@
         let expectedFarrowings = 0;
 
         records.forEach(function (record) {
-            if (normalizeText(record.status) !== "pregnant") {
+
+            if (
+                normalizeText(record.status) !== "pregnant"
+            ) {
                 return;
             }
 
@@ -527,6 +653,7 @@
         let recordsThisMonth = 0;
 
         records.forEach(function (record) {
+
             const total = Math.max(
                 0,
                 numberValue(record.total_weaned)
@@ -580,6 +707,7 @@
         let otherStatusAmount = 0;
 
         records.forEach(function (record) {
+
             if (
                 !isDateInCurrentMonth(
                     record.sale_date,
@@ -598,12 +726,14 @@
             if (status === "paid") {
                 paymentsReceived += amount;
                 paidTransactions++;
+
             } else if (
                 status === "pending" ||
                 status === "unpaid"
             ) {
                 pendingPayments += amount;
                 pendingTransactions++;
+
             } else {
                 otherStatusAmount += amount;
             }
@@ -625,6 +755,7 @@
 
     function calculateExpenses(records, monthRange) {
         return records.reduce(function (total, record) {
+
             if (
                 isDateInCurrentMonth(
                     record.expense_date,
@@ -635,6 +766,7 @@
             }
 
             return total;
+
         }, 0);
     }
 
@@ -643,6 +775,7 @@
     ======================================================== */
 
     function injectStyles() {
+
         if (document.getElementById(STYLE_ID)) {
             return;
         }
@@ -662,11 +795,13 @@
                 box-shadow:0 5px 20px rgba(20,65,35,.07);
                 color:var(--munka-stats-text,#183d28);
             }
+
             #${SECTION_ID} *,
             #${SECTION_ID} *::before,
             #${SECTION_ID} *::after {
                 box-sizing:border-box;
             }
+
             #${SECTION_ID} .munka-stats-header {
                 display:flex;
                 justify-content:space-between;
@@ -675,6 +810,7 @@
                 gap:16px;
                 margin-bottom:20px;
             }
+
             #${SECTION_ID} .munka-stats-title {
                 margin:0 0 7px;
                 font-size:clamp(21px,3vw,28px);
@@ -682,18 +818,21 @@
                 font-weight:800;
                 color:var(--munka-stats-heading,#176b38);
             }
+
             #${SECTION_ID} .munka-stats-subtitle {
                 margin:0;
                 font-size:14px;
                 line-height:1.6;
                 color:var(--munka-stats-muted,#617166);
             }
+
             #${SECTION_ID} .munka-stats-controls {
                 display:flex;
                 align-items:center;
                 gap:10px;
                 flex-wrap:wrap;
             }
+
             #${SECTION_ID} .munka-refresh-button {
                 min-height:42px;
                 padding:10px 16px;
@@ -705,10 +844,12 @@
                 font-size:13px;
                 cursor:pointer;
             }
+
             #${SECTION_ID} .munka-refresh-button:disabled {
                 opacity:.6;
                 cursor:wait;
             }
+
             #${SECTION_ID} .munka-statistics-spinner {
                 display:none;
                 width:13px;
@@ -720,20 +861,24 @@
                 border-radius:50%;
                 animation:munkaStatsSpin .8s linear infinite;
             }
+
             @keyframes munkaStatsSpin {
                 to { transform:rotate(360deg); }
             }
+
             #${SECTION_ID} .munka-stats-period {
                 margin:0 0 14px;
                 font-size:13px;
                 font-weight:700;
                 color:var(--munka-stats-muted,#617166);
             }
+
             #${SECTION_ID} .munka-statistics-grid {
                 display:grid;
                 grid-template-columns:repeat(4,minmax(0,1fr));
                 gap:14px;
             }
+
             #${SECTION_ID} .munka-stat-card {
                 min-width:0;
                 padding:17px;
@@ -743,6 +888,7 @@
                 position:relative;
                 overflow:hidden;
             }
+
             #${SECTION_ID} .munka-stat-card::before {
                 content:"";
                 position:absolute;
@@ -752,12 +898,31 @@
                 height:100%;
                 background:var(--munka-card-accent,#27834a);
             }
-            #${SECTION_ID} .green { --munka-card-accent:#23834a; }
-            #${SECTION_ID} .blue { --munka-card-accent:#2879b9; }
-            #${SECTION_ID} .orange { --munka-card-accent:#d78624; }
-            #${SECTION_ID} .red { --munka-card-accent:#c64a4a; }
-            #${SECTION_ID} .purple { --munka-card-accent:#8055ae; }
-            #${SECTION_ID} .teal { --munka-card-accent:#198b8b; }
+
+            #${SECTION_ID} .green {
+                --munka-card-accent:#23834a;
+            }
+
+            #${SECTION_ID} .blue {
+                --munka-card-accent:#2879b9;
+            }
+
+            #${SECTION_ID} .orange {
+                --munka-card-accent:#d78624;
+            }
+
+            #${SECTION_ID} .red {
+                --munka-card-accent:#c64a4a;
+            }
+
+            #${SECTION_ID} .purple {
+                --munka-card-accent:#8055ae;
+            }
+
+            #${SECTION_ID} .teal {
+                --munka-card-accent:#198b8b;
+            }
+
             #${SECTION_ID} .munka-stat-label {
                 display:block;
                 margin-bottom:11px;
@@ -769,6 +934,7 @@
                 color:var(--munka-stats-muted,#617166);
                 overflow-wrap:anywhere;
             }
+
             #${SECTION_ID} .munka-stat-value {
                 display:block;
                 font-size:clamp(22px,2.3vw,30px);
@@ -777,12 +943,15 @@
                 color:var(--munka-stats-text,#183d28);
                 overflow-wrap:anywhere;
             }
+
             #${SECTION_ID} .munka-stat-value.currency {
                 font-size:clamp(17px,1.8vw,23px);
             }
+
             #${SECTION_ID} .munka-stat-value.text-value {
                 font-size:clamp(15px,1.6vw,20px);
             }
+
             #${SECTION_ID} .munka-stat-description {
                 display:block;
                 margin-top:8px;
@@ -790,6 +959,7 @@
                 line-height:1.5;
                 color:var(--munka-stats-muted,#617166);
             }
+
             #${SECTION_ID} .munka-stats-group-title {
                 grid-column:1/-1;
                 margin:18px 0 0;
@@ -799,6 +969,7 @@
                 font-weight:800;
                 color:var(--munka-stats-heading,#176b38);
             }
+
             #${SECTION_ID} .munka-statistics-status {
                 margin-top:18px;
                 padding:11px 13px;
@@ -809,23 +980,28 @@
                 color:#315b3d;
                 overflow-wrap:anywhere;
             }
+
             #${SECTION_ID} .munka-statistics-status.success {
                 background:#eaf7ed;
                 color:#176b38;
             }
+
             #${SECTION_ID} .munka-statistics-status.error {
                 background:#fff0f0;
                 color:#a32727;
             }
+
             #${SECTION_ID} .munka-statistics-status.warning {
                 background:#fff7e8;
                 color:#805400;
             }
+
             #${SECTION_ID} .munka-statistics-updated {
                 margin:10px 0 0;
                 font-size:12px;
                 color:var(--munka-stats-muted,#617166);
             }
+
             body.dark-mode #${SECTION_ID} {
                 --munka-stats-bg:#18251d;
                 --munka-stats-border:#35483b;
@@ -836,57 +1012,71 @@
                 background:var(--munka-stats-bg);
                 color:var(--munka-stats-text);
             }
+
             body.dark-mode #${SECTION_ID} .munka-statistics-status {
                 background:#26382b;
                 color:#d9f0df;
             }
+
             body.dark-mode #${SECTION_ID} .munka-statistics-status.success {
                 background:#1f3b29;
                 color:#a9e6ba;
             }
+
             body.dark-mode #${SECTION_ID} .munka-statistics-status.error {
                 background:#472626;
                 color:#ffd0d0;
             }
+
             body.dark-mode #${SECTION_ID} .munka-statistics-status.warning {
                 background:#493b22;
                 color:#ffe0a0;
             }
+
             @media(max-width:1000px) {
                 #${SECTION_ID} .munka-statistics-grid {
                     grid-template-columns:repeat(3,minmax(0,1fr));
                 }
             }
+
             @media(max-width:700px) {
                 #${SECTION_ID} {
                     padding:16px;
                     margin:18px 0;
                     border-radius:13px;
                 }
+
                 #${SECTION_ID} .munka-statistics-grid {
                     grid-template-columns:repeat(2,minmax(0,1fr));
                     gap:10px;
                 }
+
                 #${SECTION_ID} .munka-stat-card {
                     padding:13px;
                 }
+
                 #${SECTION_ID} .munka-stat-label {
                     font-size:11px;
                 }
+
                 #${SECTION_ID} .munka-stat-value {
                     font-size:23px;
                 }
+
                 #${SECTION_ID} .munka-stat-value.currency {
                     font-size:17px;
                 }
             }
+
             @media(max-width:380px) {
                 #${SECTION_ID} .munka-statistics-grid {
                     grid-template-columns:1fr;
                 }
+
                 #${SECTION_ID} .munka-stats-header {
                     display:block;
                 }
+
                 #${SECTION_ID} .munka-stats-controls {
                     margin-top:14px;
                 }
@@ -901,6 +1091,7 @@
     ======================================================== */
 
     function createStatisticsPanel() {
+
         let section = document.getElementById(SECTION_ID);
 
         if (section) {
@@ -909,24 +1100,34 @@
 
         section = document.createElement("section");
         section.id = SECTION_ID;
-        section.setAttribute("aria-label", "Live farm statistics");
+
+        section.setAttribute(
+            "aria-label",
+            "Live farm statistics"
+        );
 
         section.innerHTML = `
             <div class="munka-stats-header">
                 <div>
-                    <h2 class="munka-stats-title">Live Farm Statistics</h2>
+                    <h2 class="munka-stats-title">
+                        Live Farm Statistics
+                    </h2>
+
                     <p class="munka-stats-subtitle">
                         Monitor verified pig population, breeding,
                         production, animal health and finances.
                     </p>
                 </div>
+
                 <div class="munka-stats-controls">
                     <button type="button"
                         id="munkaRefreshStatisticsButton"
                         class="munka-refresh-button">
+
                         <span id="munkaStatisticsSpinner"
                             class="munka-statistics-spinner"
                             aria-hidden="true"></span>
+
                         Refresh Statistics
                     </button>
                 </div>
@@ -938,12 +1139,19 @@
             </p>
 
             <div class="munka-statistics-grid">
-                <h3 class="munka-stats-group-title">Pig Population</h3>
+
+                <h3 class="munka-stats-group-title">
+                    Pig Population
+                </h3>
 
                 <article class="munka-stat-card green">
-                    <span class="munka-stat-label">Actual Pig Population</span>
+                    <span class="munka-stat-label">
+                        Actual Pig Population
+                    </span>
+
                     <strong class="munka-stat-value text-value"
                         id="munkaStatActualPopulation">—</strong>
+
                     <span class="munka-stat-description"
                         id="munkaStatPopulationDescription">
                         Based on verified opening count and recorded movements.
@@ -951,9 +1159,13 @@
                 </article>
 
                 <article class="munka-stat-card blue">
-                    <span class="munka-stat-label">Opening Population</span>
+                    <span class="munka-stat-label">
+                        Opening Population
+                    </span>
+
                     <strong class="munka-stat-value text-value"
                         id="munkaStatOpeningPopulation">—</strong>
+
                     <span class="munka-stat-description"
                         id="munkaStatOpeningDate">
                         Verified baseline count
@@ -961,132 +1173,210 @@
                 </article>
 
                 <article class="munka-stat-card green">
-                    <span class="munka-stat-label">Total Registered Pig Records</span>
+                    <span class="munka-stat-label">
+                        Total Registered Pigs
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatTotalPigs">—</strong>
-                    <span class="munka-stat-description">
-                        Registered records, not the verified physical population.
+
+                    <span class="munka-stat-description"
+                        id="munkaStatTotalPigsDescription">
+                        Individual pigs plus group-registered quantities.
                     </span>
                 </article>
 
                 <article class="munka-stat-card purple">
-                    <span class="munka-stat-label">Sows Registered</span>
+                    <span class="munka-stat-label">
+                        Sows Registered
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatSows">—</strong>
                 </article>
 
                 <article class="munka-stat-card blue">
-                    <span class="munka-stat-label">Boars Registered</span>
+                    <span class="munka-stat-label">
+                        Boars Registered
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatBoars">—</strong>
                 </article>
 
                 <article class="munka-stat-card orange">
-                    <span class="munka-stat-label">Piglets Registered</span>
+                    <span class="munka-stat-label">
+                        Piglets Registered
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatPiglets">—</strong>
+
+                    <span class="munka-stat-description"
+                        id="munkaStatPigletsDescription">
+                        Individual and group registrations
+                    </span>
                 </article>
 
                 <article class="munka-stat-card purple">
-                    <span class="munka-stat-label">Weaners Registered</span>
+                    <span class="munka-stat-label">
+                        Weaners Registered
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatWeaners">—</strong>
+
+                    <span class="munka-stat-description"
+                        id="munkaStatWeanersDescription">
+                        Individual and group registrations
+                    </span>
                 </article>
 
                 <article class="munka-stat-card teal">
-                    <span class="munka-stat-label">Growers Registered</span>
+                    <span class="munka-stat-label">
+                        Growers Registered
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatGrowers">—</strong>
                 </article>
 
                 <article class="munka-stat-card orange">
-                    <span class="munka-stat-label">Other/Unspecified Categories</span>
+                    <span class="munka-stat-label">
+                        Other/Unspecified Categories
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatUnspecified">—</strong>
                 </article>
 
                 <article class="munka-stat-card green">
-                    <span class="munka-stat-label">Births Since Opening</span>
+                    <span class="munka-stat-label">
+                        Births Since Opening
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatBirths">—</strong>
                 </article>
 
                 <article class="munka-stat-card red">
-                    <span class="munka-stat-label">Deaths Since Opening</span>
+                    <span class="munka-stat-label">
+                        Deaths Since Opening
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatDeaths">—</strong>
                 </article>
 
                 <article class="munka-stat-card orange">
-                    <span class="munka-stat-label">Pigs Sold and Removed</span>
+                    <span class="munka-stat-label">
+                        Pigs Sold and Removed
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatPopulationSales">—</strong>
                 </article>
 
                 <article class="munka-stat-card blue">
-                    <span class="munka-stat-label">Purchases Since Opening</span>
+                    <span class="munka-stat-label">
+                        Purchases Since Opening
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatPurchases">—</strong>
                 </article>
 
                 <article class="munka-stat-card teal">
-                    <span class="munka-stat-label">Arrivals Since Opening</span>
+                    <span class="munka-stat-label">
+                        Arrivals Since Opening
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatArrivals">—</strong>
                 </article>
 
-                <h3 class="munka-stats-group-title">Breeding and Production</h3>
+                <h3 class="munka-stats-group-title">
+                    Breeding and Production
+                </h3>
 
                 <article class="munka-stat-card purple">
-                    <span class="munka-stat-label">Pregnant Sows</span>
+                    <span class="munka-stat-label">
+                        Pregnant Sows
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatPregnantSows">—</strong>
+
                     <span class="munka-stat-description">
                         Unique sow IDs with Pregnant status.
                     </span>
                 </article>
 
                 <article class="munka-stat-card orange">
-                    <span class="munka-stat-label">Expected Farrowings</span>
+                    <span class="munka-stat-label">
+                        Expected Farrowings
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatExpectedFarrowings">—</strong>
+
                     <span class="munka-stat-description">
                         Pregnant records with a due date today or later.
                     </span>
                 </article>
 
                 <article class="munka-stat-card green">
-                    <span class="munka-stat-label">Piglets Weaned This Month</span>
+                    <span class="munka-stat-label">
+                        Piglets Weaned This Month
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatWeanedThisMonth">—</strong>
                 </article>
 
                 <article class="munka-stat-card blue">
-                    <span class="munka-stat-label">Piglets Weaned Cumulatively</span>
+                    <span class="munka-stat-label">
+                        Piglets Weaned Cumulatively
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatWeanedCumulative">—</strong>
                 </article>
 
-                <h3 class="munka-stats-group-title">Animal Health</h3>
+                <h3 class="munka-stats-group-title">
+                    Animal Health
+                </h3>
 
                 <article class="munka-stat-card red">
-                    <span class="munka-stat-label">Treatments This Month</span>
+                    <span class="munka-stat-label">
+                        Treatments This Month
+                    </span>
+
                     <strong class="munka-stat-value"
                         id="munkaStatTreatments">—</strong>
                 </article>
 
-                <h3 class="munka-stats-group-title">Financial Performance</h3>
+                <h3 class="munka-stats-group-title">
+                    Financial Performance
+                </h3>
 
                 <article class="munka-stat-card green">
-                    <span class="munka-stat-label">Sales Recorded This Month</span>
+                    <span class="munka-stat-label">
+                        Sales Recorded This Month
+                    </span>
+
                     <strong class="munka-stat-value currency"
                         id="munkaStatSales">—</strong>
                 </article>
 
                 <article class="munka-stat-card teal">
-                    <span class="munka-stat-label">Payments Received</span>
+                    <span class="munka-stat-label">
+                        Payments Received
+                    </span>
+
                     <strong class="munka-stat-value currency"
                         id="munkaStatPaymentsReceived">—</strong>
+
                     <span class="munka-stat-description"
                         id="munkaStatPaidTransactions">
                         Paid transactions
@@ -1094,9 +1384,13 @@
                 </article>
 
                 <article class="munka-stat-card orange">
-                    <span class="munka-stat-label">Pending Payments</span>
+                    <span class="munka-stat-label">
+                        Pending Payments
+                    </span>
+
                     <strong class="munka-stat-value currency"
                         id="munkaStatPendingPayments">—</strong>
+
                     <span class="munka-stat-description"
                         id="munkaStatPendingTransactions">
                         Pending transactions
@@ -1104,20 +1398,28 @@
                 </article>
 
                 <article class="munka-stat-card red">
-                    <span class="munka-stat-label">Expenses This Month</span>
+                    <span class="munka-stat-label">
+                        Expenses This Month
+                    </span>
+
                     <strong class="munka-stat-value currency"
                         id="munkaStatExpenses">—</strong>
                 </article>
 
                 <article class="munka-stat-card blue">
-                    <span class="munka-stat-label">Net Cash Position</span>
+                    <span class="munka-stat-label">
+                        Net Cash Position
+                    </span>
+
                     <strong class="munka-stat-value currency"
                         id="munkaStatNetBalance">—</strong>
+
                     <span class="munka-stat-description">
                         Payments received minus recorded expenses.
                         Not a complete profit calculation.
                     </span>
                 </article>
+
             </div>
 
             <div id="munkaLiveStatisticsStatus"
@@ -1140,16 +1442,21 @@
             document.querySelector(".welcome-section");
 
         if (announcementsSection) {
+
             announcementsSection.insertAdjacentElement(
                 "afterend",
                 section
             );
+
         } else if (welcomeSection) {
+
             welcomeSection.insertAdjacentElement(
                 "afterend",
                 section
             );
+
         } else {
+
             document.body.appendChild(section);
         }
 
@@ -1171,6 +1478,7 @@
     ======================================================== */
 
     function displayStatistics(data) {
+
         const population = data.population;
         const registered = data.pigs;
 
@@ -1199,17 +1507,76 @@
                 : "Based on verified opening count and recorded population movements."
         );
 
-        setText("munkaStatTotalPigs", formatNumber(registered.total));
-        setText("munkaStatSows", formatNumber(registered.sows));
-        setText("munkaStatBoars", formatNumber(registered.boars));
-        setText("munkaStatPiglets", formatNumber(registered.piglets));
-        setText("munkaStatWeaners", formatNumber(registered.weaners));
-        setText("munkaStatGrowers", formatNumber(registered.growers));
+        /* --------------------------------------------
+           TOTAL REGISTERED PIGS
+        -------------------------------------------- */
+
+        setText(
+            "munkaStatTotalPigs",
+            formatNumber(registered.total)
+        );
+
+        setText(
+            "munkaStatTotalPigsDescription",
+            formatNumber(registered.individualTotal) +
+            " individual + " +
+            formatNumber(registered.groupTotal) +
+            " group-registered pigs"
+        );
+
+        /* --------------------------------------------
+           CATEGORY TOTALS
+        -------------------------------------------- */
+
+        setText(
+            "munkaStatSows",
+            formatNumber(registered.sows)
+        );
+
+        setText(
+            "munkaStatBoars",
+            formatNumber(registered.boars)
+        );
+
+        setText(
+            "munkaStatPiglets",
+            formatNumber(registered.piglets)
+        );
+
+        setText(
+            "munkaStatPigletsDescription",
+            formatNumber(registered.individualPiglets) +
+            " individual + " +
+            formatNumber(registered.groupPiglets) +
+            " group-registered piglets"
+        );
+
+        setText(
+            "munkaStatWeaners",
+            formatNumber(registered.weaners)
+        );
+
+        setText(
+            "munkaStatWeanersDescription",
+            formatNumber(registered.individualWeaners) +
+            " individual + " +
+            formatNumber(registered.groupWeaners) +
+            " group-registered weaners"
+        );
+
+        setText(
+            "munkaStatGrowers",
+            formatNumber(registered.growers)
+        );
 
         setText(
             "munkaStatUnspecified",
             formatNumber(registered.unspecified)
         );
+
+        /* --------------------------------------------
+           POPULATION MOVEMENTS
+        -------------------------------------------- */
 
         setText(
             "munkaStatBirths",
@@ -1236,6 +1603,10 @@
             formatNumber(population.arrivals_since_opening)
         );
 
+        /* --------------------------------------------
+           BREEDING AND PRODUCTION
+        -------------------------------------------- */
+
         setText(
             "munkaStatPregnantSows",
             formatNumber(data.breeding.pregnantSows)
@@ -1256,10 +1627,18 @@
             formatNumber(data.weaning.cumulative)
         );
 
+        /* --------------------------------------------
+           ANIMAL HEALTH
+        -------------------------------------------- */
+
         setText(
             "munkaStatTreatments",
             formatNumber(data.treatments.thisMonth)
         );
+
+        /* --------------------------------------------
+           FINANCIAL STATISTICS
+        -------------------------------------------- */
 
         setText(
             "munkaStatSales",
@@ -1298,6 +1677,10 @@
             " pending transaction(s)"
         );
 
+        /* --------------------------------------------
+           REPORTING MONTH
+        -------------------------------------------- */
+
         const monthName = new Intl.DateTimeFormat("en-ZM", {
             timeZone: "Africa/Lusaka",
             month: "long",
@@ -1315,6 +1698,7 @@
     ======================================================== */
 
     async function loadDashboardFarmStatistics(manualRefresh) {
+
         if (isLoading) {
             return;
         }
@@ -1323,6 +1707,7 @@
         setLoading(true);
 
         try {
+
             const section = createStatisticsPanel();
 
             if (!section) {
@@ -1360,10 +1745,12 @@
                 sessionResult.data.session;
 
             if (!session) {
+
                 setStatus(
                     "Your login session has expired. Please log in again.",
                     "error"
                 );
+
                 return;
             }
 
@@ -1375,11 +1762,27 @@
                 "info"
             );
 
+            /* --------------------------------------------
+               FETCH ALL FARM DATA
+
+               The pig_groups query is the additional
+               query that enables group registration
+               quantities to appear on the dashboard.
+            -------------------------------------------- */
+
             const results = await Promise.all([
+
                 fetchAllFarmRows(
                     client,
                     "pigs",
                     "id, category",
+                    farmId
+                ),
+
+                fetchAllFarmRows(
+                    client,
+                    "pig_groups",
+                    "id, category, quantity",
                     farmId
                 ),
 
@@ -1418,18 +1821,41 @@
                     farmId
                 ),
 
-                fetchPopulationSummary(client, farmId)
+                fetchPopulationSummary(
+                    client,
+                    farmId
+                )
+
             ]);
 
-            const pigs = results[0];
-            const gestationRecords = results[1];
-            const weaningRecords = results[2];
-            const treatmentRecords = results[3];
-            const salesRecords = results[4];
-            const expenseRecords = results[5];
-            const population = results[6];
+            /* --------------------------------------------
+               EXTRACT DATABASE RESULTS
+            -------------------------------------------- */
 
-            const pigStats = calculateRegisteredPigs(pigs);
+            const pigs = results[0];
+
+            const pigGroups = results[1];
+
+            const gestationRecords = results[2];
+
+            const weaningRecords = results[3];
+
+            const treatmentRecords = results[4];
+
+            const salesRecords = results[5];
+
+            const expenseRecords = results[6];
+
+            const population = results[7];
+
+            /* --------------------------------------------
+               CALCULATE STATISTICS
+            -------------------------------------------- */
+
+            const pigStats = calculateRegisteredPigs(
+                pigs,
+                pigGroups
+            );
 
             const breedingStats = calculateBreeding(
                 gestationRecords,
@@ -1459,24 +1885,46 @@
             const netCashPosition =
                 salesStats.paymentsReceived - expenses;
 
+            /* --------------------------------------------
+               PREPARE DASHBOARD DATA
+            -------------------------------------------- */
+
             const data = {
+
                 farmId: farmId,
+
                 farmName: population.farm_name,
+
                 population: population,
+
                 pigs: pigStats,
+
                 breeding: breedingStats,
+
                 weaning: weaningStats,
+
                 treatments: treatmentStats,
+
                 sales: salesStats,
+
                 expenses: expenses,
+
                 netCashPosition: netCashPosition,
+
                 generatedAt: new Date().toISOString()
+
             };
+
+            /* --------------------------------------------
+               DISPLAY RESULTS
+            -------------------------------------------- */
 
             displayStatistics(data);
 
             lastSuccessfulData = data;
+
             state.lastUpdated = new Date();
+
             state.lastError = null;
 
             setLastUpdated(state.lastUpdated);
@@ -1486,20 +1934,33 @@
                 population.current_population !== undefined;
 
             setStatus(
+
                 populationVerified
+
                     ? "Statistics loaded successfully for " +
                       population.farm_name +
-                      ". Actual population is based on the verified opening count and recorded movements."
+                      ". Individual and group registrations have been included. Actual population is based on the verified opening count and recorded movements."
+
                     : "Other farm statistics loaded for " +
                       population.farm_name +
-                      ". Actual pig population is not verified because an opening count has not been entered.",
+                      ". Individual and group registrations have been included. Actual pig population is not verified because an opening count has not been entered.",
+
                 populationVerified ? "success" : "warning"
+
             );
 
+            /* --------------------------------------------
+               MAKE STATISTICS AVAILABLE GLOBALLY
+            -------------------------------------------- */
+
             window.munkaLiveStatistics = {
+
                 lastData: data,
+
                 lastUpdated: state.lastUpdated,
+
                 refresh: loadDashboardFarmStatistics
+
             };
 
             window.dashboardFarmStatistics = data;
@@ -1509,20 +1970,44 @@
                 data
             );
 
+            console.log(
+                "Individual pig registrations:",
+                pigStats.individualTotal
+            );
+
+            console.log(
+                "Group pig quantities:",
+                pigStats.groupTotal
+            );
+
+            console.log(
+                "Total registered piglets:",
+                pigStats.piglets
+            );
+
+            console.log(
+                "Total registered weaners:",
+                pigStats.weaners
+            );
+
         } catch (error) {
+
             console.error("MUNKA Statistics error:", error);
 
             state.lastError =
                 error.message || "Unknown error";
 
             if (lastSuccessfulData) {
+
                 setStatus(
                     "Could not refresh the latest statistics. " +
                     "Previously loaded figures remain displayed. Details: " +
                     state.lastError,
                     "warning"
                 );
+
             } else {
+
                 setStatus(
                     "Statistics could not be loaded. Check your connection, " +
                     "login session, table names, view access and Supabase permissions. Details: " +
@@ -1532,7 +2017,9 @@
             }
 
         } finally {
+
             isLoading = false;
+
             setLoading(false);
         }
     }
@@ -1542,6 +2029,7 @@
     ======================================================== */
 
     function initializeDashboardFarmStatistics() {
+
         if (state.initialized) {
             return;
         }
@@ -1562,27 +2050,38 @@
         }
 
         refreshTimer = setInterval(function () {
+
             if (!document.hidden) {
                 loadDashboardFarmStatistics(false);
             }
+
         }, REFRESH_INTERVAL);
 
         document.addEventListener(
             "visibilitychange",
             function () {
+
                 if (!document.hidden) {
                     loadDashboardFarmStatistics(false);
                 }
+
             }
         );
     }
 
+    /* ========================================================
+       START DASHBOARD STATISTICS
+    ======================================================== */
+
     if (document.readyState === "loading") {
+
         document.addEventListener(
             "DOMContentLoaded",
             initializeDashboardFarmStatistics
         );
+
     } else {
+
         initializeDashboardFarmStatistics();
     }
 
