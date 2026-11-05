@@ -1,14 +1,15 @@
+
 /* ============================================================
    MUNKA PIGGERY MANAGEMENT SYSTEM
    SALES MANAGEMENT MODULE
-   Complete replacement: sales.js
+   COMPLETE UPDATED REPLACEMENT: sales.js
 
    SECURITY:
    - Uses existing Supabase client.
    - Uses existing permission functions.
-   - Waits for Sales permissions to load.
    - Keeps all database queries farm-scoped.
    - Does not modify the central security system.
+   - Edit/Delete use safe event delegation.
 ============================================================ */
 
 "use strict";
@@ -33,9 +34,7 @@ function getSalesClient() {
         return supabaseClient;
     }
 
-    throw new Error(
-        "Supabase client unavailable. Check supabase.js and script loading order."
-    );
+    throw new Error("Supabase client unavailable. Check supabase.js.");
 }
 
 
@@ -46,15 +45,10 @@ function getSalesClient() {
 function getLoggedUser() {
 
     try {
-
         const storedUser = localStorage.getItem("loggedInUser");
-
         return storedUser ? JSON.parse(storedUser) : null;
-
     } catch (error) {
-
         console.error("Unable to read logged-in user:", error);
-
         return null;
     }
 }
@@ -72,47 +66,39 @@ async function getRegisteredFarmName() {
 
     try {
 
-        const client = getSalesClient();
         const user = getLoggedUser();
 
         if (!user || !user.farm_id) {
             return "Unknown Farm";
         }
 
-        const { data, error } = await client
+        const { data, error } = await getSalesClient()
             .from("farms")
             .select("farm_name")
             .eq("id", user.farm_id)
             .maybeSingle();
 
-        if (error) {
-            console.warn("Unable to retrieve farm name:", error);
-            return "Unknown Farm";
-        }
+        if (error) throw error;
 
         return data?.farm_name || "Unknown Farm";
 
     } catch (error) {
 
         console.error("Farm name error:", error);
-
         return "Unknown Farm";
     }
 }
 
 
 /* ============================================================
-   3. WAIT FOR EXISTING PERMISSION ENGINE
-
-   This does not replace or modify the permission engine.
-   It waits for the existing Sales permission row to load.
+   3. WAIT FOR PERMISSIONS
 ============================================================ */
 
 async function waitForSalesPermissions(timeout = 20000) {
 
     const startTime = Date.now();
 
-    return new Promise(function (resolve) {
+    return new Promise(function(resolve) {
 
         function checkPermissions() {
 
@@ -126,41 +112,29 @@ async function waitForSalesPermissions(timeout = 20000) {
             let permissions = null;
 
             try {
-
                 if (typeof userPermissions !== "undefined") {
                     permissions = userPermissions;
                 }
-
             } catch (error) {
-
                 permissions = null;
             }
 
             const salesPermissionLoaded =
                 Array.isArray(permissions) &&
-                permissions.some(function (permission) {
-
+                permissions.some(function(permission) {
                     return String(permission.module || "")
                         .trim()
                         .toLowerCase() === "sales";
-
                 });
 
             if (functionsReady && salesPermissionLoaded) {
-
                 resolve(true);
-
                 return;
             }
 
             if (Date.now() - startTime >= timeout) {
-
-                console.error(
-                    "Sales permission engine did not finish loading."
-                );
-
+                console.error("Sales permissions did not finish loading.");
                 resolve(false);
-
                 return;
             }
 
@@ -201,15 +175,10 @@ function checkSalesPermission(action, silent = false) {
     }
 
     const permissionFunctions = {
-
         add: typeof canAdd === "function" ? canAdd : null,
-
         edit: typeof canEdit === "function" ? canEdit : null,
-
         delete: typeof canDelete === "function" ? canDelete : null,
-
         view: typeof canView === "function" ? canView : null,
-
         report: typeof canReport === "function" ? canReport : null
     };
 
@@ -217,16 +186,10 @@ function checkSalesPermission(action, silent = false) {
 
     if (!permissionFunction) {
 
-        console.error(
-            "Sales permission function unavailable:",
-            action
-        );
+        console.error("Sales permission function unavailable:", action);
 
         if (!silent) {
-
-            alert(
-                "Unable to verify your Sales permissions. Please contact your administrator."
-            );
+            alert("Unable to verify your Sales permissions.");
         }
 
         return false;
@@ -234,16 +197,13 @@ function checkSalesPermission(action, silent = false) {
 
     try {
 
-        const allowed = permissionFunction("Sales");
+        const allowed = permissionFunction("Sales") === true;
 
         if (!allowed && !silent) {
-
-            alert(
-                "You do not have permission to perform this action in Sales."
-            );
+            alert("You do not have permission to perform this action in Sales.");
         }
 
-        return allowed === true;
+        return allowed;
 
     } catch (error) {
 
@@ -267,16 +227,10 @@ async function recordSalesActivity(action, description) {
     try {
 
         if (typeof logActivity === "function") {
-
-            await logActivity(
-                "Sales",
-                action,
-                description
-            );
+            await logActivity("Sales", action, description);
         }
 
     } catch (error) {
-
         console.warn("Activity logging failed:", error);
     }
 }
@@ -289,23 +243,16 @@ async function recordSalesActivity(action, description) {
 function getTodayDate() {
 
     const parts = new Intl.DateTimeFormat("en-CA", {
-
         timeZone: "Africa/Lusaka",
-
         year: "numeric",
-
         month: "2-digit",
-
         day: "2-digit"
-
     }).formatToParts(new Date());
 
     const date = {};
 
-    parts.forEach(function (part) {
-
+    parts.forEach(function(part) {
         date[part.type] = part.value;
-
     });
 
     return `${date.year}-${date.month}-${date.day}`;
@@ -314,20 +261,14 @@ function getTodayDate() {
 
 function escapeHTML(value) {
 
-    return String(value ?? "").replace(/[&<>"']/g, function (character) {
+    return String(value ?? "").replace(/[&<>"']/g, function(character) {
 
         const entities = {
-
             "&": "&amp;",
-
             "<": "&lt;",
-
             ">": "&gt;",
-
             '"': "&quot;",
-
             "'": "&#039;"
-
         };
 
         return entities[character];
@@ -339,9 +280,7 @@ function getInputValue(id) {
 
     const element = document.getElementById(id);
 
-    return element
-        ? String(element.value ?? "").trim()
-        : "";
+    return element ? String(element.value ?? "").trim() : "";
 }
 
 
@@ -359,9 +298,7 @@ function getNumericValue(id) {
 
     const value = getInputValue(id);
 
-    if (value === "") {
-        return 0;
-    }
+    if (value === "") return 0;
 
     const number = Number(value);
 
@@ -372,26 +309,19 @@ function getNumericValue(id) {
 function formatMoney(value) {
 
     return "K" + (Number(value) || 0).toLocaleString("en-ZM", {
-
         minimumFractionDigits: 2,
-
         maximumFractionDigits: 2
-
     });
 }
 
 
 function formatDate(value) {
 
-    if (!value) {
-        return "";
-    }
+    if (!value) return "";
 
     const parts = String(value).split("T")[0].split("-");
 
-    if (parts.length !== 3) {
-        return String(value);
-    }
+    if (parts.length !== 3) return String(value);
 
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
@@ -415,22 +345,14 @@ function showSalesError(message, error) {
 function calculateTotalAmount() {
 
     const weight = getNumericValue("weight");
-
     const price = getNumericValue("pricePerKg");
 
     const field = document.getElementById("totalAmount");
 
-    if (!field) {
-        return;
-    }
+    if (!field) return;
 
-    if (
-        !Number.isFinite(weight) ||
-        !Number.isFinite(price)
-    ) {
-
+    if (!Number.isFinite(weight) || !Number.isFinite(price)) {
         field.value = "";
-
         return;
     }
 
@@ -444,27 +366,18 @@ function calculateTotalAmount() {
 
 function updateRemovalDateField() {
 
-    const removalSelect =
-        document.getElementById("removedFromFarm");
+    const removalSelect = document.getElementById("removedFromFarm");
+    const removalDate = document.getElementById("removalDate");
+    const saleDate = document.getElementById("saleDate");
 
-    const removalDate =
-        document.getElementById("removalDate");
-
-    const saleDate =
-        document.getElementById("saleDate");
-
-    if (!removalSelect || !removalDate) {
-        return;
-    }
+    if (!removalSelect || !removalDate) return;
 
     const removed = removalSelect.value === "true";
 
     removalDate.disabled = !removed;
-
     removalDate.required = removed;
 
     if (removed && !removalDate.value) {
-
         removalDate.value =
             (saleDate && saleDate.value) || getTodayDate();
     }
@@ -477,24 +390,16 @@ function updateRemovalDateField() {
 
 function getRemovalDetails() {
 
-    const removedSelect =
-        document.getElementById("removedFromFarm");
-
-    const removalDate =
-        document.getElementById("removalDate");
+    const removedSelect = document.getElementById("removedFromFarm");
+    const removalDate = document.getElementById("removalDate");
 
     const removed =
-        !!removedSelect &&
-        removedSelect.value === "true";
+        !!removedSelect && removedSelect.value === "true";
 
     return {
-
         removed_from_farm: removed,
-
         removal_date:
-            removed && removalDate
-                ? removalDate.value || null
-                : null
+            removed && removalDate ? removalDate.value || null : null
     };
 }
 
@@ -503,10 +408,7 @@ function validateRemovalDetails() {
 
     const details = getRemovalDetails();
 
-    if (
-        details.removed_from_farm &&
-        !details.removal_date
-    ) {
+    if (details.removed_from_farm && !details.removal_date) {
 
         alert("Enter the date the pigs left the farm.");
 
@@ -522,9 +424,7 @@ function validateRemovalDetails() {
         details.removal_date < saleDate
     ) {
 
-        alert(
-            "The removal date cannot be earlier than the sale date."
-        );
+        alert("The removal date cannot be earlier than the sale date.");
 
         return false;
     }
@@ -537,16 +437,11 @@ function confirmPhysicalRemoval() {
 
     const details = getRemovalDetails();
 
-    if (!details.removed_from_farm) {
-        return true;
-    }
+    if (!details.removed_from_farm) return true;
 
     return confirm(
-
         "PHYSICAL REMOVAL CONFIRMATION\n\n" +
-
         "Have these pigs actually left the farm?\n\n" +
-
         "Confirm only if the pigs have physically left the farm."
     );
 }
@@ -559,52 +454,32 @@ function confirmPhysicalRemoval() {
 function getSaleFormData() {
 
     const saleDate = getInputValue("saleDate");
-
     const pigID = getInputValue("pigID");
-
     const breed = getInputValue("breed");
-
     const category = getInputValue("category");
 
     const quantity = getNumericValue("quantity");
-
     const weight = getNumericValue("weight");
-
     const pricePerKg = getNumericValue("pricePerKg");
 
     if (!saleDate || !pigID || !breed || !category) {
-
-        throw new Error(
-            "Please complete all required sale fields."
-        );
+        throw new Error("Please complete all required sale fields.");
     }
 
     if (!Number.isInteger(quantity) || quantity <= 0) {
-
-        throw new Error(
-            "Quantity must be a whole number greater than zero."
-        );
+        throw new Error("Quantity must be a whole number greater than zero.");
     }
 
     if (!Number.isFinite(weight) || weight <= 0) {
-
-        throw new Error(
-            "Please select a valid weight."
-        );
+        throw new Error("Please select a valid weight.");
     }
 
     if (!Number.isFinite(pricePerKg) || pricePerKg <= 0) {
-
-        throw new Error(
-            "Please select a valid price per kilogram."
-        );
+        throw new Error("Please select a valid price per kilogram.");
     }
 
     if (!validateRemovalDetails()) {
-
-        throw new Error(
-            "Please correct the physical removal details."
-        );
+        throw new Error("Please correct the physical removal details.");
     }
 
     const removal = getRemovalDetails();
@@ -612,35 +487,22 @@ function getSaleFormData() {
     return {
 
         sale_date: saleDate,
-
         pig_id: pigID,
-
         breed: breed,
-
         category: category,
-
         quantity: quantity,
-
         weight: weight,
-
         price_per_kg: pricePerKg,
-
         total_amount: weight * pricePerKg,
 
         buyer_name: getInputValue("buyerName"),
-
         buyer_contact: getInputValue("buyerContact"),
-
         payment_method: getInputValue("paymentMethod"),
-
         payment_status: getInputValue("paymentStatus"),
-
         responsible_person: getInputValue("responsiblePerson"),
-
         remarks: getInputValue("remarks"),
 
         removed_from_farm: removal.removed_from_farm,
-
         removal_date: removal.removal_date
     };
 }
@@ -652,85 +514,55 @@ function getSaleFormData() {
 
 async function saveSaleRecord() {
 
-    if (isSavingSale) {
-        return;
-    }
+    if (isSavingSale) return;
 
     const editing = editID !== null;
 
-    if (
-        !checkSalesPermission(editing ? "edit" : "add")
-    ) {
-        return;
-    }
+    if (!checkSalesPermission(editing ? "edit" : "add")) return;
 
     const user = getLoggedUser();
-
     const farmID = getFarmID();
 
     if (!user || !farmID) {
-
-        alert(
-            "Your farm session is missing. Please log in again."
-        );
-
+        alert("Your farm session is missing. Please log in again.");
         return;
     }
 
     let saleData;
 
     try {
-
         saleData = getSaleFormData();
-
     } catch (error) {
-
         alert(error.message);
-
         return;
     }
 
-    if (!confirmPhysicalRemoval()) {
-        return;
-    }
+    if (!confirmPhysicalRemoval()) return;
 
     if (!confirm(
-
-        (editing ? "Update" : "Save") +
-        " this sales record?\n\n" +
-
+        (editing ? "Update" : "Save") + " this sales record?\n\n" +
         "Pig ID: " + saleData.pig_id + "\n" +
-
         "Quantity: " + saleData.quantity + "\n" +
-
         "Total: " + formatMoney(saleData.total_amount)
-
     )) {
-
         return;
     }
-
-    const client = getSalesClient();
-
-    const userIdentifier =
-
-        user.username ||
-
-        user.full_name ||
-
-        user.id ||
-
-        user.auth_user_id ||
-
-        null;
-
-    saleData.updated_by = userIdentifier;
-
-    saleData.updated_at = new Date().toISOString();
 
     isSavingSale = true;
 
     try {
+
+        const client = getSalesClient();
+
+        const userIdentifier =
+            user.username ||
+            user.full_name ||
+            user.id ||
+            user.auth_user_id ||
+            null;
+
+        saleData.updated_by = userIdentifier;
+        saleData.updated_at = new Date().toISOString();
 
         let result;
 
@@ -746,11 +578,8 @@ async function saveSaleRecord() {
         } else {
 
             saleData.farm_id = farmID;
-
             saleData.record_id = "SALE-" + Date.now();
-
             saleData.created_by = userIdentifier;
-
             saleData.created_at = new Date().toISOString();
 
             result = await client
@@ -759,33 +588,21 @@ async function saveSaleRecord() {
                 .select();
         }
 
-        if (result.error) {
-            throw result.error;
-        }
+        if (result.error) throw result.error;
 
         if (!result.data || result.data.length === 0) {
-
-            throw new Error(
-                "No record was returned. Check your database permissions."
-            );
+            throw new Error("No record was returned. Check your database permissions.");
         }
 
         const savedRecord = result.data[0];
 
         await recordSalesActivity(
-
             editing ? "UPDATE" : "INSERT",
-
-            "Sales record " +
-            (savedRecord.record_id || savedRecord.id)
+            "Sales record " + (savedRecord.record_id || savedRecord.id)
         );
 
         alert(
-
-            (editing
-                ? "Sales record updated"
-                : "Sales record saved") +
-
+            (editing ? "Sales record updated" : "Sales record saved") +
             " successfully."
         );
 
@@ -795,10 +612,7 @@ async function saveSaleRecord() {
 
     } catch (error) {
 
-        showSalesError(
-            "Unable to save the sales record.",
-            error
-        );
+        showSalesError("Unable to save the sales record.", error);
 
     } finally {
 
@@ -810,11 +624,7 @@ async function saveSaleRecord() {
 async function updateSaleRecord() {
 
     if (editID === null) {
-
-        alert(
-            "Select a saved record using its Edit button before updating."
-        );
-
+        alert("Select a saved record using its Edit button before updating.");
         return;
     }
 
@@ -831,9 +641,7 @@ async function loadSalesRecords() {
     const tableBody = document.getElementById("salesTable");
 
     if (!tableBody) {
-
         console.error("Sales table body not found.");
-
         return;
     }
 
@@ -863,9 +671,7 @@ async function loadSalesRecords() {
             .eq("farm_id", farmID)
             .order("sale_date", { ascending: false });
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
         salesRecordsCache = data || [];
 
@@ -873,10 +679,7 @@ async function loadSalesRecords() {
 
     } catch (error) {
 
-        showSalesError(
-            "Unable to load sales records.",
-            error
-        );
+        showSalesError("Unable to load sales records.", error);
     }
 }
 
@@ -889,9 +692,7 @@ function displaySalesRecords(records) {
 
     const tableBody = document.getElementById("salesTable");
 
-    if (!tableBody) {
-        return;
-    }
+    if (!tableBody) return;
 
     if (!Array.isArray(records) || records.length === 0) {
 
@@ -900,91 +701,65 @@ function displaySalesRecords(records) {
 
     } else {
 
-        const canEditRecords =
-            checkSalesPermission("edit", true);
+        const canEditRecords = checkSalesPermission("edit", true);
+        const canDeleteRecords = checkSalesPermission("delete", true);
 
-        const canDeleteRecords =
-            checkSalesPermission("delete", true);
+        tableBody.innerHTML = records.map(function(sale) {
 
-        tableBody.innerHTML = records.map(function (sale) {
+            const removed = sale.removed_from_farm === true;
 
-            const removed =
-                sale.removed_from_farm === true;
+            // Safely encode the ID for a data attribute.
+            const saleID = escapeHTML(String(sale.id));
 
             let actions = "";
 
             if (canEditRecords) {
 
-                actions +=
-                    '<button type="button" onclick="editSale(' +
-                    JSON.stringify(String(sale.id)) +
-                    ')">Edit</button> ';
+                actions += `
+                    <button
+                        type="button"
+                        class="sales-action-btn"
+                        data-action="edit"
+                        data-id="${saleID}">
+                        Edit
+                    </button>
+                `;
             }
 
             if (canDeleteRecords) {
 
-                actions +=
-                    '<button type="button" onclick="deleteSale(' +
-                    JSON.stringify(String(sale.id)) +
-                    ')">Delete</button>';
+                actions += `
+                    <button
+                        type="button"
+                        class="sales-action-btn"
+                        data-action="delete"
+                        data-id="${saleID}">
+                        Delete
+                    </button>
+                `;
             }
 
             return `
-
                 <tr>
+                    <td>${escapeHTML(formatDate(sale.sale_date))}</td>
+                    <td>${escapeHTML(sale.pig_id)}</td>
+                    <td>${escapeHTML(sale.breed)}</td>
+                    <td>${escapeHTML(sale.category)}</td>
+                    <td>${escapeHTML(sale.quantity)}</td>
+                    <td>${escapeHTML(sale.weight)}</td>
+                    <td>${escapeHTML(formatMoney(sale.total_amount))}</td>
+                    <td>${escapeHTML(sale.buyer_name)}</td>
 
                     <td>
-                        ${escapeHTML(formatDate(sale.sale_date))}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(sale.pig_id)}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(sale.breed)}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(sale.category)}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(sale.quantity)}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(sale.weight)}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(formatMoney(sale.total_amount))}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(sale.buyer_name)}
-                    </td>
-
-                    <td>
-
                         ${escapeHTML(sale.payment_status)}
-
                         <br>
-
                         <small>
-                            ${removed
-                                ? "Removed from farm"
-                                : "Still on farm"}
+                            ${removed ? "Removed from farm" : "Still on farm"}
                         </small>
-
                     </td>
 
-                    <td>
-                        ${actions}
-                    </td>
-
+                    <td>${actions}</td>
                 </tr>
-
             `;
 
         }).join("");
@@ -993,9 +768,7 @@ function displaySalesRecords(records) {
     const count = document.getElementById("recordCount");
 
     if (count) {
-
-        count.textContent =
-            records.length + " Records";
+        count.textContent = records.length + " Records";
     }
 }
 
@@ -1006,16 +779,12 @@ function displaySalesRecords(records) {
 
 async function editSale(id) {
 
-    if (!checkSalesPermission("edit")) {
-        return;
-    }
+    if (!checkSalesPermission("edit")) return;
 
     const farmID = getFarmID();
 
     if (!farmID) {
-
         alert("Farm session missing. Please log in again.");
-
         return;
     }
 
@@ -1028,87 +797,55 @@ async function editSale(id) {
             .eq("farm_id", farmID)
             .maybeSingle();
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
         if (!data) {
-
             alert("Sales record not found.");
-
             return;
         }
 
         editID = data.id;
 
         setInputValue("recordID", data.record_id);
-
         setInputValue("saleDate", data.sale_date);
-
         setInputValue("pigID", data.pig_id);
-
         setInputValue("breed", data.breed);
-
         setInputValue("category", data.category);
-
         setInputValue("quantity", data.quantity);
-
         setInputValue("weight", data.weight);
-
         setInputValue("pricePerKg", data.price_per_kg);
-
         setInputValue("totalAmount", data.total_amount);
-
         setInputValue("buyerName", data.buyer_name);
-
         setInputValue("buyerContact", data.buyer_contact);
-
         setInputValue("paymentMethod", data.payment_method);
-
         setInputValue("paymentStatus", data.payment_status);
-
         setInputValue("responsiblePerson", data.responsible_person);
-
         setInputValue("remarks", data.remarks);
 
         setInputValue(
-
             "removedFromFarm",
-
-            data.removed_from_farm === true
-                ? "true"
-                : "false"
+            data.removed_from_farm === true ? "true" : "false"
         );
 
         setInputValue("removalDate", data.removal_date);
 
         updateRemovalDateField();
-
         calculateTotalAmount();
 
-        const button =
-            document.querySelector(".update-btn");
+        const button = document.querySelector(".update-btn");
 
         if (button) {
-
-            button.textContent =
-                "✏️ Update Selected Record";
+            button.textContent = "✏️ Update Selected Record";
         }
 
         document.getElementById("salesForm")?.scrollIntoView({
-
             behavior: "smooth",
-
             block: "start"
-
         });
 
     } catch (error) {
 
-        showSalesError(
-            "Unable to open the sales record.",
-            error
-        );
+        showSalesError("Unable to open the sales record.", error);
     }
 }
 
@@ -1119,23 +856,19 @@ async function editSale(id) {
 
 async function deleteSale(id) {
 
-    if (!checkSalesPermission("delete")) {
-        return;
-    }
+    if (!checkSalesPermission("delete")) return;
 
     const farmID = getFarmID();
 
     if (!farmID) {
-
-        alert("Farm session missing.");
-
+        alert("Farm session missing. Please log in again.");
         return;
     }
 
     if (!confirm(
-        "Are you sure you want to delete this sales record?"
+        "Are you sure you want to delete this sales record?\n\n" +
+        "This action cannot be undone."
     )) {
-
         return;
     }
 
@@ -1148,28 +881,24 @@ async function deleteSale(id) {
             .eq("farm_id", farmID)
             .select();
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
         if (!data || data.length === 0) {
 
             alert(
-                "No record was deleted. Check your permissions."
+                "No record was deleted. The record may not exist, " +
+                "or the database may have denied the operation."
             );
 
             return;
         }
 
         await recordSalesActivity(
-
             "DELETE",
-
             "Deleted sales record " + id
         );
 
         if (String(editID) === String(id)) {
-
             clearSaleForm();
         }
 
@@ -1179,10 +908,7 @@ async function deleteSale(id) {
 
     } catch (error) {
 
-        showSalesError(
-            "Unable to delete the sales record.",
-            error
-        );
+        showSalesError("Unable to delete the sales record.", error);
     }
 }
 
@@ -1193,27 +919,16 @@ async function deleteSale(id) {
 
 async function searchSaleRecord() {
 
-    if (!checkSalesPermission("view")) {
-        return;
-    }
+    if (!checkSalesPermission("view")) return;
 
-    const searchTerm = prompt(
-        "Enter Pig ID or Sale Record ID:"
-    );
+    const searchTerm = prompt("Enter Pig ID or Sale Record ID:");
 
-    if (
-        searchTerm === null ||
-        !searchTerm.trim()
-    ) {
-        return;
-    }
+    if (searchTerm === null || !searchTerm.trim()) return;
 
     const farmID = getFarmID();
 
     if (!farmID) {
-
         alert("Farm session missing.");
-
         return;
     }
 
@@ -1225,41 +940,27 @@ async function searchSaleRecord() {
             .eq("farm_id", farmID)
             .order("sale_date", { ascending: false });
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
         const term = searchTerm.trim().toLowerCase();
 
-        const results = (data || []).filter(function (sale) {
+        const results = (data || []).filter(function(sale) {
 
             return (
-
-                String(sale.pig_id || "")
-                    .toLowerCase()
-                    .includes(term)
-
-                ||
-
-                String(sale.record_id || "")
-                    .toLowerCase()
-                    .includes(term)
+                String(sale.pig_id || "").toLowerCase().includes(term) ||
+                String(sale.record_id || "").toLowerCase().includes(term)
             );
         });
 
         displaySalesRecords(results);
 
         if (!results.length) {
-
             alert("No matching sales records found.");
         }
 
     } catch (error) {
 
-        showSalesError(
-            "Sales search failed.",
-            error
-        );
+        showSalesError("Sales search failed.", error);
     }
 }
 
@@ -1270,16 +971,12 @@ async function searchSaleRecord() {
 
 async function generateSalesReport() {
 
-    if (!checkSalesPermission("report")) {
-        return;
-    }
+    if (!checkSalesPermission("report")) return;
 
     const farmID = getFarmID();
 
     if (!farmID) {
-
         alert("Farm session missing.");
-
         return;
     }
 
@@ -1291,61 +988,38 @@ async function generateSalesReport() {
             .eq("farm_id", farmID)
             .order("sale_date", { ascending: false });
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
         const records = data || [];
 
-        const quantity = records.reduce(function (sum, sale) {
-
+        const quantity = records.reduce(function(sum, sale) {
             return sum + (Number(sale.quantity) || 0);
-
         }, 0);
 
-        const totalSales = records.reduce(function (sum, sale) {
-
+        const totalSales = records.reduce(function(sum, sale) {
             return sum + (Number(sale.total_amount) || 0);
-
         }, 0);
 
         const paidSales = records
-
-            .filter(function (sale) {
-
-                return String(sale.payment_status || "")
-                    .toLowerCase() === "paid";
-
+            .filter(function(sale) {
+                return String(sale.payment_status || "").toLowerCase() === "paid";
             })
-
-            .reduce(function (sum, sale) {
-
+            .reduce(function(sum, sale) {
                 return sum + (Number(sale.total_amount) || 0);
-
             }, 0);
 
         alert(
-
             "MUNKA PIGGERY SALES REPORT\n\n" +
-
             "Records: " + records.length + "\n" +
-
             "Quantity sold: " + quantity + "\n" +
-
             "Total sales: " + formatMoney(totalSales) + "\n" +
-
             "Paid sales: " + formatMoney(paidSales) + "\n" +
-
-            "Other payment statuses: " +
-            formatMoney(totalSales - paidSales)
+            "Other payment statuses: " + formatMoney(totalSales - paidSales)
         );
 
     } catch (error) {
 
-        showSalesError(
-            "Unable to generate the sales report.",
-            error
-        );
+        showSalesError("Unable to generate the sales report.", error);
     }
 }
 
@@ -1356,28 +1030,20 @@ async function generateSalesReport() {
 
 async function downloadSalesPDF() {
 
-    if (!checkSalesPermission("report")) {
-        return;
-    }
+    if (!checkSalesPermission("report")) return;
 
     if (
         !window.jspdf ||
         typeof window.jspdf.jsPDF !== "function"
     ) {
-
-        alert(
-            "The PDF library did not load. Refresh the page and try again."
-        );
-
+        alert("The PDF library did not load. Refresh the page and try again.");
         return;
     }
 
     const farmID = getFarmID();
 
     if (!farmID) {
-
         alert("Farm session missing.");
-
         return;
     }
 
@@ -1389,56 +1055,27 @@ async function downloadSalesPDF() {
             .eq("farm_id", farmID)
             .order("sale_date", { ascending: false });
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
         const records = data || [];
-
         const farmName = await getRegisteredFarmName();
 
         const doc = new window.jspdf.jsPDF({
-
             orientation: "landscape"
-
         });
 
         doc.setFontSize(16);
-
-        doc.text(
-            "MUNKA PIGGERY TECHNOLOGY",
-            14,
-            15
-        );
+        doc.text("MUNKA PIGGERY TECHNOLOGY", 14, 15);
 
         doc.setFontSize(12);
-
-        doc.text(
-            "Sales Report",
-            14,
-            23
-        );
+        doc.text("Sales Report", 14, 23);
 
         doc.setFontSize(9);
-
-        doc.text(
-            "Farm: " + farmName,
-            14,
-            30
-        );
-
-        doc.text(
-            "Generated: " + getTodayDate(),
-            14,
-            35
-        );
+        doc.text("Farm: " + farmName, 14, 30);
+        doc.text("Generated: " + getTodayDate(), 14, 35);
 
         if (typeof doc.autoTable !== "function") {
-
-            alert(
-                "The PDF table extension did not load. Refresh and retry."
-            );
-
+            alert("The PDF table extension did not load. Refresh and retry.");
             return;
         }
 
@@ -1447,92 +1084,53 @@ async function downloadSalesPDF() {
             startY: 40,
 
             head: [[
-
                 "Date",
-
                 "Pig ID",
-
                 "Breed",
-
                 "Category",
-
                 "Quantity",
-
                 "Weight",
-
                 "Price/kg",
-
                 "Total",
-
                 "Buyer",
-
                 "Payment",
-
                 "Removed?",
-
                 "Removal Date"
-
             ]],
 
-            body: records.map(function (sale) {
+            body: records.map(function(sale) {
 
                 return [
-
                     formatDate(sale.sale_date),
-
                     sale.pig_id || "",
-
                     sale.breed || "",
-
                     sale.category || "",
-
                     sale.quantity ?? 0,
-
                     sale.weight ?? 0,
-
                     formatMoney(sale.price_per_kg),
-
                     formatMoney(sale.total_amount),
-
                     sale.buyer_name || "",
-
                     sale.payment_status || "",
-
-                    sale.removed_from_farm === true
-                        ? "Yes"
-                        : "No",
-
+                    sale.removed_from_farm === true ? "Yes" : "No",
                     formatDate(sale.removal_date)
-
                 ];
             }),
 
             styles: {
-
                 fontSize: 7,
-
                 cellPadding: 2
-
             },
 
             headStyles: {
-
                 fillColor: [30, 100, 50]
-
             }
-
         });
 
-        doc.save(
-            "MUNKA_PIGGERY_Sales_Report.pdf"
-        );
+        doc.save("MUNKA_PIGGERY_Sales_Report.pdf");
 
     } catch (error) {
 
-        showSalesError(
-            "Unable to download the sales PDF.",
-            error
-        );
+        showSalesError("Unable to download the sales PDF.", error);
     }
 }
 
@@ -1552,71 +1150,48 @@ function clearSaleForm() {
     }
 
     setInputValue("recordID", "");
-
     setInputValue("saleDate", getTodayDate());
-
     setInputValue("removedFromFarm", "false");
-
     setInputValue("removalDate", "");
 
-    const removalDate =
-        document.getElementById("removalDate");
+    const removalDate = document.getElementById("removalDate");
 
     if (removalDate) {
-
         removalDate.disabled = true;
-
         removalDate.required = false;
     }
 
-    const updateButton =
-        document.querySelector(".update-btn");
+    const updateButton = document.querySelector(".update-btn");
 
     if (updateButton) {
-
-        updateButton.textContent =
-            "✏️ Update Record";
+        updateButton.textContent = "✏️ Update Record";
     }
 
     calculateTotalAmount();
-
     updateRemovalDateField();
 }
 
 
 /* ============================================================
    19. INITIALIZE SALES MODULE
-
-   Waits for the existing permission engine.
-   No changes to security.js are required.
 ============================================================ */
 
 async function initializeSalesModule() {
 
-    if (salesInitialized) {
-        return;
-    }
+    if (salesInitialized) return;
 
     try {
 
-        console.log(
-            "MUNKA Sales: Waiting for existing security permissions..."
-        );
+        console.log("MUNKA Sales: Waiting for permissions...");
 
-        const permissionsReady =
-            await waitForSalesPermissions(20000);
+        const permissionsReady = await waitForSalesPermissions(20000);
 
         if (!permissionsReady) {
 
-            console.error(
-                "Sales initialization stopped: permissions were not ready."
-            );
-
             alert(
-
                 "Sales could not verify your permissions.\n\n" +
-
-                "Please refresh the page. If the problem continues, contact your administrator."
+                "Please refresh the page. If the problem continues, " +
+                "contact your administrator."
             );
 
             return;
@@ -1625,81 +1200,112 @@ async function initializeSalesModule() {
         const user = getLoggedUser();
 
         if (!user || !user.farm_id) {
-
-            console.error(
-                "Sales initialization stopped: farm information missing."
-            );
-
+            console.error("Sales initialization stopped: farm information missing.");
             return;
         }
-
-        // Mark initialized only after permissions are ready.
-        salesInitialized = true;
 
         const form = document.getElementById("salesForm");
 
         if (form) {
 
-            form.addEventListener(
-                "submit",
-                async function (event) {
+            form.addEventListener("submit", async function(event) {
 
-                    event.preventDefault();
+                event.preventDefault();
 
-                    await saveSaleRecord();
-
-                }
-            );
+                await saveSaleRecord();
+            });
         }
 
+
+        /* ----------------------------------------------------
+           IMPORTANT: EDIT AND DELETE BUTTON CONNECTION
+
+           Event delegation ensures buttons continue working
+           after the sales table is refreshed or re-rendered.
+        ---------------------------------------------------- */
+
+        const salesTable = document.getElementById("salesTable");
+
+        if (salesTable) {
+
+            salesTable.addEventListener("click", async function(event) {
+
+                const target = event.target;
+
+                if (!(target instanceof Element)) return;
+
+                const button = target.closest(".sales-action-btn");
+
+                if (!button || !salesTable.contains(button)) return;
+
+                const action = button.dataset.action;
+                const id = button.dataset.id;
+
+                if (!id) {
+                    alert("Unable to identify the selected sales record.");
+                    return;
+                }
+
+                if (button.disabled) return;
+
+                button.disabled = true;
+
+                try {
+
+                    if (action === "edit") {
+
+                        await editSale(id);
+
+                    } else if (action === "delete") {
+
+                        await deleteSale(id);
+
+                    }
+
+                } catch (error) {
+
+                    showSalesError("Sales action failed.", error);
+
+                } finally {
+
+                    button.disabled = false;
+                }
+            });
+        }
+
+
         document.getElementById("weight")
-            ?.addEventListener(
-                "change",
-                calculateTotalAmount
-            );
+            ?.addEventListener("input", calculateTotalAmount);
 
         document.getElementById("pricePerKg")
-            ?.addEventListener(
-                "change",
-                calculateTotalAmount
-            );
+            ?.addEventListener("input", calculateTotalAmount);
 
         document.getElementById("removedFromFarm")
-            ?.addEventListener(
-                "change",
-                updateRemovalDateField
-            );
+            ?.addEventListener("change", updateRemovalDateField);
 
-        const saleDate =
-            document.getElementById("saleDate");
+
+        const saleDate = document.getElementById("saleDate");
 
         if (saleDate && !saleDate.value) {
-
             saleDate.value = getTodayDate();
         }
 
         updateRemovalDateField();
-
         calculateTotalAmount();
+
+        salesInitialized = true;
 
         await loadSalesRecords();
 
-        console.log(
-            "MUNKA Sales module initialized successfully."
-        );
+        console.log("MUNKA Sales module initialized successfully.");
 
     } catch (error) {
 
         salesInitialized = false;
 
-        console.error(
-            "Sales initialization failed:",
-            error
-        );
+        console.error("Sales initialization failed:", error);
 
-        alert(
-            "Unable to initialize Sales. Please refresh the page."
-        );
+        alert("Unable to initialize Sales. Please refresh the page.");
     }
 }
 
