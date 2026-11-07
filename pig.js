@@ -1,8 +1,17 @@
-
 /* =========================================================
    MUNKA PIGGERY TECHNOLOGY
    PIG REGISTRATION MODULE
    COMPLETE REPLACEMENT: pig.js
+
+   PDF DOWNLOAD:
+   - Pig Population Report
+   - Piglets
+   - Weaners
+   - Growers
+   - Boars
+   - Sows
+   - Total Pig Population
+   - 18pt bold professional PDF
    ========================================================= */
 
 "use strict";
@@ -83,21 +92,31 @@ function pigPermission(action) {
 
 function setPigStatus(id, message, isError = false) {
     const element = pigById(id);
+
     if (!element) return;
 
     element.textContent = message;
-    element.style.color = isError ? "#b00020" : "#176b2c";
+    element.style.color = isError
+        ? "#b00020"
+        : "#176b2c";
 }
 
 function showPigError(message, error) {
     console.error(message, error);
 
-    const details = error?.message || String(error || "Unknown error");
+    const details =
+        error?.message ||
+        String(error || "Unknown error");
 
-    alert(message + "\n\nDetails: " + details);
+    alert(
+        message +
+        "\n\nDetails: " +
+        details
+    );
 }
 
 function escapePigHTML(value) {
+
     const replacements = {
         "&": "&amp;",
         "<": "&lt;",
@@ -112,22 +131,37 @@ function escapePigHTML(value) {
     );
 }
 
-async function logPigActivity(user, action, details) {
-    if (typeof window.saveActivity !== "function") return;
+async function logPigActivity(
+    user,
+    action,
+    details
+) {
+
+    if (typeof window.saveActivity !== "function") {
+        return;
+    }
 
     try {
+
         await window.saveActivity(
             `${user?.full_name || "User"} (${user?.role || "Unknown role"})`,
             action,
             "Pig Registration",
             details
         );
+
     } catch (error) {
-        console.error("Activity logging failed:", error);
+
+        console.error(
+            "Activity logging failed:",
+            error
+        );
+
     }
 }
 
 async function getRegisteredFarmName() {
+
     const farmID = getFarmID();
 
     if (farmID == null) {
@@ -135,9 +169,13 @@ async function getRegisteredFarmName() {
     }
 
     try {
+
         const client = getPigClient();
 
-        const { data, error } = await client
+        const {
+            data,
+            error
+        } = await client
             .from("farms")
             .select("farm_name")
             .eq("id", farmID)
@@ -145,21 +183,33 @@ async function getRegisteredFarmName() {
 
         if (error) throw error;
 
-        return data?.farm_name || "REGISTERED FARM";
+        return data?.farm_name ||
+            "REGISTERED FARM";
+
     } catch (error) {
-        console.error("Unable to retrieve farm name:", error);
+
+        console.error(
+            "Unable to retrieve farm name:",
+            error
+        );
+
         return "REGISTERED FARM";
     }
 }
 
 function getPigSexFromCategory(category) {
-    if (category === "Boar") return "Male";
 
-    if ([
-        "Sow",
-        "Pregnant Sow",
-        "Lactating Sow"
-    ].includes(category)) {
+    if (category === "Boar") {
+        return "Male";
+    }
+
+    if (
+        [
+            "Sow",
+            "Pregnant Sow",
+            "Lactating Sow"
+        ].includes(category)
+    ) {
         return "Female";
     }
 
@@ -167,37 +217,62 @@ function getPigSexFromCategory(category) {
 }
 
 function updateRegistrationTypeUI() {
-    const type = pigById("registrationType");
-    const date = pigById("registrationDate");
-    const wrapper = pigById("registrationDateGroup");
 
-    if (!type || !date || !wrapper) return;
+    const type =
+        pigById("registrationType");
 
-    const needsDate = ["purchase", "arrival"].includes(type.value);
+    const date =
+        pigById("registrationDate");
 
-    wrapper.style.display = needsDate ? "" : "none";
+    const wrapper =
+        pigById("registrationDateGroup");
+
+    if (!type || !date || !wrapper) {
+        return;
+    }
+
+    const needsDate =
+        [
+            "purchase",
+            "arrival"
+        ].includes(type.value);
+
+    wrapper.style.display =
+        needsDate ? "" : "none";
+
     date.required = needsDate;
 
-    const label = wrapper.querySelector("label");
+    const label =
+        wrapper.querySelector("label");
 
     if (label) {
-        label.textContent = type.value === "purchase"
-            ? "Purchase Date"
-            : "Arrival Date";
+
+        label.textContent =
+            type.value === "purchase"
+                ? "Purchase Date"
+                : "Arrival Date";
+
     }
 }
 
 function validateFarmAndUser() {
+
     const user = getLoggedUser();
+
     const farmID = getFarmID();
 
     if (!user || farmID == null) {
+
         throw new Error(
             "Please log in again and check your registered farm account."
         );
+
     }
 
-    return { user, farmID };
+    return {
+        user,
+        farmID
+    };
 }
 
 /* =========================================================
@@ -205,12 +280,22 @@ function validateFarmAndUser() {
    ========================================================= */
 
 async function savePig(event) {
+
     event.preventDefault();
 
-    const editing = editID !== null;
+    const editing =
+        editID !== null;
 
-    if (!pigPermission(editing ? "edit" : "add")) {
-        alert("You do not have permission to perform this action.");
+    if (
+        !pigPermission(
+            editing ? "edit" : "add"
+        )
+    ) {
+
+        alert(
+            "You do not have permission to perform this action."
+        );
+
         return;
     }
 
@@ -218,24 +303,51 @@ async function savePig(event) {
     let farmID;
 
     try {
-        ({ user, farmID } = validateFarmAndUser());
+
+        ({
+            user,
+            farmID
+        } = validateFarmAndUser());
+
     } catch (error) {
-        showPigError("Unable to save the pig.", error);
+
+        showPigError(
+            "Unable to save the pig.",
+            error
+        );
+
         return;
     }
 
     const value = id =>
         pigById(id)?.value?.trim() || "";
 
-    const pigID = value("pigID");
-    const breed = value("breed");
-    const category = value("category");
-    const farrowDate = value("farrowDate");
-    const source = value("source");
-    const weightText = value("weight");
-    const health = value("healthStatus");
-    const type = value("registrationType");
-    const registrationDate = value("registrationDate");
+    const pigID =
+        value("pigID");
+
+    const breed =
+        value("breed");
+
+    const category =
+        value("category");
+
+    const farrowDate =
+        value("farrowDate");
+
+    const source =
+        value("source");
+
+    const weightText =
+        value("weight");
+
+    const health =
+        value("healthStatus");
+
+    const type =
+        value("registrationType");
+
+    const registrationDate =
+        value("registrationDate");
 
     if (
         !pigID ||
@@ -246,69 +358,133 @@ async function savePig(event) {
         !weightText ||
         !health
     ) {
-        alert("Please complete all required fields.");
+
+        alert(
+            "Please complete all required fields."
+        );
+
         return;
     }
 
-    if (!editing && type === "purchase" && !registrationDate) {
-        alert("Please enter the purchase date.");
+    if (
+        !editing &&
+        type === "purchase" &&
+        !registrationDate
+    ) {
+
+        alert(
+            "Please enter the purchase date."
+        );
+
         return;
     }
 
-    if (!editing && type === "arrival") {
+    if (
+        !editing &&
+        type === "arrival"
+    ) {
+
         alert(
             "Transfer/arrival tracking is not connected yet. " +
             "No pig record was saved."
         );
+
         return;
     }
 
-    if (!editing && type === "birth") {
+    if (
+        !editing &&
+        type === "birth"
+    ) {
+
         alert(
             "Please record farm births through the Farrowing module. " +
             "No pig record was saved."
         );
+
         return;
     }
 
-    const weight = Number(weightText);
+    const weight =
+        Number(weightText);
 
-    if (!Number.isFinite(weight) || weight < 0) {
-        alert("Please select a valid pig weight.");
+    if (
+        !Number.isFinite(weight) ||
+        weight < 0
+    ) {
+
+        alert(
+            "Please select a valid pig weight."
+        );
+
         return;
     }
 
     const record = {
+
         pig_id: pigID,
+
         breed,
+
         category,
-        sex: getPigSexFromCategory(category),
-        farrow_date: farrowDate,
+
+        sex:
+            getPigSexFromCategory(category),
+
+        farrow_date:
+            farrowDate,
+
         source,
+
         weight,
-        health_status: health
+
+        health_status:
+            health
+
     };
 
-    const form = pigById("pigForm");
-    const button = form?.querySelector('button[type="submit"]');
+    const form =
+        pigById("pigForm");
+
+    const button =
+        form?.querySelector(
+            'button[type="submit"]'
+        );
 
     if (!form) return;
 
     if (button) {
+
         button.disabled = true;
-        button.textContent = editing ? "Updating..." : "Saving...";
+
+        button.textContent =
+            editing
+                ? "Updating..."
+                : "Saving...";
     }
 
-    setPigStatus("pigStatusMessage", "Saving pig record...");
+    setPigStatus(
+        "pigStatusMessage",
+        "Saving pig record..."
+    );
 
     try {
-        const client = getPigClient();
+
+        const client =
+            getPigClient();
 
         if (editing) {
-            record.updated_by = user.full_name || null;
-            record.updated_at = new Date().toISOString();
 
-            const { data, error } = await client
+            record.updated_by =
+                user.full_name || null;
+
+            record.updated_at =
+                new Date().toISOString();
+
+            const {
+                data,
+                error
+            } = await client
                 .from("pigs")
                 .update(record)
                 .eq("id", editID)
@@ -317,10 +493,15 @@ async function savePig(event) {
 
             if (error) throw error;
 
-            if (!data || data.length === 0) {
+            if (
+                !data ||
+                data.length === 0
+            ) {
+
                 throw new Error(
                     "No record was updated. Check the record and farm permissions."
                 );
+
             }
 
             await logPigActivity(
@@ -330,6 +511,7 @@ async function savePig(event) {
             );
 
             clearForm();
+
             await loadPigs();
 
             setPigStatus(
@@ -340,12 +522,22 @@ async function savePig(event) {
             return;
         }
 
-        record.farm_id = farmID;
-        record.created_by = user.full_name || null;
-        record.updated_by = null;
-        record.updated_at = null;
+        record.farm_id =
+            farmID;
 
-        const { data: inserted, error } = await client
+        record.created_by =
+            user.full_name || null;
+
+        record.updated_by =
+            null;
+
+        record.updated_at =
+            null;
+
+        const {
+            data: inserted,
+            error
+        } = await client
             .from("pigs")
             .insert([record])
             .select("id,pig_id")
@@ -354,16 +546,25 @@ async function savePig(event) {
         if (error) throw error;
 
         if (type === "purchase") {
-            const { error: movementError } = await client.rpc(
+
+            const {
+                error: movementError
+            } = await client.rpc(
                 "record_pig_purchase_movement",
                 {
-                    p_pig_record_id: inserted.id,
-                    p_purchase_date: registrationDate,
-                    p_notes: `Purchased from ${source}`
+                    p_pig_record_id:
+                        inserted.id,
+
+                    p_purchase_date:
+                        registrationDate,
+
+                    p_notes:
+                        `Purchased from ${source}`
                 }
             );
 
             if (movementError) {
+
                 await loadPigs();
 
                 setPigStatus(
@@ -389,6 +590,7 @@ async function savePig(event) {
         );
 
         clearForm();
+
         await loadPigs();
 
         setPigStatus(
@@ -397,21 +599,31 @@ async function savePig(event) {
         );
 
     } catch (error) {
+
         setPigStatus(
             "pigStatusMessage",
-            error?.message || "Unable to save pig.",
+            error?.message ||
+            "Unable to save pig.",
             true
         );
 
-        showPigError("Unable to save the pig record.", error);
+        showPigError(
+            "Unable to save the pig record.",
+            error
+        );
 
     } finally {
+
         if (button) {
+
             button.disabled = false;
-            button.textContent = editID === null
-                ? "💾 Save Pig Record"
-                : "💾 Update Pig Record";
+
+            button.textContent =
+                editID === null
+                    ? "💾 Save Pig Record"
+                    : "💾 Update Pig Record";
         }
+
     }
 }
 
@@ -420,21 +632,28 @@ async function savePig(event) {
    ========================================================= */
 
 async function loadPigs() {
-    const table = pigById("pigTable");
+
+    const table =
+        pigById("pigTable");
 
     if (!table) return;
 
     if (!pigPermission("view")) {
+
         table.innerHTML =
             '<tr><td colspan="8">You do not have permission to view records.</td></tr>';
+
         return;
     }
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if (farmID == null) {
+
         table.innerHTML =
             '<tr><td colspan="8">Please log in and check your farm account.</td></tr>';
+
         return;
     }
 
@@ -442,20 +661,36 @@ async function loadPigs() {
         '<tr><td colspan="8">Loading pig records...</td></tr>';
 
     try {
-        const client = getPigClient();
 
-        const { data, error } = await client
+        const client =
+            getPigClient();
+
+        const {
+            data,
+            error
+        } = await client
             .from("pigs")
             .select("*")
             .eq("farm_id", farmID)
-            .order("id", { ascending: true });
+            .order(
+                "id",
+                {
+                    ascending: true
+                }
+            );
 
         if (error) throw error;
 
-        displayPigs(data || []);
+        displayPigs(
+            data || []
+        );
 
     } catch (error) {
-        console.error("Loading pigs failed:", error);
+
+        console.error(
+            "Loading pigs failed:",
+            error
+        );
 
         table.innerHTML =
             '<tr><td colspan="8">Unable to load records. Check your connection, database table and access policies.</td></tr>';
@@ -463,47 +698,89 @@ async function loadPigs() {
 }
 
 function displayPigs(records) {
-    const table = pigById("pigTable");
+
+    const table =
+        pigById("pigTable");
 
     if (!table) return;
 
     table.innerHTML = "";
 
     if (!records.length) {
+
         table.innerHTML =
             '<tr><td colspan="8">No individual pigs registered yet.</td></tr>';
+
         return;
     }
 
     records.forEach(pig => {
+
         let actions = "";
 
         if (pigPermission("edit")) {
+
             actions +=
                 `<button type="button" onclick="editPig(${Number(pig.id)})">Edit</button> `;
+
         }
 
         if (pigPermission("delete")) {
+
             actions +=
                 `<button type="button" onclick="deletePig(${Number(pig.id)})">Delete</button>`;
+
         }
 
-        if (!actions) actions = "No actions";
+        if (!actions) {
+            actions = "No actions";
+        }
 
-        const row = document.createElement("tr");
+        const row =
+            document.createElement("tr");
 
         row.innerHTML = `
-            <td>${escapePigHTML(pig.pig_id)}</td>
-            <td>${escapePigHTML(pig.breed)}</td>
-            <td>${escapePigHTML(pig.category)}</td>
-            <td>${escapePigHTML(pig.farrow_date)}</td>
-            <td>${escapePigHTML(pig.source)}</td>
-            <td>${pig.weight == null ? "" : escapePigHTML(pig.weight) + " Kg"}</td>
-            <td>${escapePigHTML(pig.health_status)}</td>
-            <td>${actions}</td>
+
+            <td>
+                ${escapePigHTML(pig.pig_id)}
+            </td>
+
+            <td>
+                ${escapePigHTML(pig.breed)}
+            </td>
+
+            <td>
+                ${escapePigHTML(pig.category)}
+            </td>
+
+            <td>
+                ${escapePigHTML(pig.farrow_date)}
+            </td>
+
+            <td>
+                ${escapePigHTML(pig.source)}
+            </td>
+
+            <td>
+                ${
+                    pig.weight == null
+                        ? ""
+                        : escapePigHTML(pig.weight) + " Kg"
+                }
+            </td>
+
+            <td>
+                ${escapePigHTML(pig.health_status)}
+            </td>
+
+            <td>
+                ${actions}
+            </td>
+
         `;
 
         table.appendChild(row);
+
     });
 }
 
@@ -512,22 +789,37 @@ function displayPigs(records) {
    ========================================================= */
 
 async function editPig(id) {
+
     if (!pigPermission("edit")) {
-        alert("You do not have permission to edit records.");
+
+        alert(
+            "You do not have permission to edit records."
+        );
+
         return;
     }
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if (farmID == null) {
-        alert("Please log in and check your farm account.");
+
+        alert(
+            "Please log in and check your farm account."
+        );
+
         return;
     }
 
     try {
-        const client = getPigClient();
 
-        const { data, error } = await client
+        const client =
+            getPigClient();
+
+        const {
+            data,
+            error
+        } = await client
             .from("pigs")
             .select("*")
             .eq("id", id)
@@ -537,38 +829,74 @@ async function editPig(id) {
         if (error) throw error;
 
         const values = {
-            pigID: data.pig_id,
-            breed: data.breed,
-            category: data.category,
-            farrowDate: data.farrow_date,
-            source: data.source,
-            weight: data.weight,
-            healthStatus: data.health_status
+
+            pigID:
+                data.pig_id,
+
+            breed:
+                data.breed,
+
+            category:
+                data.category,
+
+            farrowDate:
+                data.farrow_date,
+
+            source:
+                data.source,
+
+            weight:
+                data.weight,
+
+            healthStatus:
+                data.health_status
         };
 
-        Object.entries(values).forEach(([fieldID, fieldValue]) => {
-            const element = pigById(fieldID);
+        Object.entries(values)
+            .forEach(
+                ([fieldID, fieldValue]) => {
 
-            if (element) {
-                element.value = fieldValue ?? "";
-            }
-        });
+                    const element =
+                        pigById(fieldID);
 
-        const type = pigById("registrationType");
-        const registrationDate = pigById("registrationDate");
+                    if (element) {
 
-        if (type) type.value = "existing";
-        if (registrationDate) registrationDate.value = "";
+                        element.value =
+                            fieldValue ?? "";
+
+                    }
+
+                }
+            );
+
+        const type =
+            pigById("registrationType");
+
+        const registrationDate =
+            pigById("registrationDate");
+
+        if (type) {
+            type.value = "existing";
+        }
+
+        if (registrationDate) {
+            registrationDate.value = "";
+        }
 
         updateRegistrationTypeUI();
 
         editID = id;
 
-        const button = pigById("pigForm")
-            ?.querySelector('button[type="submit"]');
+        const button =
+            pigById("pigForm")
+                ?.querySelector(
+                    'button[type="submit"]'
+                );
 
         if (button) {
-            button.textContent = "💾 Update Pig Record";
+
+            button.textContent =
+                "💾 Update Pig Record";
         }
 
         setPigStatus(
@@ -576,10 +904,18 @@ async function editPig(id) {
             `Editing pig ${data.pig_id}.`
         );
 
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
 
     } catch (error) {
-        showPigError("Unable to open this pig record.", error);
+
+        showPigError(
+            "Unable to open this pig record.",
+            error
+        );
+
     }
 }
 
@@ -588,8 +924,13 @@ async function editPig(id) {
    ========================================================= */
 
 async function deletePig(id) {
+
     if (!pigPermission("delete")) {
-        alert("You do not have permission to delete records.");
+
+        alert(
+            "You do not have permission to delete records."
+        );
+
         return;
     }
 
@@ -597,16 +938,31 @@ async function deletePig(id) {
     let farmID;
 
     try {
-        ({ user, farmID } = validateFarmAndUser());
+
+        ({
+            user,
+            farmID
+        } = validateFarmAndUser());
+
     } catch (error) {
-        showPigError("Unable to delete pig.", error);
+
+        showPigError(
+            "Unable to delete pig.",
+            error
+        );
+
         return;
     }
 
     try {
-        const client = getPigClient();
 
-        const { data: pig, error: fetchError } = await client
+        const client =
+            getPigClient();
+
+        const {
+            data: pig,
+            error: fetchError
+        } = await client
             .from("pigs")
             .select("pig_id")
             .eq("id", id)
@@ -615,11 +971,18 @@ async function deletePig(id) {
 
         if (fetchError) throw fetchError;
 
-        if (!confirm(`Delete pig ${pig.pig_id || id}?`)) {
+        if (
+            !confirm(
+                `Delete pig ${pig.pig_id || id}?`
+            )
+        ) {
             return;
         }
 
-        const { data, error } = await client
+        const {
+            data,
+            error
+        } = await client
             .from("pigs")
             .delete()
             .eq("id", id)
@@ -628,10 +991,15 @@ async function deletePig(id) {
 
         if (error) throw error;
 
-        if (!data || data.length === 0) {
+        if (
+            !data ||
+            data.length === 0
+        ) {
+
             throw new Error(
                 "The pig was not deleted. Check your delete permission."
             );
+
         }
 
         await logPigActivity(
@@ -648,7 +1016,12 @@ async function deletePig(id) {
         );
 
     } catch (error) {
-        showPigError("Unable to delete the pig record.", error);
+
+        showPigError(
+            "Unable to delete the pig record.",
+            error
+        );
+
     }
 }
 
@@ -657,48 +1030,73 @@ async function deletePig(id) {
    ========================================================= */
 
 async function searchPig() {
+
     if (!pigPermission("view")) {
-        alert("You do not have permission to view records.");
+
+        alert(
+            "You do not have permission to view records."
+        );
+
         return;
     }
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if (farmID == null) {
-        alert("Please log in and check your farm account.");
+
+        alert(
+            "Please log in and check your farm account."
+        );
+
         return;
     }
 
     const keyword =
-        pigById("searchPig")?.value?.trim() || "";
+        pigById("searchPig")
+            ?.value
+            ?.trim() || "";
 
     try {
-        const client = getPigClient();
 
-        let query = client
-            .from("pigs")
-            .select("*")
-            .eq("farm_id", farmID);
+        const client =
+            getPigClient();
+
+        let query =
+            client
+                .from("pigs")
+                .select("*")
+                .eq("farm_id", farmID);
 
         if (keyword) {
-            const safeKeyword = keyword.replace(
-                /[%_,().]/g,
-                " "
-            );
+
+            const safeKeyword =
+                keyword.replace(
+                    /[%_,().]/g,
+                    " "
+                );
 
             query = query.or(
                 `pig_id.ilike.%${safeKeyword}%,breed.ilike.%${safeKeyword}%,category.ilike.%${safeKeyword}%`
             );
+
         }
 
-        const { data, error } = await query.order(
+        const {
+            data,
+            error
+        } = await query.order(
             "id",
-            { ascending: true }
+            {
+                ascending: true
+            }
         );
 
         if (error) throw error;
 
-        displayPigs(data || []);
+        displayPigs(
+            data || []
+        );
 
         setPigStatus(
             "pigStatusMessage",
@@ -706,7 +1104,12 @@ async function searchPig() {
         );
 
     } catch (error) {
-        showPigError("Unable to search pig records.", error);
+
+        showPigError(
+            "Unable to search pig records.",
+            error
+        );
+
     }
 }
 
@@ -715,20 +1118,30 @@ async function searchPig() {
    ========================================================= */
 
 function clearForm() {
+
     pigById("pigForm")?.reset();
 
     editID = null;
 
     updateRegistrationTypeUI();
 
-    const button = pigById("pigForm")
-        ?.querySelector('button[type="submit"]');
+    const button =
+        pigById("pigForm")
+            ?.querySelector(
+                'button[type="submit"]'
+            );
 
     if (button) {
-        button.textContent = "💾 Save Pig Record";
+
+        button.textContent =
+            "💾 Save Pig Record";
+
     }
 
-    setPigStatus("pigStatusMessage", "");
+    setPigStatus(
+        "pigStatusMessage",
+        ""
+    );
 }
 
 /* =========================================================
@@ -736,88 +1149,172 @@ function clearForm() {
    ========================================================= */
 
 function populateOneGroupDropdown(id) {
-    const select = pigById(id);
+
+    const select =
+        pigById(id);
 
     if (!select) return;
 
-    const previousValue = select.value;
+    const previousValue =
+        select.value;
 
     select.innerHTML = "";
 
-    for (let number = 0; number <= 10000; number++) {
-        const option = document.createElement("option");
+    for (
+        let number = 0;
+        number <= 10000;
+        number++
+    ) {
 
-        option.value = String(number);
-        option.textContent = String(number);
+        const option =
+            document.createElement("option");
+
+        option.value =
+            String(number);
+
+        option.textContent =
+            String(number);
 
         select.appendChild(option);
+
     }
 
     if (
         previousValue !== "" &&
-        Number.isInteger(Number(previousValue))
+        Number.isInteger(
+            Number(previousValue)
+        )
     ) {
-        select.value = String(
-            Math.max(0, Math.min(10000, Number(previousValue)))
-        );
+
+        select.value =
+            String(
+                Math.max(
+                    0,
+                    Math.min(
+                        10000,
+                        Number(previousValue)
+                    )
+                )
+            );
+
     } else {
+
         select.value = "0";
+
     }
 }
 
 function populateGroupQuantityDropdowns() {
-    populateOneGroupDropdown("groupMaleQuantity");
-    populateOneGroupDropdown("groupFemaleQuantity");
+
+    populateOneGroupDropdown(
+        "groupMaleQuantity"
+    );
+
+    populateOneGroupDropdown(
+        "groupFemaleQuantity"
+    );
 
     updateGroupTotal();
 }
 
 function updateGroupTotal() {
-    const maleSelect = pigById("groupMaleQuantity");
-    const femaleSelect = pigById("groupFemaleQuantity");
 
-    const male = Number(maleSelect?.value || 0);
-    const female = Number(femaleSelect?.value || 0);
+    const maleSelect =
+        pigById(
+            "groupMaleQuantity"
+        );
 
-    const total = male + female;
+    const femaleSelect =
+        pigById(
+            "groupFemaleQuantity"
+        );
 
-    const quantity = pigById("groupQuantity");
+    const male =
+        Number(
+            maleSelect?.value || 0
+        );
+
+    const female =
+        Number(
+            femaleSelect?.value || 0
+        );
+
+    const total =
+        male + female;
+
+    const quantity =
+        pigById("groupQuantity");
 
     if (quantity) {
         quantity.value = total;
     }
 
-    const totalQuantity = pigById("groupTotalQuantity");
+    const totalQuantity =
+        pigById(
+            "groupTotalQuantity"
+        );
 
     if (totalQuantity) {
         totalQuantity.value = total;
     }
 
-    const maleDisplay = pigById("malePopulationDisplay");
-    const femaleDisplay = pigById("femalePopulationDisplay");
-    const totalDisplay = pigById("totalPopulationDisplay");
+    const maleDisplay =
+        pigById(
+            "malePopulationDisplay"
+        );
 
-    if (maleDisplay) maleDisplay.textContent = male;
-    if (femaleDisplay) femaleDisplay.textContent = female;
-    if (totalDisplay) totalDisplay.textContent = total;
+    const femaleDisplay =
+        pigById(
+            "femalePopulationDisplay"
+        );
+
+    const totalDisplay =
+        pigById(
+            "totalPopulationDisplay"
+        );
+
+    if (maleDisplay) {
+        maleDisplay.textContent = male;
+    }
+
+    if (femaleDisplay) {
+        femaleDisplay.textContent = female;
+    }
+
+    if (totalDisplay) {
+        totalDisplay.textContent = total;
+    }
 }
 
 function normalizeGroupCategory(value) {
-    const category = String(value || "")
-        .trim()
-        .toLowerCase();
+
+    const category =
+        String(value || "")
+            .trim()
+            .toLowerCase();
 
     const categories = {
+
         piglet: "Piglet",
+
         piglets: "Piglet",
+
         weaner: "Weaner",
+
         weaners: "Weaner",
+
         grower: "Grower",
+
         growers: "Grower",
+
         sow: "Sow",
+
         sows: "Sow",
+
         boar: "Boar",
+
         boars: "Boar"
+
     };
 
     return categories[category] || null;
@@ -828,58 +1325,129 @@ function normalizeGroupCategory(value) {
    ========================================================= */
 
 function getLegacyGroupQuantities(group) {
-    const total = Number(group?.quantity) || 0;
-    const sex = String(group?.sex || "").toLowerCase();
+
+    const total =
+        Number(group?.quantity) || 0;
+
+    const sex =
+        String(
+            group?.sex || ""
+        ).toLowerCase();
 
     if (sex === "male") {
-        return { male: total, female: 0 };
+
+        return {
+            male: total,
+            female: 0
+        };
+
     }
 
     if (sex === "female") {
-        return { male: 0, female: total };
+
+        return {
+            male: 0,
+            female: total
+        };
+
     }
 
-    return { male: 0, female: 0 };
+    return {
+        male: 0,
+        female: 0
+    };
 }
 
 function hasGroupPopulationCounts(group) {
-    const male = Number(group?.male_quantity) || 0;
-    const female = Number(group?.female_quantity) || 0;
+
+    const male =
+        Number(
+            group?.male_quantity
+        ) || 0;
+
+    const female =
+        Number(
+            group?.female_quantity
+        ) || 0;
 
     return male + female > 0;
 }
 
 function getGroupMaleQuantity(group) {
-    if (hasGroupPopulationCounts(group)) {
-        return Number(group.male_quantity) || 0;
+
+    if (
+        hasGroupPopulationCounts(group)
+    ) {
+
+        return Number(
+            group.male_quantity
+        ) || 0;
+
     }
 
-    return getLegacyGroupQuantities(group).male;
+    return getLegacyGroupQuantities(
+        group
+    ).male;
 }
 
 function getGroupFemaleQuantity(group) {
-    if (hasGroupPopulationCounts(group)) {
-        return Number(group.female_quantity) || 0;
+
+    if (
+        hasGroupPopulationCounts(group)
+    ) {
+
+        return Number(
+            group.female_quantity
+        ) || 0;
+
     }
 
-    return getLegacyGroupQuantities(group).female;
+    return getLegacyGroupQuantities(
+        group
+    ).female;
 }
 
 function getGroupTotal(group) {
-    const male = Number(group?.male_quantity) || 0;
-    const female = Number(group?.female_quantity) || 0;
+
+    const male =
+        Number(
+            group?.male_quantity
+        ) || 0;
+
+    const female =
+        Number(
+            group?.female_quantity
+        ) || 0;
 
     if (male + female > 0) {
         return male + female;
     }
 
-    return Number(group?.quantity) || 0;
+    return Number(
+        group?.quantity
+    ) || 0;
 }
 
-function getGroupSexLabel(male, female) {
-    if (male > 0 && female > 0) return "Mixed";
-    if (male > 0) return "Male";
-    if (female > 0) return "Female";
+function getGroupSexLabel(
+    male,
+    female
+) {
+
+    if (
+        male > 0 &&
+        female > 0
+    ) {
+        return "Mixed";
+    }
+
+    if (male > 0) {
+        return "Male";
+    }
+
+    if (female > 0) {
+        return "Female";
+    }
+
     return "Unknown";
 }
 
@@ -888,12 +1456,22 @@ function getGroupSexLabel(male, female) {
    ========================================================= */
 
 async function savePigGroup(event) {
+
     event.preventDefault();
 
-    const editing = editingGroupID !== null;
+    const editing =
+        editingGroupID !== null;
 
-    if (!pigPermission(editing ? "edit" : "add")) {
-        alert("You do not have permission to save groups.");
+    if (
+        !pigPermission(
+            editing ? "edit" : "add"
+        )
+    ) {
+
+        alert(
+            "You do not have permission to save groups."
+        );
+
         return;
     }
 
@@ -901,33 +1479,66 @@ async function savePigGroup(event) {
     let farmID;
 
     try {
-        ({ user, farmID } = validateFarmAndUser());
+
+        ({
+            user,
+            farmID
+        } = validateFarmAndUser());
+
     } catch (error) {
-        showPigError("Unable to save group.", error);
+
+        showPigError(
+            "Unable to save group.",
+            error
+        );
+
         return;
     }
 
     const value = id =>
-        pigById(id)?.value?.trim() || "";
+        pigById(id)
+            ?.value
+            ?.trim() || "";
 
-    const groupName = value("groupName");
-    const category = normalizeGroupCategory(value("groupCategory"));
+    const groupName =
+        value("groupName");
 
-    const maleQuantity = Number(value("groupMaleQuantity"));
-    const femaleQuantity = Number(value("groupFemaleQuantity"));
+    const category =
+        normalizeGroupCategory(
+            value("groupCategory")
+        );
 
-    const quantity = maleQuantity + femaleQuantity;
+    const maleQuantity =
+        Number(
+            value("groupMaleQuantity")
+        );
 
-    const weightText = value("groupWeight");
+    const femaleQuantity =
+        Number(
+            value("groupFemaleQuantity")
+        );
 
-    const averageWeight = weightText === ""
-        ? null
-        : Number(weightText);
+    const quantity =
+        maleQuantity +
+        femaleQuantity;
 
-    if (!groupName || !category) {
+    const weightText =
+        value("groupWeight");
+
+    const averageWeight =
+        weightText === ""
+            ? null
+            : Number(weightText);
+
+    if (
+        !groupName ||
+        !category
+    ) {
+
         alert(
             "Enter a group name and select one of the five pig categories."
         );
+
         return;
     }
 
@@ -939,63 +1550,129 @@ async function savePigGroup(event) {
         maleQuantity > 10000 ||
         femaleQuantity > 10000
     ) {
+
         alert(
             "Male and female quantities must be whole numbers from 0 to 10,000."
         );
+
         return;
     }
 
     if (quantity < 1) {
-        alert("The group must contain at least one pig.");
+
+        alert(
+            "The group must contain at least one pig."
+        );
+
         return;
     }
 
     if (
         averageWeight !== null &&
-        (!Number.isFinite(averageWeight) || averageWeight < 0)
+        (
+            !Number.isFinite(
+                averageWeight
+            ) ||
+            averageWeight < 0
+        )
     ) {
-        alert("Enter a valid average weight.");
+
+        alert(
+            "Enter a valid average weight."
+        );
+
         return;
     }
 
     updateGroupTotal();
 
     const record = {
-        farm_id: farmID,
-        group_name: groupName,
+
+        farm_id:
+            farmID,
+
+        group_name:
+            groupName,
+
         category,
+
         quantity,
-        male_quantity: maleQuantity,
-        female_quantity: femaleQuantity,
-        breed: value("groupBreed") || null,
 
-        /* Retain the old sex column for compatibility. */
-        sex: getGroupSexLabel(maleQuantity, femaleQuantity),
+        male_quantity:
+            maleQuantity,
 
-        farrow_date: value("groupFarrowDate") || null,
-        source: value("groupSource") || null,
-        average_weight: averageWeight,
-        health_status: value("groupHealth") || "Healthy",
-        pen_name: value("groupPen") || null,
-        notes: value("groupNotes") || null,
-        updated_by: user.full_name || null
+        female_quantity:
+            femaleQuantity,
+
+        breed:
+            value("groupBreed") || null,
+
+        sex:
+            getGroupSexLabel(
+                maleQuantity,
+                femaleQuantity
+            ),
+
+        farrow_date:
+            value("groupFarrowDate") ||
+            null,
+
+        source:
+            value("groupSource") ||
+            null,
+
+        average_weight:
+            averageWeight,
+
+        health_status:
+            value("groupHealth") ||
+            "Healthy",
+
+        pen_name:
+            value("groupPen") ||
+            null,
+
+        notes:
+            value("groupNotes") ||
+            null,
+
+        updated_by:
+            user.full_name ||
+            null
     };
 
-    const button = pigById("groupForm")
-        ?.querySelector('button[type="submit"]');
+    const button =
+        pigById("groupForm")
+            ?.querySelector(
+                'button[type="submit"]'
+            );
 
     if (button) {
+
         button.disabled = true;
-        button.textContent = editing ? "Updating..." : "Saving...";
+
+        button.textContent =
+            editing
+                ? "Updating..."
+                : "Saving...";
     }
 
-    setPigStatus("groupStatusMessage", "Saving group...");
+    setPigStatus(
+        "groupStatusMessage",
+        "Saving group..."
+    );
 
     try {
-        const client = getPigClient();
+
+        const client =
+            getPigClient();
 
         if (editing) {
-            const { data, error } = await client
+
+            const {
+                data,
+                error
+            } = await client
                 .from("pig_groups")
                 .update(record)
                 .eq("id", editingGroupID)
@@ -1004,15 +1681,26 @@ async function savePigGroup(event) {
 
             if (error) throw error;
 
-            if (!data || data.length === 0) {
+            if (
+                !data ||
+                data.length === 0
+            ) {
+
                 throw new Error(
                     "No group was updated. Check your permissions."
                 );
-            }
-        } else {
-            record.created_by = user.full_name || null;
 
-            const { error } = await client
+            }
+
+        } else {
+
+            record.created_by =
+                user.full_name ||
+                null;
+
+            const {
+                error
+            } = await client
                 .from("pig_groups")
                 .insert([record]);
 
@@ -1021,9 +1709,19 @@ async function savePigGroup(event) {
 
         await logPigActivity(
             user,
-            editing ? "Updated Group" : "Added Group",
-            `${editing ? "Updated" : "Registered"} group ${groupName}: ` +
-            `${maleQuantity} males, ${femaleQuantity} females, total ${quantity}`
+
+            editing
+                ? "Updated Group"
+                : "Added Group",
+
+            `${
+                editing
+                    ? "Updated"
+                    : "Registered"
+            } group ${groupName}: ` +
+            `${maleQuantity} males, ` +
+            `${femaleQuantity} females, ` +
+            `total ${quantity}`
         );
 
         clearGroupForm();
@@ -1032,27 +1730,38 @@ async function savePigGroup(event) {
 
         setPigStatus(
             "groupStatusMessage",
+
             editing
                 ? "Group updated successfully."
                 : "Group saved successfully."
         );
 
     } catch (error) {
+
         setPigStatus(
             "groupStatusMessage",
-            error?.message || "Unable to save group.",
+            error?.message ||
+            "Unable to save group.",
             true
         );
 
-        showPigError("Unable to save the group.", error);
+        showPigError(
+            "Unable to save the group.",
+            error
+        );
 
     } finally {
+
         if (button) {
+
             button.disabled = false;
-            button.textContent = editingGroupID === null
-                ? "💾 Save Group"
-                : "💾 Update Group";
+
+            button.textContent =
+                editingGroupID === null
+                    ? "💾 Save Group"
+                    : "💾 Update Group";
         }
+
     }
 }
 
@@ -1061,21 +1770,28 @@ async function savePigGroup(event) {
    ========================================================= */
 
 async function loadPigGroups() {
-    const table = pigById("groupTable");
+
+    const table =
+        pigById("groupTable");
 
     if (!table) return;
 
     if (!pigPermission("view")) {
+
         table.innerHTML =
             '<tr><td colspan="9">You do not have permission to view groups.</td></tr>';
+
         return;
     }
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if (farmID == null) {
+
         table.innerHTML =
             '<tr><td colspan="9">Please log in and check your farm account.</td></tr>';
+
         return;
     }
 
@@ -1083,20 +1799,36 @@ async function loadPigGroups() {
         '<tr><td colspan="9">Loading groups...</td></tr>';
 
     try {
-        const client = getPigClient();
 
-        const { data, error } = await client
+        const client =
+            getPigClient();
+
+        const {
+            data,
+            error
+        } = await client
             .from("pig_groups")
             .select("*")
             .eq("farm_id", farmID)
-            .order("id", { ascending: true });
+            .order(
+                "id",
+                {
+                    ascending: true
+                }
+            );
 
         if (error) throw error;
 
-        displayPigGroups(data || []);
+        displayPigGroups(
+            data || []
+        );
 
     } catch (error) {
-        console.error("Loading pig groups failed:", error);
+
+        console.error(
+            "Loading pig groups failed:",
+            error
+        );
 
         table.innerHTML =
             '<tr><td colspan="9">Unable to load groups. Check the pig_groups table and its access policies.</td></tr>';
@@ -1104,48 +1836,112 @@ async function loadPigGroups() {
 }
 
 function displayPigGroups(records) {
-    const table = pigById("groupTable");
+
+    const table =
+        pigById("groupTable");
 
     if (!table) return;
 
     table.innerHTML = "";
 
     if (!records.length) {
+
         table.innerHTML =
             '<tr><td colspan="9">No pig groups registered yet.</td></tr>';
+
         return;
     }
 
     records.forEach(group => {
+
         let actions = "";
 
         if (pigPermission("edit")) {
+
             actions +=
                 `<button type="button" onclick="editPigGroup(${Number(group.id)})">Edit</button> `;
+
         }
 
         if (pigPermission("delete")) {
+
             actions +=
                 `<button type="button" onclick="deletePigGroup(${Number(group.id)})">Delete</button>`;
+
         }
 
-        if (!actions) actions = "No actions";
+        if (!actions) {
+            actions = "No actions";
+        }
 
-        const row = document.createElement("tr");
+        const row =
+            document.createElement("tr");
 
         row.innerHTML = `
-            <td>${escapePigHTML(group.group_name)}</td>
-            <td>${escapePigHTML(normalizeGroupCategory(group.category) || group.category)}</td>
-            <td>${escapePigHTML(getGroupTotal(group))}</td>
-            <td>${escapePigHTML(getGroupMaleQuantity(group))}</td>
-            <td>${escapePigHTML(getGroupFemaleQuantity(group))}</td>
-            <td>${escapePigHTML(group.breed || "")}</td>
-            <td>${group.average_weight == null ? "" : escapePigHTML(group.average_weight) + " Kg"}</td>
-            <td>${escapePigHTML(group.pen_name || "")}</td>
-            <td>${actions}</td>
+
+            <td>
+                ${escapePigHTML(
+                    group.group_name
+                )}
+            </td>
+
+            <td>
+                ${escapePigHTML(
+                    normalizeGroupCategory(
+                        group.category
+                    ) ||
+                    group.category
+                )}
+            </td>
+
+            <td>
+                ${escapePigHTML(
+                    getGroupTotal(group)
+                )}
+            </td>
+
+            <td>
+                ${escapePigHTML(
+                    getGroupMaleQuantity(group)
+                )}
+            </td>
+
+            <td>
+                ${escapePigHTML(
+                    getGroupFemaleQuantity(group)
+                )}
+            </td>
+
+            <td>
+                ${escapePigHTML(
+                    group.breed || ""
+                )}
+            </td>
+
+            <td>
+                ${
+                    group.average_weight == null
+                        ? ""
+                        : escapePigHTML(
+                            group.average_weight
+                        ) + " Kg"
+                }
+            </td>
+
+            <td>
+                ${escapePigHTML(
+                    group.pen_name || ""
+                )}
+            </td>
+
+            <td>
+                ${actions}
+            </td>
+
         `;
 
         table.appendChild(row);
+
     });
 }
 
@@ -1154,22 +1950,37 @@ function displayPigGroups(records) {
    ========================================================= */
 
 async function editPigGroup(id) {
+
     if (!pigPermission("edit")) {
-        alert("You do not have permission to edit groups.");
+
+        alert(
+            "You do not have permission to edit groups."
+        );
+
         return;
     }
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if (farmID == null) {
-        alert("Please log in and check your farm account.");
+
+        alert(
+            "Please log in and check your farm account."
+        );
+
         return;
     }
 
     try {
-        const client = getPigClient();
 
-        const { data, error } = await client
+        const client =
+            getPigClient();
+
+        const {
+            data,
+            error
+        } = await client
             .from("pig_groups")
             .select("*")
             .eq("id", id)
@@ -1178,40 +1989,83 @@ async function editPigGroup(id) {
 
         if (error) throw error;
 
-        const male = getGroupMaleQuantity(data);
-        const female = getGroupFemaleQuantity(data);
+        const male =
+            getGroupMaleQuantity(data);
+
+        const female =
+            getGroupFemaleQuantity(data);
 
         const values = {
-            groupName: data.group_name,
-            groupCategory: normalizeGroupCategory(data.category) || data.category,
-            groupBreed: data.breed,
-            groupMaleQuantity: male,
-            groupFemaleQuantity: female,
-            groupFarrowDate: data.farrow_date,
-            groupSource: data.source,
-            groupWeight: data.average_weight,
-            groupHealth: data.health_status,
-            groupPen: data.pen_name,
-            groupNotes: data.notes
+
+            groupName:
+                data.group_name,
+
+            groupCategory:
+                normalizeGroupCategory(
+                    data.category
+                ) ||
+                data.category,
+
+            groupBreed:
+                data.breed,
+
+            groupMaleQuantity:
+                male,
+
+            groupFemaleQuantity:
+                female,
+
+            groupFarrowDate:
+                data.farrow_date,
+
+            groupSource:
+                data.source,
+
+            groupWeight:
+                data.average_weight,
+
+            groupHealth:
+                data.health_status,
+
+            groupPen:
+                data.pen_name,
+
+            groupNotes:
+                data.notes
+
         };
 
-        Object.entries(values).forEach(([fieldID, fieldValue]) => {
-            const element = pigById(fieldID);
+        Object.entries(values)
+            .forEach(
+                ([fieldID, fieldValue]) => {
 
-            if (element) {
-                element.value = fieldValue ?? "";
-            }
-        });
+                    const element =
+                        pigById(fieldID);
+
+                    if (element) {
+
+                        element.value =
+                            fieldValue ?? "";
+
+                    }
+
+                }
+            );
 
         updateGroupTotal();
 
         editingGroupID = id;
 
-        const button = pigById("groupForm")
-            ?.querySelector('button[type="submit"]');
+        const button =
+            pigById("groupForm")
+                ?.querySelector(
+                    'button[type="submit"]'
+                );
 
         if (button) {
-            button.textContent = "💾 Update Group";
+
+            button.textContent =
+                "💾 Update Group";
         }
 
         setPigStatus(
@@ -1219,10 +2073,18 @@ async function editPigGroup(id) {
             `Editing group ${data.group_name}.`
         );
 
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
 
     } catch (error) {
-        showPigError("Unable to open group.", error);
+
+        showPigError(
+            "Unable to open group.",
+            error
+        );
+
     }
 }
 
@@ -1231,8 +2093,13 @@ async function editPigGroup(id) {
    ========================================================= */
 
 async function deletePigGroup(id) {
+
     if (!pigPermission("delete")) {
-        alert("You do not have permission to delete groups.");
+
+        alert(
+            "You do not have permission to delete groups."
+        );
+
         return;
     }
 
@@ -1240,16 +2107,31 @@ async function deletePigGroup(id) {
     let farmID;
 
     try {
-        ({ user, farmID } = validateFarmAndUser());
+
+        ({
+            user,
+            farmID
+        } = validateFarmAndUser());
+
     } catch (error) {
-        showPigError("Unable to delete group.", error);
+
+        showPigError(
+            "Unable to delete group.",
+            error
+        );
+
         return;
     }
 
     try {
-        const client = getPigClient();
 
-        const { data: group, error: fetchError } = await client
+        const client =
+            getPigClient();
+
+        const {
+            data: group,
+            error: fetchError
+        } = await client
             .from("pig_groups")
             .select("group_name")
             .eq("id", id)
@@ -1258,11 +2140,18 @@ async function deletePigGroup(id) {
 
         if (fetchError) throw fetchError;
 
-        if (!confirm(`Delete group ${group.group_name || id}?`)) {
+        if (
+            !confirm(
+                `Delete group ${group.group_name || id}?`
+            )
+        ) {
             return;
         }
 
-        const { data, error } = await client
+        const {
+            data,
+            error
+        } = await client
             .from("pig_groups")
             .delete()
             .eq("id", id)
@@ -1271,10 +2160,15 @@ async function deletePigGroup(id) {
 
         if (error) throw error;
 
-        if (!data || data.length === 0) {
+        if (
+            !data ||
+            data.length === 0
+        ) {
+
             throw new Error(
                 "The group was not deleted. Check your permissions."
             );
+
         }
 
         await logPigActivity(
@@ -1291,7 +2185,12 @@ async function deletePigGroup(id) {
         );
 
     } catch (error) {
-        showPigError("Unable to delete group.", error);
+
+        showPigError(
+            "Unable to delete group.",
+            error
+        );
+
     }
 }
 
@@ -1300,26 +2199,48 @@ async function deletePigGroup(id) {
    ========================================================= */
 
 function clearGroupForm() {
+
     pigById("groupForm")?.reset();
 
     editingGroupID = null;
 
-    const male = pigById("groupMaleQuantity");
-    const female = pigById("groupFemaleQuantity");
+    const male =
+        pigById(
+            "groupMaleQuantity"
+        );
 
-    if (male) male.value = "0";
-    if (female) female.value = "0";
+    const female =
+        pigById(
+            "groupFemaleQuantity"
+        );
+
+    if (male) {
+        male.value = "0";
+    }
+
+    if (female) {
+        female.value = "0";
+    }
 
     updateGroupTotal();
 
-    const button = pigById("groupForm")
-        ?.querySelector('button[type="submit"]');
+    const button =
+        pigById("groupForm")
+            ?.querySelector(
+                'button[type="submit"]'
+            );
 
     if (button) {
-        button.textContent = "💾 Save Group";
+
+        button.textContent =
+            "💾 Save Group";
+
     }
 
-    setPigStatus("groupStatusMessage", "");
+    setPigStatus(
+        "groupStatusMessage",
+        ""
+    );
 }
 
 /* =========================================================
@@ -1327,18 +2248,36 @@ function clearGroupForm() {
    ========================================================= */
 
 function getOrCreateReportOutput() {
-    let output = pigById("reportOutput");
 
-    if (output) return output;
+    let output =
+        pigById("reportOutput");
 
-    const section = document.querySelector(".report-section");
+    if (output) {
+        return output;
+    }
 
-    if (!section) return null;
+    const section =
+        document.querySelector(
+            ".report-section"
+        );
 
-    output = document.createElement("div");
-    output.id = "reportOutput";
-    output.className = "report-output";
-    output.setAttribute("aria-live", "polite");
+    if (!section) {
+        return null;
+    }
+
+    output =
+        document.createElement("div");
+
+    output.id =
+        "reportOutput";
+
+    output.className =
+        "report-output";
+
+    output.setAttribute(
+        "aria-live",
+        "polite"
+    );
 
     section.appendChild(output);
 
@@ -1346,177 +2285,449 @@ function getOrCreateReportOutput() {
 }
 
 async function collectPigReport() {
+
     if (!pigPermission("report")) {
+
         throw new Error(
             "You do not have permission to generate reports."
         );
     }
 
-    const farmID = getFarmID();
+    const farmID =
+        getFarmID();
 
     if (farmID == null) {
+
         throw new Error(
             "Please log in and check your farm account."
         );
     }
 
-    const client = getPigClient();
+    const client =
+        getPigClient();
 
     const [
-        { data: pigs, error: pigError },
-        { data: groups, error: groupError }
+
+        {
+            data: pigs,
+            error: pigError
+        },
+
+        {
+            data: groups,
+            error: groupError
+        }
+
     ] = await Promise.all([
-        client.from("pigs").select("*").eq("farm_id", farmID),
-        client.from("pig_groups").select("*").eq("farm_id", farmID)
+
+        client
+            .from("pigs")
+            .select("*")
+            .eq("farm_id", farmID),
+
+        client
+            .from("pig_groups")
+            .select("*")
+            .eq("farm_id", farmID)
+
     ]);
 
-    if (pigError) throw pigError;
-    if (groupError) throw groupError;
+    if (pigError) {
+        throw pigError;
+    }
+
+    if (groupError) {
+        throw groupError;
+    }
 
     return {
-        farmName: await getRegisteredFarmName(),
-        pigs: pigs || [],
-        groups: groups || [],
-        generatedAt: new Date().toLocaleString("en-ZM", {
-            timeZone: "Africa/Lusaka"
-        })
+
+        farmName:
+            await getRegisteredFarmName(),
+
+        pigs:
+            pigs || [],
+
+        groups:
+            groups || [],
+
+        generatedAt:
+            new Date().toLocaleString(
+                "en-ZM",
+                {
+                    timeZone:
+                        "Africa/Lusaka"
+                }
+            )
+
     };
 }
 
 /* =========================================================
-   GENERATE REPORT
+   GENERATE ON-SCREEN REPORT
+   KEPT INTACT
    ========================================================= */
 
 async function generateReport() {
-    const output = getOrCreateReportOutput();
+
+    const output =
+        getOrCreateReportOutput();
 
     if (!output) {
-        alert("The report display section could not be found.");
+
+        alert(
+            "The report display section could not be found."
+        );
+
         return;
     }
 
     if (!pigPermission("report")) {
-        alert("You do not have permission to generate reports.");
+
+        alert(
+            "You do not have permission to generate reports."
+        );
+
         return;
     }
 
-    output.textContent = "Generating report...";
+    output.textContent =
+        "Generating report...";
 
     try {
-        currentPigReport = await collectPigReport();
 
-        const report = currentPigReport;
+        currentPigReport =
+            await collectPigReport();
 
-        const groupQuantity = report.groups.reduce(
-            (total, group) =>
-                total + getGroupTotal(group),
-            0
-        );
+        const report =
+            currentPigReport;
 
-        const groupMales = report.groups.reduce(
-            (total, group) =>
-                total + getGroupMaleQuantity(group),
-            0
-        );
+        const groupQuantity =
+            report.groups.reduce(
+                (total, group) =>
+                    total +
+                    getGroupTotal(group),
+                0
+            );
 
-        const groupFemales = report.groups.reduce(
-            (total, group) =>
-                total + getGroupFemaleQuantity(group),
-            0
-        );
+        const groupMales =
+            report.groups.reduce(
+                (total, group) =>
+                    total +
+                    getGroupMaleQuantity(
+                        group
+                    ),
+                0
+            );
+
+        const groupFemales =
+            report.groups.reduce(
+                (total, group) =>
+                    total +
+                    getGroupFemaleQuantity(
+                        group
+                    ),
+                0
+            );
 
         output.innerHTML = `
+
             <div class="generated-pig-report">
-                <h2>MUNKA PIGGERY TECHNOLOGY</h2>
-                <h3>Pig Registration Report</h3>
 
-                <p><strong>Farm:</strong>
-                    ${escapePigHTML(report.farmName)}</p>
+                <h2>
+                    MUNKA PIGGERY TECHNOLOGY
+                </h2>
 
-                <p><strong>Generated:</strong>
-                    ${escapePigHTML(report.generatedAt)}</p>
+                <h3>
+                    Pig Registration Report
+                </h3>
+
+                <p>
+                    <strong>Farm:</strong>
+                    ${escapePigHTML(
+                        report.farmName
+                    )}
+                </p>
+
+                <p>
+                    <strong>Generated:</strong>
+                    ${escapePigHTML(
+                        report.generatedAt
+                    )}
+                </p>
 
                 <hr>
 
-                <p><strong>Individual pig records:</strong>
-                    ${report.pigs.length}</p>
+                <p>
+                    <strong>
+                        Individual pig records:
+                    </strong>
+                    ${report.pigs.length}
+                </p>
 
-                <p><strong>Registered pig groups:</strong>
-                    ${report.groups.length}</p>
+                <p>
+                    <strong>
+                        Registered pig groups:
+                    </strong>
+                    ${report.groups.length}
+                </p>
 
-                <p><strong>Animals represented in groups:</strong>
-                    ${groupQuantity}</p>
+                <p>
+                    <strong>
+                        Animals represented in groups:
+                    </strong>
+                    ${groupQuantity}
+                </p>
 
-                <p><strong>Group males:</strong>
-                    ${groupMales}</p>
+                <p>
+                    <strong>
+                        Group males:
+                    </strong>
+                    ${groupMales}
+                </p>
 
-                <p><strong>Group females:</strong>
-                    ${groupFemales}</p>
+                <p>
+                    <strong>
+                        Group females:
+                    </strong>
+                    ${groupFemales}
+                </p>
 
-                <h3>Individual Pigs</h3>
+                <h3>
+                    Individual Pigs
+                </h3>
 
                 <div class="table-wrapper">
+
                     <table>
+
                         <thead>
+
                             <tr>
-                                <th>Pig ID</th>
-                                <th>Breed</th>
-                                <th>Category</th>
-                                <th>Farrow Date</th>
-                                <th>Weight</th>
-                                <th>Health</th>
+
+                                <th>
+                                    Pig ID
+                                </th>
+
+                                <th>
+                                    Breed
+                                </th>
+
+                                <th>
+                                    Category
+                                </th>
+
+                                <th>
+                                    Farrow Date
+                                </th>
+
+                                <th>
+                                    Weight
+                                </th>
+
+                                <th>
+                                    Health
+                                </th>
+
                             </tr>
+
                         </thead>
 
                         <tbody>
-                            ${report.pigs.map(pig => `
-                                <tr>
-                                    <td>${escapePigHTML(pig.pig_id)}</td>
-                                    <td>${escapePigHTML(pig.breed)}</td>
-                                    <td>${escapePigHTML(pig.category)}</td>
-                                    <td>${escapePigHTML(pig.farrow_date)}</td>
-                                    <td>${pig.weight == null ? "" : escapePigHTML(pig.weight) + " Kg"}</td>
-                                    <td>${escapePigHTML(pig.health_status)}</td>
-                                </tr>
-                            `).join("")}
+
+                            ${
+                                report.pigs.map(
+                                    pig => `
+
+                                    <tr>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                pig.pig_id
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                pig.breed
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                pig.category
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                pig.farrow_date
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${
+                                                pig.weight == null
+                                                    ? ""
+                                                    :
+                                                    escapePigHTML(
+                                                        pig.weight
+                                                    ) +
+                                                    " Kg"
+                                            }
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                pig.health_status
+                                            )}
+                                        </td>
+
+                                    </tr>
+
+                                `
+                                ).join("")
+                            }
+
                         </tbody>
+
                     </table>
+
                 </div>
 
-                <h3>Registered Pig Groups</h3>
+                <h3>
+                    Registered Pig Groups
+                </h3>
 
                 <div class="table-wrapper">
+
                     <table>
+
                         <thead>
+
                             <tr>
-                                <th>Group</th>
-                                <th>Category</th>
-                                <th>Total Quantity</th>
-                                <th>Males</th>
-                                <th>Females</th>
-                                <th>Breed</th>
-                                <th>Average Weight</th>
-                                <th>Pen</th>
+
+                                <th>
+                                    Group
+                                </th>
+
+                                <th>
+                                    Category
+                                </th>
+
+                                <th>
+                                    Total Quantity
+                                </th>
+
+                                <th>
+                                    Males
+                                </th>
+
+                                <th>
+                                    Females
+                                </th>
+
+                                <th>
+                                    Breed
+                                </th>
+
+                                <th>
+                                    Average Weight
+                                </th>
+
+                                <th>
+                                    Pen
+                                </th>
+
                             </tr>
+
                         </thead>
 
                         <tbody>
-                            ${report.groups.map(group => `
-                                <tr>
-                                    <td>${escapePigHTML(group.group_name)}</td>
-                                    <td>${escapePigHTML(normalizeGroupCategory(group.category) || group.category)}</td>
-                                    <td>${escapePigHTML(getGroupTotal(group))}</td>
-                                    <td>${escapePigHTML(getGroupMaleQuantity(group))}</td>
-                                    <td>${escapePigHTML(getGroupFemaleQuantity(group))}</td>
-                                    <td>${escapePigHTML(group.breed || "")}</td>
-                                    <td>${group.average_weight == null ? "" : escapePigHTML(group.average_weight) + " Kg"}</td>
-                                    <td>${escapePigHTML(group.pen_name || "")}</td>
-                                </tr>
-                            `).join("")}
+
+                            ${
+                                report.groups.map(
+                                    group => `
+
+                                    <tr>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                group.group_name
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                normalizeGroupCategory(
+                                                    group.category
+                                                ) ||
+                                                group.category
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                getGroupTotal(
+                                                    group
+                                                )
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                getGroupMaleQuantity(
+                                                    group
+                                                )
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                getGroupFemaleQuantity(
+                                                    group
+                                                )
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                group.breed || ""
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ${
+                                                group.average_weight == null
+                                                    ? ""
+                                                    :
+                                                    escapePigHTML(
+                                                        group.average_weight
+                                                    ) +
+                                                    " Kg"
+                                            }
+                                        </td>
+
+                                        <td>
+                                            ${escapePigHTML(
+                                                group.pen_name || ""
+                                            )}
+                                        </td>
+
+                                    </tr>
+
+                                `
+                                ).join("")
+                            }
+
                         </tbody>
+
                     </table>
+
                 </div>
+
             </div>
+
         `;
 
         output.scrollIntoView({
@@ -1525,497 +2736,787 @@ async function generateReport() {
         });
 
     } catch (error) {
+
         currentPigReport = null;
 
         output.textContent =
-            error?.message || "Unable to generate report.";
+            error?.message ||
+            "Unable to generate report.";
 
         showPigError(
             "Unable to generate the registration report.",
             error
         );
+
     }
 }
 
 /* =========================================================
    PRINT REPORT
+   KEPT INTACT
    ========================================================= */
 
 async function printReport() {
+
     if (!pigPermission("report")) {
-        alert("You do not have permission to print reports.");
+
+        alert(
+            "You do not have permission to print reports."
+        );
+
         return;
     }
 
     try {
+
         if (!currentPigReport) {
+
             await generateReport();
 
-            if (!currentPigReport) return;
+            if (!currentPigReport) {
+                return;
+            }
+
         }
 
-        const output = getOrCreateReportOutput();
+        const output =
+            getOrCreateReportOutput();
 
-        if (!output || !output.innerHTML.trim()) {
-            alert("Generate the report first, then print it.");
+        if (
+            !output ||
+            !output.innerHTML.trim()
+        ) {
+
+            alert(
+                "Generate the report first, then print it."
+            );
+
             return;
         }
 
         window.print();
 
     } catch (error) {
+
         showPigError(
             "Unable to prepare the report for printing.",
             error
         );
+
     }
 }
 
 /* =========================================================
-   DOWNLOAD LARGE & BOLD PDF REPORT
-   SYSTEM TABLES ARE NOT AFFECTED
+   DOWNLOAD PDF
+   NEW POPULATION REPORT
+   EVERYTHING ELSE REMAINS INTACT
    ========================================================= */
 
 async function downloadPDF() {
+
     if (!pigPermission("report")) {
-        alert("You do not have permission to download reports.");
+
+        alert(
+            "You do not have permission to download reports."
+        );
+
         return;
     }
 
     try {
-        /* -------------------------------------------------
-           MAKE SURE REPORT DATA EXISTS
-        ------------------------------------------------- */
+
+        /* =====================================================
+           GET FRESH DATA DIRECTLY
+           DOES NOT CHANGE THE ON-SCREEN REPORT
+           ===================================================== */
+
+        currentPigReport =
+            await collectPigReport();
 
         if (!currentPigReport) {
-            await generateReport();
 
-            if (!currentPigReport) return;
+            throw new Error(
+                "Unable to collect pig population data."
+            );
+
         }
 
-        /* -------------------------------------------------
+        const report =
+            currentPigReport;
+
+        /* =====================================================
            CHECK jsPDF
-        ------------------------------------------------- */
+           ===================================================== */
 
         if (
             !window.jspdf ||
             typeof window.jspdf.jsPDF !== "function"
         ) {
+
             throw new Error(
-                "The PDF library did not load. Check your internet connection."
+                "The PDF library did not load. " +
+                "Check your internet connection and HTML script links."
             );
+
         }
 
-        const report = currentPigReport;
+        /* =====================================================
+           CREATE A4 PORTRAIT PDF
+           ===================================================== */
 
-        /* -------------------------------------------------
-           CREATE PDF
-           LANDSCAPE A4
-        ------------------------------------------------- */
+        const doc =
+            new window.jspdf.jsPDF({
 
-        const doc = new window.jspdf.jsPDF({
-            orientation: "landscape",
-            unit: "mm",
-            format: "a4"
-        });
+                orientation: "portrait",
 
-        /* -------------------------------------------------
-           PROFESSIONAL PDF FONT
-           HELVETICA IS BUILT INTO jsPDF
-        ------------------------------------------------- */
+                unit: "mm",
 
-        const FONT = "helvetica";
+                format: "a4"
 
-        /* -------------------------------------------------
-           PAGE DIMENSIONS
-        ------------------------------------------------- */
+            });
 
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
-
-        const leftMargin = 12;
-
-        /* -------------------------------------------------
-           TITLE
-        ------------------------------------------------- */
-
-        doc.setFont(FONT, "bold");
-        doc.setFontSize(30);
-
-        doc.text(
-            "MUNKA PIGGERY TECHNOLOGY",
-            leftMargin,
-            18
-        );
-
-        /* -------------------------------------------------
-           REPORT TITLE
-        ------------------------------------------------- */
-
-        doc.setFont(FONT, "bold");
-        doc.setFontSize(27);
-
-        doc.text(
-            "PIG REGISTRATION REPORT",
-            leftMargin,
-            29
-        );
-
-        /* -------------------------------------------------
-           FARM INFORMATION
-        ------------------------------------------------- */
-
-        doc.setFont(FONT, "bold");
-        doc.setFontSize(22);
-
-        doc.text(
-            `Farm: ${String(report.farmName || "REGISTERED FARM")}`,
-            leftMargin,
-            40
-        );
-
-        doc.text(
-            `Generated: ${String(report.generatedAt || "")}`,
-            leftMargin,
-            49
-        );
-
-        /* -------------------------------------------------
-           SUMMARY INFORMATION
-        ------------------------------------------------- */
-
-        const totalGroups = report.groups.reduce(
-            (sum, group) =>
-                sum + getGroupTotal(group),
-            0
-        );
-
-        const totalMales = report.groups.reduce(
-            (sum, group) =>
-                sum + getGroupMaleQuantity(group),
-            0
-        );
-
-        const totalFemales = report.groups.reduce(
-            (sum, group) =>
-                sum + getGroupFemaleQuantity(group),
-            0
-        );
-
-        doc.setFont(FONT, "bold");
-        doc.setFontSize(22);
-
-        doc.text(
-            `Individual Pig Records: ${report.pigs.length}`,
-            leftMargin,
-            60
-        );
-
-        doc.text(
-            `Registered Pig Groups: ${report.groups.length}`,
-            leftMargin,
-            69
-        );
-
-        doc.text(
-            `Animals in Groups: ${totalGroups}`,
-            leftMargin,
-            78
-        );
-
-        doc.text(
-            `Group Males: ${totalMales}`,
-            105,
-            78
-        );
-
-        doc.text(
-            `Group Females: ${totalFemales}`,
-            185,
-            78
-        );
-
-        /* -------------------------------------------------
+        /* =====================================================
            CHECK AUTOTABLE
-        ------------------------------------------------- */
+           ===================================================== */
 
-        if (typeof doc.autoTable !== "function") {
+        if (
+            typeof doc.autoTable !== "function"
+        ) {
+
             throw new Error(
                 "The AutoTable extension did not load. " +
                 "Please make sure jspdf-autotable is included."
             );
+
         }
 
-        /* =================================================
-           INDIVIDUAL PIGS TABLE
-           ================================================= */
+        /* =====================================================
+           PDF CONSTANTS
+           ===================================================== */
 
-        let nextY = 88;
+        const FONT =
+            "helvetica";
 
-        doc.setFont(FONT, "bold");
-        doc.setFontSize(26);
+        const pageWidth =
+            doc.internal.pageSize.getWidth();
 
-        doc.text(
-            "INDIVIDUAL PIG RECORDS",
-            leftMargin,
-            nextY
+        const pageHeight =
+            doc.internal.pageSize.getHeight();
+
+        const leftMargin =
+            20;
+
+        const rightMargin =
+            20;
+
+        /* =====================================================
+           PROFESSIONAL COLOURS
+           ===================================================== */
+
+        const DARK_GREEN =
+            [23, 107, 44];
+
+        const BORDER_GREEN =
+            [14, 75, 42];
+
+        const LIGHT_GREEN =
+            [238, 247, 241];
+
+        const WHITE =
+            [255, 255, 255];
+
+        const BLACK =
+            [25, 25, 25];
+
+        /* =====================================================
+           POPULATION COUNTERS
+           ===================================================== */
+
+        let piglets = 0;
+
+        let weaners = 0;
+
+        let growers = 0;
+
+        let boars = 0;
+
+        let sows = 0;
+
+        /* =====================================================
+           COUNT INDIVIDUAL PIGS
+           ===================================================== */
+
+        (report.pigs || [])
+            .forEach(pig => {
+
+                const category =
+                    String(
+                        pig.category || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+                if (
+                    category === "piglet" ||
+                    category === "piglets"
+                ) {
+
+                    piglets += 1;
+
+                }
+
+                else if (
+                    category === "weaner" ||
+                    category === "weaners"
+                ) {
+
+                    weaners += 1;
+
+                }
+
+                else if (
+                    category === "grower" ||
+                    category === "growers"
+                ) {
+
+                    growers += 1;
+
+                }
+
+                else if (
+                    category === "boar" ||
+                    category === "boars"
+                ) {
+
+                    boars += 1;
+
+                }
+
+                else if (
+                    category === "sow" ||
+                    category === "sows" ||
+                    category === "pregnant sow" ||
+                    category === "pregnant sows" ||
+                    category === "lactating sow" ||
+                    category === "lactating sows"
+                ) {
+
+                    sows += 1;
+
+                }
+
+            });
+
+        /* =====================================================
+           COUNT PIG GROUPS
+           ===================================================== */
+
+        (report.groups || [])
+            .forEach(group => {
+
+                const category =
+                    normalizeGroupCategory(
+                        group.category
+                    );
+
+                const quantity =
+                    Number(
+                        getGroupTotal(group)
+                    ) || 0;
+
+                if (
+                    category === "Piglet"
+                ) {
+
+                    piglets += quantity;
+
+                }
+
+                else if (
+                    category === "Weaner"
+                ) {
+
+                    weaners += quantity;
+
+                }
+
+                else if (
+                    category === "Grower"
+                ) {
+
+                    growers += quantity;
+
+                }
+
+                else if (
+                    category === "Boar"
+                ) {
+
+                    boars += quantity;
+
+                }
+
+                else if (
+                    category === "Sow"
+                ) {
+
+                    sows += quantity;
+
+                }
+
+            });
+
+        /* =====================================================
+           TOTAL POPULATION
+           ===================================================== */
+
+        const totalPopulation =
+            piglets +
+            weaners +
+            growers +
+            boars +
+            sows;
+
+        /* =====================================================
+           FARM INFORMATION
+           ===================================================== */
+
+        const farmName =
+            String(
+                report.farmName ||
+                "REGISTERED FARM"
+            );
+
+        const generatedDate =
+            String(
+                report.generatedAt ||
+                ""
+            );
+
+        /* =====================================================
+           MAIN TITLE
+           18PT BOLD
+           ===================================================== */
+
+        doc.setFont(
+            FONT,
+            "bold"
         );
 
-        nextY += 5;
+        doc.setFontSize(18);
+
+        doc.setTextColor(
+            DARK_GREEN[0],
+            DARK_GREEN[1],
+            DARK_GREEN[2]
+        );
+
+        doc.text(
+            "MUNKA PIGGERY TECHNOLOGY",
+            pageWidth / 2,
+            23,
+            {
+                align: "center"
+            }
+        );
+
+        /* =====================================================
+           REPORT TITLE
+           ===================================================== */
+
+        doc.setFont(
+            FONT,
+            "bold"
+        );
+
+        doc.setFontSize(18);
+
+        doc.setTextColor(
+            BLACK[0],
+            BLACK[1],
+            BLACK[2]
+        );
+
+        doc.text(
+            "PIG POPULATION REPORT",
+            pageWidth / 2,
+            34,
+            {
+                align: "center"
+            }
+        );
+
+        /* =====================================================
+           GREEN LINE
+           ===================================================== */
+
+        doc.setDrawColor(
+            DARK_GREEN[0],
+            DARK_GREEN[1],
+            DARK_GREEN[2]
+        );
+
+        doc.setLineWidth(1);
+
+        doc.line(
+            leftMargin,
+            41,
+            pageWidth - rightMargin,
+            41
+        );
+
+        /* =====================================================
+           FARM NAME
+           ===================================================== */
+
+        doc.setFont(
+            FONT,
+            "bold"
+        );
+
+        doc.setFontSize(18);
+
+        doc.setTextColor(
+            BLACK[0],
+            BLACK[1],
+            BLACK[2]
+        );
+
+        doc.text(
+            `Farm: ${farmName}`,
+            leftMargin,
+            54
+        );
+
+        /* =====================================================
+           GENERATED DATE
+           ===================================================== */
+
+        doc.text(
+            `Generated: ${generatedDate}`,
+            leftMargin,
+            65
+        );
+
+        /* =====================================================
+           POPULATION TABLE
+           ===================================================== */
 
         doc.autoTable({
 
-            startY: nextY,
+            startY: 78,
 
             margin: {
-                left: 8,
-                right: 8
+                left:
+                    leftMargin,
+
+                right:
+                    rightMargin
             },
 
-            tableWidth: "auto",
+            tableWidth:
+                pageWidth -
+                leftMargin -
+                rightMargin,
 
             head: [[
-                "Pig ID",
-                "Breed",
-                "Category",
-                "Farrow Date",
-                "Source",
-                "Weight (Kg)",
-                "Health"
+                "PIG CATEGORY",
+                "POPULATION"
             ]],
 
-            body: report.pigs.map(pig => [
-                pig.pig_id || "",
-                pig.breed || "",
-                pig.category || "",
-                pig.farrow_date || "",
-                pig.source || "",
-                pig.weight == null
-                    ? ""
-                    : String(pig.weight),
-                pig.health_status || ""
-            ]),
+            body: [
 
-            /* ------------------------------------------------
-               VERY LARGE TABLE TEXT
-               26 POINTS = APPROXIMATELY 35 PIXELS
-               ------------------------------------------------ */
+                [
+                    "Piglets",
+                    String(piglets)
+                ],
+
+                [
+                    "Weaners",
+                    String(weaners)
+                ],
+
+                [
+                    "Growers",
+                    String(growers)
+                ],
+
+                [
+                    "Boars",
+                    String(boars)
+                ],
+
+                [
+                    "Sows",
+                    String(sows)
+                ]
+
+            ],
 
             styles: {
-                font: FONT,
-                fontStyle: "bold",
-                fontSize: 26,
-                cellPadding: 5,
-                overflow: "linebreak",
-                valign: "middle",
-                halign: "center",
-                lineWidth: 0.8,
-                lineColor: [30, 70, 45],
-                textColor: [20, 20, 20]
+
+                font:
+                    FONT,
+
+                fontStyle:
+                    "bold",
+
+                fontSize:
+                    18,
+
+                cellPadding:
+                    7,
+
+                textColor:
+                    BLACK,
+
+                lineColor:
+                    BORDER_GREEN,
+
+                lineWidth:
+                    0.6,
+
+                valign:
+                    "middle",
+
+                overflow:
+                    "linebreak"
+
             },
 
             headStyles: {
-                font: FONT,
-                fontStyle: "bold",
-                fontSize: 28,
-                halign: "center",
-                valign: "middle",
-                cellPadding: 6,
-                textColor: [255, 255, 255],
-                fillColor: [23, 107, 44],
-                lineWidth: 1,
-                lineColor: [14, 75, 42]
+
+                font:
+                    FONT,
+
+                fontStyle:
+                    "bold",
+
+                fontSize:
+                    18,
+
+                fillColor:
+                    DARK_GREEN,
+
+                textColor:
+                    WHITE,
+
+                halign:
+                    "center",
+
+                valign:
+                    "middle",
+
+                cellPadding:
+                    8,
+
+                lineColor:
+                    BORDER_GREEN,
+
+                lineWidth:
+                    0.8
+
             },
 
             bodyStyles: {
-                font: FONT,
-                fontStyle: "bold",
-                fontSize: 26,
-                cellPadding: 5,
-                textColor: [20, 20, 20],
-                valign: "middle",
-                halign: "center"
+
+                font:
+                    FONT,
+
+                fontStyle:
+                    "bold",
+
+                fontSize:
+                    18,
+
+                textColor:
+                    BLACK,
+
+                valign:
+                    "middle",
+
+                cellPadding:
+                    8
+
             },
 
             alternateRowStyles: {
-                fillColor: [245, 249, 246]
+
+                fillColor:
+                    LIGHT_GREEN
+
             },
 
             columnStyles: {
-                0: { cellWidth: 35 },
-                1: { cellWidth: 42 },
-                2: { cellWidth: 42 },
-                3: { cellWidth: 43 },
-                4: { cellWidth: 45 },
-                5: { cellWidth: 35 },
-                6: { cellWidth: 42 }
+
+                0: {
+
+                    cellWidth:
+                        105,
+
+                    halign:
+                        "left"
+
+                },
+
+                1: {
+
+                    cellWidth:
+                        65,
+
+                    halign:
+                        "center"
+
+                }
+
             },
 
-            theme: "grid",
+            theme:
+                "grid",
 
-            showHead: "everyPage",
+            showHead:
+                "everyPage",
 
-            pageBreak: "auto",
+            pageBreak:
+                "auto",
 
-            rowPageBreak: "auto"
+            rowPageBreak:
+                "avoid"
+
         });
 
-        /* -------------------------------------------------
-           FIND END OF FIRST TABLE
-        ------------------------------------------------- */
+        /* =====================================================
+           TOTAL POPULATION BOX
+           ===================================================== */
 
-        nextY =
-            (doc.lastAutoTable?.finalY || 90) + 15;
+        let totalY =
+            (
+                doc.lastAutoTable?.finalY ||
+                140
+            ) + 18;
 
-        /* -------------------------------------------------
-           NEW PAGE FOR GROUP RECORDS
-           This keeps the PDF clean and readable.
-        ------------------------------------------------- */
+        if (
+            totalY + 35 >
+            pageHeight - 25
+        ) {
 
-        doc.addPage();
+            doc.addPage();
 
-        nextY = 20;
+            totalY = 30;
 
-        doc.setFont(FONT, "bold");
-        doc.setFontSize(28);
+        }
 
-        doc.text(
-            "REGISTERED PIG GROUPS",
-            leftMargin,
-            nextY
+        /* =====================================================
+           TOTAL BOX
+           ===================================================== */
+
+        doc.setFillColor(
+            DARK_GREEN[0],
+            DARK_GREEN[1],
+            DARK_GREEN[2]
         );
 
-        nextY += 8;
+        doc.setDrawColor(
+            BORDER_GREEN[0],
+            BORDER_GREEN[1],
+            BORDER_GREEN[2]
+        );
 
-        /* =================================================
-           GROUP TABLE
-           ================================================= */
+        doc.setLineWidth(0.8);
 
-        doc.autoTable({
+        doc.roundedRect(
 
-            startY: nextY,
+            leftMargin,
 
-            margin: {
-                left: 6,
-                right: 6
-            },
+            totalY,
 
-            tableWidth: "auto",
+            pageWidth -
+                leftMargin -
+                rightMargin,
 
-            head: [[
-                "Group",
-                "Category",
-                "Total",
-                "Males",
-                "Females",
-                "Breed",
-                "Average Weight",
-                "Pen"
-            ]],
+            32,
 
-            body: report.groups.map(group => [
-                group.group_name || "",
+            3,
 
-                normalizeGroupCategory(group.category) ||
-                    group.category ||
-                    "",
+            3,
 
-                String(getGroupTotal(group)),
+            "FD"
 
-                String(getGroupMaleQuantity(group)),
+        );
 
-                String(getGroupFemaleQuantity(group)),
+        /* =====================================================
+           TOTAL LABEL
+           ===================================================== */
 
-                group.breed || "",
+        doc.setFont(
+            FONT,
+            "bold"
+        );
 
-                group.average_weight == null
-                    ? ""
-                    : String(group.average_weight) + " Kg",
+        doc.setFontSize(18);
 
-                group.pen_name || ""
-            ]),
+        doc.setTextColor(
+            WHITE[0],
+            WHITE[1],
+            WHITE[2]
+        );
 
-            /* ------------------------------------------------
-               LARGE AND BOLD BODY TEXT
-               ------------------------------------------------ */
+        doc.text(
+            "TOTAL PIG POPULATION",
+            pageWidth / 2,
+            totalY + 12,
+            {
+                align: "center"
+            }
+        );
 
-            styles: {
-                font: FONT,
-                fontStyle: "bold",
-                fontSize: 26,
-                cellPadding: 5,
-                overflow: "linebreak",
-                valign: "middle",
-                halign: "center",
-                lineWidth: 0.8,
-                lineColor: [30, 70, 45],
-                textColor: [20, 20, 20]
-            },
+        /* =====================================================
+           TOTAL NUMBER
+           ===================================================== */
 
-            /* ------------------------------------------------
-               LARGE TABLE HEADINGS
-               ------------------------------------------------ */
+        doc.setFont(
+            FONT,
+            "bold"
+        );
 
-            headStyles: {
-                font: FONT,
-                fontStyle: "bold",
-                fontSize: 27,
-                halign: "center",
-                valign: "middle",
-                cellPadding: 6,
-                textColor: [255, 255, 255],
-                fillColor: [23, 107, 44],
-                lineWidth: 1,
-                lineColor: [14, 75, 42]
-            },
+        doc.setFontSize(18);
 
-            bodyStyles: {
-                font: FONT,
-                fontStyle: "bold",
-                fontSize: 26,
-                cellPadding: 5,
-                textColor: [20, 20, 20],
-                valign: "middle",
-                halign: "center"
-            },
+        doc.text(
+            String(totalPopulation),
+            pageWidth / 2,
+            totalY + 25,
+            {
+                align: "center"
+            }
+        );
 
-            alternateRowStyles: {
-                fillColor: [245, 249, 246]
-            },
-
-            columnStyles: {
-                0: { cellWidth: 42 },
-                1: { cellWidth: 40 },
-                2: { cellWidth: 28 },
-                3: { cellWidth: 28 },
-                4: { cellWidth: 30 },
-                5: { cellWidth: 42 },
-                6: { cellWidth: 43 },
-                7: { cellWidth: 35 }
-            },
-
-            theme: "grid",
-
-            showHead: "everyPage",
-
-            pageBreak: "auto",
-
-            rowPageBreak: "auto"
-        });
-
-        /* =================================================
-           FOOTER ON EVERY PAGE
-           ================================================= */
+        /* =====================================================
+           FOOTER
+           ===================================================== */
 
         const totalPages =
             doc.internal.getNumberOfPages();
 
-        for (let page = 1; page <= totalPages; page++) {
+        for (
+            let page = 1;
+            page <= totalPages;
+            page++
+        ) {
 
             doc.setPage(page);
 
-            doc.setFont(FONT, "bold");
+            doc.setFont(
+                FONT,
+                "bold"
+            );
+
             doc.setFontSize(18);
+
+            doc.setTextColor(
+                DARK_GREEN[0],
+                DARK_GREEN[1],
+                DARK_GREEN[2]
+            );
 
             doc.text(
                 "MUNKA PIGGERY TECHNOLOGY",
@@ -2025,103 +3526,176 @@ async function downloadPDF() {
 
             doc.text(
                 `Page ${page} of ${totalPages}`,
-                pageWidth - 45,
-                pageHeight - 10
+                pageWidth - rightMargin,
+                pageHeight - 10,
+                {
+                    align: "right"
+                }
             );
+
         }
 
-        /* =================================================
-           DOWNLOAD PDF
-           ================================================= */
+        /* =====================================================
+           DOWNLOAD FILE
+           ===================================================== */
 
         doc.save(
-            "munka-piggery-registration-report.pdf"
+            "munka-piggery-population-report.pdf"
         );
 
     } catch (error) {
 
-        showPigError(
-            "Unable to download the PDF report.",
+        console.error(
+            "PDF download error:",
             error
         );
+
+        showPigError(
+            "Unable to download the pig population PDF report.",
+            error
+        );
+
     }
 }
-                    
 
 /* =========================================================
    INITIALISATION AND HTML BUTTON FUNCTIONS
    ========================================================= */
 
 function attachPigEvents() {
-    if (pigEventsAttached) return;
 
-    const form = pigById("pigForm");
-    const groupForm = pigById("groupForm");
-    const registrationType = pigById("registrationType");
-    const searchInput = pigById("searchPig");
+    if (pigEventsAttached) {
+        return;
+    }
+
+    const form =
+        pigById("pigForm");
+
+    const groupForm =
+        pigById("groupForm");
+
+    const registrationType =
+        pigById("registrationType");
+
+    const searchInput =
+        pigById("searchPig");
 
     if (form) {
-        form.addEventListener("submit", savePig);
+
+        form.addEventListener(
+            "submit",
+            savePig
+        );
+
     }
 
     if (groupForm) {
-        groupForm.addEventListener("submit", savePigGroup);
+
+        groupForm.addEventListener(
+            "submit",
+            savePigGroup
+        );
+
     }
 
     if (registrationType) {
+
         registrationType.addEventListener(
             "change",
             updateRegistrationTypeUI
         );
+
     }
 
     if (searchInput) {
-        searchInput.addEventListener("keydown", event => {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                searchPig();
+
+        searchInput.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    searchPig();
+
+                }
+
             }
-        });
+        );
+
     }
 
     populateGroupQuantityDropdowns();
 
-    const maleSelect = pigById("groupMaleQuantity");
-    const femaleSelect = pigById("groupFemaleQuantity");
+    const maleSelect =
+        pigById(
+            "groupMaleQuantity"
+        );
+
+    const femaleSelect =
+        pigById(
+            "groupFemaleQuantity"
+        );
 
     if (maleSelect) {
-        maleSelect.addEventListener("change", updateGroupTotal);
+
+        maleSelect.addEventListener(
+            "change",
+            updateGroupTotal
+        );
+
     }
 
     if (femaleSelect) {
-        femaleSelect.addEventListener("change", updateGroupTotal);
+
+        femaleSelect.addEventListener(
+            "change",
+            updateGroupTotal
+        );
+
     }
 
     pigEventsAttached = true;
 }
 
 async function initialisePigRegistration() {
+
     attachPigEvents();
 
     updateRegistrationTypeUI();
 
     try {
-        const farmName = await getRegisteredFarmName();
 
-        document.querySelectorAll("[data-farm-name]").forEach(element => {
-            element.textContent = farmName;
-        });
+        const farmName =
+            await getRegisteredFarmName();
+
+        document
+            .querySelectorAll(
+                "[data-farm-name]"
+            )
+            .forEach(element => {
+
+                element.textContent =
+                    farmName;
+
+            });
 
         await Promise.all([
+
             loadPigs(),
+
             loadPigGroups()
+
         ]);
 
     } catch (error) {
+
         console.error(
             "Pig registration initialisation failed:",
             error
         );
+
     }
 }
 
@@ -2129,31 +3703,66 @@ async function initialisePigRegistration() {
    MAKE FUNCTIONS AVAILABLE TO HTML
    ========================================================= */
 
-window.clearForm = clearForm;
-window.clearGroupForm = clearGroupForm;
-window.searchPig = searchPig;
-window.editPig = editPig;
-window.deletePig = deletePig;
-window.editPigGroup = editPigGroup;
-window.deletePigGroup = deletePigGroup;
-window.loadPigs = loadPigs;
-window.loadPigGroups = loadPigGroups;
-window.generateReport = generateReport;
-window.printReport = printReport;
-window.downloadPDF = downloadPDF;
-window.updateRegistrationTypeUI = updateRegistrationTypeUI;
-window.updateGroupTotal = updateGroupTotal;
+window.clearForm =
+    clearForm;
+
+window.clearGroupForm =
+    clearGroupForm;
+
+window.searchPig =
+    searchPig;
+
+window.editPig =
+    editPig;
+
+window.deletePig =
+    deletePig;
+
+window.editPigGroup =
+    editPigGroup;
+
+window.deletePigGroup =
+    deletePigGroup;
+
+window.loadPigs =
+    loadPigs;
+
+window.loadPigGroups =
+    loadPigGroups;
+
+window.generateReport =
+    generateReport;
+
+window.printReport =
+    printReport;
+
+window.downloadPDF =
+    downloadPDF;
+
+window.updateRegistrationTypeUI =
+    updateRegistrationTypeUI;
+
+window.updateGroupTotal =
+    updateGroupTotal;
 
 /* =========================================================
    START MODULE
    ========================================================= */
 
-if (document.readyState === "loading") {
+if (
+    document.readyState === "loading"
+) {
+
     document.addEventListener(
         "DOMContentLoaded",
         initialisePigRegistration,
-        { once: true }
+        {
+            once: true
+        }
     );
+
 } else {
+
     initialisePigRegistration();
+
 }
