@@ -16,11 +16,16 @@
 //
 // DELETE:
 // ONLY Owner/Admin AND Farm Manager
+//
+// PDF:
+// Font size increased to 14
+// PDF table text is bold
 // ==========================================================
 
 let gestationRecords = [];
 
 let editId = null;
+
 
 // ==========================================================
 // GET LOGGED-IN USER
@@ -28,24 +33,23 @@ let editId = null;
 
 function getLoggedUser(){
 
-const user =  
-    JSON.parse(  
-        localStorage.getItem("loggedInUser")  
-    );  
+    const user =
+        JSON.parse(
+            localStorage.getItem("loggedInUser")
+        );
 
-if(!user){  
+    if(!user){
 
-    alert(  
-        "No logged-in user found. Please login again."  
-    );  
+        alert(
+            "No logged-in user found. Please login again."
+        );
 
-    return null;  
+        return null;
+    }
 
-}  
-
-return user;
-
+    return user;
 }
+
 
 // ==========================================================
 // GET FARM ID
@@ -53,35 +57,33 @@ return user;
 
 function getFarmID(){
 
-const loggedUser =  
-    getLoggedUser();  
+    const loggedUser =
+        getLoggedUser();
 
-if(!loggedUser){  
+    if(!loggedUser){
 
-    return null;  
+        return null;
+    }
 
-}  
+    const farmID =
+        loggedUser.farm_id;
 
-const farmID =  
-    loggedUser.farm_id;  
+    if(
+        farmID === null ||
+        farmID === undefined ||
+        farmID === ""
+    ){
 
-if(  
-    farmID === null ||  
-    farmID === undefined ||  
-    farmID === ""  
-){  
+        alert(
+            "Your account is not assigned to a farm. Please contact the administrator."
+        );
 
-    alert(  
-        "Your account is not assigned to a farm. Please contact the administrator."  
-    );  
+        return null;
+    }
 
-    return null;  
-
-}  
-
-return farmID;
-
+    return farmID;
 }
+
 
 // ==========================================================
 // GET REGISTERED FARM NAME
@@ -92,101 +94,95 @@ return farmID;
 
 async function getRegisteredFarmName(){
 
-try{  
+    try{
 
-    if(  
-        typeof supabaseClient === "undefined"  
-    ){  
+        if(
+            typeof supabaseClient === "undefined"
+        ){
 
-        return "REGISTERED FARM";  
-
-    }  
-
-
-    const loggedUser =  
-        getLoggedUser();  
+            return "REGISTERED FARM";
+        }
 
 
-    if(!loggedUser){  
-
-        return "REGISTERED FARM";  
-
-    }  
+        const loggedUser =
+            getLoggedUser();
 
 
-    const farmID =  
-        loggedUser.farm_id;  
+        if(!loggedUser){
+
+            return "REGISTERED FARM";
+        }
 
 
-    if(  
-        farmID === null ||  
-        farmID === undefined ||  
-        farmID === ""  
-    ){  
-
-        return "REGISTERED FARM";  
-
-    }  
+        const farmID =
+            loggedUser.farm_id;
 
 
-    const {  
-        data: farm,  
-        error  
-    } =  
-        await supabaseClient  
+        if(
+            farmID === null ||
+            farmID === undefined ||
+            farmID === ""
+        ){
 
-            .from("farms")  
-
-            .select("farm_name")  
-
-            .eq(  
-                "id",  
-                farmID  
-            )  
-
-            .maybeSingle();  
+            return "REGISTERED FARM";
+        }
 
 
-    if(error){  
+        const {
+            data: farm,
+            error
+        } =
+            await supabaseClient
 
-        console.error(  
-            "GET FARM NAME ERROR:",  
-            error  
-        );  
+                .from("farms")
 
-        return "REGISTERED FARM";  
+                .select("farm_name")
 
-    }  
+                .eq(
+                    "id",
+                    farmID
+                )
 
-
-    if(  
-        farm &&  
-        farm.farm_name  
-    ){  
-
-        return String(  
-            farm.farm_name  
-        ).trim();  
-
-    }  
+                .maybeSingle();
 
 
-    return "REGISTERED FARM";  
+        if(error){
 
-}  
+            console.error(
+                "GET FARM NAME ERROR:",
+                error
+            );
 
-catch(error){  
+            return "REGISTERED FARM";
+        }
 
-    console.error(  
-        "FARM NAME ERROR:",  
-        error  
-    );  
 
-    return "REGISTERED FARM";  
+        if(
+            farm &&
+            farm.farm_name
+        ){
 
+            return String(
+                farm.farm_name
+            ).trim();
+        }
+
+
+        return "REGISTERED FARM";
+
+    }
+
+    catch(error){
+
+        console.error(
+            "FARM NAME ERROR:",
+            error
+        );
+
+        return "REGISTERED FARM";
+    }
 }
 
-}
 
 // ==========================================================
 // CHECK DELETE ROLE
@@ -195,35 +191,34 @@ catch(error){
 
 function canDeleteGestation(){
 
-const loggedUser =  
-    getLoggedUser();  
+    const loggedUser =
+        getLoggedUser();
 
-if(!loggedUser){  
+    if(!loggedUser){
 
-    return false;  
+        return false;
+    }
 
-}  
+    const role =
+        String(
+            loggedUser.role || ""
+        )
+        .trim()
+        .toLowerCase();
 
-const role =  
-    String(  
-        loggedUser.role || ""  
-    )  
-    .trim()  
-    .toLowerCase();  
+    return (
 
-return (  
+        role === "owner" ||
 
-    role === "owner" ||  
+        role === "admin" ||
 
-    role === "admin" ||  
+        role === "owner/admin" ||
 
-    role === "owner/admin" ||  
+        role === "farm manager"
 
-    role === "farm manager"  
-
-);
-
+    );
 }
+
 
 // ==========================================================
 // LOAD FARM RECORDS ONLY
@@ -231,70 +226,67 @@ return (
 
 async function loadGestationRecords(){
 
-try{  
+    try{
 
-    const farmID =  
-        getFarmID();  
+        const farmID =
+            getFarmID();
 
-    if(!farmID){  
+        if(!farmID){
 
-        return;  
-
-    }  
-
-
-    const {  
-        data,  
-        error  
-    } =  
-        await supabaseClient  
-
-            .from("gestation_records")  
-
-            .select("*")  
-
-            .eq(  
-                "farm_id",  
-                farmID  
-            )  
-
-            .order(  
-                "id",  
-                {  
-                    ascending: true  
-                }  
-            );  
+            return;
+        }
 
 
-    if(error){  
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
 
-        throw error;  
+                .from("gestation_records")
 
-    }  
+                .select("*")
+
+                .eq(
+                    "farm_id",
+                    farmID
+                )
+
+                .order(
+                    "id",
+                    {
+                        ascending: true
+                    }
+                );
 
 
-    gestationRecords =  
-        data || [];  
+        if(error){
+
+            throw error;
+        }
 
 
-    displayRecords();  
+        gestationRecords =
+            data || [];
 
-}  
 
-catch(error){  
+        displayRecords();
 
-    console.error(  
-        "LOAD GESTATION ERROR:",  
-        error  
-    );  
+    }
 
-    alert(  
-        error.message  
-    );  
+    catch(error){
 
+        console.error(
+            "LOAD GESTATION ERROR:",
+            error
+        );
+
+        alert(
+            error.message
+        );
+    }
 }
 
-}
 
 // ==========================================================
 // AUTOMATIC DATE CALCULATION
@@ -302,112 +294,111 @@ catch(error){
 
 function calculateGestationDates(){
 
-const serviceInput =  
-    document.getElementById(  
-        "serviceDate"  
-    );  
+    const serviceInput =
+        document.getElementById(
+            "serviceDate"
+        );
 
 
-if(  
-    !serviceInput ||  
-    !serviceInput.value  
-){  
+    if(
+        !serviceInput ||
+        !serviceInput.value
+    ){
 
-    return;  
-
-}  
-
-
-const serviceDate =  
-    new Date(  
-        serviceInput.value  
-    );  
+        return;
+    }
 
 
-function addDays(days){  
-
-    const date =  
-        new Date(  
-            serviceDate  
-        );  
+    const serviceDate =
+        new Date(
+            serviceInput.value
+        );
 
 
-    date.setDate(  
-        date.getDate() + days  
-    );  
+    function addDays(days){
+
+        const date =
+            new Date(
+                serviceDate
+            );
 
 
-    const year =  
-        date.getFullYear();  
+        date.setDate(
+            date.getDate() + days
+        );
 
 
-    const month =  
-        String(  
-            date.getMonth() + 1  
-        )  
-        .padStart(2,"0");  
+        const year =
+            date.getFullYear();
 
 
-    const day =  
-        String(  
-            date.getDate()  
-        )  
-        .padStart(2,"0");  
+        const month =
+            String(
+                date.getMonth() + 1
+            )
+            .padStart(2,"0");
 
 
-    return (  
-        year +  
-        "-" +  
-        month +  
-        "-" +  
-        day  
-    );  
-
-}  
+        const day =
+            String(
+                date.getDate()
+            )
+            .padStart(2,"0");
 
 
-document  
-    .getElementById("check21")  
-    .value =  
-    addDays(21);  
+        return (
+            year +
+            "-" +
+            month +
+            "-" +
+            day
+        );
+    }
 
 
-document  
-    .getElementById("feed90")  
-    .value =  
-    addDays(90);  
+    document
+        .getElementById("check21")
+        .value =
+        addDays(21);
 
 
-document  
-    .getElementById("deworm101")  
-    .value =  
-    addDays(101);  
+    document
+        .getElementById("feed90")
+        .value =
+        addDays(90);
 
 
-document  
-    .getElementById("litter101")  
-    .value =  
-    addDays(101);  
+    document
+        .getElementById("deworm101")
+        .value =
+        addDays(101);
 
 
-document  
-    .getElementById("actionDay")  
-    .value =  
-    addDays(107);  
+    document
+        .getElementById("litter101")
+        .value =
+        addDays(101);
 
 
-document  
-    .getElementById("deliveryDate")  
-    .value =  
-    addDays(114);  
+    document
+        .getElementById("actionDay")
+        .value =
+        addDays(107);
 
 
-document  
-    .getElementById("farrowsure")  
-    .value =  
-    addDays(114);
+    document
+        .getElementById("deliveryDate")
+        .value =
+        addDays(114);
+
+
+    document
+        .getElementById("farrowsure")
+        .value =
+        addDays(114);
 
 }
+
 
 // ==========================================================
 // SAVE / UPDATE RECORD
@@ -419,434 +410,421 @@ document
 "submit",
 async function(e){
 
-e.preventDefault();  
+    e.preventDefault();
 
 
-        // ----------------------------------------------  
-        // ADD PERMISSION  
-        // ----------------------------------------------  
+    // ----------------------------------------------
+    // ADD PERMISSION
+    // ----------------------------------------------
 
-        if(  
-            typeof canAdd === "function" &&  
-            editId === null &&  
-            !canAdd("Gestation")  
-        ){  
+    if(
+        typeof canAdd === "function" &&
+        editId === null &&
+        !canAdd("Gestation")
+    ){
 
-            alert(  
-                "Access Denied.\n\n" +  
-                "You do not have permission to add gestation records."  
-            );  
+        alert(
+            "Access Denied.\n\n" +
+            "You do not have permission to add gestation records."
+        );
 
-            return;  
+        return;
+    }
 
-        }  
 
+    // ----------------------------------------------
+    // EDIT PERMISSION
+    // ----------------------------------------------
 
-        // ----------------------------------------------  
-        // EDIT PERMISSION  
-        // ----------------------------------------------  
+    if(
+        typeof canEdit === "function" &&
+        editId !== null &&
+        !canEdit("Gestation")
+    ){
 
-        if(  
-            typeof canEdit === "function" &&  
-            editId !== null &&  
-            !canEdit("Gestation")  
-        ){  
+        alert(
+            "Access Denied.\n\n" +
+            "You do not have permission to edit gestation records."
+        );
 
-            alert(  
-                "Access Denied.\n\n" +  
-                "You do not have permission to edit gestation records."  
-            );  
+        return;
+    }
 
-            return;  
 
-        }  
+    const loggedUser =
+        getLoggedUser();
 
 
-        const loggedUser =  
-            getLoggedUser();  
+    if(!loggedUser){
 
+        return;
+    }
 
-        if(!loggedUser){  
 
-            return;  
+    const farmID =
+        getFarmID();
 
-        }  
 
+    if(!farmID){
 
-        const farmID =  
-            getFarmID();  
+        return;
+    }
 
 
-        if(!farmID){  
+    const record = {
 
-            return;  
+        farm_id:
+            farmID,
 
-        }  
+        sow_id:
+            document
+                .getElementById("sowID")
+                .value
+                .trim(),
 
+        registration_date:
+            document
+                .getElementById("registrationDate")
+                .value,
 
-        const record = {  
+        breed:
+            document
+                .getElementById("breed")
+                .value,
 
-            farm_id:  
-                farmID,  
+        number_of_teats:
+            parseInt(
+                document
+                    .getElementById("teats")
+                    .value
+            ) || null,
 
-            sow_id:  
-                document  
-                    .getElementById("sowID")  
-                    .value  
-                    .trim(),  
+        parity:
+            document
+                .getElementById("parity")
+                .value,
 
-            registration_date:  
-                document  
-                    .getElementById("registrationDate")  
-                    .value,  
+        service_date:
+            document
+                .getElementById("serviceDate")
+                .value,
 
-            breed:  
-                document  
-                    .getElementById("breed")  
-                    .value,  
+        boarr_semen_used:
+            document
+                .getElementById("boar")
+                .value
+                .trim(),
 
-            number_of_teats:  
-                parseInt(  
-                    document  
-                        .getElementById("teats")  
-                        .value  
-                ) || null,  
+        check21:
+            document
+                .getElementById("check21")
+                .value,
 
-            parity:  
-                document  
-                    .getElementById("parity")  
-                    .value,  
+        feed90:
+            document
+                .getElementById("feed90")
+                .value,
 
-            service_date:  
-                document  
-                    .getElementById("serviceDate")  
-                    .value,  
+        deworm101:
+            document
+                .getElementById("deworm101")
+                .value,
 
-            boarr_semen_used:  
-                document  
-                    .getElementById("boar")  
-                    .value  
-                    .trim(),  
+        litter101:
+            document
+                .getElementById("litter101")
+                .value,
 
-            check21:  
-                document  
-                    .getElementById("check21")  
-                    .value,  
+        action_day:
+            document
+                .getElementById("actionDay")
+                .value,
 
-            feed90:  
-                document  
-                    .getElementById("feed90")  
-                    .value,  
+        delivery_date:
+            document
+                .getElementById("deliveryDate")
+                .value,
 
-            deworm101:  
-                document  
-                    .getElementById("deworm101")  
-                    .value,  
+        farrowsure:
+            document
+                .getElementById("farrowsure")
+                .value,
 
-            litter101:  
-                document  
-                    .getElementById("litter101")  
-                    .value,  
+        status:
+            document
+                .getElementById("status")
+                .value,
 
-            action_day:  
-                document  
-                    .getElementById("actionDay")  
-                    .value,  
+        notes:
+            document
+                .getElementById("notes")
+                .value
+                .trim(),
 
-            delivery_date:  
-                document  
-                    .getElementById("deliveryDate")  
-                    .value,  
+        created_by:
+            loggedUser.full_name,
 
-            farrowsure:  
-                document  
-                    .getElementById("farrowsure")  
-                    .value,  
+        updated_by:
+            null,
 
-            status:  
-                document  
-                    .getElementById("status")  
-                    .value,  
+        updated_at:
+            null
+    };
 
-            notes:  
-                document  
-                    .getElementById("notes")  
-                    .value  
-                    .trim(),  
 
-            created_by:  
-                loggedUser.full_name,  
+    let result;
 
-            updated_by:  
-                null,  
+    let actionType;
 
-            updated_at:  
-                null  
 
-        };  
+    // =================================================
+    // NEW RECORD
+    // =================================================
 
+    if(editId === null){
 
-        let result;  
+        actionType = "Added";
 
-        let actionType;  
 
+        result =
+            await supabaseClient
 
-        // =================================================  
-        // NEW RECORD  
-        // =================================================  
+                .from("gestation_records")
 
-        if(editId === null){  
+                .insert([
+                    record
+                ]);
+    }
 
-            actionType = "Added";  
 
+    // =================================================
+    // UPDATE RECORD
+    // =================================================
 
-            result =  
-                await supabaseClient  
+    else{
 
-                    .from("gestation_records")  
+        actionType = "Updated";
 
-                    .insert([  
-                        record  
-                    ]);  
 
-        }  
+        // ------------------------------------------------
+        // SECURITY:
+        // Do not allow farm_id to be changed.
+        // ------------------------------------------------
 
+        delete record.farm_id;
 
-        // =================================================  
-        // UPDATE RECORD  
-        // =================================================  
 
-        else{  
+        record.updated_by =
+            loggedUser.full_name;
 
-            actionType = "Updated";  
 
+        record.updated_at =
+            new Date().toISOString();
 
-            // ------------------------------------------------  
-            // SECURITY:  
-            // Do not allow farm_id to be changed.  
-            // ------------------------------------------------  
 
-            delete record.farm_id;  
+        result =
+            await supabaseClient
 
+                .from("gestation_records")
 
-            record.updated_by =  
-                loggedUser.full_name;  
+                .update(record)
 
+                .eq(
+                    "id",
+                    editId
+                )
 
-            record.updated_at =  
-                new Date().toISOString();  
+                .eq(
+                    "farm_id",
+                    farmID
+                );
+    }
 
 
-            result =  
-                await supabaseClient  
+    // =================================================
+    // CHECK DATABASE RESULT
+    // =================================================
 
-                    .from("gestation_records")  
+    if(result.error){
 
-                    .update(record)  
+        console.error(
+            result.error
+        );
 
-                    .eq(  
-                        "id",  
-                        editId  
-                    )  
 
-                    .eq(  
-                        "farm_id",  
-                        farmID  
-                    );  
+        alert(
+            result.error.message
+        );
 
-        }  
 
+        return;
+    }
 
-        // =================================================  
-        // CHECK DATABASE RESULT  
-        // =================================================  
 
-        if(result.error){  
+    // =================================================
+    // ACTIVITY LOG
+    // =================================================
 
-            console.error(  
-                result.error  
-            );  
+    await saveActivity(
 
+        loggedUser.full_name +
+        " (" +
+        loggedUser.role +
+        ")",
 
-            alert(  
-                result.error.message  
-            );  
+        actionType,
 
+        "Gestation Records",
 
-            return;  
+        actionType +
+        " gestation record for Sow ID: " +
+        record.sow_id
+    );
 
-        }  
 
+    alert(
+        editId === null
+        ?
+        "Gestation record saved successfully."
+        :
+        "Gestation record updated successfully."
+    );
 
-        // =================================================  
-        // ACTIVITY LOG  
-        // =================================================  
 
-        await saveActivity(  
+    editId = null;
 
-            loggedUser.full_name +  
-            " (" +  
-            loggedUser.role +  
-            ")",  
 
-            actionType,  
+    document
+        .getElementById("gestationForm")
+        .reset();
 
-            "Gestation Records",  
 
-            actionType +  
-            " gestation record for Sow ID: " +  
-            record.sow_id  
+    loadGestationRecords();
 
-        );  
+});
 
-
-        alert(  
-            editId === null  
-            ?  
-            "Gestation record saved successfully."  
-            :  
-            "Gestation record updated successfully."  
-        );  
-
-
-        editId = null;  
-
-
-        document  
-            .getElementById("gestationForm")  
-            .reset();  
-
-
-        loadGestationRecords();  
-
-    }  
-);
 
 // ==========================================================
 // DISPLAY RECORDS
 // ==========================================================
 
 function displayRecords(
-records = gestationRecords
+    records = gestationRecords
 ){
 
-const table =  
-    document.getElementById(  
-        "gestationTable"  
-    );  
+    const table =
+        document.getElementById(
+            "gestationTable"
+        );
 
 
-if(!table){  
+    if(!table){
 
-    return;  
-
-}  
-
-
-table.innerHTML = "";  
+        return;
+    }
 
 
-records.forEach(  
-    function(record){  
-
-        let actionButtons = "";  
+    table.innerHTML = "";
 
 
-        // =================================================  
-        // EDIT BUTTON  
-        // =================================================  
+    records.forEach(
+        function(record){
 
-        if(  
-            typeof canEdit === "function" &&  
-            canEdit("Gestation")  
-        ){  
-
-            actionButtons += `  
-
-                <button  
-                    type="button"  
-                    onclick="editRecord(${record.id})">  
-
-                    ✏️ Edit  
-
-                </button>  
-
-            `;  
-
-        }  
+            let actionButtons = "";
 
 
-        // =================================================  
-        // DELETE BUTTON  
-        // =================================================  
+            // =================================================
+            // EDIT BUTTON
+            // =================================================
 
-        if(  
-            canDeleteGestation()  
-        ){  
+            if(
+                typeof canEdit === "function" &&
+                canEdit("Gestation")
+            ){
 
-            actionButtons += `  
+                actionButtons += `
 
-                <button  
-                    type="button"  
-                    onclick="deleteRecord(${record.id})">  
+                    <button
+                        type="button"
+                        onclick="editRecord(${record.id})">
 
-                    🗑️ Delete  
+                        ✏️ Edit
 
-                </button>  
+                    </button>
 
-            `;  
-
-        }  
-
-
-        // =================================================  
-        // NO ACTIONS  
-        // =================================================  
-
-        if(!actionButtons){  
-
-            actionButtons =  
-                "<span>No actions</span>";  
-
-        }  
+                `;
+            }
 
 
-        table.innerHTML += `  
+            // =================================================
+            // DELETE BUTTON
+            // =================================================
 
-            <tr>  
+            if(
+                canDeleteGestation()
+            ){
 
-                <td>  
-                    ${record.sow_id || ""}  
-                </td>  
+                actionButtons += `
 
-                <td>  
-                    ${record.breed || ""}  
-                </td>  
+                    <button
+                        type="button"
+                        onclick="deleteRecord(${record.id})">
 
-                <td>  
-                    ${record.service_date || ""}  
-                </td>  
+                        🗑️ Delete
 
-                <td>  
-                    ${record.delivery_date || ""}  
-                </td>  
+                    </button>
 
-                <td>  
-                    ${record.status || ""}  
-                </td>  
+                `;
+            }
 
-                <td>  
-                    ${actionButtons}  
-                </td>  
 
-            </tr>  
+            // =================================================
+            // NO ACTIONS
+            // =================================================
 
-        `;  
+            if(!actionButtons){
 
-    }  
-);
+                actionButtons =
+                    "<span>No actions</span>";
+            }
+
+
+            table.innerHTML += `
+
+                <tr>
+
+                    <td>
+                        ${record.sow_id || ""}
+                    </td>
+
+                    <td>
+                        ${record.breed || ""}
+                    </td>
+
+                    <td>
+                        ${record.service_date || ""}
+                    </td>
+
+                    <td>
+                        ${record.delivery_date || ""}
+                    </td>
+
+                    <td>
+                        ${record.status || ""}
+                    </td>
+
+                    <td>
+                        ${actionButtons}
+                    </td>
+
+                </tr>
+
+            `;
+        }
+    );
 
 }
+
 
 // ==========================================================
 // EDIT RECORD
@@ -854,147 +832,146 @@ records.forEach(
 
 function editRecord(id){
 
-if(  
-    typeof canEdit === "function" &&  
-    !canEdit("Gestation")  
-){  
+    if(
+        typeof canEdit === "function" &&
+        !canEdit("Gestation")
+    ){
 
-    alert(  
-        "Access Denied.\n\n" +  
-        "You do not have permission to edit gestation records."  
-    );  
+        alert(
+            "Access Denied.\n\n" +
+            "You do not have permission to edit gestation records."
+        );
 
-    return;  
-
-}  
-
-
-const record =  
-    gestationRecords.find(  
-        function(item){  
-
-            return item.id === id;  
-
-        }  
-    );  
+        return;
+    }
 
 
-if(!record){  
+    const record =
+        gestationRecords.find(
+            function(item){
 
-    return;  
+                return item.id === id;
 
-}  
-
-
-document  
-    .getElementById("sowID")  
-    .value =  
-    record.sow_id || "";  
+            }
+        );
 
 
-document  
-    .getElementById("registrationDate")  
-    .value =  
-    record.registration_date || "";  
+    if(!record){
+
+        return;
+    }
 
 
-document  
-    .getElementById("breed")  
-    .value =  
-    record.breed || "";  
+    document
+        .getElementById("sowID")
+        .value =
+        record.sow_id || "";
 
 
-document  
-    .getElementById("teats")  
-    .value =  
-    record.number_of_teats || "";  
+    document
+        .getElementById("registrationDate")
+        .value =
+        record.registration_date || "";
 
 
-document  
-    .getElementById("parity")  
-    .value =  
-    record.parity || "";  
+    document
+        .getElementById("breed")
+        .value =
+        record.breed || "";
 
 
-document  
-    .getElementById("serviceDate")  
-    .value =  
-    record.service_date || "";  
+    document
+        .getElementById("teats")
+        .value =
+        record.number_of_teats || "";
 
 
-document  
-    .getElementById("boar")  
-    .value =  
-    record.boarr_semen_used || "";  
+    document
+        .getElementById("parity")
+        .value =
+        record.parity || "";
 
 
-document  
-    .getElementById("check21")  
-    .value =  
-    record.check21 || "";  
+    document
+        .getElementById("serviceDate")
+        .value =
+        record.service_date || "";
 
 
-document  
-    .getElementById("feed90")  
-    .value =  
-    record.feed90 || "";  
+    document
+        .getElementById("boar")
+        .value =
+        record.boarr_semen_used || "";
 
 
-document  
-    .getElementById("deworm101")  
-    .value =  
-    record.deworm101 || "";  
+    document
+        .getElementById("check21")
+        .value =
+        record.check21 || "";
 
 
-document  
-    .getElementById("litter101")  
-    .value =  
-    record.litter101 || "";  
+    document
+        .getElementById("feed90")
+        .value =
+        record.feed90 || "";
 
 
-document  
-    .getElementById("actionDay")  
-    .value =  
-    record.action_day || "";  
+    document
+        .getElementById("deworm101")
+        .value =
+        record.deworm101 || "";
 
 
-document  
-    .getElementById("deliveryDate")  
-    .value =  
-    record.delivery_date || "";  
+    document
+        .getElementById("litter101")
+        .value =
+        record.litter101 || "";
 
 
-document  
-    .getElementById("farrowsure")  
-    .value =  
-    record.farrowsure || "";  
+    document
+        .getElementById("actionDay")
+        .value =
+        record.action_day || "";
 
 
-document  
-    .getElementById("status")  
-    .value =  
-    record.status || "";  
+    document
+        .getElementById("deliveryDate")
+        .value =
+        record.delivery_date || "";
 
 
-document  
-    .getElementById("notes")  
-    .value =  
-    record.notes || "";  
+    document
+        .getElementById("farrowsure")
+        .value =
+        record.farrowsure || "";
 
 
-editId =  
-    record.id;  
+    document
+        .getElementById("status")
+        .value =
+        record.status || "";
 
 
-window.scrollTo({  
+    document
+        .getElementById("notes")
+        .value =
+        record.notes || "";
 
-    top: 0,  
 
-    behavior: "smooth"  
+    editId =
+        record.id;
 
-});
+
+    window.scrollTo({
+
+        top: 0,
+
+        behavior: "smooth"
+
+    });
 
 }
+
 
 // ==========================================================
 // DELETE RECORD
@@ -1002,145 +979,140 @@ window.scrollTo({
 
 async function deleteRecord(id){
 
-// =======================================================  
-// ROLE CHECK  
-// =======================================================  
+    // =======================================================
+    // ROLE CHECK
+    // =======================================================
 
-if(!canDeleteGestation()){  
+    if(!canDeleteGestation()){
 
-    alert(  
-        "Access Denied.\n\n" +  
-        "Only Owner/Admin and Farm Manager can delete gestation records."  
-    );  
+        alert(
+            "Access Denied.\n\n" +
+            "Only Owner/Admin and Farm Manager can delete gestation records."
+        );
 
-    return;  
-
-}  
-
-
-if(  
-    !confirm(  
-        "Delete this gestation record?"  
-    )  
-){  
-
-    return;  
-
-}  
+        return;
+    }
 
 
-const loggedUser =  
-    getLoggedUser();  
+    if(
+        !confirm(
+            "Delete this gestation record?"
+        )
+    ){
+
+        return;
+    }
 
 
-if(!loggedUser){  
-
-    return;  
-
-}  
+    const loggedUser =
+        getLoggedUser();
 
 
-const farmID =  
-    getFarmID();  
+    if(!loggedUser){
+
+        return;
+    }
 
 
-if(!farmID){  
-
-    return;  
-
-}  
+    const farmID =
+        getFarmID();
 
 
-try{  
+    if(!farmID){
 
-    const deletedRecord =  
-        gestationRecords.find(  
-            function(record){  
-
-                return record.id === id;  
-
-            }  
-        );  
+        return;
+    }
 
 
-    const {  
-        error  
-    } =  
-        await supabaseClient  
+    try{
 
-            .from("gestation_records")  
+        const deletedRecord =
+            gestationRecords.find(
+                function(record){
 
-            .delete()  
+                    return record.id === id;
 
-            .eq(  
-                "id",  
-                id  
-            )  
-
-            .eq(  
-                "farm_id",  
-                farmID  
-            );  
+                }
+            );
 
 
-    if(error){  
+        const {
+            error
+        } =
+            await supabaseClient
 
-        throw error;  
+                .from("gestation_records")
 
-    }  
+                .delete()
 
+                .eq(
+                    "id",
+                    id
+                )
 
-    // ===================================================  
-    // ACTIVITY LOG  
-    // ===================================================  
-
-    await saveActivity(  
-
-        loggedUser.full_name +  
-        " (" +  
-        loggedUser.role +  
-        ")",  
-
-        "Deleted",  
-
-        "Gestation Records",  
-
-        "Deleted gestation record for Sow ID: " +  
-        (  
-            deletedRecord  
-            ?  
-            deletedRecord.sow_id  
-            :  
-            id  
-        )  
-
-    );  
+                .eq(
+                    "farm_id",
+                    farmID
+                );
 
 
-    alert(  
-        "Gestation record deleted successfully."  
-    );  
+        if(error){
+
+            throw error;
+        }
 
 
-    loadGestationRecords();  
+        // ===================================================
+        // ACTIVITY LOG
+        // ===================================================
 
-}  
+        await saveActivity(
 
-catch(error){  
+            loggedUser.full_name +
+            " (" +
+            loggedUser.role +
+            ")",
 
-    console.error(  
-        "DELETE GESTATION ERROR:",  
-        error  
-    );  
+            "Deleted",
+
+            "Gestation Records",
+
+            "Deleted gestation record for Sow ID: " +
+            (
+                deletedRecord
+                ?
+                deletedRecord.sow_id
+                :
+                id
+            )
+
+        );
 
 
-    alert(  
-        error.message  
-    );  
+        alert(
+            "Gestation record deleted successfully."
+        );
+
+
+        loadGestationRecords();
+
+    }
+
+    catch(error){
+
+        console.error(
+            "DELETE GESTATION ERROR:",
+            error
+        );
+
+
+        alert(
+            error.message
+        );
+    }
 
 }
 
-}
 
 // ==========================================================
 // SEARCH RECORD
@@ -1148,77 +1120,76 @@ catch(error){
 
 function searchRecord(){
 
-if(  
-    typeof canView === "function" &&  
-    !canView("Gestation")  
-){  
+    if(
+        typeof canView === "function" &&
+        !canView("Gestation")
+    ){
 
-    alert(  
-        "Access Denied.\n\n" +  
-        "You do not have permission to view gestation records."  
-    );  
+        alert(
+            "Access Denied.\n\n" +
+            "You do not have permission to view gestation records."
+        );
 
-    return;  
-
-}  
-
-
-const search =  
-    document  
-        .getElementById("searchGestation")  
-        .value  
-        .trim()  
-        .toLowerCase();  
+        return;
+    }
 
 
-if(search === ""){  
-
-    displayRecords();  
-
-    return;  
-
-}  
-
-
-const filtered =  
-    gestationRecords.filter(  
-        function(record){  
-
-            return (  
-
-                String(  
-                    record.sow_id || ""  
-                )  
-                .toLowerCase()  
-                .includes(search)  
-
-                ||  
-
-                String(  
-                    record.breed || ""  
-                )  
-                .toLowerCase()  
-                .includes(search)  
-
-                ||  
-
-                String(  
-                    record.status || ""  
-                )  
-                .toLowerCase()  
-                .includes(search)  
-
-            );  
-
-        }  
-    );  
+    const search =
+        document
+            .getElementById("searchGestation")
+            .value
+            .trim()
+            .toLowerCase();
 
 
-displayRecords(  
-    filtered  
-);
+    if(search === ""){
+
+        displayRecords();
+
+        return;
+    }
+
+
+    const filtered =
+        gestationRecords.filter(
+            function(record){
+
+                return (
+
+                    String(
+                        record.sow_id || ""
+                    )
+                    .toLowerCase()
+                    .includes(search)
+
+                    ||
+
+                    String(
+                        record.breed || ""
+                    )
+                    .toLowerCase()
+                    .includes(search)
+
+                    ||
+
+                    String(
+                        record.status || ""
+                    )
+                    .toLowerCase()
+                    .includes(search)
+
+                );
+
+            }
+        );
+
+
+    displayRecords(
+        filtered
+    );
 
 }
+
 
 // ==========================================================
 // GENERATE REPORT
@@ -1226,505 +1197,576 @@ displayRecords(
 
 function generateReport(){
 
-if(  
-    typeof canReport === "function" &&  
-    !canReport("Gestation")  
-){  
+    if(
+        typeof canReport === "function" &&
+        !canReport("Gestation")
+    ){
 
-    alert(  
-        "Access Denied.\n\n" +  
-        "You do not have permission to generate gestation reports."  
-    );  
+        alert(
+            "Access Denied.\n\n" +
+            "You do not have permission to generate gestation reports."
+        );
 
-    return;  
-
-}  
-
-
-const total =  
-    gestationRecords.length;  
+        return;
+    }
 
 
-const pregnant =  
-    gestationRecords.filter(  
-        r =>  
-            r.status === "Pregnant"  
-    ).length;  
+    const total =
+        gestationRecords.length;
 
 
-const farrowed =  
-    gestationRecords.filter(  
-        r =>  
-            r.status === "Farrowed"  
-    ).length;  
+    const pregnant =
+        gestationRecords.filter(
+            r =>
+                r.status === "Pregnant"
+        ).length;
 
 
-const empty =  
-    gestationRecords.filter(  
-        r =>  
-            r.status === "Empty"  
-    ).length;  
+    const farrowed =
+        gestationRecords.filter(
+            r =>
+                r.status === "Farrowed"
+        ).length;
 
 
-const aborted =  
-    gestationRecords.filter(  
-        r =>  
-            r.status === "Aborted"  
-    ).length;  
+    const empty =
+        gestationRecords.filter(
+            r =>
+                r.status === "Empty"
+        ).length;
 
 
-alert(  
+    const aborted =
+        gestationRecords.filter(
+            r =>
+                r.status === "Aborted"
+        ).length;
 
-    "GESTATION REPORT\n\n" +  
 
-    "Total Records : " +  
-    total +  
+    alert(
 
-    "\nPregnant : " +  
-    pregnant +  
+        "GESTATION REPORT\n\n" +
 
-    "\nFarrowed : " +  
-    farrowed +  
+        "Total Records : " +
+        total +
 
-    "\nEmpty : " +  
-    empty +  
+        "\nPregnant : " +
+        pregnant +
 
-    "\nAborted : " +  
-    aborted  
+        "\nFarrowed : " +
+        farrowed +
 
-);
+        "\nEmpty : " +
+        empty +
+
+        "\nAborted : " +
+        aborted
+
+    );
 
 }
+
 
 // ==========================================================
 // DOWNLOAD PDF REPORT
 // ==========================================================
+// PDF FONT:
+// Main PDF text = 14
+// Table text = 14
+// All PDF table text = BOLD
+// ==========================================================
 
 async function downloadPDF(){
 
-if(  
-    typeof canReport === "function" &&  
-    !canReport("Gestation")  
-){  
+    if(
+        typeof canReport === "function" &&
+        !canReport("Gestation")
+    ){
 
-    alert(  
-        "Access Denied.\n\n" +  
-        "You do not have permission to download gestation reports."  
-    );  
+        alert(
+            "Access Denied.\n\n" +
+            "You do not have permission to download gestation reports."
+        );
 
-    return;  
+        return;
+    }
 
-}  
 
+    // ------------------------------------------------------
+    // Check PDF library
+    // ------------------------------------------------------
 
-// ------------------------------------------------------  
-// Check PDF library  
-// ------------------------------------------------------  
+    if(
+        !window.jspdf ||
+        !window.jspdf.jsPDF
+    ){
 
-if(  
-    !window.jspdf ||  
-    !window.jspdf.jsPDF  
-){  
+        alert(
+            "PDF library is not available. Please check your internet connection and reload the page."
+        );
 
-    alert(  
-        "PDF library is not available. Please check your internet connection and reload the page."  
-    );  
+        return;
+    }
 
-    return;  
 
-}  
+    if(
+        typeof gestationRecords === "undefined"
+    ){
 
+        alert(
+            "No gestation records are available."
+        );
 
-if(  
-    typeof gestationRecords === "undefined"  
-){  
+        return;
+    }
 
-    alert(  
-        "No gestation records are available."  
-    );  
 
-    return;  
+    try{
 
-}  
+        const { jsPDF } =
+            window.jspdf;
 
 
-try{  
+        // --------------------------------------------------
+        // GET REGISTERED FARM NAME
+        // --------------------------------------------------
 
-    const { jsPDF } =  
-        window.jspdf;  
+        const farmName =
+            await getRegisteredFarmName();
 
 
-    // --------------------------------------------------  
-    // GET REGISTERED FARM NAME  
-    // --------------------------------------------------  
+        const doc =
+            new jsPDF({
 
-    const farmName =  
-        await getRegisteredFarmName();  
+                orientation:"landscape",
 
+                unit:"mm",
 
-    const doc =  
-        new jsPDF({  
-            orientation:"landscape",  
-            unit:"mm",  
-            format:"a4"  
-        });  
+                format:"a4"
 
+            });
 
-    // --------------------------------------------------  
-    // HEADER  
-    // --------------------------------------------------  
 
-    doc.setFontSize(20);  
+        // --------------------------------------------------
+        // HEADER
+        // --------------------------------------------------
 
-    doc.setFont(  
-        "helvetica",  
-        "bold"  
-    );  
+        doc.setFontSize(14);
 
-    doc.text(  
-        farmName,  
-        148,  
-        15,  
-        {  
-            align:"center"  
-        }  
-    );  
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
 
+        doc.text(
+            farmName,
+            148,
+            15,
+            {
+                align:"center"
+            }
+        );
 
-    doc.setFontSize(13);  
 
-    doc.setFont(  
-        "helvetica",  
-        "normal"  
-    );  
+        doc.setFontSize(14);
 
-    doc.text(  
-        "GESTATION RECORDS REPORT",  
-        148,  
-        23,  
-        {  
-            align:"center"  
-        }  
-    );  
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
 
+        doc.text(
+            "GESTATION RECORDS REPORT",
+            148,
+            23,
+            {
+                align:"center"
+            }
+        );
 
-    // --------------------------------------------------  
-    // FARM / USER INFORMATION  
-    // --------------------------------------------------  
 
-    const loggedUser =  
-        getLoggedUser();  
+        // --------------------------------------------------
+        // FARM / USER INFORMATION
+        // --------------------------------------------------
 
+        const loggedUser =
+            getLoggedUser();
 
-    const farmID =  
-        getFarmID();  
 
+        const farmID =
+            getFarmID();
 
-    doc.setFontSize(9);  
 
-    doc.text(  
-        "Farm ID: " +  
-        String(farmID || ""),  
-        14,  
-        32  
-    );  
+        doc.setFontSize(14);
 
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
 
-    doc.text(  
-        "Generated By: " +  
-        String(  
-            loggedUser  
-            ?  
-            loggedUser.full_name  
-            :  
-            ""  
-        ),  
-        14,  
-        38  
-    );  
 
+        doc.text(
+            "Farm ID: " +
+            String(farmID || ""),
+            14,
+            32
+        );
 
-    doc.text(  
-        "Generated: " +  
-        new Date().toLocaleString("en-ZM"),  
-        14,  
-        44  
-    );  
 
+        doc.text(
+            "Generated By: " +
+            String(
+                loggedUser
+                ?
+                loggedUser.full_name
+                :
+                ""
+            ),
+            14,
+            38
+        );
 
-    // --------------------------------------------------  
-    // SUMMARY  
-    // --------------------------------------------------  
 
-    const total =  
-        gestationRecords.length;  
+        doc.text(
+            "Generated: " +
+            new Date().toLocaleString("en-ZM"),
+            14,
+            44
+        );
 
 
-    const pregnant =  
-        gestationRecords.filter(  
-            r =>  
-                r.status === "Pregnant"  
-        ).length;  
+        // --------------------------------------------------
+        // SUMMARY
+        // --------------------------------------------------
 
+        const total =
+            gestationRecords.length;
 
-    const farrowed =  
-        gestationRecords.filter(  
-            r =>  
-                r.status === "Farrowed"  
-        ).length;  
 
+        const pregnant =
+            gestationRecords.filter(
+                r =>
+                    r.status === "Pregnant"
+            ).length;
 
-    const empty =  
-        gestationRecords.filter(  
-            r =>  
-                r.status === "Empty"  
-        ).length;  
 
+        const farrowed =
+            gestationRecords.filter(
+                r =>
+                    r.status === "Farrowed"
+            ).length;
 
-    const aborted =  
-        gestationRecords.filter(  
-            r =>  
-                r.status === "Aborted"  
-        ).length;  
 
+        const empty =
+            gestationRecords.filter(
+                r =>
+                    r.status === "Empty"
+            ).length;
 
-    doc.setFont(  
-        "helvetica",  
-        "bold"  
-    );  
 
+        const aborted =
+            gestationRecords.filter(
+                r =>
+                    r.status === "Aborted"
+            ).length;
 
-    doc.text(  
-        "Total: " + total,  
-        110,  
-        32  
-    );  
 
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
 
-    doc.text(  
-        "Pregnant: " + pregnant,  
-        110,  
-        38  
-    );  
 
+        doc.setFontSize(14);
 
-    doc.text(  
-        "Farrowed: " + farrowed,  
-        110,  
-        44  
-    );  
 
+        doc.text(
+            "Total: " + total,
+            110,
+            32
+        );
 
-    doc.text(  
-        "Empty: " + empty,  
-        180,  
-        32  
-    );  
 
+        doc.text(
+            "Pregnant: " + pregnant,
+            110,
+            38
+        );
 
-    doc.text(  
-        "Aborted: " + aborted,  
-        180,  
-        38  
-    );  
 
+        doc.text(
+            "Farrowed: " + farrowed,
+            110,
+            44
+        );
 
-    // --------------------------------------------------  
-    // TABLE  
-    // --------------------------------------------------  
 
-    const tableData =  
-        gestationRecords.map(  
-            function(record){  
+        doc.text(
+            "Empty: " + empty,
+            180,
+            32
+        );
 
-                return [  
 
-                    record.sow_id || "",  
+        doc.text(
+            "Aborted: " + aborted,
+            180,
+            38
+        );
 
-                    record.registration_date || "",  
 
-                    record.breed || "",  
+        // --------------------------------------------------
+        // TABLE
+        // --------------------------------------------------
 
-                    record.number_of_teats  
-                    ?  
-                    record.number_of_teats +  
-                    " Teats"  
-                    :  
-                    "",  
+        const tableData =
+            gestationRecords.map(
+                function(record){
 
-                    record.parity || "",  
+                    return [
 
-                    record.service_date || "",  
+                        record.sow_id || "",
 
-                    record.boarr_semen_used || "",  
+                        record.registration_date || "",
 
-                    record.check21 || "",  
+                        record.breed || "",
 
-                    record.feed90 || "",  
+                        record.number_of_teats
+                        ?
+                        record.number_of_teats +
+                        " Teats"
+                        :
+                        "",
 
-                    record.deworm101 || "",  
+                        record.parity || "",
 
-                    record.litter101 || "",  
+                        record.service_date || "",
 
-                    record.action_day || "",  
+                        record.boarr_semen_used || "",
 
-                    record.delivery_date || "",  
+                        record.check21 || "",
 
-                    record.status || ""  
+                        record.feed90 || "",
 
-                ];  
+                        record.deworm101 || "",
 
-            }  
-        );  
+                        record.litter101 || "",
 
+                        record.action_day || "",
 
-    if(  
-        typeof doc.autoTable !== "function"  
-    ){  
+                        record.delivery_date || "",
 
-        alert(  
-            "PDF table plugin is not available. Please reload the page."  
-        );  
+                        record.status || ""
 
-        return;  
+                    ];
 
-    }  
+                }
+            );
 
 
-    doc.autoTable({  
+        if(
+            typeof doc.autoTable !== "function"
+        ){
 
-        startY:50,  
+            alert(
+                "PDF table plugin is not available. Please reload the page."
+            );
 
-        head:[[  
-            "Sow ID",  
-            "Registration",  
-            "Breed",  
-            "Teats",  
-            "Parity",  
-            "Service Date",  
-            "Boar / Semen",  
-            "21 Day",  
-            "90 Day",  
-            "101 Day Deworm",  
-            "101 Day Litter",  
-            "Action Day",  
-            "Delivery",  
-            "Status"  
-        ]],  
+            return;
+        }
 
-        body:tableData,  
 
-        theme:"grid",  
+        // ==================================================
+        // PDF TABLE
+        // FONT SIZE = 14
+        // FONT STYLE = BOLD
+        // ==================================================
 
-        styles:{  
-            fontSize:6,  
-            cellPadding:2,  
-            overflow:"linebreak",  
-            valign:"middle"  
-        },  
+        doc.autoTable({
 
-        headStyles:{  
-            fontSize:6.5,  
-            fontStyle:"bold"  
-        },  
+            startY:50,
 
-        alternateRowStyles:{  
-            fillColor:[245,248,246]  
-        },  
+            head:[[
 
-        margin:{  
-            left:8,  
-            right:8  
-        },  
+                "Sow ID",
 
-        didDrawPage:function(data){  
+                "Registration",
 
-            const pageHeight =  
-                doc.internal.pageSize.height;  
+                "Breed",
 
+                "Teats",
 
-            doc.setFontSize(7);  
+                "Parity",
 
-            doc.setFont(  
-                "helvetica",  
-                "normal"  
-            );  
+                "Service Date",
 
+                "Boar / Semen",
 
-            // ------------------------------------------------  
-            // REGISTERED FARM NAME IN FOOTER  
-            // ------------------------------------------------  
+                "21 Day",
 
-            doc.text(  
-                farmName +  
-                " - Gestation Records",  
-                8,  
-                pageHeight - 7  
-            );  
+                "90 Day",
 
+                "101 Day Deworm",
 
-            doc.text(  
-                "Page " +  
-                doc.internal.getNumberOfPages(),  
-                285,  
-                pageHeight - 7,  
-                {  
-                    align:"right"  
-                }  
-            );  
+                "101 Day Litter",
 
-        }  
+                "Action Day",
 
-    });  
+                "Delivery",
 
+                "Status"
 
-    // --------------------------------------------------  
-    // SAVE PDF  
-    // --------------------------------------------------  
+            ]],
 
-    const safeFarmName =  
-        farmName  
-            .replace(  
-                /[^a-z0-9]+/gi,  
-                "-"  
-            )  
-            .replace(  
-                /^-+|-+$/g,  
-                ""  
-            );  
+            body:tableData,
 
+            theme:"grid",
 
-    const fileName =  
-        safeFarmName +  
-        "-Gestation-Records-" +  
-        new Date()  
-            .toISOString()  
-            .slice(0,10) +  
-        ".pdf";  
+            styles:{
 
+                fontSize:14,
 
-    doc.save(  
-        fileName  
-    );  
+                fontStyle:"bold",
 
-}  
+                cellPadding:3,
 
-catch(error){  
+                overflow:"linebreak",
 
-    console.error(  
-        "GESTATION PDF ERROR:",  
-        error  
-    );  
+                valign:"middle"
 
+            },
 
-    alert(  
-        "Unable to create PDF report.\n\n" +  
-        error.message  
-    );  
+            headStyles:{
+
+                fontSize:14,
+
+                fontStyle:"bold"
+
+            },
+
+            bodyStyles:{
+
+                fontSize:14,
+
+                fontStyle:"bold"
+
+            },
+
+            alternateRowStyles:{
+
+                fillColor:[245,248,246]
+
+            },
+
+            margin:{
+
+                left:8,
+
+                right:8
+
+            },
+
+            didDrawPage:function(data){
+
+                const pageHeight =
+                    doc.internal.pageSize.height;
+
+
+                doc.setFontSize(14);
+
+                doc.setFont(
+                    "helvetica",
+                    "bold"
+                );
+
+
+                // ------------------------------------------------
+                // REGISTERED FARM NAME IN FOOTER
+                // ------------------------------------------------
+
+                doc.text(
+
+                    farmName +
+                    " - Gestation Records",
+
+                    8,
+
+                    pageHeight - 7
+
+                );
+
+
+                doc.text(
+
+                    "Page " +
+                    doc.internal.getNumberOfPages(),
+
+                    285,
+
+                    pageHeight - 7,
+
+                    {
+
+                        align:"right"
+
+                    }
+
+                );
+
+            }
+
+        });
+
+
+        // --------------------------------------------------
+        // SAVE PDF
+        // --------------------------------------------------
+
+        const safeFarmName =
+            farmName
+
+                .replace(
+                    /[^a-z0-9]+/gi,
+                    "-"
+                )
+
+                .replace(
+                    /^-+|-+$/g,
+                    ""
+                );
+
+
+        const fileName =
+            safeFarmName +
+            "-Gestation-Records-" +
+            new Date()
+                .toISOString()
+                .slice(0,10) +
+            ".pdf";
+
+
+        doc.save(
+            fileName
+        );
+
+    }
+
+    catch(error){
+
+        console.error(
+            "GESTATION PDF ERROR:",
+            error
+        );
+
+
+        alert(
+            "Unable to create PDF report.\n\n" +
+            error.message
+        );
+    }
 
 }
 
-}
 
 // ==========================================================
 // PRINT REPORT
@@ -1735,373 +1777,373 @@ catch(error){
 
 async function printReport(){
 
-if(  
-    typeof canReport === "function" &&  
-    !canReport("Gestation")  
-){  
+    if(
+        typeof canReport === "function" &&
+        !canReport("Gestation")
+    ){
 
-    alert(  
-        "Access Denied.\n\n" +  
-        "You do not have permission to print gestation reports."  
-    );  
+        alert(
+            "Access Denied.\n\n" +
+            "You do not have permission to print gestation reports."
+        );
 
-    return;  
+        return;
+    }
 
-}  
 
+    try{
 
-try{  
+        // --------------------------------------------------
+        // GET REGISTERED FARM NAME
+        // --------------------------------------------------
 
-    // --------------------------------------------------  
-    // GET REGISTERED FARM NAME  
-    // --------------------------------------------------  
+        const farmName =
+            await getRegisteredFarmName();
 
-    const farmName =  
-        await getRegisteredFarmName();  
 
+        // --------------------------------------------------
+        // PAGE HEADER ELEMENTS
+        // --------------------------------------------------
 
-    // --------------------------------------------------  
-    // PAGE HEADER ELEMENTS  
-    // --------------------------------------------------  
+        const softwareBrand =
+            document.querySelector(
+                ".software-brand"
+            );
 
-    const softwareBrand =  
-        document.querySelector(  
-            ".software-brand"  
-        );  
 
+        const systemDescription =
+            document.querySelector(
+                ".page-header p"
+            );
 
-    const systemDescription =  
-        document.querySelector(  
-            ".page-header p"  
-        );  
 
+        const farmLabel =
+            document.querySelector(
+                ".farm-label"
+            );
 
-    const farmLabel =  
-        document.querySelector(  
-            ".farm-label"  
-        );  
 
+        const farmNameElement =
+            document.querySelector(
+                "[data-farm-name]"
+            );
 
-    const farmNameElement =  
-        document.querySelector(  
-            "[data-farm-name]"  
-        );  
 
+        const pigIcon =
+            document.querySelector(
+                ".pig-icon"
+            );
 
-    const pigIcon =  
-        document.querySelector(  
-            ".pig-icon"  
-        );  
 
+        // --------------------------------------------------
+        // STORE ORIGINAL VALUES/STYLES
+        // --------------------------------------------------
 
-    // --------------------------------------------------  
-    // STORE ORIGINAL VALUES/STYLES  
-    // --------------------------------------------------  
+        const originalFarmName =
+            farmNameElement
+            ?
+            farmNameElement.textContent
+            :
+            "";
 
-    const originalFarmName =  
-        farmNameElement  
-        ?  
-        farmNameElement.textContent  
-        :  
-        "";  
 
+        const originalSoftwareDisplay =
+            softwareBrand
+            ?
+            softwareBrand.style.display
+            :
+            "";
 
-    const originalSoftwareDisplay =  
-        softwareBrand  
-        ?  
-        softwareBrand.style.display  
-        :  
-        "";  
 
+        const originalDescriptionDisplay =
+            systemDescription
+            ?
+            systemDescription.style.display
+            :
+            "";
 
-    const originalDescriptionDisplay =  
-        systemDescription  
-        ?  
-        systemDescription.style.display  
-        :  
-        "";  
 
+        const originalLabelDisplay =
+            farmLabel
+            ?
+            farmLabel.style.display
+            :
+            "";
 
-    const originalLabelDisplay =  
-        farmLabel  
-        ?  
-        farmLabel.style.display  
-        :  
-        "";  
 
+        const originalPigIconDisplay =
+            pigIcon
+            ?
+            pigIcon.style.display
+            :
+            "";
 
-    const originalPigIconDisplay =  
-        pigIcon  
-        ?  
-        pigIcon.style.display  
-        :  
-        "";  
 
+        // --------------------------------------------------
+        // APPLY PRINT BRANDING
+        // --------------------------------------------------
 
-    // --------------------------------------------------  
-    // APPLY PRINT BRANDING  
-    // --------------------------------------------------  
+        if(softwareBrand){
 
-    if(softwareBrand){  
+            softwareBrand.style.display =
+                "none";
+        }
 
-        softwareBrand.style.display =  
-            "none";  
 
-    }  
+        if(systemDescription){
 
+            systemDescription.style.display =
+                "none";
+        }
 
-    if(systemDescription){  
 
-        systemDescription.style.display =  
-            "none";  
+        if(farmLabel){
 
-    }  
+            farmLabel.style.display =
+                "none";
+        }
 
 
-    if(farmLabel){  
+        if(pigIcon){
 
-        farmLabel.style.display =  
-            "none";  
+            pigIcon.style.display =
+                "none";
+        }
 
-    }  
 
+        if(farmNameElement){
 
-    if(pigIcon){  
+            farmNameElement.textContent =
+                farmName;
 
-        pigIcon.style.display =  
-            "none";  
 
-    }  
+            farmNameElement.style.display =
+                "block";
 
 
-    if(farmNameElement){  
+            farmNameElement.style.fontSize =
+                "30px";
 
-        farmNameElement.textContent =  
-            farmName;  
 
-        farmNameElement.style.display =  
-            "block";  
+            farmNameElement.style.fontWeight =
+                "800";
 
-        farmNameElement.style.fontSize =  
-            "30px";  
 
-        farmNameElement.style.fontWeight =  
-            "800";  
+            farmNameElement.style.textAlign =
+                "center";
 
-        farmNameElement.style.textAlign =  
-            "center";  
 
-        farmNameElement.style.letterSpacing =  
-            "0.5px";  
+            farmNameElement.style.letterSpacing =
+                "0.5px";
 
-        farmNameElement.style.lineHeight =  
-            "1.2";  
 
-        farmNameElement.style.margin =  
-            "0 0 12px 0";  
+            farmNameElement.style.lineHeight =
+                "1.2";
 
-    }  
 
+            farmNameElement.style.margin =
+                "0 0 12px 0";
 
-    // --------------------------------------------------  
-    // ADD TEMPORARY PRINT CSS  
-    // --------------------------------------------------  
+        }
 
-    const printStyle =  
-        document.createElement(  
-            "style"  
-        );  
 
+        // --------------------------------------------------
+        // ADD TEMPORARY PRINT CSS
+        // --------------------------------------------------
 
-    printStyle.id =  
-        "temporary-gestation-print-style";  
+        const printStyle =
+            document.createElement(
+                "style"
+            );
 
 
-    printStyle.textContent = `  
+        printStyle.id =
+            "temporary-gestation-print-style";
 
-        @media print {  
 
-            .software-brand,  
-            .page-header p,  
-            .farm-label,  
-            .pig-icon {  
+        printStyle.textContent = `
 
-                display: none !important;  
+            @media print {
 
-            }  
+                .software-brand,
+                .page-header p,
+                .farm-label,
+                .pig-icon {
 
-            [data-farm-name] {  
+                    display: none !important;
 
-                display: block !important;  
+                }
 
-                font-size: 30px !important;  
 
-                font-weight: 800 !important;  
+                [data-farm-name] {
 
-                text-align: center !important;  
+                    display: block !important;
 
-                letter-spacing: 0.5px !important;  
+                    font-size: 30px !important;
 
-                line-height: 1.2 !important;  
+                    font-weight: 800 !important;
 
-                margin: 0 0 12px 0 !important;  
+                    text-align: center !important;
 
-            }  
+                    letter-spacing: 0.5px !important;
 
-        }  
+                    line-height: 1.2 !important;
 
-    `;  
+                    margin: 0 0 12px 0 !important;
 
+                }
 
-    document.head.appendChild(  
-        printStyle  
-    );  
+            }
 
+        `;
 
-    // --------------------------------------------------  
-    // PRINT  
-    // --------------------------------------------------  
 
-    window.print();  
+        document.head.appendChild(
+            printStyle
+        );
 
 
-    // --------------------------------------------------  
-    // RESTORE SCREEN AFTER PRINT  
-    // --------------------------------------------------  
+        // --------------------------------------------------
+        // PRINT
+        // --------------------------------------------------
 
-    function restoreAfterPrint(){  
+        window.print();
 
-        if(  
-            printStyle &&  
-            printStyle.parentNode  
-        ){  
 
-            printStyle.parentNode.removeChild(  
-                printStyle  
-            );  
+        // --------------------------------------------------
+        // RESTORE SCREEN AFTER PRINT
+        // --------------------------------------------------
 
-        }  
+        function restoreAfterPrint(){
 
+            if(
+                printStyle &&
+                printStyle.parentNode
+            ){
 
-        if(softwareBrand){  
+                printStyle.parentNode.removeChild(
+                    printStyle
+                );
 
-            softwareBrand.style.display =  
-                originalSoftwareDisplay;  
+            }
 
-        }  
 
+            if(softwareBrand){
 
-        if(systemDescription){  
+                softwareBrand.style.display =
+                    originalSoftwareDisplay;
 
-            systemDescription.style.display =  
-                originalDescriptionDisplay;  
+            }
 
-        }  
 
+            if(systemDescription){
 
-        if(farmLabel){  
+                systemDescription.style.display =
+                    originalDescriptionDisplay;
 
-            farmLabel.style.display =  
-                originalLabelDisplay;  
+            }
 
-        }  
 
+            if(farmLabel){
 
-        if(pigIcon){  
+                farmLabel.style.display =
+                    originalLabelDisplay;
 
-            pigIcon.style.display =  
-                originalPigIconDisplay;  
+            }
 
-        }  
 
+            if(pigIcon){
 
-        if(farmNameElement){  
+                pigIcon.style.display =
+                    originalPigIconDisplay;
 
-            farmNameElement.textContent =  
-                originalFarmName;  
+            }
 
 
-            farmNameElement.style.fontSize =  
-                "";  
+            if(farmNameElement){
 
+                farmNameElement.textContent =
+                    originalFarmName;
 
-            farmNameElement.style.fontWeight =  
-                "";  
 
+                farmNameElement.style.fontSize =
+                    "";
 
-            farmNameElement.style.textAlign =  
-                "";  
 
+                farmNameElement.style.fontWeight =
+                    "";
 
-            farmNameElement.style.letterSpacing =  
-                "";  
 
+                farmNameElement.style.textAlign =
+                    "";
 
-            farmNameElement.style.lineHeight =  
-                "";  
 
+                farmNameElement.style.letterSpacing =
+                    "";
 
-            farmNameElement.style.margin =  
-                "";  
 
-        }  
+                farmNameElement.style.lineHeight =
+                    "";
 
 
-        window.removeEventListener(  
-            "afterprint",  
-            restoreAfterPrint  
-        );  
+                farmNameElement.style.margin =
+                    "";
 
-    }  
+            }
 
 
-    window.addEventListener(  
-        "afterprint",  
-        restoreAfterPrint  
-    );  
+            window.removeEventListener(
+                "afterprint",
+                restoreAfterPrint
+            );
 
+        }
 
-    // --------------------------------------------------  
-    // SAFETY RESTORE  
-    // --------------------------------------------------  
-    // Some mobile browsers may not fire afterprint  
-    // consistently. Give the page a backup restoration.  
-    // --------------------------------------------------  
 
-    setTimeout(  
-        function(){  
+        window.addEventListener(
+            "afterprint",
+            restoreAfterPrint
+        );
 
-            if(  
-                printStyle &&  
-                printStyle.parentNode  
-            ){  
 
-                restoreAfterPrint();  
+        // --------------------------------------------------
+        // SAFETY RESTORE
+        // --------------------------------------------------
 
-            }  
+        setTimeout(
+            function(){
 
-        },  
-        3000  
-    );  
+                if(
+                    printStyle &&
+                    printStyle.parentNode
+                ){
 
-}  
+                    restoreAfterPrint();
 
-catch(error){  
+                }
 
-    console.error(  
-        "GESTATION PRINT ERROR:",  
-        error  
-    );  
+            },
+            3000
+        );
 
+    }
 
-    alert(  
-        "Unable to prepare the print report.\n\n" +  
-        error.message  
-    );  
+    catch(error){
+
+        console.error(
+            "GESTATION PRINT ERROR:",
+            error
+        );
+
+
+        alert(
+            "Unable to prepare the print report.\n\n" +
+            error.message
+        );
+    }
 
 }
 
-}
 
 // ==========================================================
 // CLEAR FORM
@@ -2109,22 +2151,22 @@ catch(error){
 
 function clearForm(){
 
-const form =  
-    document.getElementById(  
-        "gestationForm"  
-    );  
+    const form =
+        document.getElementById(
+            "gestationForm"
+        );
 
 
-if(form){  
+    if(form){
 
-    form.reset();  
+        form.reset();
+    }
 
-}  
 
-
-editId = null;
+    editId = null;
 
 }
+
 
 // ==========================================================
 // SERVICE DATE LISTENER
@@ -2134,40 +2176,39 @@ document.addEventListener(
 "DOMContentLoaded",
 function(){
 
-const serviceDate =  
-        document.getElementById(  
-            "serviceDate"  
-        );  
+    const serviceDate =
+        document.getElementById(
+            "serviceDate"
+        );
 
 
-    if(serviceDate){  
+    if(serviceDate){
 
-        serviceDate.addEventListener(  
-            "change",  
-            calculateGestationDates  
-        );  
+        serviceDate.addEventListener(
+            "change",
+            calculateGestationDates
+        );
 
-    }  
-
-
-    const searchBox =  
-        document.getElementById(  
-            "searchGestation"  
-        );  
+    }
 
 
-    if(searchBox){  
+    const searchBox =
+        document.getElementById(
+            "searchGestation"
+        );
 
-        searchBox.addEventListener(  
-            "keyup",  
-            searchRecord  
-        );  
 
-    }  
+    if(searchBox){
 
-}
+        searchBox.addEventListener(
+            "keyup",
+            searchRecord
+        );
 
-);
+    }
+
+});
+
 
 // ==========================================================
 // PAGE LOAD
@@ -2177,11 +2218,10 @@ window.addEventListener(
 "load",
 function(){
 
-loadGestationRecords();  
+    loadGestationRecords();
 
-}
+});
 
-);
 
 // ==========================================================
 // END OF GESTATION MODULE
