@@ -1,487 +1,770 @@
-<!DOCTYPE html><html lang="en">
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MUNKA PIGGERY - Pig Registration</title><link rel="stylesheet" href="pig.css">
-<link rel="stylesheet" href="farm_branding.css">
 
-<style>
-    .registration-note {
-        display: block;
-        margin-top: 6px;
-        font-size: 13px;
-        line-height: 1.5;
-    }
+    <title>MUNKA PIGGERY - Pig Registration</title>
 
-    .group-section {
-        margin-top: 25px;
-    }
+    <link rel="stylesheet" href="pig.css">
+    <link rel="stylesheet" href="farm_branding.css">
 
-    .group-table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 650px;
-    }
+    <style>
+        .registration-note {
+            display: block;
+            margin-top: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
 
-    .group-table th,
-    .group-table td {
-        padding: 10px;
-        border: 1px solid #ddd;
-        text-align: left;
-    }
+        .group-section {
+            margin-top: 25px;
+        }
 
-    .group-table th {
-        background: #e8f3e9;
-    }
+        .group-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
 
-    .group-table button {
-        margin: 2px;
-    }
+        .group-table th,
+        .group-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
 
-    .table-wrapper {
-        overflow-x: auto;
-    }
+        .group-table th {
+            background: #e8f3e9;
+        }
 
-    .status-message {
-        margin-top: 10px;
-        font-weight: 600;
-    }
+        .group-table button {
+            margin: 2px;
+        }
 
-    .group-form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 14px;
-    }
+        .table-wrapper {
+            overflow-x: auto;
+        }
 
-    .group-form-grid .form-group {
-        min-width: 0;
-    }
+        .status-message {
+            margin-top: 10px;
+            font-weight: 600;
+        }
 
-    .group-form-grid input,
-    .group-form-grid select,
-    .group-form-grid textarea {
-        box-sizing: border-box;
-        width: 100%;
-        max-width: 100%;
-    }
-</style>
+        .group-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
 
-</head><body>
-<div class="container"><div class="page-header">
-    <div class="pig-icon">🐖</div>
+        .group-form-grid .form-group {
+            min-width: 0;
+        }
 
-    <div>
-        <h1 class="software-brand">MUNKA PIGGERY TECHNOLOGY</h1>
-        <p>Piggery Management System</p>
+        .group-form-grid input,
+        .group-form-grid select,
+        .group-form-grid textarea {
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 100%;
+        }
 
-        <div class="farm-branding">
-            <span class="farm-label">REGISTERED FARM</span>
-            <strong data-farm-name>Loading farm...</strong>
-        </div>
-    </div>
-</div>
+        .population-summary {
+            background: #e8f3e9;
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 12px;
+        }
 
-<!-- INDIVIDUAL PIG REGISTRATION -->
-<section class="form-section">
-    <div class="section-title">
+        .population-summary p {
+            margin: 5px 0;
+        }
+
+        .population-summary strong {
+            color: #176b2c;
+        }
+
+        input[readonly] {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <div class="pig-icon">🐖</div>
+
         <div>
-            <span>PIG MANAGEMENT</span>
-            <h2>Register Individual Pig</h2>
+            <h1 class="software-brand">
+                MUNKA PIGGERY TECHNOLOGY
+            </h1>
+
+            <p>Piggery Management System</p>
+
+            <div class="farm-branding">
+                <span class="farm-label">REGISTERED FARM</span>
+                <strong data-farm-name>Loading farm...</strong>
+            </div>
         </div>
+
     </div>
 
-    <form id="pigForm">
 
-        <div class="form-group">
-            <label for="pigID">Pig ID</label>
-            <input type="text" id="pigID"
-                   placeholder="Enter Pig ID"
-                   autocomplete="off" required>
+    <!-- INDIVIDUAL PIG REGISTRATION -->
+
+    <section class="form-section">
+
+        <div class="section-title">
+            <div>
+                <span>PIG MANAGEMENT</span>
+                <h2>Register Individual Pig</h2>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="registrationType">Registration Type</label>
-            <select id="registrationType" required>
-                <option value="existing">Existing Farm Stock</option>
-                <option value="purchase">Purchased Pig</option>
-                <option value="arrival">Transfer / Arrival</option>
-                <option value="birth">Born on This Farm</option>
-            </select>
-            <small class="registration-note">
-                Existing stock must already be included in the opening
-                population. Purchases and arrivals must be dated after
-                the opening date to count as new incoming animals.
-            </small>
-        </div>
-
-        <div class="form-group" id="registrationDateGroup">
-            <label for="registrationDate">Purchase or Arrival Date</label>
-            <input type="date" id="registrationDate">
-        </div>
-
-        <div class="form-group">
-            <label for="breed">Breed</label>
-            <select id="breed" required>
-                <option value="">Select Breed</option>
-                <option>Large White</option>
-                <option>Landrace</option>
-                <option>Duroc</option>
-                <option>Pietrain</option>
-                <option>Hampshire</option>
-                <option>Berkshire</option>
-                <option>Yorkshire</option>
-                <option>Tamworth</option>
-                <option>Chester White</option>
-                <option>Poland China</option>
-                <option>Meishan</option>
-                <option>Cross Breed</option>
-                <option>Other</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="category">Pig Category</label>
-            <select id="category" required>
-                <option value="">Select Pig Category</option>
-                <option value="Piglet">Piglet</option>
-                <option value="Weaner">Weaner</option>
-                <option value="Grower">Grower</option>
-                <option value="Boar">Boar</option>
-                <option value="Sow">Sow</option>
-                <option value="Pregnant Sow">Pregnant Sow</option>
-                <option value="Lactating Sow">Lactating Sow</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="farrowDate">Farrow Date</label>
-            <input type="date" id="farrowDate" required>
-        </div>
-
-        <div class="form-group">
-            <label for="source">Source (Farm name/Seller name)</label>
-            <input type="text" id="source"
-                   placeholder="Enter farm or seller name"
-                   autocomplete="off" required>
-        </div>
-
-        <div class="form-group">
-            <label for="weight">Weight (Kg)</label>
-            <select id="weight" required>
-                <option value="">Select Weight</option>
-                <option value="1">1 Kg</option>
-                <option value="2">2 Kg</option>
-                <option value="3">3 Kg</option>
-                <option value="4">4 Kg</option>
-                <option value="5">5 Kg</option>
-                <option value="6">6 Kg</option>
-                <option value="7">7 Kg</option>
-                <option value="8">8 Kg</option>
-                <option value="9">9 Kg</option>
-                <option value="10">10 Kg</option>
-                <option value="15">15 Kg</option>
-                <option value="20">20 Kg</option>
-                <option value="25">25 Kg</option>
-                <option value="30">30 Kg</option>
-                <option value="35">35 Kg</option>
-                <option value="40">40 Kg</option>
-                <option value="45">45 Kg</option>
-                <option value="50">50 Kg</option>
-                <option value="55">55 Kg</option>
-                <option value="60">60 Kg</option>
-                <option value="65">65 Kg</option>
-                <option value="70">70 Kg</option>
-                <option value="75">75 Kg</option>
-                <option value="80">80 Kg</option>
-                <option value="85">85 Kg</option>
-                <option value="90">90 Kg</option>
-                <option value="95">95 Kg</option>
-                <option value="100">100 Kg</option>
-                <option value="110">110 Kg</option>
-                <option value="120">120 Kg</option>
-                <option value="130">130 Kg</option>
-                <option value="140">140 Kg</option>
-                <option value="150">150 Kg</option>
-                <option value="160">160 Kg</option>
-                <option value="170">170 Kg</option>
-                <option value="180">180 Kg</option>
-                <option value="190">190 Kg</option>
-                <option value="200">200 Kg</option>
-                <option value="210">210 Kg</option>
-                <option value="220">220 Kg</option>
-                <option value="230">230 Kg</option>
-                <option value="240">240 Kg</option>
-                <option value="250">250 Kg</option>
-                <option value="260">260 Kg</option>
-                <option value="270">270 Kg</option>
-                <option value="280">280 Kg</option>
-                <option value="290">290 Kg</option>
-                <option value="300">300 Kg</option>
-                <option value="310">310 Kg</option>
-                <option value="320">320 Kg</option>
-                <option value="330">330 Kg</option>
-                <option value="340">340 Kg</option>
-                <option value="350">350 Kg</option>
-                <option value="360">360 Kg</option>
-                <option value="370">370 Kg</option>
-                <option value="380">380 Kg</option>
-                <option value="390">390 Kg</option>
-                <option value="400">400 Kg</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="healthStatus">Health Status</label>
-            <select id="healthStatus" required>
-                <option value="">Select Health Status</option>
-                <option>Healthy</option>
-                <option>Sick</option>
-                <option>Under Treatment</option>
-                <option>Recovered</option>
-                <option>Dead</option>
-            </select>
-        </div>
-
-        <div class="buttons">
-            <button type="submit"
-                    data-permission="add"
-                    data-module="Pig Registration">
-                💾 Save Pig Record
-            </button>
-
-            <button type="button" onclick="clearForm()"
-                    class="secondary-button">
-                🧹 Clear
-            </button>
-
-            <button type="button"
-                    onclick="window.location.href='dashboard.html'"
-                    class="secondary-button">
-                ↩️ Back
-            </button>
-        </div>
-    </form>
-    <p id="pigStatusMessage" class="status-message" role="status"></p>
-</section>
-
-<!-- GROUP REGISTRATION -->
-<section class="form-section group-section">
-    <div class="section-title">
-        <div>
-            <span>GROUP MANAGEMENT</span>
-            <h2>Register Piglet or Weaner Group</h2>
-        </div>
-    </div>
-
-    <p>
-        Use this form when you want to register several piglets or weaners
-        together. Enter the number of animals in the group.
-    </p>
-
-    <form id="groupForm">
-        <div class="group-form-grid">
+        <form id="pigForm">
 
             <div class="form-group">
-                <label for="groupName">Group Name or Reference</label>
-                <input id="groupName" required
-                       placeholder="e.g. October Piglets">
+                <label for="pigID">Pig ID</label>
+
+                <input
+                    type="text"
+                    id="pigID"
+                    placeholder="Enter Pig ID"
+                    autocomplete="off"
+                    required
+                >
             </div>
 
+
             <div class="form-group">
-                <label for="groupCategory">Category</label>
-                <select id="groupCategory" required>
-                    <option value="">Select Category</option>
-                    <option value="piglet">Piglets</option>
-                    <option value="weaner">Weaners</option>
+                <label for="registrationType">
+                    Registration Type
+                </label>
+
+                <select id="registrationType" required>
+                    <option value="existing">Existing Farm Stock</option>
+                    <option value="purchase">Purchased Pig</option>
+                    <option value="arrival">Transfer / Arrival</option>
+                    <option value="birth">Born on This Farm</option>
+                </select>
+
+                <small class="registration-note">
+                    Existing stock must already be included in the
+                    opening population. Purchases and arrivals must
+                    be dated after the opening date to count as new
+                    incoming animals.
+                </small>
+            </div>
+
+
+            <div class="form-group" id="registrationDateGroup">
+                <label for="registrationDate">
+                    Purchase or Arrival Date
+                </label>
+
+                <input type="date" id="registrationDate">
+            </div>
+
+
+            <div class="form-group">
+                <label for="breed">Breed</label>
+
+                <select id="breed" required>
+                    <option value="">Select Breed</option>
+                    <option>Large White</option>
+                    <option>Landrace</option>
+                    <option>Duroc</option>
+                    <option>Pietrain</option>
+                    <option>Hampshire</option>
+                    <option>Berkshire</option>
+                    <option>Yorkshire</option>
+                    <option>Tamworth</option>
+                    <option>Chester White</option>
+                    <option>Poland China</option>
+                    <option>Meishan</option>
+                    <option>Cross Breed</option>
+                    <option>Other</option>
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="groupQuantity">Number of Pigs</label>
-                <input type="number" id="groupQuantity"
-                       min="1" step="1" required>
-            </div>
 
             <div class="form-group">
-                <label for="groupBreed">Breed</label>
-                <input id="groupBreed" placeholder="e.g. Large White">
-            </div>
+                <label for="category">Pig Category</label>
 
-            <div class="form-group">
-                <label for="groupSex">Sex</label>
-                <select id="groupSex" required>
-                    <option value="Mixed">Mixed</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Unknown">Unknown</option>
+                <select id="category" required>
+                    <option value="">Select Pig Category</option>
+                    <option value="Piglet">Piglet</option>
+                    <option value="Weaner">Weaner</option>
+                    <option value="Grower">Grower</option>
+                    <option value="Boar">Boar</option>
+                    <option value="Sow">Sow</option>
+                    <option value="Pregnant Sow">Pregnant Sow</option>
+                    <option value="Lactating Sow">Lactating Sow</option>
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="groupFarrowDate">Farrow Date (if known)</label>
-                <input type="date" id="groupFarrowDate">
-            </div>
 
             <div class="form-group">
-                <label for="groupSource">Source</label>
-                <input id="groupSource"
-                       placeholder="Sow, seller or source">
+                <label for="farrowDate">Farrow Date</label>
+                <input type="date" id="farrowDate" required>
             </div>
 
-            <div class="form-group">
-                <label for="groupWeight">Average Weight (Kg)</label>
-                <input type="number" id="groupWeight"
-                       min="0" step="0.1">
-            </div>
 
             <div class="form-group">
-                <label for="groupHealth">Health Status</label>
-                <select id="groupHealth">
+                <label for="source">
+                    Source (Farm name/Seller name)
+                </label>
+
+                <input
+                    type="text"
+                    id="source"
+                    placeholder="Enter farm or seller name"
+                    autocomplete="off"
+                    required
+                >
+            </div>
+
+
+            <div class="form-group">
+                <label for="weight">Weight (Kg)</label>
+
+                <select id="weight" required>
+                    <option value="">Select Weight</option>
+                    <option value="1">1 Kg</option>
+                    <option value="2">2 Kg</option>
+                    <option value="3">3 Kg</option>
+                    <option value="4">4 Kg</option>
+                    <option value="5">5 Kg</option>
+                    <option value="6">6 Kg</option>
+                    <option value="7">7 Kg</option>
+                    <option value="8">8 Kg</option>
+                    <option value="9">9 Kg</option>
+                    <option value="10">10 Kg</option>
+                    <option value="15">15 Kg</option>
+                    <option value="20">20 Kg</option>
+                    <option value="25">25 Kg</option>
+                    <option value="30">30 Kg</option>
+                    <option value="35">35 Kg</option>
+                    <option value="40">40 Kg</option>
+                    <option value="45">45 Kg</option>
+                    <option value="50">50 Kg</option>
+                    <option value="55">55 Kg</option>
+                    <option value="60">60 Kg</option>
+                    <option value="65">65 Kg</option>
+                    <option value="70">70 Kg</option>
+                    <option value="75">75 Kg</option>
+                    <option value="80">80 Kg</option>
+                    <option value="85">85 Kg</option>
+                    <option value="90">90 Kg</option>
+                    <option value="95">95 Kg</option>
+                    <option value="100">100 Kg</option>
+                    <option value="110">110 Kg</option>
+                    <option value="120">120 Kg</option>
+                    <option value="130">130 Kg</option>
+                    <option value="140">140 Kg</option>
+                    <option value="150">150 Kg</option>
+                    <option value="160">160 Kg</option>
+                    <option value="170">170 Kg</option>
+                    <option value="180">180 Kg</option>
+                    <option value="190">190 Kg</option>
+                    <option value="200">200 Kg</option>
+                    <option value="210">210 Kg</option>
+                    <option value="220">220 Kg</option>
+                    <option value="230">230 Kg</option>
+                    <option value="240">240 Kg</option>
+                    <option value="250">250 Kg</option>
+                    <option value="260">260 Kg</option>
+                    <option value="270">270 Kg</option>
+                    <option value="280">280 Kg</option>
+                    <option value="290">290 Kg</option>
+                    <option value="300">300 Kg</option>
+                    <option value="310">310 Kg</option>
+                    <option value="320">320 Kg</option>
+                    <option value="330">330 Kg</option>
+                    <option value="340">340 Kg</option>
+                    <option value="350">350 Kg</option>
+                    <option value="360">360 Kg</option>
+                    <option value="370">370 Kg</option>
+                    <option value="380">380 Kg</option>
+                    <option value="390">390 Kg</option>
+                    <option value="400">400 Kg</option>
+                </select>
+            </div>
+
+
+            <div class="form-group">
+                <label for="healthStatus">Health Status</label>
+
+                <select id="healthStatus" required>
+                    <option value="">Select Health Status</option>
                     <option>Healthy</option>
                     <option>Sick</option>
                     <option>Under Treatment</option>
                     <option>Recovered</option>
+                    <option>Dead</option>
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="groupPen">Pen Name</label>
-                <input id="groupPen" placeholder="Optional pen name">
-            </div>
 
-            <div class="form-group">
-                <label for="groupNotes">Notes</label>
-                <textarea id="groupNotes" rows="2"></textarea>
-            </div>
+            <div class="buttons">
 
-        </div>
-
-        <div class="buttons">
-            <button type="submit"
+                <button
+                    type="submit"
                     data-permission="add"
-                    data-module="Pig Registration">
-                💾 Save Group
-            </button>
+                    data-module="Pig Registration"
+                >
+                    💾 Save Pig Record
+                </button>
 
-            <button type="button" onclick="clearGroupForm()"
-                    class="secondary-button">
-                🧹 Clear Group Form
-            </button>
+                <button
+                    type="button"
+                    onclick="clearForm()"
+                    class="secondary-button"
+                >
+                    🧹 Clear
+                </button>
+
+                <button
+                    type="button"
+                    onclick="window.location.href='dashboard.html'"
+                    class="secondary-button"
+                >
+                    ↩️ Back
+                </button>
+
+            </div>
+
+        </form>
+
+        <p
+            id="pigStatusMessage"
+            class="status-message"
+            role="status"
+        ></p>
+
+    </section>
+
+
+    <!-- GROUP REGISTRATION -->
+
+    <section class="form-section group-section">
+
+        <div class="section-title">
+            <div>
+                <span>GROUP MANAGEMENT</span>
+                <h2>Register Pig Groups</h2>
+            </div>
         </div>
-    </form>
 
-    <p id="groupStatusMessage" class="status-message" role="status"></p>
-</section>
+        <p>
+            Register piglets, weaners, growers, sows and boars
+            in groups. Record male and female populations
+            separately. The total population is calculated
+            automatically.
+        </p>
 
-<!-- SEARCH INDIVIDUAL PIGS -->
-<section class="records-section">
-    <div class="section-title">
-        <div>
-            <span>RECORD MANAGEMENT</span>
-            <h2>Search Pig Records</h2>
+
+        <form id="groupForm">
+
+            <div class="group-form-grid">
+
+                <div class="form-group">
+                    <label for="groupName">
+                        Group Name or Reference
+                    </label>
+
+                    <input
+                        type="text"
+                        id="groupName"
+                        required
+                        placeholder="e.g. October Piglets"
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupCategory">Pig Category</label>
+
+                    <select id="groupCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="Piglet">Piglets</option>
+                        <option value="Weaner">Weaners</option>
+                        <option value="Grower">Growers</option>
+                        <option value="Sow">Sows</option>
+                        <option value="Boar">Boars</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupMaleQuantity">
+                        Number of Males
+                    </label>
+
+                    <select
+                        id="groupMaleQuantity"
+                        name="male_quantity"
+                        required
+                    >
+                        <option value="0">0</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupFemaleQuantity">
+                        Number of Females
+                    </label>
+
+                    <select
+                        id="groupFemaleQuantity"
+                        name="female_quantity"
+                        required
+                    >
+                        <option value="0">0</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupQuantity">
+                        Total Number of Pigs
+                    </label>
+
+                    <input
+                        type="number"
+                        id="groupQuantity"
+                        name="quantity"
+                        min="1"
+                        step="1"
+                        readonly
+                        required
+                        placeholder="Automatically calculated"
+                    >
+
+                    <small>
+                        Automatically calculated from male and
+                        female quantities.
+                    </small>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupBreed">Breed</label>
+
+                    <input
+                        type="text"
+                        id="groupBreed"
+                        placeholder="e.g. Large White"
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupFarrowDate">
+                        Farrow Date (if known)
+                    </label>
+
+                    <input type="date" id="groupFarrowDate">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupSource">Source</label>
+
+                    <input
+                        type="text"
+                        id="groupSource"
+                        placeholder="Sow, seller or source"
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupWeight">
+                        Average Weight (Kg)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="groupWeight"
+                        min="0"
+                        step="0.1"
+                        placeholder="Enter average weight"
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupHealth">Health Status</label>
+
+                    <select id="groupHealth">
+                        <option>Healthy</option>
+                        <option>Sick</option>
+                        <option>Under Treatment</option>
+                        <option>Recovered</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupPen">Pen Name</label>
+
+                    <input
+                        type="text"
+                        id="groupPen"
+                        placeholder="Optional pen name"
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="groupNotes">Notes</label>
+
+                    <textarea
+                        id="groupNotes"
+                        rows="2"
+                    ></textarea>
+                </div>
+
+            </div>
+
+
+            <div class="population-summary">
+
+                <p>
+                    Male population:
+                    <strong id="malePopulationDisplay">0</strong>
+                </p>
+
+                <p>
+                    Female population:
+                    <strong id="femalePopulationDisplay">0</strong>
+                </p>
+
+                <p>
+                    Total population:
+                    <strong id="totalPopulationDisplay">0</strong>
+                </p>
+
+            </div>
+
+
+            <div class="buttons">
+
+                <button
+                    type="submit"
+                    data-permission="add"
+                    data-module="Pig Registration"
+                >
+                    💾 Save Group
+                </button>
+
+                <button
+                    type="button"
+                    onclick="clearGroupForm()"
+                    class="secondary-button"
+                >
+                    🧹 Clear Group Form
+                </button>
+
+            </div>
+
+        </form>
+
+
+        <p
+            id="groupStatusMessage"
+            class="status-message"
+            role="status"
+        ></p>
+
+    </section>
+
+
+    <!-- SEARCH INDIVIDUAL PIGS -->
+
+    <section class="records-section">
+
+        <div class="section-title">
+            <div>
+                <span>RECORD MANAGEMENT</span>
+                <h2>Search Pig Records</h2>
+            </div>
         </div>
-    </div>
 
-    <div class="search-area">
-        <input type="text" id="searchPig"
-               placeholder="Search by Pig ID, Breed or Category"
-               autocomplete="off">
+        <div class="search-area">
 
-        <button type="button" onclick="searchPig()"
+            <input
+                type="text"
+                id="searchPig"
+                placeholder="Search by Pig ID, Breed or Category"
+                autocomplete="off"
+            >
+
+            <button
+                type="button"
+                onclick="searchPig()"
                 data-permission="view"
-                data-module="Pig Registration">
-            🔍 Search
-        </button>
-    </div>
-</section>
+                data-module="Pig Registration"
+            >
+                🔍 Search
+            </button>
 
-<!-- INDIVIDUAL PIG TABLE -->
-<section class="records-section">
-    <div class="section-title">
-        <div>
-            <span>FARM RECORDS</span>
-            <h2>Registered Individual Pigs</h2>
         </div>
-    </div>
 
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Pig ID</th>
-                    <th>Breed</th>
-                    <th>Category</th>
-                    <th>Farrow Date</th>
-                    <th>Source</th>
-                    <th>Weight</th>
-                    <th>Health Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="pigTable"></tbody>
-        </table>
-    </div>
-</section>
+    </section>
 
-<!-- GROUP TABLE -->
-<section class="records-section">
-    <div class="section-title">
-        <div>
-            <span>GROUP RECORDS</span>
-            <h2>Registered Piglet and Weaner Groups</h2>
+
+    <!-- INDIVIDUAL PIG TABLE -->
+
+    <section class="records-section">
+
+        <div class="section-title">
+            <div>
+                <span>FARM RECORDS</span>
+                <h2>Registered Individual Pigs</h2>
+            </div>
         </div>
-    </div>
 
-    <div class="table-wrapper">
-        <table class="group-table">
-            <thead>
-                <tr>
-                    <th>Group</th>
-                    <th>Category</th>
-                    <th>Quantity</th>
-                    <th>Breed</th>
-                    <th>Sex</th>
-                    <th>Average Weight</th>
-                    <th>Pen</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="groupTable"></tbody>
-        </table>
-    </div>
-</section>
+        <div class="table-wrapper">
 
-<!-- REPORTS -->
-<section class="report-section">
-    <div class="section-title">
-        <div>
-            <span>REPORTING</span>
-            <h2>Pig Registration Reports</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pig ID</th>
+                        <th>Breed</th>
+                        <th>Category</th>
+                        <th>Farrow Date</th>
+                        <th>Source</th>
+                        <th>Weight</th>
+                        <th>Health Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="pigTable"></tbody>
+            </table>
+
         </div>
-    </div>
 
-    <div class="report-buttons">
-        <button type="button" onclick="generateReport()"
-                data-permission="report"
-                data-module="Pig Registration">
-            📊 Generate Report
-        </button>
+    </section>
 
-        <button type="button" onclick="printReport()"
+
+    <!-- GROUP TABLE -->
+
+    <section class="records-section">
+
+        <div class="section-title">
+            <div>
+                <span>GROUP RECORDS</span>
+                <h2>Registered Pig Groups</h2>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+
+            <table class="group-table">
+
+                <thead>
+                    <tr>
+                        <th>Group</th>
+                        <th>Category</th>
+                        <th>Total Quantity</th>
+                        <th>Males</th>
+                        <th>Females</th>
+                        <th>Breed</th>
+                        <th>Average Weight</th>
+                        <th>Pen</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="groupTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- REPORTS -->
+
+    <section class="report-section">
+
+        <div class="section-title">
+            <div>
+                <span>REPORTING</span>
+                <h2>Pig Registration Reports</h2>
+            </div>
+        </div>
+
+        <div class="report-buttons">
+
+            <button
+                type="button"
+                onclick="generateReport()"
                 data-permission="report"
                 data-module="Pig Registration"
-                class="print-button">
-            🖨️ Print
-        </button>
+            >
+                📊 Generate Report
+            </button>
 
-        <button type="button" onclick="downloadPDF()"
+            <button
+                type="button"
+                onclick="printReport()"
                 data-permission="report"
                 data-module="Pig Registration"
-                class="pdf-button">
-            📥 Download PDF
-        </button>
-    </div>
-</section>
+                class="print-button"
+            >
+                🖨️ Print
+            </button>
 
-</div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script><script src="supabase.js"></script><script src="farm_branding.js"></script><script src="activity.js"></script><script src="role_permissions.js"></script><script src="security.js"></script><script src="pig.js"></script></body>
+            <button
+                type="button"
+                onclick="downloadPDF()"
+                data-permission="report"
+                data-module="Pig Registration"
+                class="pdf-button"
+            >
+                📥 Download PDF
+            </button>
+
+        </div>
+
+        <div id="reportOutput"></div>
+
+    </section>
+
+</div>
+
+
+<!-- LIBRARIES -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+
+<!-- SYSTEM SCRIPTS: KEEP THIS ORDER -->
+
+<script src="supabase.js"></script>
+<script src="farm_branding.js"></script>
+<script src="activity.js"></script>
+<script src="role_permissions.js"></script>
+<script src="security.js"></script>
+<script src="pig.js"></script>
+
+</body>
 </html>
