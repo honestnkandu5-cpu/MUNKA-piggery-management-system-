@@ -1572,7 +1572,8 @@ async function printReport() {
 }
 
 /* =========================================================
-   DOWNLOAD PDF
+   DOWNLOAD LARGE & BOLD PDF REPORT
+   SYSTEM TABLES ARE NOT AFFECTED
    ========================================================= */
 
 async function downloadPDF() {
@@ -1582,11 +1583,19 @@ async function downloadPDF() {
     }
 
     try {
+        /* -------------------------------------------------
+           MAKE SURE REPORT DATA EXISTS
+        ------------------------------------------------- */
+
         if (!currentPigReport) {
             await generateReport();
 
             if (!currentPigReport) return;
         }
+
+        /* -------------------------------------------------
+           CHECK jsPDF
+        ------------------------------------------------- */
 
         if (
             !window.jspdf ||
@@ -1599,128 +1608,445 @@ async function downloadPDF() {
 
         const report = currentPigReport;
 
+        /* -------------------------------------------------
+           CREATE PDF
+           LANDSCAPE A4
+        ------------------------------------------------- */
+
         const doc = new window.jspdf.jsPDF({
             orientation: "landscape",
             unit: "mm",
             format: "a4"
         });
 
-        doc.setFontSize(16);
-        doc.text("MUNKA PIGGERY TECHNOLOGY", 14, 15);
+        /* -------------------------------------------------
+           PROFESSIONAL PDF FONT
+           HELVETICA IS BUILT INTO jsPDF
+        ------------------------------------------------- */
 
-        doc.setFontSize(12);
-        doc.text("Pig Registration Report", 14, 23);
+        const FONT = "helvetica";
 
-        doc.setFontSize(10);
-        doc.text(`Farm: ${report.farmName}`, 14, 30);
-        doc.text(`Generated: ${report.generatedAt}`, 14, 36);
+        /* -------------------------------------------------
+           PAGE DIMENSIONS
+        ------------------------------------------------- */
+
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        const leftMargin = 12;
+
+        /* -------------------------------------------------
+           TITLE
+        ------------------------------------------------- */
+
+        doc.setFont(FONT, "bold");
+        doc.setFontSize(30);
+
         doc.text(
-            `Individual pig records: ${report.pigs.length}`,
-            14,
-            42
+            "MUNKA PIGGERY TECHNOLOGY",
+            leftMargin,
+            18
         );
+
+        /* -------------------------------------------------
+           REPORT TITLE
+        ------------------------------------------------- */
+
+        doc.setFont(FONT, "bold");
+        doc.setFontSize(27);
+
         doc.text(
-            `Registered pig groups: ${report.groups.length}`,
-            14,
-            48
+            "PIG REGISTRATION REPORT",
+            leftMargin,
+            29
         );
+
+        /* -------------------------------------------------
+           FARM INFORMATION
+        ------------------------------------------------- */
+
+        doc.setFont(FONT, "bold");
+        doc.setFontSize(22);
+
+        doc.text(
+            `Farm: ${String(report.farmName || "REGISTERED FARM")}`,
+            leftMargin,
+            40
+        );
+
+        doc.text(
+            `Generated: ${String(report.generatedAt || "")}`,
+            leftMargin,
+            49
+        );
+
+        /* -------------------------------------------------
+           SUMMARY INFORMATION
+        ------------------------------------------------- */
 
         const totalGroups = report.groups.reduce(
-            (sum, group) => sum + getGroupTotal(group),
+            (sum, group) =>
+                sum + getGroupTotal(group),
             0
         );
 
         const totalMales = report.groups.reduce(
-            (sum, group) => sum + getGroupMaleQuantity(group),
+            (sum, group) =>
+                sum + getGroupMaleQuantity(group),
             0
         );
 
         const totalFemales = report.groups.reduce(
-            (sum, group) => sum + getGroupFemaleQuantity(group),
+            (sum, group) =>
+                sum + getGroupFemaleQuantity(group),
             0
         );
 
-        doc.text(`Animals in groups: ${totalGroups}`, 14, 54);
-        doc.text(`Group males: ${totalMales}`, 14, 60);
-        doc.text(`Group females: ${totalFemales}`, 14, 66);
+        doc.setFont(FONT, "bold");
+        doc.setFontSize(22);
 
-        let nextY = 72;
+        doc.text(
+            `Individual Pig Records: ${report.pigs.length}`,
+            leftMargin,
+            60
+        );
 
-        if (typeof doc.autoTable === "function") {
-            doc.autoTable({
-                startY: nextY,
-                head: [[
-                    "Pig ID",
-                    "Breed",
-                    "Category",
-                    "Farrow Date",
-                    "Source",
-                    "Weight (Kg)",
-                    "Health"
-                ]],
-                body: report.pigs.map(pig => [
-                    pig.pig_id || "",
-                    pig.breed || "",
-                    pig.category || "",
-                    pig.farrow_date || "",
-                    pig.source || "",
-                    pig.weight == null ? "" : String(pig.weight),
-                    pig.health_status || ""
-                ]),
-                styles: { fontSize: 8 }
-            });
+        doc.text(
+            `Registered Pig Groups: ${report.groups.length}`,
+            leftMargin,
+            69
+        );
 
-            nextY = (doc.lastAutoTable?.finalY || nextY) + 8;
+        doc.text(
+            `Animals in Groups: ${totalGroups}`,
+            leftMargin,
+            78
+        );
 
-            if (nextY > 170) {
-                doc.addPage();
-                nextY = 15;
-            }
+        doc.text(
+            `Group Males: ${totalMales}`,
+            105,
+            78
+        );
 
-            doc.autoTable({
-                startY: nextY,
-                head: [[
-                    "Group",
-                    "Category",
-                    "Total",
-                    "Males",
-                    "Females",
-                    "Breed",
-                    "Average Weight (Kg)",
-                    "Pen"
-                ]],
-                body: report.groups.map(group => [
-                    group.group_name || "",
-                    normalizeGroupCategory(group.category) || group.category || "",
-                    String(getGroupTotal(group)),
-                    String(getGroupMaleQuantity(group)),
-                    String(getGroupFemaleQuantity(group)),
-                    group.breed || "",
-                    group.average_weight == null
-                        ? ""
-                        : String(group.average_weight),
-                    group.pen_name || ""
-                ]),
-                styles: { fontSize: 8 }
-            });
+        doc.text(
+            `Group Females: ${totalFemales}`,
+            185,
+            78
+        );
 
-        } else {
-            doc.text(
-                "PDF table extension unavailable; summary only.",
-                14,
-                nextY + 5
+        /* -------------------------------------------------
+           CHECK AUTOTABLE
+        ------------------------------------------------- */
+
+        if (typeof doc.autoTable !== "function") {
+            throw new Error(
+                "The AutoTable extension did not load. " +
+                "Please make sure jspdf-autotable is included."
             );
         }
 
-        doc.save("munka-piggery-registration-report.pdf");
+        /* =================================================
+           INDIVIDUAL PIGS TABLE
+           ================================================= */
+
+        let nextY = 88;
+
+        doc.setFont(FONT, "bold");
+        doc.setFontSize(26);
+
+        doc.text(
+            "INDIVIDUAL PIG RECORDS",
+            leftMargin,
+            nextY
+        );
+
+        nextY += 5;
+
+        doc.autoTable({
+
+            startY: nextY,
+
+            margin: {
+                left: 8,
+                right: 8
+            },
+
+            tableWidth: "auto",
+
+            head: [[
+                "Pig ID",
+                "Breed",
+                "Category",
+                "Farrow Date",
+                "Source",
+                "Weight (Kg)",
+                "Health"
+            ]],
+
+            body: report.pigs.map(pig => [
+                pig.pig_id || "",
+                pig.breed || "",
+                pig.category || "",
+                pig.farrow_date || "",
+                pig.source || "",
+                pig.weight == null
+                    ? ""
+                    : String(pig.weight),
+                pig.health_status || ""
+            ]),
+
+            /* ------------------------------------------------
+               VERY LARGE TABLE TEXT
+               26 POINTS = APPROXIMATELY 35 PIXELS
+               ------------------------------------------------ */
+
+            styles: {
+                font: FONT,
+                fontStyle: "bold",
+                fontSize: 26,
+                cellPadding: 5,
+                overflow: "linebreak",
+                valign: "middle",
+                halign: "center",
+                lineWidth: 0.8,
+                lineColor: [30, 70, 45],
+                textColor: [20, 20, 20]
+            },
+
+            headStyles: {
+                font: FONT,
+                fontStyle: "bold",
+                fontSize: 28,
+                halign: "center",
+                valign: "middle",
+                cellPadding: 6,
+                textColor: [255, 255, 255],
+                fillColor: [23, 107, 44],
+                lineWidth: 1,
+                lineColor: [14, 75, 42]
+            },
+
+            bodyStyles: {
+                font: FONT,
+                fontStyle: "bold",
+                fontSize: 26,
+                cellPadding: 5,
+                textColor: [20, 20, 20],
+                valign: "middle",
+                halign: "center"
+            },
+
+            alternateRowStyles: {
+                fillColor: [245, 249, 246]
+            },
+
+            columnStyles: {
+                0: { cellWidth: 35 },
+                1: { cellWidth: 42 },
+                2: { cellWidth: 42 },
+                3: { cellWidth: 43 },
+                4: { cellWidth: 45 },
+                5: { cellWidth: 35 },
+                6: { cellWidth: 42 }
+            },
+
+            theme: "grid",
+
+            showHead: "everyPage",
+
+            pageBreak: "auto",
+
+            rowPageBreak: "auto"
+        });
+
+        /* -------------------------------------------------
+           FIND END OF FIRST TABLE
+        ------------------------------------------------- */
+
+        nextY =
+            (doc.lastAutoTable?.finalY || 90) + 15;
+
+        /* -------------------------------------------------
+           NEW PAGE FOR GROUP RECORDS
+           This keeps the PDF clean and readable.
+        ------------------------------------------------- */
+
+        doc.addPage();
+
+        nextY = 20;
+
+        doc.setFont(FONT, "bold");
+        doc.setFontSize(28);
+
+        doc.text(
+            "REGISTERED PIG GROUPS",
+            leftMargin,
+            nextY
+        );
+
+        nextY += 8;
+
+        /* =================================================
+           GROUP TABLE
+           ================================================= */
+
+        doc.autoTable({
+
+            startY: nextY,
+
+            margin: {
+                left: 6,
+                right: 6
+            },
+
+            tableWidth: "auto",
+
+            head: [[
+                "Group",
+                "Category",
+                "Total",
+                "Males",
+                "Females",
+                "Breed",
+                "Average Weight",
+                "Pen"
+            ]],
+
+            body: report.groups.map(group => [
+                group.group_name || "",
+
+                normalizeGroupCategory(group.category) ||
+                    group.category ||
+                    "",
+
+                String(getGroupTotal(group)),
+
+                String(getGroupMaleQuantity(group)),
+
+                String(getGroupFemaleQuantity(group)),
+
+                group.breed || "",
+
+                group.average_weight == null
+                    ? ""
+                    : String(group.average_weight) + " Kg",
+
+                group.pen_name || ""
+            ]),
+
+            /* ------------------------------------------------
+               LARGE AND BOLD BODY TEXT
+               ------------------------------------------------ */
+
+            styles: {
+                font: FONT,
+                fontStyle: "bold",
+                fontSize: 26,
+                cellPadding: 5,
+                overflow: "linebreak",
+                valign: "middle",
+                halign: "center",
+                lineWidth: 0.8,
+                lineColor: [30, 70, 45],
+                textColor: [20, 20, 20]
+            },
+
+            /* ------------------------------------------------
+               LARGE TABLE HEADINGS
+               ------------------------------------------------ */
+
+            headStyles: {
+                font: FONT,
+                fontStyle: "bold",
+                fontSize: 27,
+                halign: "center",
+                valign: "middle",
+                cellPadding: 6,
+                textColor: [255, 255, 255],
+                fillColor: [23, 107, 44],
+                lineWidth: 1,
+                lineColor: [14, 75, 42]
+            },
+
+            bodyStyles: {
+                font: FONT,
+                fontStyle: "bold",
+                fontSize: 26,
+                cellPadding: 5,
+                textColor: [20, 20, 20],
+                valign: "middle",
+                halign: "center"
+            },
+
+            alternateRowStyles: {
+                fillColor: [245, 249, 246]
+            },
+
+            columnStyles: {
+                0: { cellWidth: 42 },
+                1: { cellWidth: 40 },
+                2: { cellWidth: 28 },
+                3: { cellWidth: 28 },
+                4: { cellWidth: 30 },
+                5: { cellWidth: 42 },
+                6: { cellWidth: 43 },
+                7: { cellWidth: 35 }
+            },
+
+            theme: "grid",
+
+            showHead: "everyPage",
+
+            pageBreak: "auto",
+
+            rowPageBreak: "auto"
+        });
+
+        /* =================================================
+           FOOTER ON EVERY PAGE
+           ================================================= */
+
+        const totalPages =
+            doc.internal.getNumberOfPages();
+
+        for (let page = 1; page <= totalPages; page++) {
+
+            doc.setPage(page);
+
+            doc.setFont(FONT, "bold");
+            doc.setFontSize(18);
+
+            doc.text(
+                "MUNKA PIGGERY TECHNOLOGY",
+                leftMargin,
+                pageHeight - 10
+            );
+
+            doc.text(
+                `Page ${page} of ${totalPages}`,
+                pageWidth - 45,
+                pageHeight - 10
+            );
+        }
+
+        /* =================================================
+           DOWNLOAD PDF
+           ================================================= */
+
+        doc.save(
+            "munka-piggery-registration-report.pdf"
+        );
 
     } catch (error) {
+
         showPigError(
             "Unable to download the PDF report.",
             error
         );
     }
 }
+                    
 
 /* =========================================================
    INITIALISATION AND HTML BUTTON FUNCTIONS
