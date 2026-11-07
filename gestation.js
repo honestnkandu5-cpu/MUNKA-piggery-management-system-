@@ -18,12 +18,11 @@
 // ONLY Owner/Admin AND Farm Manager
 //
 // PDF:
-// Font size increased to 14
-// PDF table text is bold
+// Font size = 10
+// PDF text = BOLD
 // ==========================================================
 
 let gestationRecords = [];
-
 let editId = null;
 
 
@@ -87,9 +86,6 @@ function getFarmID(){
 
 // ==========================================================
 // GET REGISTERED FARM NAME
-// ==========================================================
-// Used by PRINT and PDF reports.
-// This does NOT change farm security.
 // ==========================================================
 
 async function getRegisteredFarmName(){
@@ -569,11 +565,11 @@ async function(e){
 
         updated_at:
             null
+
     };
 
 
     let result;
-
     let actionType;
 
 
@@ -594,6 +590,7 @@ async function(e){
                 .insert([
                     record
                 ]);
+
     }
 
 
@@ -638,6 +635,7 @@ async function(e){
                     "farm_id",
                     farmID
                 );
+
     }
 
 
@@ -679,6 +677,7 @@ async function(e){
         actionType +
         " gestation record for Sow ID: " +
         record.sow_id
+
     );
 
 
@@ -820,6 +819,7 @@ function displayRecords(
                 </tr>
 
             `;
+
         }
     );
 
@@ -1270,10 +1270,8 @@ function generateReport(){
 // ==========================================================
 // DOWNLOAD PDF REPORT
 // ==========================================================
-// PDF FONT:
-// Main PDF text = 14
-// Table text = 14
-// All PDF table text = BOLD
+// PDF FONT SIZE = 10
+// PDF FONT STYLE = BOLD
 // ==========================================================
 
 async function downloadPDF(){
@@ -1293,7 +1291,7 @@ async function downloadPDF(){
 
 
     // ------------------------------------------------------
-    // Check PDF library
+    // CHECK PDF LIBRARY
     // ------------------------------------------------------
 
     if(
@@ -1335,6 +1333,10 @@ async function downloadPDF(){
             await getRegisteredFarmName();
 
 
+        // --------------------------------------------------
+        // CREATE PDF
+        // --------------------------------------------------
+
         const doc =
             new jsPDF({
 
@@ -1349,14 +1351,16 @@ async function downloadPDF(){
 
         // --------------------------------------------------
         // HEADER
+        // PDF FONT = 10 BOLD
         // --------------------------------------------------
 
-        doc.setFontSize(14);
+        doc.setFontSize(10);
 
         doc.setFont(
             "helvetica",
             "bold"
         );
+
 
         doc.text(
             farmName,
@@ -1368,12 +1372,13 @@ async function downloadPDF(){
         );
 
 
-        doc.setFontSize(14);
+        doc.setFontSize(10);
 
         doc.setFont(
             "helvetica",
             "bold"
         );
+
 
         doc.text(
             "GESTATION RECORDS REPORT",
@@ -1397,7 +1402,7 @@ async function downloadPDF(){
             getFarmID();
 
 
-        doc.setFontSize(14);
+        doc.setFontSize(10);
 
         doc.setFont(
             "helvetica",
@@ -1477,46 +1482,51 @@ async function downloadPDF(){
         );
 
 
-        doc.setFontSize(14);
+        doc.setFontSize(10);
 
 
         doc.text(
-            "Total: " + total,
+            "Total: " +
+            total,
             110,
             32
         );
 
 
         doc.text(
-            "Pregnant: " + pregnant,
+            "Pregnant: " +
+            pregnant,
             110,
             38
         );
 
 
         doc.text(
-            "Farrowed: " + farrowed,
+            "Farrowed: " +
+            farrowed,
             110,
             44
         );
 
 
         doc.text(
-            "Empty: " + empty,
+            "Empty: " +
+            empty,
             180,
             32
         );
 
 
         doc.text(
-            "Aborted: " + aborted,
+            "Aborted: " +
+            aborted,
             180,
             38
         );
 
 
         // --------------------------------------------------
-        // TABLE
+        // TABLE DATA
         // --------------------------------------------------
 
         const tableData =
@@ -1564,6 +1574,10 @@ async function downloadPDF(){
             );
 
 
+        // --------------------------------------------------
+        // CHECK AUTOTABLE
+        // --------------------------------------------------
+
         if(
             typeof doc.autoTable !== "function"
         ){
@@ -1578,13 +1592,14 @@ async function downloadPDF(){
 
         // ==================================================
         // PDF TABLE
-        // FONT SIZE = 14
-        // FONT STYLE = BOLD
+        // FONT SIZE = 10
+        // BOLD
         // ==================================================
 
         doc.autoTable({
 
             startY:50,
+
 
             head:[[
 
@@ -1618,13 +1633,16 @@ async function downloadPDF(){
 
             ]],
 
+
             body:tableData,
+
 
             theme:"grid",
 
+
             styles:{
 
-                fontSize:14,
+                fontSize:10,
 
                 fontStyle:"bold",
 
@@ -1636,27 +1654,31 @@ async function downloadPDF(){
 
             },
 
+
             headStyles:{
 
-                fontSize:14,
+                fontSize:10,
 
                 fontStyle:"bold"
 
             },
+
 
             bodyStyles:{
 
-                fontSize:14,
+                fontSize:10,
 
                 fontStyle:"bold"
 
             },
+
 
             alternateRowStyles:{
 
                 fillColor:[245,248,246]
 
             },
+
 
             margin:{
 
@@ -1666,13 +1688,18 @@ async function downloadPDF(){
 
             },
 
+
             didDrawPage:function(data){
 
                 const pageHeight =
                     doc.internal.pageSize.height;
 
 
-                doc.setFontSize(14);
+                // ------------------------------------------------
+                // FOOTER FONT
+                // ------------------------------------------------
+
+                doc.setFontSize(10);
 
                 doc.setFont(
                     "helvetica",
@@ -1681,7 +1708,7 @@ async function downloadPDF(){
 
 
                 // ------------------------------------------------
-                // REGISTERED FARM NAME IN FOOTER
+                // REGISTERED FARM NAME
                 // ------------------------------------------------
 
                 doc.text(
@@ -1696,6 +1723,10 @@ async function downloadPDF(){
                 );
 
 
+                // ------------------------------------------------
+                // PAGE NUMBER
+                // ------------------------------------------------
+
                 doc.text(
 
                     "Page " +
@@ -1706,9 +1737,7 @@ async function downloadPDF(){
                     pageHeight - 7,
 
                     {
-
                         align:"right"
-
                     }
 
                 );
@@ -1750,6 +1779,7 @@ async function downloadPDF(){
         );
 
     }
+
 
     catch(error){
 
@@ -2128,6 +2158,7 @@ async function printReport(){
 
     }
 
+
     catch(error){
 
         console.error(
@@ -2160,6 +2191,7 @@ function clearForm(){
     if(form){
 
         form.reset();
+
     }
 
 
