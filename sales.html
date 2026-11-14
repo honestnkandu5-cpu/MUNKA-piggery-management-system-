@@ -188,7 +188,10 @@
             </div>
 
 
-            <!-- QUANTITY -->
+            <!-- ==================================================
+                 QUANTITY
+                 0 - 50,000
+            ================================================== -->
 
             <div class="form-group">
 
@@ -207,7 +210,10 @@
             </div>
 
 
-            <!-- WEIGHT -->
+            <!-- ==================================================
+                 WEIGHT
+                 0 - 100,000 KG
+            ================================================== -->
 
             <div class="form-group">
 
@@ -226,7 +232,10 @@
             </div>
 
 
-            <!-- PRICE PER KG -->
+            <!-- ==================================================
+                 PRICE PER KG
+                 0 - 1,000 ZMW
+            ================================================== -->
 
             <div class="form-group">
 
@@ -550,7 +559,8 @@
                     type="date"
                     id="removalDate"
                     name="removalDate"
-                    disabled>
+                    disabled
+                >
 
             </div>
 
@@ -702,6 +712,87 @@
 
 
 <!-- ======================================================
+     CREATE SALES DROPDOWN RANGES
+     
+     IMPORTANT:
+     This runs BEFORE security.js and sales.js.
+     It only populates the three existing select elements.
+====================================================== -->
+
+<script>
+
+(function () {
+
+    const quantity = document.getElementById("quantity");
+    const weight = document.getElementById("weight");
+    const pricePerKg = document.getElementById("pricePerKg");
+
+
+    /* ==================================================
+       QUANTITY: 0 - 50,000
+    ================================================== */
+
+    const quantityFragment = document.createDocumentFragment();
+
+    for (let i = 0; i <= 50000; i++) {
+
+        const option = document.createElement("option");
+
+        option.value = i;
+        option.textContent = i;
+
+        quantityFragment.appendChild(option);
+
+    }
+
+    quantity.appendChild(quantityFragment);
+
+
+    /* ==================================================
+       WEIGHT: 0 - 100,000 KG
+    ================================================== */
+
+    const weightFragment = document.createDocumentFragment();
+
+    for (let i = 0; i <= 100000; i++) {
+
+        const option = document.createElement("option");
+
+        option.value = i;
+        option.textContent = i + " kg";
+
+        weightFragment.appendChild(option);
+
+    }
+
+    weight.appendChild(weightFragment);
+
+
+    /* ==================================================
+       PRICE PER KG: 0 - 1,000 ZMW
+    ================================================== */
+
+    const priceFragment = document.createDocumentFragment();
+
+    for (let i = 0; i <= 1000; i++) {
+
+        const option = document.createElement("option");
+
+        option.value = i;
+        option.textContent = "ZMW " + i;
+
+        priceFragment.appendChild(option);
+
+    }
+
+    pricePerKg.appendChild(priceFragment);
+
+})();
+
+</script>
+
+
+<!-- ======================================================
      SUPABASE
 ====================================================== -->
 
@@ -736,83 +827,6 @@
 ====================================================== -->
 
 <script src="sales.js"></script>
-
-
-<!-- ======================================================
-     EXPANDED SALES DROPDOWN OPTIONS
-====================================================== -->
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const quantity = document.getElementById("quantity");
-    const weight = document.getElementById("weight");
-    const pricePerKg = document.getElementById("pricePerKg");
-
-
-    /* ==================================================
-       QUANTITY: 0 - 50,000
-    ================================================== */
-
-    if (quantity) {
-
-        for (let i = 0; i <= 50000; i++) {
-
-            const option = document.createElement("option");
-
-            option.value = i;
-            option.textContent = i;
-
-            quantity.appendChild(option);
-
-        }
-
-    }
-
-
-    /* ==================================================
-       WEIGHT: 0 - 100,000 KG
-    ================================================== */
-
-    if (weight) {
-
-        for (let i = 0; i <= 100000; i++) {
-
-            const option = document.createElement("option");
-
-            option.value = i;
-            option.textContent = i + " kg";
-
-            weight.appendChild(option);
-
-        }
-
-    }
-
-
-    /* ==================================================
-       PRICE PER KG: 0 - 1,000 ZMW
-    ================================================== */
-
-    if (pricePerKg) {
-
-        for (let i = 0; i <= 1000; i++) {
-
-            const option = document.createElement("option");
-
-            option.value = i;
-            option.textContent = "ZMW " + i;
-
-            pricePerKg.appendChild(option);
-
-        }
-
-    }
-
-});
-
-</script>
 
 
 </body>
