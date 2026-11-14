@@ -296,18 +296,19 @@ function escapeHTML(value) {
 const descriptionOptions = {
 
     "Feed": [
-        "Piglet Feed",
-        "Weaner Feed",
-        "Grower Feed",
-        "Finisher Feed",
-        "Sow Feed",
-        "Boar Feed",
-        "Maize",
-        "Soybean Meal",
-        "Premix",
-        "Bran",
-        "Other Feed"
-    ],
+    "Creep Feed",
+    "Weaner Feed",
+    "Grower Feed",
+    "Finisher Feed",
+    "Sow Feed",
+    "Boar Feed",
+    "Meal No. 3",
+    "Soybean Meal",
+    "Premix",
+    "Bran",
+    "Other Feed"
+],
+    
 
     "Medicine": [
         "Dewormer",
