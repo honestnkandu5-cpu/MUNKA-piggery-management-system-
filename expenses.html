@@ -237,7 +237,10 @@
 
 
 
-            <!-- UNIT COST -->
+            <!-- ==================================================
+                 UNIT COST
+                 ZMW 0 - ZMW 20,000
+            ================================================== -->
 
             <div class="form-group">
 
@@ -252,41 +255,6 @@
                     <option value="">
                         Select Unit Cost
                     </option>
-
-                    <option value="5">ZMW 5</option>
-                    <option value="10">ZMW 10</option>
-                    <option value="15">ZMW 15</option>
-                    <option value="20">ZMW 20</option>
-                    <option value="25">ZMW 25</option>
-                    <option value="30">ZMW 30</option>
-                    <option value="35">ZMW 35</option>
-                    <option value="40">ZMW 40</option>
-                    <option value="45">ZMW 45</option>
-                    <option value="50">ZMW 50</option>
-                    <option value="60">ZMW 60</option>
-                    <option value="70">ZMW 70</option>
-                    <option value="80">ZMW 80</option>
-                    <option value="90">ZMW 90</option>
-                    <option value="100">ZMW 100</option>
-                    <option value="120">ZMW 120</option>
-                    <option value="140">ZMW 140</option>
-                    <option value="160">ZMW 160</option>
-                    <option value="180">ZMW 180</option>
-                    <option value="200">ZMW 200</option>
-                    <option value="220">ZMW 220</option>
-                    <option value="240">ZMW 240</option>
-                    <option value="260">ZMW 260</option>
-                    <option value="280">ZMW 280</option>
-                    <option value="300">ZMW 300</option>
-                    <option value="350">ZMW 350</option>
-                    <option value="400">ZMW 400</option>
-                    <option value="450">ZMW 450</option>
-                    <option value="500">ZMW 500</option>
-                    <option value="600">ZMW 600</option>
-                    <option value="700">ZMW 700</option>
-                    <option value="800">ZMW 800</option>
-                    <option value="900">ZMW 900</option>
-                    <option value="1000">ZMW 1000</option>
 
                 </select>
 
@@ -644,6 +612,54 @@
 ====================================================== -->
 
 <script src="expenses.js"></script>
+
+
+
+<!-- ======================================================
+     UNIT COST DROPDOWN
+     GENERATES ZMW 0 - ZMW 20,000
+====================================================== -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const unitCost = document.getElementById("unitCost");
+
+    if (!unitCost) {
+        return;
+    }
+
+    /*
+     * Keep the existing default option.
+     */
+    unitCost.innerHTML = `
+        <option value="">
+            Select Unit Cost
+        </option>
+    `;
+
+
+    /*
+     * Generate every whole number
+     * from ZMW 0 to ZMW 20,000.
+     */
+    for (let amount = 0; amount <= 20000; amount++) {
+
+        const option = document.createElement("option");
+
+        option.value = amount;
+
+        option.textContent =
+            "ZMW " + amount.toLocaleString("en-US");
+
+        unitCost.appendChild(option);
+
+    }
+
+});
+
+</script>
 
 
 </body>
