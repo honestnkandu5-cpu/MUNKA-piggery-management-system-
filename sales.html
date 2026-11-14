@@ -188,10 +188,7 @@
             </div>
 
 
-            <!-- ==================================================
-                 QUANTITY
-                 0 - 50,000 WHOLE NUMBERS
-            ================================================== -->
+            <!-- QUANTITY -->
 
             <div class="form-group">
 
@@ -210,10 +207,7 @@
             </div>
 
 
-            <!-- ==================================================
-                 WEIGHT
-                 0 - 100,000 WHOLE NUMBERS
-            ================================================== -->
+            <!-- WEIGHT -->
 
             <div class="form-group">
 
@@ -232,10 +226,7 @@
             </div>
 
 
-            <!-- ==================================================
-                 PRICE PER KG
-                 0 - 1,000 WHOLE NUMBERS
-            ================================================== -->
+            <!-- PRICE PER KG -->
 
             <div class="form-group">
 
@@ -526,9 +517,7 @@
             </div>
 
 
-            <!-- ==================================================
-                 PHYSICAL REMOVAL CONFIRMATION
-            ================================================== -->
+            <!-- PHYSICAL REMOVAL CONFIRMATION -->
 
             <div class="form-group full-width">
 
@@ -536,9 +525,7 @@
                     Have the pigs physically left the farm?
                 </label>
 
-                <select
-                    id="removedFromFarm"
-                    name="removedFromFarm">
+                <select id="removedFromFarm" name="removedFromFarm">
 
                     <option value="false" selected>
                         No — pigs are still on the farm
@@ -552,8 +539,6 @@
 
             </div>
 
-
-            <!-- REMOVAL DATE -->
 
             <div class="form-group">
 
@@ -754,41 +739,30 @@
 
 
 <!-- ======================================================
-     NUMBER DROPDOWNS
-     
-     QUANTITY  : 0 - 50,000
-     WEIGHT    : 0 - 100,000
-     PRICE/KG  : 0 - 1,000
+     EXPANDED SALES DROPDOWN OPTIONS
 ====================================================== -->
 
 <script>
 
 document.addEventListener("DOMContentLoaded", function () {
 
-
-    // =====================================================
-    // QUANTITY
-    // 0 - 50,000 WHOLE NUMBERS
-    // =====================================================
-
     const quantity = document.getElementById("quantity");
+    const weight = document.getElementById("weight");
+    const pricePerKg = document.getElementById("pricePerKg");
+
+
+    /* ==================================================
+       QUANTITY: 0 - 50,000
+    ================================================== */
 
     if (quantity) {
 
-        quantity.innerHTML = `
-            <option value="">
-                Select Quantity
-            </option>
-        `;
-
-        for (let number = 0; number <= 50000; number++) {
+        for (let i = 0; i <= 50000; i++) {
 
             const option = document.createElement("option");
 
-            option.value = number;
-
-            option.textContent =
-                number.toLocaleString("en-US");
+            option.value = i;
+            option.textContent = i;
 
             quantity.appendChild(option);
 
@@ -797,30 +771,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-
-    // =====================================================
-    // WEIGHT
-    // 0 - 100,000 WHOLE NUMBERS
-    // =====================================================
-
-    const weight = document.getElementById("weight");
+    /* ==================================================
+       WEIGHT: 0 - 100,000 KG
+    ================================================== */
 
     if (weight) {
 
-        weight.innerHTML = `
-            <option value="">
-                Select Weight
-            </option>
-        `;
-
-        for (let number = 0; number <= 100000; number++) {
+        for (let i = 0; i <= 100000; i++) {
 
             const option = document.createElement("option");
 
-            option.value = number;
-
-            option.textContent =
-                number.toLocaleString("en-US") + " kg";
+            option.value = i;
+            option.textContent = i + " kg";
 
             weight.appendChild(option);
 
@@ -829,91 +791,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-
-    // =====================================================
-    // PRICE PER KG
-    // 0 - 1,000 WHOLE NUMBERS
-    // =====================================================
-
-    const pricePerKg = document.getElementById("pricePerKg");
+    /* ==================================================
+       PRICE PER KG: 0 - 1,000 ZMW
+    ================================================== */
 
     if (pricePerKg) {
 
-        pricePerKg.innerHTML = `
-            <option value="">
-                Select Price
-            </option>
-        `;
-
-        for (let number = 0; number <= 1000; number++) {
+        for (let i = 0; i <= 1000; i++) {
 
             const option = document.createElement("option");
 
-            option.value = number;
-
-            option.textContent =
-                "ZMW " + number.toLocaleString("en-US");
+            option.value = i;
+            option.textContent = "ZMW " + i;
 
             pricePerKg.appendChild(option);
 
         }
 
     }
-
-});
-
-</script>
-
-
-<!-- ======================================================
-     REMOVAL DATE CONTROL
-     Keeps the existing physical-removal behaviour
-====================================================== -->
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const removedFromFarm =
-        document.getElementById("removedFromFarm");
-
-    const removalDate =
-        document.getElementById("removalDate");
-
-
-    if (!removedFromFarm || !removalDate) {
-        return;
-    }
-
-
-    function updateRemovalDateState() {
-
-        if (removedFromFarm.value === "true") {
-
-            removalDate.disabled = false;
-
-            removalDate.required = true;
-
-        } else {
-
-            removalDate.disabled = true;
-
-            removalDate.required = false;
-
-            removalDate.value = "";
-
-        }
-
-    }
-
-
-    removedFromFarm.addEventListener(
-        "change",
-        updateRemovalDateState
-    );
-
-
-    updateRemovalDateState();
 
 });
 
